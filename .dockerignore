@@ -1,0 +1,18 @@
+# Cartella delle dipendenze
+node_modules
+
+# Output del build di Next.js
+.next
+
+# File di Docker
+Dockerfile
+.dockerignore
+
+# File di log e di ambiente locale
+npm-debug.log*
+*.log
+.env
+.env.local
+
+# Impostazioni dell'editor
+.vscode
