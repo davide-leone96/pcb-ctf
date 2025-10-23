@@ -6,12 +6,12 @@ import PCBViewer from '@/components/features/exercise/PCBViewer';
 import Sidebar from '@/components/layout/Sidebar';
 import { exerciseData } from '@/data/exercise';
 import { useExerciseStore } from '@/store/exerciseStore';
-// --- 1. Importa il nuovo componente e l'azione di reset ---
 import CompletionDialog from '@/components/features/exercise/CompletionDialog';
+import Terminal from '@/components/features/exercise/Terminal';
 
 export default function Home() {
   // --- 2. Estrai 'isFinished', 'flag', e 'resetExercise' dallo store ---
-  const { currentStep, flag, isFinished, resetExercise } = useExerciseStore();
+  const { currentStep, flag, isFinished, resetExercise, activeTool } = useExerciseStore();
   
   const currentComponent = exerciseData.components[currentStep];
   const instruction = isFinished
@@ -52,6 +52,7 @@ export default function Home() {
 
         </div>
       </div>
+      {activeTool === 'terminal' && <Terminal />}
     </main>
   );
 }
