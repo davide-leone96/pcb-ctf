@@ -6,11 +6,11 @@ import { useExerciseStore, MultimeterMode } from '@/store/exerciseStore';
 import { exerciseData } from '@/data/exercise';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { Zap, Sigma } from 'lucide-react';
 
-// Definiamo il tipo per la callback e i nuovi bounds
 interface MultimeterProps {
   onPositionChange: (pos: { x: number; y: number } | null) => void;
-  bounds: DOMRect | null; // Rettangolo di contenimento
+  bounds: DOMRect | null;
 }
 
 const calculateValue = (
@@ -37,21 +37,15 @@ const Multimeter = ({ onPositionChange, bounds }: MultimeterProps) => {
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
 
-  // --- MODIFICA CHIAVE 1: Calcolo della posizione iniziale ---
-  // Questo useEffect si attiva quando i bounds sono disponibili e imposta la posizione
-  // iniziale del multimetro SOLO la prima volta.
   useEffect(() => {
     if (bounds && !position && multimeterRef.current) {
       const multimeterWidth = multimeterRef.current.offsetWidth;
-      const padding = 16; // 1rem
-      
+      const padding = 16;
       const initialX = bounds.right - multimeterWidth - padding;
       const initialY = bounds.top + padding;
-      
       setPosition({ x: initialX, y: initialY });
     }
   }, [bounds, position]);
-
 
   useEffect(() => {
     return () => { onPositionChange(null); };
@@ -94,23 +88,16 @@ const Multimeter = ({ onPositionChange, bounds }: MultimeterProps) => {
     <div
       ref={multimeterRef}
       onMouseDown={handleMouseDown}
-      className="fixed bg-gray-800 border-2 border-gray-600 rounded-lg p-4 w-64 text-white shadow-lg pointer-events-auto z-20 cursor-move"
-      // --- MODIFICA CHIAVE 2: Stile per la posizione ---
-      // Rimane invisibile finché la sua posizione non è stata calcolata,
-      // per evitare un "flash" nell'angolo in alto a sinistra.
-      style={
-        position
-          ? { left: `${position.x}px`, top: `${position.y}px`, visibility: 'visible' }
-          : { visibility: 'hidden' }
-      }
+      className="fixed bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-600 rounded-lg p-3 w-64 text-white shadow-2xl pointer-events-auto z-30 cursor-move ring-1 ring-white/10"
+      style={position ? { left: `${position.x}px`, top: `${position.y}px`, visibility: 'visible' } : { visibility: 'hidden' }}
     >
-      <div className="bg-green-900 border border-green-700 text-right p-2 rounded-md mb-4 select-none">
-        <span className="text-4xl font-mono text-green-300">{displayValue}</span>
-        <span className="text-2xl ml-2 text-green-300">{unit}</span>
+      <div className="bg-cyan-900/50 backdrop-blur-sm border border-cyan-700 text-right p-2 rounded-md mb-3 shadow-inner select-none">
+        <span className="text-4xl font-mono text-cyan-300 text-shadow-lcd">{displayValue}</span>
+        <span className="text-2xl ml-2 text-cyan-300/80">{unit}</span>
       </div>
-      <div className="flex justify-around">
-        <Button onClick={() => setMultimeterMode('V')} className={cn(multimeterMode === 'V' && 'bg-blue-600 hover:bg-blue-500')} size="sm">Volt (V)</Button>
-        <Button onClick={() => setMultimeterMode('Ohm')} className={cn(multimeterMode === 'Ohm' && 'bg-blue-600 hover:bg-blue-500')} size="sm">Ohm (Ω)</Button>
+      <div className="flex justify-around bg-black/20 p-1 rounded-md">
+        <Button onClick={() => setMultimeterMode('V')} variant="ghost" className={cn("full-1/2 transition-colors", multimeterMode === 'V' && 'bg-blue-600/50 hover:bg-blue-600/60')} size="sm"><Zap className="mr-2 h-4 w-4"/> Volt (V)</Button>
+        <Button onClick={() => setMultimeterMode('Ohm')} variant="ghost" className={cn("full-1/2 transition-colors", multimeterMode === 'Ohm' && 'bg-blue-600/50 hover:bg-blue-600/60')} size="sm"><Sigma className="mr-2 h-4 w-4"/> Ohm (Ω)</Button>
       </div>
     </div>
   );
