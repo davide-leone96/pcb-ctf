@@ -3,13 +3,14 @@
 'use client';
 
 import ToolButton from '@/components/layout/exercise/ToolButton';
-import { Hand, Search, Wrench, type LucideIcon } from 'lucide-react'; 
+import { Hand, Search, Wrench, TerminalSquare, type LucideIcon } from 'lucide-react'; 
 import { useExerciseStore, Tool } from '@/store/exerciseStore';
 
 const tools: { id: Tool; label: string; icon: LucideIcon }[] = [
   { id: 'pointer', label: 'Puntatore', icon: Hand },
   { id: 'magnifier', label: "Lente d'ingrandimento", icon: Search },
   { id: 'multimeter', label: 'Multimetro', icon: Wrench },
+  { id: 'terminal', label: 'Terminale', icon: TerminalSquare },
 ];
 
 const Sidebar = () => {

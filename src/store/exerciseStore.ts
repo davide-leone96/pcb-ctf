@@ -3,7 +3,7 @@
 import { create } from 'zustand';
 import { exerciseData } from '@/data/exercise';
 
-export type Tool = 'pointer' | 'magnifier' | 'multimeter';
+export type Tool = 'pointer' | 'magnifier' | 'multimeter' | 'terminal';
 export type MultimeterMode = 'V' | 'Ohm';
 
 interface MousePosition { x: number; y: number; }
