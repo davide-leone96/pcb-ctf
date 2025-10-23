@@ -70,15 +70,36 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
     snapTarget: null,
   }),
   
+  // =========================================================================
+  // ===                     MODIFICA CHIAVE QUI                           ===
+  // =========================================================================
   setActiveTool: (tool) => {
-    if (tool !== 'magnifier') set({ mousePosition: null });
-    const probe1Hooked = get().probe1.hookedTo;
-    set({
-      activeTool: tool,
-      activeProbe: (tool === 'multimeter' && !probe1Hooked) ? 'first' : null,
-      snapTarget: null,
-    });
+    // Prima di tutto, imposta lo strumento attivo
+    set({ activeTool: tool });
+
+    // Nasconde la lente se non è il tool attivo
+    if (tool !== 'magnifier') {
+      set({ mousePosition: null });
+    }
+    
+    // Se lo strumento selezionato NON è il multimetro,
+    // esegui una pulizia completa dello stato del multimetro.
+    if (tool !== 'multimeter') {
+      set({
+        activeProbe: null,
+        probe1: { hookedTo: null },
+        probe2: { hookedTo: null },
+        snapTarget: null,
+      });
+    } else {
+      // Se invece si ATTIVA il multimetro, prepariamo il primo puntale
+      // (solo se non era già agganciato).
+      if (!get().probe1.hookedTo) {
+        set({ activeProbe: 'first' });
+      }
+    }
   },
+  // =========================================================================
   
   updateMousePosition: (position) => set({ mousePosition: position }),
   measureComponent: (componentId) => set({ measuredComponentId: componentId }),
@@ -105,7 +126,7 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
         snapTarget: null,
       });
     } else {
-      if (snapTarget === probe1.hookedTo) return; // Non si può agganciare allo stesso pin
+      if (snapTarget === probe1.hookedTo) return;
       set({
         probe2: { hookedTo: snapTarget },
         activeProbe: null,
@@ -116,33 +137,18 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   
   selectComponent: (componentId) => {
     const { currentStep, foundComponents, isFinished } = get();
-
-    // Se l'esercizio è già finito, non fare nulla.
     if (isFinished) return;
-
-    // Prendiamo il componente che l'utente DOVREBBE trovare in questo step.
     const correctComponent = exerciseData.components[currentStep];
-
-    // Controlliamo se il componente cliccato è quello corretto.
     if (correctComponent && componentId === correctComponent.id) {
-      // È corretto! Aggiorniamo lo stato.
       const newFoundComponents = [...foundComponents, componentId];
-
-      // Costruiamo la nuova flag basandoci sui componenti trovati
       let newFlag = exerciseData.initialFlag;
-      let revealedPart = "";
-      newFoundComponents.forEach((id) => {
-        const part =
-          exerciseData.components.find((c) => c.id === id)?.flagPart || "";
+      let revealedPart = '';
+      newFoundComponents.forEach(id => {
+        const part = exerciseData.components.find(c => c.id === id)?.flagPart || '';
         revealedPart += part;
       });
       newFlag = `flag{${revealedPart}}`;
-
-      // Controlliamo se questo era l'ultimo componente.
-      const exerciseIsNowFinished =
-        newFoundComponents.length === exerciseData.components.length;
-
-      // Usiamo `set` per aggiornare lo stato con i nuovi valori.
+      const exerciseIsNowFinished = newFoundComponents.length === exerciseData.components.length;
       set({
         currentStep: currentStep + 1,
         foundComponents: newFoundComponents,
