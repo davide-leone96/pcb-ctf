@@ -157,8 +157,27 @@ const PCBViewer = () => {
         {activeTool === 'multimeter' && (
             <svg width="100%" height="100%" className="absolute inset-0" style={{ filter: 'drop-shadow(2px 2px 2px rgba(0,0,0,0.4))' }}>
               <defs><filter id="shadow"><feDropShadow dx="2" dy="2" stdDeviation="2" floodColor="rgba(0,0,0,0.4)"/></filter></defs>
-              <path d={getCurvePath(wireOrigin2, activeProbe === 'second' ? activeProbePos : probe2Pos)} stroke="black" strokeWidth="4" fill="none" />
-              <path d={getCurvePath(wireOrigin1, probe1Pos)} stroke="#EF4444" strokeWidth="4" fill="none" />
+              
+              {/* === LOGICA DI RENDERING DEI CAVI CORRETTA E SEMPLIFICATA === */}
+
+              {/* Se il puntale 1 è attivo, disegna il suo cavo che segue il mouse */}
+              {activeProbe === 'first' && (
+                <path d={getCurvePath(wireOrigin1, activeProbePos)} stroke="#EF4444" strokeWidth="4" fill="none" />
+              )}
+              {/* Altrimenti, se è agganciato, disegna il cavo fisso */}
+              {probe1Pos && activeProbe !== 'first' && (
+                <path d={getCurvePath(wireOrigin1, probe1Pos)} stroke="#EF4444" strokeWidth="4" fill="none" />
+              )}
+              
+              {/* Se il puntale 2 è attivo, disegna il suo cavo che segue il mouse */}
+              {activeProbe === 'second' && (
+                <path d={getCurvePath(wireOrigin2, activeProbePos)} stroke="black" strokeWidth="4" fill="none" />
+              )}
+              {/* Altrimenti, se è agganciato, disegna il cavo fisso */}
+              {probe2Pos && activeProbe !== 'second' && (
+                <path d={getCurvePath(wireOrigin2, probe2Pos)} stroke="black" strokeWidth="4" fill="none" />
+              )}
+
             </svg>
         )}
         {activeTool === 'magnifier' && mousePosition && imageUrl && containerDims.width > 0 && <div className="absolute rounded-full border-4 border-blue-500 shadow-lg" style={{ left: mousePosition.x, top: mousePosition.y, transform: 'translate(-50%, -50%)', width: LENS_RADIUS * 2, height: LENS_RADIUS * 2, backgroundImage: `url(${imageUrl})`, backgroundSize: `${containerDims.width * ZOOM_LEVEL}px ${containerDims.height * ZOOM_LEVEL}px`, backgroundPosition: `-${mousePosition.x * ZOOM_LEVEL - LENS_RADIUS}px -${mousePosition.y * ZOOM_LEVEL - LENS_RADIUS}px`, backgroundRepeat: 'no-repeat'}}/>}
