@@ -1,83 +1,120 @@
 // src/store/exerciseStore.ts
 
-import { create } from "zustand";
-import { exerciseData, HardwareComponent } from "@/data/exercise";
+import { create } from 'zustand';
+import { exerciseData } from '@/data/exercise';
 
-// Definiamo la "forma" del nostro stato
+export type Tool = 'pointer' | 'magnifier' | 'multimeter';
+export type MultimeterMode = 'V' | 'Ohm';
+
+interface MousePosition { x: number; y: number; }
+interface ProbeState { hookedTo: string | null; }
+
 interface ExerciseState {
-  currentStep: number; // Indice del componente da trovare nell'array exerciseData.components
-  foundComponents: string[]; // Array degli ID dei componenti già trovati
-  flag: string; // La flag attuale, che viene costruita man mano
-  isFinished: boolean; // Indica se l'esercizio è stato completato
+  currentStep: number;
+  foundComponents: string[];
+  flag: string;
+  isFinished: boolean;
   activeTool: Tool;
-  measuredComponentId: string | null; // <-- NUOVO: L'ID del componente misurato
   mousePosition: MousePosition | null;
+  measuredComponentId: string | null;
+  multimeterMode: MultimeterMode;
+  activeProbe: 'first' | 'second' | null;
+  probe1: ProbeState;
+  probe2: ProbeState;
+  snapTarget: string | null;
 }
 
-interface MousePosition {
-  x: number;
-  y: number;
-}
-
-// 1. Definiamo un tipo per i nostri tool per avere type safety
-export type Tool = "pointer" | "magnifier" | "multimeter";
-
-// Definiamo le "azioni" che possiamo compiere sullo stato
 interface ExerciseActions {
-  /**
-   * La funzione principale: gestisce il click di un utente su un componente.
-   * @param componentId L'ID del componente su cui l'utente ha cliccato.
-   */
   selectComponent: (componentId: string) => void;
-  /** Resetta l'esercizio allo stato iniziale. */
   resetExercise: () => void;
   setActiveTool: (tool: Tool) => void;
-  clearMeasurement: () => void;
-  measureComponent: (componentId: string) => void;
   updateMousePosition: (position: MousePosition | null) => void;
+  measureComponent: (componentId: string) => void;
+  clearMeasurement: () => void;
+  setMultimeterMode: (mode: MultimeterMode) => void;
+  setSnapTarget: (pinId: string | null) => void;
+  hookProbe: () => void;
+  unhookProbe: (probeNumber: 'first' | 'second') => void;
 }
 
-// Uniamo stato e azioni in un unico tipo per il nostro store
 type ExerciseStore = ExerciseState & ExerciseActions;
 
-// Creiamo lo store usando la funzione `create` di Zustand
 export const useExerciseStore = create<ExerciseStore>((set, get) => ({
-  // --- STATO INIZIALE ---
+  // Stato iniziale
   currentStep: 0,
   foundComponents: [],
   flag: exerciseData.initialFlag,
   isFinished: false,
-  activeTool: "pointer", // Impostiamo il tool iniziale come 'pointer'
-  measuredComponentId: null,
+  activeTool: 'pointer',
   mousePosition: null,
+  measuredComponentId: null,
+  multimeterMode: 'V',
+  activeProbe: null,
+  probe1: { hookedTo: null },
+  probe2: { hookedTo: null },
+  snapTarget: null,
 
-  // --- AZIONI ---
-  resetExercise: () =>
-    set({
-      currentStep: 0,
-      foundComponents: [],
-      flag: exerciseData.initialFlag,
-      isFinished: false,
-      activeTool: 'pointer',
-      measuredComponentId: null,
-      mousePosition: null,
-    }),
-
+  // Azioni
+  resetExercise: () => set({
+    currentStep: 0,
+    foundComponents: [],
+    flag: exerciseData.initialFlag,
+    isFinished: false,
+    activeTool: 'pointer',
+    mousePosition: null,
+    measuredComponentId: null,
+    multimeterMode: 'V',
+    activeProbe: null,
+    probe1: { hookedTo: null },
+    probe2: { hookedTo: null },
+    snapTarget: null,
+  }),
+  
   setActiveTool: (tool) => {
-    // Quando deselezioniamo la lente, nascondiamo la posizione del mouse
-    if (tool !== 'magnifier') {
-      set({ activeTool: tool, mousePosition: null });
+    if (tool !== 'magnifier') set({ mousePosition: null });
+    const probe1Hooked = get().probe1.hookedTo;
+    set({
+      activeTool: tool,
+      activeProbe: (tool === 'multimeter' && !probe1Hooked) ? 'first' : null,
+      snapTarget: null,
+    });
+  },
+  
+  updateMousePosition: (position) => set({ mousePosition: position }),
+  measureComponent: (componentId) => set({ measuredComponentId: componentId }),
+  clearMeasurement: () => set({ measuredComponentId: null }),
+  setMultimeterMode: (mode) => set({ multimeterMode: mode }),
+  setSnapTarget: (pinId) => set({ snapTarget: pinId }),
+  
+  unhookProbe: (probeNumber) => {
+    if (probeNumber === 'first') {
+      set({ probe1: { hookedTo: null }, probe2: { hookedTo: null }, activeProbe: 'first', snapTarget: null });
     } else {
-      set({ activeTool: tool });
+      set({ probe2: { hookedTo: null }, activeProbe: 'second', snapTarget: null });
     }
   },
-  updateMousePosition: (position) => set({ mousePosition: position }),
+  
+  hookProbe: () => {
+    const { activeProbe, snapTarget, probe1 } = get();
+    if (!activeProbe || !snapTarget) return;
 
-  // NUOVE AZIONI PER IL MULTIMETRO
-  measureComponent: (componentId: string) => set({ measuredComponentId: componentId }),
-  clearMeasurement: () => set({ measuredComponentId: null }),
-
-  selectComponent: (componentId: string) => {
+    if (activeProbe === 'first') {
+      set({
+        probe1: { hookedTo: snapTarget },
+        activeProbe: 'second',
+        snapTarget: null,
+      });
+    } else {
+      if (snapTarget === probe1.hookedTo) return; // Non si può agganciare allo stesso pin
+      set({
+        probe2: { hookedTo: snapTarget },
+        activeProbe: null,
+        snapTarget: null,
+      });
+    }
+  },
+  
+  selectComponent: (componentId) => {
     const { currentStep, foundComponents, isFinished } = get();
 
     // Se l'esercizio è già finito, non fare nulla.
@@ -113,6 +150,5 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
         isFinished: exerciseIsNowFinished,
       });
     }
-    // Se il componente cliccato non è quello corretto, per ora non facciamo nulla.
   },
 }));

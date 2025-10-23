@@ -4,21 +4,18 @@
  * Definisce la struttura di un singolo componente hardware cliccabile sul PCB.
  */
 export interface HardwareComponent {
-  /** Un ID univoco per la logica, es. 'cpu' */
   id: string;
-  /** Il nome visualizzato del componente, es. "CPU" */
   name: string;
-  /** L'istruzione da mostrare all'utente per trovare questo componente. */
   instruction: string;
-  /** L'indizio da fornire se l'utente lo richiede. */
   hint: string;
-  /** Il pezzo di flag sbloccato trovando questo componente. */
   flagPart: string;
-  /**
-   * Le coordinate dell'area cliccabile in percentuale rispetto alle dimensioni dell'immagine.
-   * Formato: [distanzaDaSinistra, distanzaDallAlto, larghezza, altezza]
-   * Esempio: [10, 20, 5, 8] -> Inizia al 10% da sx, 20% dall'alto, è largo il 5% e alto l'8%.
-   */
+  coords: [number, number, number, number];
+}
+
+export interface MeasurementPin {
+  id: string;
+  valueV: number;
+  valueOhm: number;
   coords: [number, number, number, number];
 }
 
@@ -26,11 +23,9 @@ export interface HardwareComponent {
  * Definisce la struttura dell'intero esercizio.
  */
 export interface Exercise {
-  /** Il percorso dell'immagine del PCB nella cartella `public`. */
   pcbImage: string;
-  /** L'array di componenti. L'ordine definisce la sequenza degli step. */
   components: HardwareComponent[];
-  /** La stringa iniziale della flag, con i placeholder. */
+  pins: MeasurementPin[];
   initialFlag: string;
 }
 
@@ -72,6 +67,13 @@ export const exerciseData: Exercise = {
       coords: [80, 85, 10, 5], // Queste coordinate sono indicative, da aggiustare!
     },
     // Potremmo aggiungere altri componenti qui per estendere l'esercizio...
+  ],
+  pins: [
+    { id: 'pin-r69-1', valueV: 5.0, valueOhm: 1000, coords: [58, 75, 1, 2] },
+    { id: 'pin-r69-2', valueV: 3.3, valueOhm: 0, coords: [62, 75, 1, 2] },
+    { id: 'pin-c48-1', valueV: 3.3, valueOhm: 0, coords: [60, 80, 1, 2] },
+    { id: 'gnd-1', valueV: 0, valueOhm: 0, coords: [70, 85, 2, 2] },
+    // ... altri pin
   ],
 };
 
