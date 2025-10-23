@@ -109,9 +109,22 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   
   unhookProbe: (probeNumber) => {
     if (probeNumber === 'first') {
-      set({ probe1: { hookedTo: null }, probe2: { hookedTo: null }, activeProbe: 'first', snapTarget: null });
-    } else {
-      set({ probe2: { hookedTo: null }, activeProbe: 'second', snapTarget: null });
+      // Se sgancio il primo puntale (rosso), devo sganciare anche il secondo (nero)
+      // e rendere il primo di nuovo attivo.
+      set({ 
+        probe1: { hookedTo: null }, 
+        probe2: { hookedTo: null }, // Sgancia anche il nero
+        activeProbe: 'first', 
+        snapTarget: null 
+      });
+    } else { // 'second'
+      // Se sgancio solo il secondo (nero), il primo rimane agganciato
+      // e il secondo diventa attivo.
+      set({ 
+        probe2: { hookedTo: null }, 
+        activeProbe: 'second', 
+        snapTarget: null 
+      });
     }
   },
   
