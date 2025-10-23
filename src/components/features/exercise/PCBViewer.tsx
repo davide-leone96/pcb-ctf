@@ -153,16 +153,28 @@ const PCBViewer = () => {
                 <line x1="80%" y1="5%" x2={probe1Pos.x} y2={probe1Pos.y} stroke="red" strokeWidth="3" />
               )}
             </svg>
+            
+            {/* --- MODIFICA CHIAVE QUI --- */}
             {probe1Pos && (
-              <div className="absolute pointer-events-auto cursor-pointer" style={{ left: probe1Pos.x - 8, top: probe1Pos.y - 8}} onClick={(e) => {e.stopPropagation(); unhookProbe('first');}}>
+              <div 
+                className="absolute pointer-events-auto cursor-pointer z-10" 
+                style={{ left: probe1Pos.x - 8, top: probe1Pos.y - 8}} 
+                onClick={(e) => { e.stopPropagation(); unhookProbe('first'); }}
+              >
                 <XCircle size={16} className="text-red-500 bg-white rounded-full"/>
               </div>
             )}
             {probe2Pos && (
-              <div className="absolute pointer-events-auto cursor-pointer" style={{ left: probe2Pos.x - 8, top: probe2Pos.y - 8}} onClick={(e) => {e.stopPropagation(); unhookProbe('second');}}>
+              <div 
+                className="absolute pointer-events-auto cursor-pointer z-10" 
+                style={{ left: probe2Pos.x - 8, top: probe2Pos.y - 8}} 
+                onClick={(e) => { e.stopPropagation(); unhookProbe('second'); }}
+              >
                 <XCircle size={16} className="text-black bg-white rounded-full"/>
               </div>
             )}
+            {/* --- FINE MODIFICA --- */}
+
             {activeProbe && activeProbePos && (
               <div className="absolute" style={{ left: activeProbePos.x - 12, top: activeProbePos.y - 12}}>
                 <div className={cn("w-6 h-6 rounded-full border-2", activeProbe === 'first' ? 'border-red-500' : 'border-black')} />
