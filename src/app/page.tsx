@@ -1,5 +1,3 @@
-// src/app/page.tsx
-
 'use client'; 
 
 import FlagDisplay from '@/components/features/exercise/FlagDisplay';
@@ -8,9 +6,13 @@ import PCBViewer from '@/components/features/exercise/PCBViewer';
 import Sidebar from '@/components/layout/Sidebar';
 import { exerciseData } from '@/data/exercise';
 import { useExerciseStore } from '@/store/exerciseStore';
+// --- 1. Importa il nuovo componente e l'azione di reset ---
+import CompletionDialog from '@/components/features/exercise/CompletionDialog';
 
 export default function Home() {
-  const { currentStep, flag, isFinished } = useExerciseStore();
+  // --- 2. Estrai 'isFinished', 'flag', e 'resetExercise' dallo store ---
+  const { currentStep, flag, isFinished, resetExercise } = useExerciseStore();
+  
   const currentComponent = exerciseData.components[currentStep];
   const instruction = isFinished
     ? 'Congratulazioni! Hai identificato tutti i componenti.'
@@ -20,6 +22,9 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center bg-gray-900 p-6 lg:p-12">
+      {/* --- 3. Aggiungi il componente del dialogo qui --- */}
+      <CompletionDialog isOpen={isFinished} flag={flag} onReset={resetExercise} />
+
       <h1 className="mb-8 text-3xl font-bold text-white">
         ARTIC Web Platform
       </h1>
@@ -41,8 +46,6 @@ export default function Home() {
             </div>
           </div>
           
-          {/* Area Inferiore: Visore PCB */}
-          {/* Aggiungiamo il padding qui per ripristinare lo spazio visivo */}
           <div className="border-2 border-dashed border-gray-500 rounded-lg p-4">
             <PCBViewer />
           </div>
