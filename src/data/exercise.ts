@@ -34,7 +34,8 @@ export interface Exercise {
 // ===================================================================================
 
 export const exerciseData: Exercise = {
-  pcbImage: '/images/pcb.jpg',
+  //pcbImage: '/images/pcb.jpg',
+  pcbImage: '/images/pcb_v2.jpg',
   initialFlag: 'flag{????????????????????}',
 
   // L'ordine degli oggetti in questo array definisce l'ordine degli step
