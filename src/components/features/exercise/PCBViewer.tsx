@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import Multimeter from './Multimeter';
 
-const LENS_RADIUS = 50;
+const LENS_RADIUS = 120;
 const ZOOM_LEVEL = 2.5;
 const SNAP_RADIUS = 15;
 
