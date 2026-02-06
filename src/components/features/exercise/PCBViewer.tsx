@@ -6,16 +6,10 @@ import { useRef, useEffect, useState, useLayoutEffect } from 'react';
 import { exerciseData } from '@/data/exercise';
 import { useExerciseStore } from '@/store/exerciseStore';
 import { cn } from '@/lib/utils';
-import { Wrench, XCircle } from 'lucide-react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-} from '@/components/ui/alert-dialog';
+import { XCircle } from 'lucide-react';
 import Multimeter from './Multimeter';
+import UartProbesAdapter, { WIRE_COLORS } from './UartProbesAdapter';
+import type { AdapterPin } from '@/store/exerciseStore';
 
 const LENS_RADIUS = 120;
 const ZOOM_LEVEL = 2.5;
@@ -28,12 +22,15 @@ const PCBViewer = () => {
     measuredComponentId, measureComponent, clearMeasurement,
     multimeterMode, activeProbe, probe1, probe2, snapTarget,
     setSnapTarget, hookProbe, unhookProbe,
+    uartConnections, activeAdapterPin, uartSnapTarget,
+    setUartSnapTarget, hookUartProbe, unhookUartProbe, uartConnected,
   } = useExerciseStore();
 
   const pcbContainerRef = useRef<HTMLDivElement>(null);
   const [imageUrl, setImageUrl] = useState('');
   const [containerDims, setContainerDims] = useState({ width: 0, height: 0 });
   const [multimeterPosition, setMultimeterPosition] = useState<{ x: number; y: number } | null>(null);
+  const [adapterPosition, setAdapterPosition] = useState<{ x: number; y: number } | null>(null);
   const [bounds, setBounds] = useState<DOMRect | null>(null);
   
   // --- MODIFICA 1: Stato per la posizione iniziale ---
@@ -76,6 +73,7 @@ const PCBViewer = () => {
 
   const handleContainerClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (activeTool === 'multimeter' && snapTarget) hookProbe();
+    if (activeTool === 'probes' && uartSnapTarget) hookUartProbe();
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -102,11 +100,31 @@ const PCBViewer = () => {
     } else if (snapTarget) {
       setSnapTarget(null);
     }
+    if (activeTool === 'probes' && activeAdapterPin) {
+      updateMousePosition({ x: mouseX, y: mouseY });
+      let closestPin: string | null = null;
+      let minDistance = SNAP_RADIUS;
+      exerciseData.uartPins.forEach(pin => {
+        if (pin.role === 'vcc') return; // VCC non collegabile
+        const [left, top, width, height] = pin.coords;
+        const pinX = (left + width / 2) * containerDims.width / 100;
+        const pinY = (top + height / 2) * containerDims.height / 100;
+        const distance = Math.sqrt(Math.pow(mouseX - pinX, 2) + Math.pow(mouseY - pinY, 2));
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestPin = pin.id;
+        }
+      });
+      if (uartSnapTarget !== closestPin) setUartSnapTarget(closestPin);
+    } else if (activeTool === 'probes' && uartSnapTarget) {
+      setUartSnapTarget(null);
+    }
   };
 
   const handleMouseLeave = () => {
     updateMousePosition(null);
     setSnapTarget(null);
+    setUartSnapTarget(null);
   };
   
   const getPinPosition = (pinId: string | null) => {
@@ -149,17 +167,47 @@ const PCBViewer = () => {
     return `M ${start.x} ${start.y} Q ${cx} ${cy} ${end.x} ${end.y}`;
   };
 
+  const getUartPinPosition = (pinId: string | null) => {
+    if (!pinId || containerDims.width === 0) return null;
+    const pin = exerciseData.uartPins.find(p => p.id === pinId);
+    if (!pin) return null;
+    const [left, top, width, height] = pin.coords;
+    return { x: (left + width / 2) * containerDims.width / 100, y: (top + height / 2) * containerDims.height / 100 };
+  };
+
+  const getUartWireOrigin = (adapterPin: AdapterPin) => {
+    const currentPos = adapterPosition || initialMultimeterPos; // fallback alla stessa area
+    if (!currentPos || !pcbContainerRef.current) return null;
+    const pcbRect = pcbContainerRef.current.getBoundingClientRect();
+    const relativeX = currentPos.x - pcbRect.left;
+    const relativeY = currentPos.y - pcbRect.top;
+    const offsets: Record<AdapterPin, { x: number; y: number }> = {
+      'adapter-tx':  { x: 100, y: 150 },
+      'adapter-rx':  { x: 160, y: 150 },
+      'adapter-gnd': { x: 220, y: 150 },
+    };
+    const o = offsets[adapterPin];
+    return { x: relativeX + o.x, y: relativeY + o.y };
+  };
+
+  let activeUartProbePos = mousePosition;
+  if (uartSnapTarget && activeAdapterPin) {
+    const snapPos = getUartPinPosition(uartSnapTarget);
+    if (snapPos) activeUartProbePos = snapPos;
+  }
+
   return (
     <div
       ref={pcbContainerRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onClick={handleContainerClick}
-      className={cn( 'relative', activeTool === 'magnifier' ? 'cursor-none' : '', activeTool === 'multimeter' && activeProbe ? 'cursor-none' : '' )}
+      className={cn( 'relative', activeTool === 'magnifier' ? 'cursor-none' : '', activeTool === 'multimeter' && activeProbe ? 'cursor-none' : '', activeTool === 'probes' && activeAdapterPin ? 'cursor-none' : '' )}
     >
       <Image src={exerciseData.pcbImage} alt="Vista PCB" width={1024} height={768} priority className="h-auto w-full block rounded-lg" draggable={false}/>
       
       {activeTool === 'multimeter' && <Multimeter onPositionChange={setMultimeterPosition} bounds={bounds} />}
+      {activeTool === 'probes' && <UartProbesAdapter onPositionChange={setAdapterPosition} bounds={bounds} />}
 
       <div className="absolute inset-0 pointer-events-none z-10">
         {activeTool === 'multimeter' && (
@@ -188,6 +236,24 @@ const PCBViewer = () => {
 
             </svg>
         )}
+        {activeTool === 'probes' && (
+          <svg width="100%" height="100%" className="absolute inset-0" style={{ filter: 'drop-shadow(2px 2px 2px rgba(0,0,0,0.4))' }}>
+            {uartConnections.map(conn => {
+              const wireOrigin = getUartWireOrigin(conn.adapterPin);
+              const color = WIRE_COLORS[conn.adapterPin];
+
+              if (conn.adapterPin === activeAdapterPin) {
+                const endPos = uartSnapTarget ? getUartPinPosition(uartSnapTarget) : mousePosition;
+                return <path key={conn.adapterPin} d={getCurvePath(wireOrigin, endPos)} stroke={color} strokeWidth="3" fill="none" strokeDasharray="8,4" opacity="0.7" />;
+              }
+              if (conn.pcbPinId) {
+                const pinPos = getUartPinPosition(conn.pcbPinId);
+                return <path key={conn.adapterPin} d={getCurvePath(wireOrigin, pinPos)} stroke={color} strokeWidth="3" fill="none" />;
+              }
+              return null;
+            })}
+          </svg>
+        )}
         {activeTool === 'magnifier' && mousePosition && imageUrl && containerDims.width > 0 && <div className="absolute rounded-full border-4 border-blue-500 shadow-lg" style={{ left: mousePosition.x, top: mousePosition.y, transform: 'translate(-50%, -50%)', width: LENS_RADIUS * 2, height: LENS_RADIUS * 2, backgroundImage: `url(${imageUrl})`, backgroundSize: `${containerDims.width * ZOOM_LEVEL}px ${containerDims.height * ZOOM_LEVEL}px`, backgroundPosition: `-${mousePosition.x * ZOOM_LEVEL - LENS_RADIUS}px -${mousePosition.y * ZOOM_LEVEL - LENS_RADIUS}px`, backgroundRepeat: 'no-repeat'}}/>}
       </div>
 
@@ -204,6 +270,38 @@ const PCBViewer = () => {
             </div>
             {activeProbe && activeProbePos && <div className="absolute pointer-events-none z-20" style={{ left: activeProbePos.x - 12, top: activeProbePos.y - 12}}><div className={cn("w-6 h-6 rounded-full border-2 bg-white/20 animate-probe-pulse", activeProbe === 'first' ? 'border-red-500' : 'border-black')} /></div>}
             {exerciseData.pins.map(pin => <div key={pin.id} className={cn('absolute border border-dashed pointer-events-auto transition-colors', snapTarget === pin.id ? 'border-yellow-400 bg-yellow-400/30 border-solid' : 'border-cyan-400/30')} style={{ left: `${pin.coords[0]}%`, top: `${pin.coords[1]}%`, width: `${pin.coords[2]}%`, height: `${pin.coords[3]}%`}}/>)}
+          </>
+        )}
+        {activeTool === 'probes' && (
+          <>
+            {/* Pin UART sulla PCB con etichette */}
+            {exerciseData.uartPins.map(pin => {
+              if (pin.role === 'vcc') return null; // VCC non collegabile
+              return (
+                <div key={pin.id} className={cn('absolute border border-dashed pointer-events-auto transition-colors', uartSnapTarget === pin.id ? 'border-yellow-400 bg-yellow-400/30 border-solid' : 'border-cyan-400/50')} style={{ left: `${pin.coords[0]}%`, top: `${pin.coords[1]}%`, width: `${pin.coords[2]}%`, height: `${pin.coords[3]}%` }}>
+                  <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-xs text-cyan-300 whitespace-nowrap bg-black/70 px-1 rounded select-none">{pin.label}</span>
+                </div>
+              );
+            })}
+            {/* Pallini di connessione sui pin PCB */}
+            {uartConnections.filter(c => c.pcbPinId).map(conn => {
+              const pos = getUartPinPosition(conn.pcbPinId);
+              if (!pos) return null;
+              return (
+                <div key={conn.adapterPin} className="group" style={{ position: 'absolute', left: pos.x - 10, top: pos.y - 10, zIndex: 20 }}>
+                  <div className="w-5 h-5 rounded-full border-2 border-white/50 shadow-md" style={{ backgroundColor: WIRE_COLORS[conn.adapterPin] }} />
+                  <div className="absolute -inset-2 pointer-events-auto cursor-pointer" onClick={(e) => { e.stopPropagation(); unhookUartProbe(conn.adapterPin); }}>
+                    <XCircle size={14} className="text-white bg-red-600 rounded-full absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                </div>
+              );
+            })}
+            {/* Cursore attivo durante il drag */}
+            {activeAdapterPin && activeUartProbePos && (
+              <div className="absolute pointer-events-none z-20" style={{ left: activeUartProbePos.x - 10, top: activeUartProbePos.y - 10 }}>
+                <div className="w-5 h-5 rounded-full border-2 bg-white/20 animate-probe-pulse" style={{ borderColor: WIRE_COLORS[activeAdapterPin] }} />
+              </div>
+            )}
           </>
         )}
         {activeTool === 'pointer' && exerciseData.components.map((component) => {

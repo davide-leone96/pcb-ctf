@@ -7,7 +7,7 @@ interface FlagDisplayProps {
 const FlagDisplay = ({ flag }: FlagDisplayProps) => {
   return (
     <div className="flex items-center rounded-lg bg-black p-4 font-mono text-sm text-green-400 h-full">
-      <p>
+      <p className="break-all">
         <span className="text-gray-500">{'> '}</span>
         {flag}
       </p>

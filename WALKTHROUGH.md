@@ -7,17 +7,25 @@ flag{b00t_r00t_h4sh_l34k_1nj3ct_sh3ll}
 
 Il flag e' composto da 6 parti, ognuna scoperta completando uno step del penetration test sul router TP-Link WR841N.
 
+Il terminale ha **due tab**:
+- **UART Console** (verde) - connessione seriale al router, per esplorare il dispositivo
+- **Local Machine** (blu) - macchina Kali locale, per analisi offline (hashcat, john, netcat)
+
+La flag viene visualizzata in tempo reale nel pannello in alto a destra.
+
 ---
 
 ## Prerequisiti
 
 1. Apri il terminale cliccando sull'icona **Terminal** nella sidebar sinistra
-2. Il terminale simulera' una connessione UART al router a 115200 baud
+2. Il tab **UART Console** si attivera' automaticamente con la connessione UART a 115200 baud
 3. La sequenza di boot partira' automaticamente
 
 ---
 
 ## STEP 1: b00t - U-Boot Bootargs Inconsistency
+
+**Tab:** UART Console
 
 **Obiettivo:** Scoprire l'inconsistenza nelle variabili di boot di U-Boot.
 
@@ -39,6 +47,8 @@ Il flag e' composto da 6 parti, ognuna scoperta completando uno step del penetra
 
 ## STEP 2: r00t - Root Shell Access
 
+**Tab:** UART Console
+
 **Obiettivo:** Ottenere accesso root al sistema.
 
 1. Dopo il boot del kernel, apparira' il prompt di login: `(none) login:`
@@ -51,6 +61,7 @@ Il flag e' composto da 6 parti, ognuna scoperta completando uno step del penetra
    sohoadmin
    ```
 4. Login effettuato! Accesso root ottenuto su BusyBox v1.01
+5. Il prompt mostrera' la directory corrente: `/ # `
 
 **Flag part: `r00t`**
 
@@ -58,26 +69,37 @@ Il flag e' composto da 6 parti, ognuna scoperta completando uno step del penetra
 
 ## STEP 3: h4sh - Password Hash Cracking
 
-**Obiettivo:** Trovare e crackare l'hash della password nel file shadow.
+**Tab:** UART Console + Local Machine
 
+**Obiettivo:** Trovare l'hash della password e crackarlo sulla macchina locale.
+
+### Fase 1 - Trovare l'hash (UART Console)
 1. Leggi il file shadow:
    ```
    cat /etc/shadow
    ```
 2. Vedrai l'hash MD5-crypt: `$1$GTN.gpri$DlSyKvZKMR9A9Uj9e9wR3/`
-3. Utilizza hashcat per crackare l'hash:
+3. Annota l'hash
+
+### Fase 2 - Crackare l'hash (Local Machine)
+4. Passa al tab **Local Machine**
+5. Usa hashcat per crackare l'hash:
    ```
-   hashcat $1$GTN.gpri$DlSyKvZKMR9A9Uj9e9wR3/ /tmp/wordlist
+   hashcat $1$GTN.gpri$DlSyKvZKMR9A9Uj9e9wR3/ /usr/share/wordlists/rockyou.txt
    ```
-4. Il risultato rivela la password: `sohoadmin` (hash MD5-crypt con salt `GTN.gpri`)
+   Oppure usa John the Ripper:
+   ```
+   john shadow.txt
+   ```
+6. Il risultato rivela la password: `sohoadmin` (hash MD5-crypt con salt `GTN.gpri`)
 
 **Flag part: `h4sh`**
-
-> **Nota:** Anche il solo `cat /etc/shadow` e' sufficiente per sbloccare questa flag part, poiche' rivela l'hash vulnerabile.
 
 ---
 
 ## STEP 4: l34k - Config Partition Credential Leak
+
+**Tab:** UART Console
 
 **Obiettivo:** Estrarre credenziali dalla partizione di configurazione.
 
@@ -105,6 +127,8 @@ Il flag e' composto da 6 parti, ognuna scoperta completando uno step del penetra
 
 ## STEP 5: 1nj3ct - CVE-2023-33538 Command Injection
 
+**Tab:** UART Console
+
 **Obiettivo:** Scoprire la vulnerabilita' di command injection nel web server httpd.
 
 1. Verifica che httpd sia in esecuzione:
@@ -130,6 +154,8 @@ Il flag e' composto da 6 parti, ognuna scoperta completando uno step del penetra
 
 ## STEP 6: sh3ll - Backdoor Reverse Shell
 
+**Tab:** UART Console
+
 **Obiettivo:** Scoprire la backdoor reverse shell nascosta nel firmware.
 
 1. Esplora la directory `/usr/bin`:
@@ -147,10 +173,10 @@ Il flag e' composto da 6 parti, ognuna scoperta completando uno step del penetra
    strings /usr/bin/backdoorTest
    ```
 6. Troverai:
-   - `socket`, `connect`, `dup2`, `execl` → pattern tipico di una reverse shell
-   - `/bin/sh` → shell da eseguire
-   - `192.168.0.100` → IP dell'attaccante
-   - `4444` → porta di callback
+   - `socket`, `connect`, `dup2`, `execl` - pattern tipico di una reverse shell
+   - `/bin/sh` - shell da eseguire
+   - `192.168.0.100` - IP dell'attaccante
+   - `4444` - porta di callback
 7. Controlla anche lo script di avvio:
    ```
    cat /etc/rc.d/rcS
@@ -159,18 +185,20 @@ Il flag e' composto da 6 parti, ognuna scoperta completando uno step del penetra
 
 **Flag part: `sh3ll`**
 
+> **Bonus (Local Machine):** Puoi verificare la reverse shell con netcat: `nc -lvp 4444`
+
 ---
 
 ## Riepilogo Flag
 
-| # | Flag Part | Comando Chiave | Vulnerabilita' |
-|---|-----------|---------------|----------------|
-| 1 | `b00t`    | `printenv` (in U-Boot) | Bootargs inconsistency jffs2/squashfs |
-| 2 | `r00t`    | Login `root:sohoadmin` | Credenziali di default |
-| 3 | `h4sh`    | `cat /etc/shadow` + `hashcat` | Hash MD5-crypt debole |
-| 4 | `l34k`    | `strings /dev/mtdblock3` | Credenziali in chiaro nella config |
-| 5 | `1nj3ct`  | `strings /usr/bin/httpd` | CVE-2023-33538 command injection |
-| 6 | `sh3ll`   | `strings /usr/bin/backdoorTest` | Backdoor reverse shell supply chain |
+| # | Flag Part | Tab | Comando Chiave | Vulnerabilita' |
+|---|-----------|-----|---------------|----------------|
+| 1 | `b00t`    | UART | `printenv` (in U-Boot) | Bootargs inconsistency jffs2/squashfs |
+| 2 | `r00t`    | UART | Login `root:sohoadmin` | Credenziali di default |
+| 3 | `h4sh`    | Local | `hashcat <hash> <wordlist>` | Hash MD5-crypt debole |
+| 4 | `l34k`    | UART | `strings /dev/mtdblock3` | Credenziali in chiaro nella config |
+| 5 | `1nj3ct`  | UART | `strings /usr/bin/httpd` | CVE-2023-33538 command injection |
+| 6 | `sh3ll`   | UART | `strings /usr/bin/backdoorTest` | Backdoor reverse shell supply chain |
 
 ## Flag Completo
 ```
@@ -180,6 +208,8 @@ flag{b00t_r00t_h4sh_l34k_1nj3ct_sh3ll}
 ---
 
 ## Comandi Utili
+
+### UART Console (router)
 
 | Comando | Descrizione |
 |---------|-------------|
@@ -192,8 +222,18 @@ flag{b00t_r00t_h4sh_l34k_1nj3ct_sh3ll}
 | `find <path> -name <pattern>` | Cerca file per nome |
 | `ps` | Lista processi |
 | `mount` | Mostra filesystem montati |
-| `hashcat <hash> <wordlist>` | Crack hash |
 | `cmd1 \| grep <pattern>` | Filtra output con pipe |
 | `uname -a` | Info sistema |
 | `ifconfig` | Info interfacce di rete |
+| `help` | Lista comandi disponibili |
+
+### Local Machine (Kali)
+
+| Comando | Descrizione |
+|---------|-------------|
+| `hashcat <hash> <wordlist>` | Crack hash password |
+| `john <hashfile>` | John the Ripper cracker |
+| `nc -lvp <port>` | Netcat listener |
+| `md5sum <hash>` | Reverse lookup MD5 |
+| `ls, cd, pwd, cat` | Navigazione filesystem |
 | `help` | Lista comandi disponibili |
