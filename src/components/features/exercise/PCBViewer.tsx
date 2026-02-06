@@ -2,7 +2,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useRef, useEffect, useState, useLayoutEffect } from 'react';
+import { useRef, useState, useLayoutEffect } from 'react';
 import { exerciseData } from '@/data/exercise';
 import { useExerciseStore } from '@/store/exerciseStore';
 import { cn } from '@/lib/utils';
@@ -32,17 +32,6 @@ const PCBViewer = () => {
   const [multimeterPosition, setMultimeterPosition] = useState<{ x: number; y: number } | null>(null);
   const [adapterPosition, setAdapterPosition] = useState<{ x: number; y: number } | null>(null);
   const [bounds, setBounds] = useState<DOMRect | null>(null);
-  
-  // --- MODIFICA 1: Stato per la posizione iniziale ---
-  const [initialMultimeterPos, setInitialMultimeterPos] = useState<{ x: number, y: number } | null>(null);
-  const [, setScrollTick] = useState(0);
-
-  // Force re-render on scroll so cable positions recalculate via getBoundingClientRect
-  useEffect(() => {
-    const handleScroll = () => setScrollTick(prev => prev + 1);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   useLayoutEffect(() => {
     const pcbElement = pcbContainerRef.current?.parentElement;
@@ -53,16 +42,8 @@ const PCBViewer = () => {
           width: pcbContainerRef.current.offsetWidth,
           height: pcbContainerRef.current.offsetHeight,
         });
-        
-        // --- MODIFICA 2: Calcola la posizione iniziale qui ---
         const currentBounds = pcbElement.getBoundingClientRect();
         setBounds(currentBounds);
-        const multimeterWidth = 256; // 64 * 4 (w-64)
-        const padding = 16;
-        setInitialMultimeterPos({
-            x: currentBounds.right - multimeterWidth - padding,
-            y: currentBounds.top + padding,
-        });
       }
     };
     setImageUrl(window.location.origin + exerciseData.pcbImage);
@@ -144,16 +125,10 @@ const PCBViewer = () => {
   }
   
   const getWireOrigin = (probeNumber: 'first' | 'second') => {
-    // --- MODIFICA 3: Usa la posizione trascinata se esiste, altrimenti quella iniziale ---
-    const currentMultimeterPos = multimeterPosition || initialMultimeterPos;
-    if (!currentMultimeterPos || !pcbContainerRef.current) return null;
-
-    const pcbRect = pcbContainerRef.current.getBoundingClientRect();
-    const relativeX = currentMultimeterPos.x - pcbRect.left;
-    const relativeY = currentMultimeterPos.y - pcbRect.top;
+    if (!multimeterPosition) return null;
     const offsetX = probeNumber === 'first' ? 30 : 220;
     const offsetY = 120;
-    return { x: relativeX + offsetX, y: relativeY + offsetY };
+    return { x: multimeterPosition.x + offsetX, y: multimeterPosition.y + offsetY };
   };
 
   const wireOrigin1 = getWireOrigin('first');
@@ -176,18 +151,14 @@ const PCBViewer = () => {
   };
 
   const getUartWireOrigin = (adapterPin: AdapterPin) => {
-    const currentPos = adapterPosition || initialMultimeterPos; // fallback alla stessa area
-    if (!currentPos || !pcbContainerRef.current) return null;
-    const pcbRect = pcbContainerRef.current.getBoundingClientRect();
-    const relativeX = currentPos.x - pcbRect.left;
-    const relativeY = currentPos.y - pcbRect.top;
+    if (!adapterPosition) return null;
     const offsets: Record<AdapterPin, { x: number; y: number }> = {
       'adapter-tx':  { x: 100, y: 150 },
       'adapter-rx':  { x: 160, y: 150 },
       'adapter-gnd': { x: 220, y: 150 },
     };
     const o = offsets[adapterPin];
-    return { x: relativeX + o.x, y: relativeY + o.y };
+    return { x: adapterPosition.x + o.x, y: adapterPosition.y + o.y };
   };
 
   let activeUartProbePos = mousePosition;
@@ -195,6 +166,9 @@ const PCBViewer = () => {
     const snapPos = getUartPinPosition(uartSnapTarget);
     if (snapPos) activeUartProbePos = snapPos;
   }
+
+  // L'overlay UART (adapter, cavi, pallini) è visibile sia in modalità probes che terminal
+  const showUartOverlay = activeTool === 'probes' || (activeTool === 'terminal' && uartConnected);
 
   return (
     <div
@@ -207,7 +181,7 @@ const PCBViewer = () => {
       <Image src={exerciseData.pcbImage} alt="Vista PCB" width={1024} height={768} priority className="h-auto w-full block rounded-lg" draggable={false}/>
       
       {activeTool === 'multimeter' && <Multimeter onPositionChange={setMultimeterPosition} bounds={bounds} />}
-      {activeTool === 'probes' && <UartProbesAdapter onPositionChange={setAdapterPosition} bounds={bounds} />}
+      {showUartOverlay && <UartProbesAdapter onPositionChange={setAdapterPosition} bounds={bounds} readOnly={activeTool !== 'probes'} />}
 
       <div className="absolute inset-0 pointer-events-none z-10">
         {activeTool === 'multimeter' && (
@@ -236,7 +210,7 @@ const PCBViewer = () => {
 
             </svg>
         )}
-        {activeTool === 'probes' && (
+        {showUartOverlay && (
           <svg width="100%" height="100%" className="absolute inset-0" style={{ filter: 'drop-shadow(2px 2px 2px rgba(0,0,0,0.4))' }}>
             {uartConnections.map(conn => {
               const wireOrigin = getUartWireOrigin(conn.adapterPin);
@@ -272,7 +246,7 @@ const PCBViewer = () => {
             {exerciseData.pins.map(pin => <div key={pin.id} className={cn('absolute border border-dashed pointer-events-auto transition-colors', snapTarget === pin.id ? 'border-yellow-400 bg-yellow-400/30 border-solid' : 'border-cyan-400/30')} style={{ left: `${pin.coords[0]}%`, top: `${pin.coords[1]}%`, width: `${pin.coords[2]}%`, height: `${pin.coords[3]}%`}}/>)}
           </>
         )}
-        {activeTool === 'probes' && (
+        {showUartOverlay && (
           <>
             {/* Pin UART sulla PCB con etichette */}
             {exerciseData.uartPins.map(pin => {
@@ -290,14 +264,16 @@ const PCBViewer = () => {
               return (
                 <div key={conn.adapterPin} className="group" style={{ position: 'absolute', left: pos.x - 10, top: pos.y - 10, zIndex: 20 }}>
                   <div className="w-5 h-5 rounded-full border-2 border-white/50 shadow-md" style={{ backgroundColor: WIRE_COLORS[conn.adapterPin] }} />
-                  <div className="absolute -inset-2 pointer-events-auto cursor-pointer" onClick={(e) => { e.stopPropagation(); unhookUartProbe(conn.adapterPin); }}>
-                    <XCircle size={14} className="text-white bg-red-600 rounded-full absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </div>
+                  {activeTool === 'probes' && (
+                    <div className="absolute -inset-2 pointer-events-auto cursor-pointer" onClick={(e) => { e.stopPropagation(); unhookUartProbe(conn.adapterPin); }}>
+                      <XCircle size={14} className="text-white bg-red-600 rounded-full absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                  )}
                 </div>
               );
             })}
-            {/* Cursore attivo durante il drag */}
-            {activeAdapterPin && activeUartProbePos && (
+            {/* Cursore attivo durante il drag (solo in modalità probes) */}
+            {activeTool === 'probes' && activeAdapterPin && activeUartProbePos && (
               <div className="absolute pointer-events-none z-20" style={{ left: activeUartProbePos.x - 10, top: activeUartProbePos.y - 10 }}>
                 <div className="w-5 h-5 rounded-full border-2 bg-white/20 animate-probe-pulse" style={{ borderColor: WIRE_COLORS[activeAdapterPin] }} />
               </div>

@@ -53,6 +53,10 @@ export default function Home() {
 
         </div>
       </div>
+      {/* Overlay di blocco: disabilita sidebar e PCB quando il terminale è aperto */}
+      {activeTool === 'terminal' && (
+        <div className="fixed inset-x-0 top-0 bottom-[40%] z-35 bg-black/10" />
+      )}
       {activeTool === 'terminal' && uartConnected && <Terminal />}
       {activeTool === 'terminal' && !uartConnected && (
         <div className="fixed bottom-0 left-0 right-0 h-2/5 bg-black/95 backdrop-blur-sm z-40 text-white font-mono text-sm flex items-center justify-center border-t border-red-900/50">

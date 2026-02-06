@@ -41,11 +41,14 @@ const Multimeter = ({ onPositionChange, bounds }: MultimeterProps) => {
     if (bounds && !position && multimeterRef.current) {
       const multimeterWidth = multimeterRef.current.offsetWidth;
       const padding = 16;
-      const initialX = bounds.right - multimeterWidth - padding;
-      const initialY = bounds.top + padding;
-      setPosition({ x: initialX, y: initialY });
+      // Posizione container-relative (angolo in alto a destra)
+      const initialX = bounds.width - multimeterWidth - padding;
+      const initialY = padding;
+      const newPos = { x: initialX, y: initialY };
+      setPosition(newPos);
+      onPositionChange(newPos);
     }
-  }, [bounds, position]);
+  }, [bounds, position, onPositionChange]);
 
   useEffect(() => {
     return () => { onPositionChange(null); };
@@ -53,11 +56,15 @@ const Multimeter = ({ onPositionChange, bounds }: MultimeterProps) => {
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging || !multimeterRef.current || !bounds) return;
-      const newX = e.clientX - offset.x;
-      const newY = e.clientY - offset.y;
-      const clampedX = Math.max(bounds.left, Math.min(newX, bounds.right - multimeterRef.current.offsetWidth));
-      const clampedY = Math.max(bounds.top, Math.min(newY, bounds.bottom - multimeterRef.current.offsetHeight));
+      if (!isDragging || !multimeterRef.current) return;
+      const container = multimeterRef.current.parentElement;
+      if (!container) return;
+      const containerRect = container.getBoundingClientRect();
+      // Converti coordinate viewport → container-relative
+      const newX = e.clientX - containerRect.left - offset.x;
+      const newY = e.clientY - containerRect.top - offset.y;
+      const clampedX = Math.max(0, Math.min(newX, containerRect.width - multimeterRef.current.offsetWidth));
+      const clampedY = Math.max(0, Math.min(newY, containerRect.height - multimeterRef.current.offsetHeight));
       const newPosition = { x: clampedX, y: clampedY };
       setPosition(newPosition);
       onPositionChange(newPosition);
@@ -71,7 +78,7 @@ const Multimeter = ({ onPositionChange, bounds }: MultimeterProps) => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, offset, onPositionChange, bounds]);
+  }, [isDragging, offset, onPositionChange]);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!multimeterRef.current) return;
@@ -88,7 +95,7 @@ const Multimeter = ({ onPositionChange, bounds }: MultimeterProps) => {
     <div
       ref={multimeterRef}
       onMouseDown={handleMouseDown}
-      className="fixed bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-600 rounded-lg p-3 w-64 text-white shadow-2xl pointer-events-auto z-30 cursor-move ring-1 ring-white/10"
+      className="absolute bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-600 rounded-lg p-3 w-64 text-white shadow-2xl pointer-events-auto z-30 cursor-move ring-1 ring-white/10"
       style={position ? { left: `${position.x}px`, top: `${position.y}px`, visibility: 'visible' } : { visibility: 'hidden' }}
     >
       <div className="bg-cyan-900/50 backdrop-blur-sm border border-cyan-700 text-right p-2 rounded-md mb-3 shadow-inner select-none">
