@@ -19,6 +19,15 @@ export interface MeasurementPin {
   coords: [number, number, number, number];
 }
 
+export type UartRole = 'tx' | 'rx' | 'gnd' | 'vcc';
+
+export interface UartPin {
+  id: string;
+  role: UartRole;
+  label: string;
+  coords: [number, number, number, number];
+}
+
 /**
  * Definisce la struttura dell'intero esercizio.
  */
@@ -26,6 +35,7 @@ export interface Exercise {
   pcbImage: string;
   components: HardwareComponent[];
   pins: MeasurementPin[];
+  uartPins: UartPin[];
   initialFlag: string;
 }
 
@@ -75,6 +85,12 @@ export const exerciseData: Exercise = {
     { id: 'pin-c48-1', valueV: 3.3, valueOhm: 0, coords: [60, 80, 1, 2] },
     { id: 'gnd-1', valueV: 0, valueOhm: 0, coords: [70, 85, 2, 2] },
     // ... altri pin
+  ],
+  uartPins: [
+    { id: 'uart-vcc', role: 'vcc', label: 'VCC (5V)',  coords: [58, 74.5, 1.5, 2.5] },
+    { id: 'uart-tx',  role: 'tx',  label: 'TX (3.3V)', coords: [62, 74.5, 1.5, 2.5] },
+    { id: 'uart-rx',  role: 'rx',  label: 'RX (3.3V)', coords: [60, 79.5, 1.5, 2.5] },
+    { id: 'uart-gnd', role: 'gnd', label: 'GND (0V)',  coords: [70, 84.5, 2, 2.5] },
   ],
 };
 
