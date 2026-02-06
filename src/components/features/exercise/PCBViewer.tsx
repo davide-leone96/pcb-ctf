@@ -38,6 +38,14 @@ const PCBViewer = () => {
   
   // --- MODIFICA 1: Stato per la posizione iniziale ---
   const [initialMultimeterPos, setInitialMultimeterPos] = useState<{ x: number, y: number } | null>(null);
+  const [, setScrollTick] = useState(0);
+
+  // Force re-render on scroll so cable positions recalculate via getBoundingClientRect
+  useEffect(() => {
+    const handleScroll = () => setScrollTick(prev => prev + 1);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useLayoutEffect(() => {
     const pcbElement = pcbContainerRef.current?.parentElement;
