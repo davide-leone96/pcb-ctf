@@ -456,3 +456,39 @@ export const FLAG_PARTS: FlagPart[] = [
 ];
 
 export const COMPLETE_FLAG = 'flag{b00t_r00t_h4sh_l34k_1nj3ct_sh3ll}';
+
+export function buildTerminalFlag(discoveries: string[]): string {
+  const parts = FLAG_PARTS.map(fp =>
+    discoveries.includes(fp.id) ? fp.part : '?'.repeat(fp.part.length)
+  );
+  return `flag{${parts.join('_')}}`;
+}
+
+// ============================================
+// LOCAL MACHINE (Kali) FILESYSTEM & COMMANDS
+// ============================================
+
+export const LOCAL_FS_DIRS: Record<string, string[]> = {
+  '/': ['home'],
+  '/home': ['kali'],
+  '/home/kali': ['ctf', '.bashrc'],
+  '/home/kali/ctf': ['hashes', 'dumps', 'notes.txt'],
+  '/home/kali/ctf/hashes': [],
+  '/home/kali/ctf/dumps': [],
+};
+
+export const LOCAL_FILE_CONTENTS: Record<string, string> = {
+  '/home/kali/.bashrc': `# ~/.bashrc
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+alias ll='ls -la'`,
+
+  '/home/kali/ctf/notes.txt': `# CTF Notes - TP-Link WR841N PT
+# Use the UART console tab to explore the device
+# Copy hashes and interesting data here for offline analysis
+#
+# Useful commands on this machine:
+#   hashcat <hash> <wordlist>  - crack password hashes
+#   john <hashfile>            - alternative hash cracker
+#   nc -lvp <port>             - listen for reverse shells
+#   md5sum -c <hash>           - check MD5 hashes`,
+};
