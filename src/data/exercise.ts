@@ -43,12 +43,12 @@ export interface Exercise {
 // ===                          DEFINIZIONE DELL'ESERCIZIO                         ===
 // ===================================================================================
 
-export const exerciseData: Exercise = {
-  //pcbImage: '/images/pcb.jpg',
+export const SETTINGS_STORAGE_KEY = 'pcb-ctf-exercise-config';
+
+const defaultExerciseData: Exercise = {
   pcbImage: '/images/pcb_v2.jpg',
   initialFlag: 'flag{????????????????????}',
 
-  // L'ordine degli oggetti in questo array definisce l'ordine degli step
   components: [
     {
       id: 'cpu',
@@ -57,7 +57,7 @@ export const exerciseData: Exercise = {
         'Identifica il componente principale del circuito, la CPU (Central Processing Unit). Solitamente è il chip più grande e di forma quadrata.',
       hint: 'Cerca il quadrato nero più grande al centro della scheda.',
       flagPart: 'STM32F4',
-      coords: [45, 40, 15, 20], // Queste coordinate sono indicative, da aggiustare!
+      coords: [45, 40, 15, 20],
     },
     {
       id: 'rom',
@@ -66,7 +66,7 @@ export const exerciseData: Exercise = {
         'Ora trova la memoria ROM. È un chip rettangolare, spesso con 8 pin per lato (4+4). Cerca vicino alla CPU.',
       hint: 'Guarda alla destra della CPU, c\'è un chip più piccolo con 8 piedini.',
       flagPart: '|75xx',
-      coords: [65, 48, 8, 4], // Queste coordinate sono indicative, da aggiustare!
+      coords: [65, 48, 8, 4],
     },
     {
       id: 'uart',
@@ -75,16 +75,14 @@ export const exerciseData: Exercise = {
         "Individua il connettore UART. È un gruppo di pin usato per la comunicazione seriale. Cerca un connettore con 3 o 4 pin, spesso etichettato con 'TX', 'RX', 'GND'.",
       hint: 'Controlla la parte inferiore destra della scheda per un piccolo connettore a 3 pin.',
       flagPart: '_UART_OK',
-      coords: [80, 85, 10, 5], // Queste coordinate sono indicative, da aggiustare!
+      coords: [80, 85, 10, 5],
     },
-    // Potremmo aggiungere altri componenti qui per estendere l'esercizio...
   ],
   pins: [
     { id: 'pin-r69-1', valueV: 5.0, valueOhm: 1000, coords: [58, 75, 1, 2] },
     { id: 'pin-r69-2', valueV: 3.3, valueOhm: 0, coords: [62, 75, 1, 2] },
     { id: 'pin-c48-1', valueV: 3.3, valueOhm: 0, coords: [60, 80, 1, 2] },
     { id: 'gnd-1', valueV: 0, valueOhm: 0, coords: [70, 85, 2, 2] },
-    // ... altri pin
   ],
   uartPins: [
     { id: 'uart-vcc', role: 'vcc', label: 'VCC (5V)',  coords: [58, 74.5, 1.5, 2.5] },
@@ -93,6 +91,59 @@ export const exerciseData: Exercise = {
     { id: 'uart-gnd', role: 'gnd', label: 'GND (0V)',  coords: [70, 84.5, 2, 2.5] },
   ],
 };
+
+/**
+ * Carica la configurazione da localStorage se presente,
+ * altrimenti usa i dati di default hardcoded.
+ */
+function loadExerciseData(): Exercise {
+  if (typeof window !== 'undefined') {
+    try {
+      const saved = localStorage.getItem(SETTINGS_STORAGE_KEY);
+      if (saved) return JSON.parse(saved) as Exercise;
+    } catch { /* fallback ai default */ }
+  }
+  return defaultExerciseData;
+}
+
+export const exerciseData: Exercise = loadExerciseData();
+
+// ===================================================================================
+// ===                        HELPER: ACCESSO UNIFICATO AI PIN                     ===
+// ===================================================================================
+
+const UART_ELECTRICAL: Record<UartRole, { valueV: number; valueOhm: number }> = {
+  vcc: { valueV: 5.0,  valueOhm: 0 },
+  tx:  { valueV: 3.3,  valueOhm: 50 },
+  rx:  { valueV: 3.3,  valueOhm: 10000 },
+  gnd: { valueV: 0,    valueOhm: 0 },
+};
+
+/** Restituisce tensione e resistenza per qualsiasi pin (measurement o UART). */
+export function getPinValues(pinId: string): { valueV: number; valueOhm: number } | null {
+  const mPin = exerciseData.pins.find(p => p.id === pinId);
+  if (mPin) return { valueV: mPin.valueV, valueOhm: mPin.valueOhm };
+  const uPin = exerciseData.uartPins.find(p => p.id === pinId);
+  if (uPin) return UART_ELECTRICAL[uPin.role];
+  return null;
+}
+
+/** Restituisce le coordinate per qualsiasi pin. */
+export function getPinCoords(pinId: string): [number, number, number, number] | null {
+  const mPin = exerciseData.pins.find(p => p.id === pinId);
+  if (mPin) return mPin.coords;
+  const uPin = exerciseData.uartPins.find(p => p.id === pinId);
+  if (uPin) return uPin.coords;
+  return null;
+}
+
+/** Tutti i pin combinati per iterazione (snap detection, overlay). */
+export function getAllPins(): { id: string; coords: [number, number, number, number]; isUart: boolean; role?: UartRole; label?: string }[] {
+  return [
+    ...exerciseData.pins.map(p => ({ id: p.id, coords: p.coords, isUart: false as const })),
+    ...exerciseData.uartPins.map(p => ({ id: p.id, coords: p.coords, isUart: true as const, role: p.role, label: p.label })),
+  ];
+}
 
 /*
 

@@ -3,7 +3,7 @@
 
 import Image from 'next/image';
 import { useRef, useState, useLayoutEffect } from 'react';
-import { exerciseData } from '@/data/exercise';
+import { exerciseData, getAllPins, getPinCoords } from '@/data/exercise';
 import { useExerciseStore } from '@/store/exerciseStore';
 import { cn } from '@/lib/utils';
 import { XCircle } from 'lucide-react';
@@ -17,10 +17,9 @@ const SNAP_RADIUS = 15;
 
 const PCBViewer = () => {
   const {
-    currentStep, foundComponents, selectComponent, isFinished,
+    selectComponent,
     activeTool, mousePosition, updateMousePosition,
-    measuredComponentId, measureComponent, clearMeasurement,
-    multimeterMode, activeProbe, probe1, probe2, snapTarget,
+    activeProbe, probe1, probe2, snapTarget,
     setSnapTarget, hookProbe, unhookProbe,
     uartConnections, activeAdapterPin, uartSnapTarget,
     setUartSnapTarget, hookUartProbe, unhookUartProbe, uartConnected,
@@ -52,9 +51,26 @@ const PCBViewer = () => {
     return () => window.removeEventListener('resize', updateDimensionsAndBounds);
   }, []);
 
-  const handleContainerClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleContainerClick = () => {
     if (activeTool === 'multimeter' && snapTarget) hookProbe();
     if (activeTool === 'probes' && uartSnapTarget) hookUartProbe();
+  };
+
+  // Snap detection unificata: cerca il pin più vicino tra TUTTI i pin (measurement + UART)
+  const findClosestPin = (mouseX: number, mouseY: number): string | null => {
+    let closestPin: string | null = null;
+    let minDistance = SNAP_RADIUS;
+    getAllPins().forEach(pin => {
+      const [left, top, width, height] = pin.coords;
+      const pinX = (left + width / 2) * containerDims.width / 100;
+      const pinY = (top + height / 2) * containerDims.height / 100;
+      const distance = Math.sqrt(Math.pow(mouseX - pinX, 2) + Math.pow(mouseY - pinY, 2));
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestPin = pin.id;
+      }
+    });
+    return closestPin;
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -65,38 +81,15 @@ const PCBViewer = () => {
     if (activeTool === 'magnifier') updateMousePosition({ x: mouseX, y: mouseY });
     if (activeTool === 'multimeter' && activeProbe) {
       updateMousePosition({ x: mouseX, y: mouseY });
-      let closestPin = null;
-      let minDistance = SNAP_RADIUS;
-      exerciseData.pins.forEach(pin => {
-        const [left, top, width, height] = pin.coords;
-        const pinX = (left + width / 2) * containerDims.width / 100;
-        const pinY = (top + height / 2) * containerDims.height / 100;
-        const distance = Math.sqrt(Math.pow(mouseX - pinX, 2) + Math.pow(mouseY - pinY, 2));
-        if (distance < minDistance) {
-          minDistance = distance;
-          closestPin = pin.id;
-        }
-      });
-      if (snapTarget !== closestPin) setSnapTarget(closestPin);
+      const closest = findClosestPin(mouseX, mouseY);
+      if (snapTarget !== closest) setSnapTarget(closest);
     } else if (snapTarget) {
       setSnapTarget(null);
     }
     if (activeTool === 'probes' && activeAdapterPin) {
       updateMousePosition({ x: mouseX, y: mouseY });
-      let closestPin: string | null = null;
-      let minDistance = SNAP_RADIUS;
-      exerciseData.uartPins.forEach(pin => {
-        if (pin.role === 'vcc') return; // VCC non collegabile
-        const [left, top, width, height] = pin.coords;
-        const pinX = (left + width / 2) * containerDims.width / 100;
-        const pinY = (top + height / 2) * containerDims.height / 100;
-        const distance = Math.sqrt(Math.pow(mouseX - pinX, 2) + Math.pow(mouseY - pinY, 2));
-        if (distance < minDistance) {
-          minDistance = distance;
-          closestPin = pin.id;
-        }
-      });
-      if (uartSnapTarget !== closestPin) setUartSnapTarget(closestPin);
+      const closest = findClosestPin(mouseX, mouseY);
+      if (uartSnapTarget !== closest) setUartSnapTarget(closest);
     } else if (activeTool === 'probes' && uartSnapTarget) {
       setUartSnapTarget(null);
     }
@@ -108,11 +101,12 @@ const PCBViewer = () => {
     setUartSnapTarget(null);
   };
   
+  // Posizione pixel di qualsiasi pin (measurement o UART)
   const getPinPosition = (pinId: string | null) => {
     if (!pinId || containerDims.width === 0) return null;
-    const pin = exerciseData.pins.find(p => p.id === pinId);
-    if (!pin) return null;
-    const [left, top, width, height] = pin.coords;
+    const coords = getPinCoords(pinId);
+    if (!coords) return null;
+    const [left, top, width, height] = coords;
     return { x: (left + width / 2) * containerDims.width / 100, y: (top + height / 2) * containerDims.height / 100 };
   };
   
@@ -133,21 +127,11 @@ const PCBViewer = () => {
 
   const wireOrigin1 = getWireOrigin('first');
   const wireOrigin2 = getWireOrigin('second');
-  const componentToFind = exerciseData.components[currentStep];
-
   const getCurvePath = (start: {x: number, y: number} | null, end: {x: number, y: number} | null) => {
     if (!start || !end) return "";
     const cx = (start.x + end.x) / 2;
     const cy = Math.max(start.y, end.y) + 60;
     return `M ${start.x} ${start.y} Q ${cx} ${cy} ${end.x} ${end.y}`;
-  };
-
-  const getUartPinPosition = (pinId: string | null) => {
-    if (!pinId || containerDims.width === 0) return null;
-    const pin = exerciseData.uartPins.find(p => p.id === pinId);
-    if (!pin) return null;
-    const [left, top, width, height] = pin.coords;
-    return { x: (left + width / 2) * containerDims.width / 100, y: (top + height / 2) * containerDims.height / 100 };
   };
 
   const getUartWireOrigin = (adapterPin: AdapterPin) => {
@@ -163,7 +147,7 @@ const PCBViewer = () => {
 
   let activeUartProbePos = mousePosition;
   if (uartSnapTarget && activeAdapterPin) {
-    const snapPos = getUartPinPosition(uartSnapTarget);
+    const snapPos = getPinPosition(uartSnapTarget);
     if (snapPos) activeUartProbePos = snapPos;
   }
 
@@ -217,11 +201,11 @@ const PCBViewer = () => {
               const color = WIRE_COLORS[conn.adapterPin];
 
               if (conn.adapterPin === activeAdapterPin) {
-                const endPos = uartSnapTarget ? getUartPinPosition(uartSnapTarget) : mousePosition;
+                const endPos = uartSnapTarget ? getPinPosition(uartSnapTarget) : mousePosition;
                 return <path key={conn.adapterPin} d={getCurvePath(wireOrigin, endPos)} stroke={color} strokeWidth="3" fill="none" strokeDasharray="8,4" opacity="0.7" />;
               }
               if (conn.pcbPinId) {
-                const pinPos = getUartPinPosition(conn.pcbPinId);
+                const pinPos = getPinPosition(conn.pcbPinId);
                 return <path key={conn.adapterPin} d={getCurvePath(wireOrigin, pinPos)} stroke={color} strokeWidth="3" fill="none" />;
               }
               return null;
@@ -232,6 +216,7 @@ const PCBViewer = () => {
       </div>
 
       <div className="absolute inset-0">
+        {/* Overlay pin unificato per il multimetro: mostra TUTTI i pin */}
         {activeTool === 'multimeter' && (
           <>
             <div className="group" style={probe1Pos ? { position: 'absolute', left: probe1Pos.x - 12, top: probe1Pos.y - 12, zIndex: 20 } : { display: 'none' }}>
@@ -243,23 +228,28 @@ const PCBViewer = () => {
               <div className="absolute -inset-2 pointer-events-auto cursor-pointer" onClick={(e) => {e.stopPropagation(); unhookProbe('second');}}><XCircle size={16} className="text-white bg-gray-700 rounded-full absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity"/></div>
             </div>
             {activeProbe && activeProbePos && <div className="absolute pointer-events-none z-20" style={{ left: activeProbePos.x - 12, top: activeProbePos.y - 12}}><div className={cn("w-6 h-6 rounded-full border-2 bg-white/20 animate-probe-pulse", activeProbe === 'first' ? 'border-red-500' : 'border-black')} /></div>}
-            {exerciseData.pins.map(pin => <div key={pin.id} className={cn('absolute border border-dashed pointer-events-auto transition-colors', snapTarget === pin.id ? 'border-yellow-400 bg-yellow-400/30 border-solid' : 'border-cyan-400/30')} style={{ left: `${pin.coords[0]}%`, top: `${pin.coords[1]}%`, width: `${pin.coords[2]}%`, height: `${pin.coords[3]}%`}}/>)}
+            {getAllPins().map(pin => (
+              <div key={pin.id} className={cn('absolute border border-dashed pointer-events-auto transition-colors', snapTarget === pin.id ? 'border-yellow-400 bg-yellow-400/30 border-solid' : 'border-cyan-400/30')} style={{ left: `${pin.coords[0]}%`, top: `${pin.coords[1]}%`, width: `${pin.coords[2]}%`, height: `${pin.coords[3]}%`}}>
+                {pin.isUart && pin.label && (
+                  <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-xs text-cyan-300 whitespace-nowrap bg-black/70 px-1 rounded select-none">{pin.label}</span>
+                )}
+              </div>
+            ))}
           </>
         )}
+        {/* Overlay pin unificato per le sonde UART: mostra TUTTI i pin */}
         {showUartOverlay && (
           <>
-            {/* Pin UART sulla PCB con etichette */}
-            {exerciseData.uartPins.map(pin => {
-              if (pin.role === 'vcc') return null; // VCC non collegabile
-              return (
-                <div key={pin.id} className={cn('absolute border border-dashed pointer-events-auto transition-colors', uartSnapTarget === pin.id ? 'border-yellow-400 bg-yellow-400/30 border-solid' : 'border-cyan-400/50')} style={{ left: `${pin.coords[0]}%`, top: `${pin.coords[1]}%`, width: `${pin.coords[2]}%`, height: `${pin.coords[3]}%` }}>
+            {getAllPins().map(pin => (
+              <div key={pin.id} className={cn('absolute border border-dashed pointer-events-auto transition-colors', uartSnapTarget === pin.id ? 'border-yellow-400 bg-yellow-400/30 border-solid' : 'border-cyan-400/50')} style={{ left: `${pin.coords[0]}%`, top: `${pin.coords[1]}%`, width: `${pin.coords[2]}%`, height: `${pin.coords[3]}%` }}>
+                {pin.isUart && pin.label && (
                   <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-xs text-cyan-300 whitespace-nowrap bg-black/70 px-1 rounded select-none">{pin.label}</span>
-                </div>
-              );
-            })}
+                )}
+              </div>
+            ))}
             {/* Pallini di connessione sui pin PCB */}
             {uartConnections.filter(c => c.pcbPinId).map(conn => {
-              const pos = getUartPinPosition(conn.pcbPinId);
+              const pos = getPinPosition(conn.pcbPinId);
               if (!pos) return null;
               return (
                 <div key={conn.adapterPin} className="group" style={{ position: 'absolute', left: pos.x - 10, top: pos.y - 10, zIndex: 20 }}>
@@ -280,15 +270,10 @@ const PCBViewer = () => {
             )}
           </>
         )}
+        {/* Hotspot componenti: invisibili, solo click handler */}
         {activeTool === 'pointer' && exerciseData.components.map((component) => {
           const [left, top, width, height] = component.coords;
-          const isFound = foundComponents.includes(component.id);
-          const isTarget = component.id === componentToFind?.id && !isFinished;
-          let hotspotClass = 'absolute transition-all duration-300 pointer-events-auto cursor-pointer';
-          if (isFound) hotspotClass += ' bg-green-500/30 border-2 border-green-400 rounded-md';
-          else if (isTarget) hotspotClass += ' bg-yellow-400/20 border-2 border-yellow-300 rounded-md animate-pulse';
-          else hotspotClass += ' hover:bg-white/10 rounded-md';
-          return <div key={component.id} onClick={(e) => { e.stopPropagation(); selectComponent(component.id); }} className={hotspotClass} style={{ left: `${left}%`, top: `${top}%`, width: `${width}%`, height: `${height}%`}}/>
+          return <div key={component.id} onClick={(e) => { e.stopPropagation(); selectComponent(component.id); }} className="absolute pointer-events-auto cursor-pointer rounded-md" style={{ left: `${left}%`, top: `${top}%`, width: `${width}%`, height: `${height}%`}}/>
         })}
       </div>
     </div>
