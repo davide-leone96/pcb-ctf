@@ -25,9 +25,9 @@ const ToolButton = ({ label, icon: Icon, isActive, onClick }: ToolButtonProps) =
           <button
             onClick={onClick}
             className={cn(
-              'flex h-12 w-12 items-center justify-center rounded-lg text-gray-400 transition-colors',
+              'flex h-12 w-12 items-center justify-center rounded-lg text-gray-400 transition-all',
               'hover:bg-gray-600 hover:text-white',
-              isActive ? 'bg-blue-600 text-white' : 'bg-gray-700'
+              isActive ? 'bg-blue-600 text-white ring-2 ring-blue-400 ring-offset-2 ring-offset-gray-800 scale-105' : 'bg-gray-700'
             )}
           >
             <Icon className="h-6 w-6" />
