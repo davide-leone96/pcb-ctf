@@ -56,11 +56,14 @@ const PCBViewer = () => {
     if (activeTool === 'probes' && uartSnapTarget) hookUartProbe();
   };
 
-  // Snap detection unificata: cerca il pin più vicino tra TUTTI i pin (measurement + UART)
-  const findClosestPin = (mouseX: number, mouseY: number): string | null => {
+  // Snap detection: cerca il pin più vicino in base al filter specificato
+  const findClosestPin = (mouseX: number, mouseY: number, filterType: 'all' | 'uart-only' = 'all'): string | null => {
     let closestPin: string | null = null;
     let minDistance = SNAP_RADIUS;
-    getAllPins().forEach(pin => {
+    const pinsToCheck = filterType === 'uart-only'
+      ? getAllPins().filter(pin => pin.isUart)
+      : getAllPins(); // 'all': cerca tra TUTTI i pin (measurement + UART)
+    pinsToCheck.forEach(pin => {
       const [left, top, width, height] = pin.coords;
       const pinX = (left + width / 2) * containerDims.width / 100;
       const pinY = (top + height / 2) * containerDims.height / 100;
@@ -81,14 +84,14 @@ const PCBViewer = () => {
     if (activeTool === 'magnifier') updateMousePosition({ x: mouseX, y: mouseY });
     if (activeTool === 'multimeter' && activeProbe) {
       updateMousePosition({ x: mouseX, y: mouseY });
-      const closest = findClosestPin(mouseX, mouseY);
+      const closest = findClosestPin(mouseX, mouseY, 'all'); // TUTTI i pin (measurement + UART)
       if (snapTarget !== closest) setSnapTarget(closest);
     } else if (snapTarget) {
       setSnapTarget(null);
     }
     if (activeTool === 'probes' && activeAdapterPin) {
       updateMousePosition({ x: mouseX, y: mouseY });
-      const closest = findClosestPin(mouseX, mouseY);
+      const closest = findClosestPin(mouseX, mouseY, 'all'); // TUTTI i pin (measurement + UART)
       if (uartSnapTarget !== closest) setUartSnapTarget(closest);
     } else if (activeTool === 'probes' && uartSnapTarget) {
       setUartSnapTarget(null);
@@ -216,7 +219,7 @@ const PCBViewer = () => {
       </div>
 
       <div className="absolute inset-0">
-        {/* Overlay pin unificato per il multimetro: mostra TUTTI i pin */}
+        {/* Overlay pin per il multimetro: mostra TUTTI i pin */}
         {activeTool === 'multimeter' && (
           <>
             <div className="group" style={probe1Pos ? { position: 'absolute', left: probe1Pos.x - 12, top: probe1Pos.y - 12, zIndex: 20 } : { display: 'none' }}>
@@ -229,24 +232,13 @@ const PCBViewer = () => {
             </div>
             {activeProbe && activeProbePos && <div className="absolute pointer-events-none z-20" style={{ left: activeProbePos.x - 12, top: activeProbePos.y - 12}}><div className={cn("w-6 h-6 rounded-full border-2 bg-white/20 animate-probe-pulse", activeProbe === 'first' ? 'border-red-500' : 'border-black')} /></div>}
             {getAllPins().map(pin => (
-              <div key={pin.id} className={cn('absolute border border-dashed pointer-events-auto transition-colors', snapTarget === pin.id ? 'border-yellow-400 bg-yellow-400/30 border-solid' : 'border-cyan-400/30')} style={{ left: `${pin.coords[0]}%`, top: `${pin.coords[1]}%`, width: `${pin.coords[2]}%`, height: `${pin.coords[3]}%`}}>
-                {pin.isUart && pin.label && (
-                  <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-xs text-cyan-300 whitespace-nowrap bg-black/70 px-1 rounded select-none">{pin.label}</span>
-                )}
-              </div>
+              <div key={pin.id} className={cn('absolute border border-dashed pointer-events-auto transition-colors', snapTarget === pin.id ? 'border-yellow-400 bg-yellow-400/30 border-solid' : 'border-cyan-400/30')} style={{ left: `${pin.coords[0]}%`, top: `${pin.coords[1]}%`, width: `${pin.coords[2]}%`, height: `${pin.coords[3]}%`}}/>
             ))}
           </>
         )}
-        {/* Overlay pin unificato per le sonde UART: mostra TUTTI i pin */}
+        {/* Overlay UART: mostra solo pallini di connessione, NO box pin */}
         {showUartOverlay && (
           <>
-            {getAllPins().map(pin => (
-              <div key={pin.id} className={cn('absolute border border-dashed pointer-events-auto transition-colors', uartSnapTarget === pin.id ? 'border-yellow-400 bg-yellow-400/30 border-solid' : 'border-cyan-400/50')} style={{ left: `${pin.coords[0]}%`, top: `${pin.coords[1]}%`, width: `${pin.coords[2]}%`, height: `${pin.coords[3]}%` }}>
-                {pin.isUart && pin.label && (
-                  <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-xs text-cyan-300 whitespace-nowrap bg-black/70 px-1 rounded select-none">{pin.label}</span>
-                )}
-              </div>
-            ))}
             {/* Pallini di connessione sui pin PCB */}
             {uartConnections.filter(c => c.pcbPinId).map(conn => {
               const pos = getPinPosition(conn.pcbPinId);

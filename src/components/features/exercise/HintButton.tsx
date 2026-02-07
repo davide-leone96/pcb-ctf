@@ -1,4 +1,5 @@
 // src/components/features/exercise/HintButton.tsx
+'use client';
 
 import {
   Dialog,
