@@ -15,8 +15,12 @@ interface ExerciseState {
   currentStep: number;
   foundComponents: string[];
   flag: string;
+  uartFlag: string;
   isFinished: boolean;
   activeTool: Tool;
+  multimeterUnlocked: boolean;
+  uartUnlocked: boolean;
+  terminalUnlocked: boolean;
   mousePosition: MousePosition | null;
   measuredComponentId: string | null;
   multimeterMode: MultimeterMode;
@@ -45,6 +49,7 @@ interface ExerciseActions {
   clearMeasurement: () => void;
   setMultimeterMode: (mode: MultimeterMode) => void;
   setSnapTarget: (pinId: string | null) => void;
+  selectProbe: (probeNumber: 'first' | 'second') => void;
   hookProbe: () => void;
   unhookProbe: (probeNumber: 'first' | 'second') => void;
   addTerminalDiscovery: (id: string) => void;
@@ -57,6 +62,8 @@ interface ExerciseActions {
   toggleLensVisible: () => void;
   toggleLensAnchor: () => void;
   setLensAnchorPosition: (position: MousePosition | null) => void;
+  validateFlag: (inputFlag: string, toolId: 'multimeter' | 'probes' | 'terminal') => boolean;
+  unlockTool: (toolId: 'multimeter' | 'probes' | 'terminal') => void;
 }
 
 type ExerciseStore = ExerciseState & ExerciseActions;
@@ -66,8 +73,12 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   currentStep: 0,
   foundComponents: [],
   flag: exerciseData.initialFlag,
+  uartFlag: '',
   isFinished: false,
   activeTool: 'pointer',
+  multimeterUnlocked: false,
+  uartUnlocked: false,
+  terminalUnlocked: false,
   mousePosition: null,
   measuredComponentId: null,
   multimeterMode: 'V',
@@ -138,13 +149,8 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
         probe2: { hookedTo: null },
         snapTarget: null,
       });
-    } else {
-      // Se invece si ATTIVA il multimetro, prepariamo il primo puntale
-      // (solo se non era già agganciato).
-      if (!get().probe1.hookedTo) {
-        set({ activeProbe: 'first' });
-      }
     }
+    // Quando si attiva il multimetro, l'utente deve cliccare sul puntale per selezionarlo
 
     // Pulisci lo stato transitorio delle sonde UART quando si cambia tool
     // (ma mantieni le connessioni e lo stato uartConnected)
@@ -159,24 +165,42 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   clearMeasurement: () => set({ measuredComponentId: null }),
   setMultimeterMode: (mode) => set({ multimeterMode: mode }),
   setSnapTarget: (pinId) => set({ snapTarget: pinId }),
-  
+
+  selectProbe: (probeNumber) => {
+    const { activeProbe, probe1, probe2 } = get();
+
+    // Se clicco lo stesso puntale già attivo, lo deseleziono
+    if (activeProbe === probeNumber) {
+      set({ activeProbe: null, snapTarget: null });
+      return;
+    }
+
+    // Se il puntale è già agganciato, sgancialo prima
+    if (probeNumber === 'first' && probe1.hookedTo) {
+      set({ probe1: { hookedTo: null }, probe2: { hookedTo: null }, activeProbe: probeNumber, snapTarget: null });
+    } else if (probeNumber === 'second' && probe2.hookedTo) {
+      set({ probe2: { hookedTo: null }, activeProbe: probeNumber, snapTarget: null });
+    } else {
+      // Altrimenti seleziona semplicemente il puntale
+      set({ activeProbe: probeNumber, snapTarget: null });
+    }
+  },
+
   unhookProbe: (probeNumber) => {
     if (probeNumber === 'first') {
       // Se sgancio il primo puntale (rosso), devo sganciare anche il secondo (nero)
-      // e rendere il primo di nuovo attivo.
-      set({ 
-        probe1: { hookedTo: null }, 
+      set({
+        probe1: { hookedTo: null },
         probe2: { hookedTo: null }, // Sgancia anche il nero
-        activeProbe: 'first', 
-        snapTarget: null 
+        activeProbe: null,
+        snapTarget: null
       });
     } else { // 'second'
       // Se sgancio solo il secondo (nero), il primo rimane agganciato
-      // e il secondo diventa attivo.
-      set({ 
-        probe2: { hookedTo: null }, 
-        activeProbe: 'second', 
-        snapTarget: null 
+      set({
+        probe2: { hookedTo: null },
+        activeProbe: null,
+        snapTarget: null
       });
     }
   },
@@ -202,9 +226,22 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   },
   
   addTerminalDiscovery: (id) => {
-    const { terminalDiscoveries } = get();
+    const { terminalDiscoveries, foundComponents, uartConnected } = get();
     if (!terminalDiscoveries.includes(id)) {
-      set({ terminalDiscoveries: [...terminalDiscoveries, id] });
+      const newDiscoveries = [...terminalDiscoveries, id];
+
+      // Controlla se l'esercizio è completato (tutte le 3 condizioni):
+      // 1. Tutti i componenti trovati
+      // 2. UART connesso
+      // 3. Tutte le 6 discovery del terminale fatte (vedi FLAG_PARTS in terminalData.ts)
+      const allComponentsFound = foundComponents.length === exerciseData.components.length;
+      const allDiscoveriesDone = newDiscoveries.length === 6; // 6 = numero di FLAG_PARTS
+      const exerciseIsNowFinished = allComponentsFound && uartConnected && allDiscoveriesDone;
+
+      set({
+        terminalDiscoveries: newDiscoveries,
+        isFinished: exerciseIsNowFinished
+      });
     }
   },
 
@@ -229,7 +266,7 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   setUartSnapTarget: (pinId) => set({ uartSnapTarget: pinId }),
 
   hookUartProbe: () => {
-    const { activeAdapterPin, uartSnapTarget, uartConnections } = get();
+    const { activeAdapterPin, uartSnapTarget, uartConnections, foundComponents } = get();
     if (!activeAdapterPin || !uartSnapTarget) return;
 
     // Impedisci di collegare due adapter pin allo stesso PCB pin
@@ -255,12 +292,19 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
       return pin.role === correctMapping[conn.adapterPin];
     });
 
-    set({
+    const newState: Partial<ExerciseState> = {
       uartConnections: updated,
       activeAdapterPin: null,
       uartSnapTarget: null,
       uartConnected: allCorrect,
-    });
+    };
+
+    if (allCorrect) {
+      // Genera la flag UART che servirà per sbloccare il terminale
+      newState.uartFlag = 'flag{UART_CONNECTED}';
+    }
+
+    set(newState);
   },
 
   unhookUartProbe: (adapterPin) => {
@@ -284,12 +328,11 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
         revealedPart += part;
       });
       newFlag = `flag{${revealedPart}}`;
-      const exerciseIsNowFinished = newFoundComponents.length === exerciseData.components.length;
+
       set({
         currentStep: currentStep + 1,
         foundComponents: newFoundComponents,
         flag: newFlag,
-        isFinished: exerciseIsNowFinished,
       });
     }
   },
@@ -297,11 +340,38 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   setLensRadius: (radius) => set({ lensRadius: Math.max(50, Math.min(200, radius)) }),
   setLensZoomLevel: (zoom) => set({ lensZoomLevel: Math.max(1.5, Math.min(5, zoom)) }),
   toggleLensVisible: () => {
-    const { lensVisible } = get();
+    const { lensVisible, activeTool, probe1, probe2, uartConnections } = get();
+
     if (lensVisible) {
+      // Se la lente è visibile, nascondila
       set({ lensVisible: false, lensIsAnchored: false, lensAnchorPosition: null });
     } else {
-      set({ lensVisible: true });
+      // Se vogliamo mostrare la lente, verifica che il tool corrente sia completo
+      let canActivateLens = true;
+      let shouldSwitchToPointer = false;
+
+      if (activeTool === 'multimeter') {
+        // Multimetro: entrambi i puntali devono essere agganciati
+        if (!probe1.hookedTo || !probe2.hookedTo) {
+          canActivateLens = false;
+          shouldSwitchToPointer = true;
+        }
+      } else if (activeTool === 'probes') {
+        // Sonde UART: tutte e 3 le connessioni devono essere effettuate
+        const allConnected = uartConnections.every(conn => conn.pcbPinId !== null);
+        if (!allConnected) {
+          canActivateLens = false;
+          shouldSwitchToPointer = true;
+        }
+      }
+      // pointer e terminal possono sempre attivare la lente
+
+      if (shouldSwitchToPointer) {
+        // Se il tool non è completo, passa a pointer prima di attivare la lente
+        set({ activeTool: 'pointer', lensVisible: true });
+      } else if (canActivateLens) {
+        set({ lensVisible: true });
+      }
     }
   },
   toggleLensAnchor: () => {
@@ -313,4 +383,36 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
     }
   },
   setLensAnchorPosition: (position) => set({ lensAnchorPosition: position }),
+
+  validateFlag: (inputFlag, toolId) => {
+    const { flag, uartFlag } = get();
+
+    // Gestione flag progressiva (componenti) -> sblocca multimetro E UART contemporaneamente
+    if ((toolId === 'multimeter' || toolId === 'probes') && inputFlag === flag) {
+      set({
+        multimeterUnlocked: true,
+        uartUnlocked: true,
+        flag: exerciseData.initialFlag  // Resetta dopo sblocco
+      });
+      return true;
+    }
+
+    // Gestione uartFlag -> sblocca terminale
+    if (toolId === 'terminal' && inputFlag === uartFlag) {
+      set({ terminalUnlocked: true });
+      return true;
+    }
+
+    return false;
+  },
+
+  unlockTool: (toolId) => {
+    if (toolId === 'multimeter') {
+      set({ multimeterUnlocked: true });
+    } else if (toolId === 'probes') {
+      set({ uartUnlocked: true });
+    } else if (toolId === 'terminal') {
+      set({ terminalUnlocked: true });
+    }
+  },
 }));

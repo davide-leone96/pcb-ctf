@@ -56,7 +56,7 @@ const calculateReading = (
 };
 
 const Multimeter = ({ onPositionChange, bounds }: MultimeterProps) => {
-  const { multimeterMode, setMultimeterMode, probe1, probe2 } = useExerciseStore();
+  const { multimeterMode, setMultimeterMode, probe1, probe2, activeProbe, selectProbe } = useExerciseStore();
   const multimeterRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
@@ -147,13 +147,31 @@ const Multimeter = ({ onPositionChange, bounds }: MultimeterProps) => {
         <span className="text-4xl font-mono text-cyan-300 text-shadow-lcd">{displayValue}</span>
         <span className="text-2xl ml-2 text-cyan-300/80">{unit}</span>
       </div>
-      {/* Indicatore stato sonde */}
+      {/* Indicatore stato sonde - Cliccabili per selezionare */}
       <div className="flex justify-between text-[10px] text-gray-500 px-1 mb-2 font-mono">
-        <span>
+        <span
+          onClick={(e) => {
+            e.stopPropagation();
+            selectProbe('first');
+          }}
+          className={cn(
+            "cursor-pointer hover:text-white transition-colors px-1 py-0.5 rounded",
+            activeProbe === 'first' && "bg-red-500/20 text-white ring-1 ring-red-500"
+          )}
+        >
           <span className="inline-block w-2 h-2 rounded-full bg-red-500 mr-1 align-middle" />
           {probe1.hookedTo ? 'V+' : '---'}
         </span>
-        <span>
+        <span
+          onClick={(e) => {
+            e.stopPropagation();
+            selectProbe('second');
+          }}
+          className={cn(
+            "cursor-pointer hover:text-white transition-colors px-1 py-0.5 rounded",
+            activeProbe === 'second' && "bg-gray-500/20 text-white ring-1 ring-gray-500"
+          )}
+        >
           <span className="inline-block w-2 h-2 rounded-full bg-black border border-gray-500 mr-1 align-middle" />
           {probe2.hookedTo ? 'COM' : '---'}
         </span>
