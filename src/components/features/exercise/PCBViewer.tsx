@@ -2,13 +2,14 @@
 'use client';
 
 import Image from 'next/image';
-import { useRef, useState, useLayoutEffect, useEffect } from 'react';
+import { useRef, useState, useLayoutEffect, useEffect, useMemo } from 'react';
 import { exerciseData, getAllPins, getPinCoords } from '@/data/exercise';
 import { useExerciseStore } from '@/store/exerciseStore';
 import { cn } from '@/lib/utils';
 import { XCircle } from 'lucide-react';
 import Multimeter from './Multimeter';
 import UartProbesAdapter, { WIRE_COLORS } from './UartProbesAdapter';
+import LensContentLayer from './LensContentLayer';
 import type { AdapterPin } from '@/store/exerciseStore';
 
 const SNAP_RADIUS = 15;
@@ -166,15 +167,14 @@ const PCBViewer = () => {
 
   // Posizione pixel di qualsiasi pin (measurement o UART)
   const getPinPosition = (pinId: string | null) => {
-    if (!pinId || !pcbContainerRef.current) return null;
+    if (!pinId) return null;
     const centerPercent = getPinCenterPercent(pinId);
     if (!centerPercent) return null;
 
-    // Usa getBoundingClientRect() per calcolo preciso come il browser
-    const containerRect = pcbContainerRef.current.getBoundingClientRect();
+    // Usa containerDims per consistenza con backgroundSize della lente
     return {
-      x: centerPercent.x * containerRect.width / 100,
-      y: centerPercent.y * containerRect.height / 100
+      x: centerPercent.x * containerDims.width / 100,
+      y: centerPercent.y * containerDims.height / 100
     };
   };
   
@@ -200,6 +200,8 @@ const PCBViewer = () => {
 
   const wireOrigin1 = getWireOrigin('first');
   const wireOrigin2 = getWireOrigin('second');
+
+  // Funzione helper per generare path curve (esportata per LensContentLayer)
   const getCurvePath = (start: {x: number, y: number} | null, end: {x: number, y: number} | null) => {
     if (!start || !end) return "";
     const cx = (start.x + end.x) / 2;
@@ -207,6 +209,7 @@ const PCBViewer = () => {
     return `M ${start.x} ${start.y} Q ${cx} ${cy} ${end.x} ${end.y}`;
   };
 
+  // Funzione helper per ottenere l'origine dei cavi UART (esportata per LensContentLayer)
   const getUartWireOrigin = (adapterPin: AdapterPin) => {
     if (!adapterPosition) return null;
     const offsets: Record<AdapterPin, { x: number; y: number }> = {
@@ -229,6 +232,21 @@ const PCBViewer = () => {
 
   // L'overlay UART (adapter, cavi, pallini) è visibile sia in modalità probes che terminal
   const showUartOverlay = activeTool === 'probes' || (activeTool === 'terminal' && uartConnected);
+
+  // Posizioni pixel per snap targets (necessarie per LensContentLayer)
+  const snapTargetPos = snapTarget ? getPinPosition(snapTarget) : null;
+  const uartSnapTargetPos = uartSnapTarget ? getPinPosition(uartSnapTarget) : null;
+
+  // Viewport della lente (memoizzato per performance)
+  const lensViewport = useMemo(() => {
+    const lensPosition = lensIsAnchored && lensAnchorPosition ? lensAnchorPosition : mousePosition;
+    return {
+      centerX: lensPosition?.x ?? 0,
+      centerY: lensPosition?.y ?? 0,
+      radius: lensRadius,
+      zoomLevel: lensZoomLevel,
+    };
+  }, [lensIsAnchored, lensAnchorPosition, mousePosition, lensRadius, lensZoomLevel]);
 
   return (
     <div
@@ -287,6 +305,10 @@ const PCBViewer = () => {
             })}
           </svg>
         )}
+      </div>
+
+      {/* Layer z-25: Lente d'ingrandimento con contenuto zoomato */}
+      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 25 }}>
         {lensVisible && imageUrl && containerDims.width > 0 && (() => {
           const lensPosition = lensIsAnchored && lensAnchorPosition ? lensAnchorPosition : mousePosition;
           if (!lensPosition) return null;
@@ -301,9 +323,10 @@ const PCBViewer = () => {
 
           return (
             <div
+              id="magnifier-lens"
               className={cn(
-                "absolute rounded-full border-4 shadow-lg transition-colors",
-                lensIsAnchored ? (isLensInteractive ? "border-green-500 cursor-move" : "border-green-500/50") : "border-blue-500"
+                "absolute rounded-full overflow-hidden transition-shadow",
+                lensIsAnchored && isLensInteractive ? "cursor-move" : ""
               )}
               style={{
                 left: lensPosition.x,
@@ -315,6 +338,11 @@ const PCBViewer = () => {
                 backgroundSize: `${containerDims.width * lensZoomLevel}px ${containerDims.height * lensZoomLevel}px`,
                 backgroundPosition: `-${lensPosition.x * lensZoomLevel - lensRadius}px -${lensPosition.y * lensZoomLevel - lensRadius}px`,
                 backgroundRepeat: 'no-repeat',
+                boxShadow: lensIsAnchored
+                  ? (isLensInteractive
+                      ? '0 0 0 4px rgb(34 197 94), 0 10px 15px -3px rgb(0 0 0 / 0.1)'
+                      : '0 0 0 4px rgb(34 197 94 / 0.5), 0 10px 15px -3px rgb(0 0 0 / 0.1)')
+                  : '0 0 0 4px rgb(59 130 246), 0 10px 15px -3px rgb(0 0 0 / 0.1)',
                 pointerEvents: lensIsAnchored && isLensInteractive ? 'auto' : 'none',
               }}
               onMouseDown={(e) => {
@@ -323,7 +351,29 @@ const PCBViewer = () => {
                   setIsDraggingLens(true);
                 }
               }}
-            />
+            >
+              {/* Renderizza cavi e pallini ingranditi dentro la lente */}
+              <LensContentLayer
+                lensViewport={lensViewport}
+                containerDims={containerDims}
+                activeTool={activeTool}
+                probe1Pos={probe1Pos}
+                probe2Pos={probe2Pos}
+                activeProbePos={activeProbePos}
+                wireOrigin1={wireOrigin1}
+                wireOrigin2={wireOrigin2}
+                activeProbe={activeProbe}
+                snapTargetPos={snapTargetPos}
+                uartConnections={uartConnections}
+                activeAdapterPin={activeAdapterPin}
+                activeUartProbePos={activeUartProbePos}
+                adapterPosition={adapterPosition}
+                uartSnapTargetPos={uartSnapTargetPos}
+                getCurvePath={getCurvePath}
+                getUartWireOrigin={getUartWireOrigin}
+                getPinPosition={getPinPosition}
+              />
+            </div>
           );
         })()}
       </div>
