@@ -1,4 +1,5 @@
 // src/components/features/exercise/InstructionsPanel.tsx
+'use client';
 
 import HintButton from './HintButton'; // 1. Importiamo il nuovo componente
 
