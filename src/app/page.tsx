@@ -4,16 +4,28 @@ import FlagDisplay from '@/components/features/exercise/FlagDisplay';
 import InstructionsPanel from '@/components/features/exercise/InstructionsPanel';
 import PCBViewer from '@/components/features/exercise/PCBViewer';
 import Sidebar from '@/components/layout/Sidebar';
-import { exerciseData } from '@/data/exercise';
 import { buildTerminalFlag } from '@/data/terminalData';
 import { useExerciseStore } from '@/store/exerciseStore';
 import CompletionDialog from '@/components/features/exercise/CompletionDialog';
 import Terminal from '@/components/features/exercise/Terminal';
+import { useExerciseConfig } from '@/hooks/useExerciseConfig';
 
 export default function Home() {
+  // Auto-load configuration from file or use defaults
+  const { config: exerciseData, isLoading } = useExerciseConfig();
+
   // --- 2. Estrai 'isFinished', 'flag', e 'resetExercise' dallo store ---
   const { currentStep, flag, isFinished, resetExercise, activeTool, terminalDiscoveries, uartConnected } = useExerciseStore();
-  
+
+  // Show loading state while configuration is being loaded
+  if (isLoading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-gray-900">
+        <div className="text-white text-xl">Caricamento configurazione...</div>
+      </main>
+    );
+  }
+
   const currentComponent = exerciseData.components[currentStep];
   const instruction = isFinished
     ? 'Congratulazioni! Hai identificato tutti i componenti.'
