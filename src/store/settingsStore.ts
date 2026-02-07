@@ -89,6 +89,8 @@ interface SettingsActions {
   exportAsTypeScript: () => string;
   applyConfig: () => void;
   loadFromStorage: () => void;
+  saveToFile: () => Promise<{ success: boolean; message?: string; error?: string }>;
+  loadFromFile: () => Promise<{ success: boolean; message?: string; error?: string }>;
 }
 
 type SettingsStore = SettingsState & SettingsActions;
@@ -449,5 +451,44 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         dragState: null,
       });
     } catch { /* ignore invalid data */ }
+  },
+
+  saveToFile: async () => {
+    try {
+      const json = get().exportAsJson();
+      const response = await fetch('/api/config/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: json,
+      });
+      const result = await response.json();
+
+      // Salva anche in localStorage per sync
+      if (result.success) {
+        localStorage.setItem(SETTINGS_STORAGE_KEY, json);
+      }
+
+      return result;
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  },
+
+  loadFromFile: async () => {
+    try {
+      const response = await fetch('/api/config/load');
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        // Salva in localStorage e poi carica
+        localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(result.data));
+        get().loadFromStorage();
+        return { success: true, message: 'Configurazione caricata con successo' };
+      }
+
+      return result;
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
   },
 }));

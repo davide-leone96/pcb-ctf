@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { useSettingsStore, type SettingsTool, type DraftComponent, type DraftPin } from '@/store/settingsStore';
 import { cn } from '@/lib/utils';
-import { BoxSelect, MapPin, Pencil, Trash2, Download, Copy, Check, Upload } from 'lucide-react';
+import { BoxSelect, MapPin, Pencil, Trash2, Download, Copy, Check, Upload, Save, FolderOpen } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -41,10 +41,13 @@ const SettingsSidebar = () => {
     editComponent, deleteComponent,
     editPin, deletePin,
     exportAsJson, exportAsTypeScript, applyConfig,
+    saveToFile, loadFromFile,
   } = useSettingsStore();
 
   const [copied, setCopied] = useState(false);
   const [applied, setApplied] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   const handleDownloadJson = () => {
     const json = exportAsJson();
@@ -62,6 +65,26 @@ const SettingsSidebar = () => {
     await navigator.clipboard.writeText(ts);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleSaveToFile = async () => {
+    const result = await saveToFile();
+    if (result.success) {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } else {
+      alert(`Errore: ${result.error}`);
+    }
+  };
+
+  const handleLoadFromFile = async () => {
+    const result = await loadFromFile();
+    if (result.success) {
+      setLoaded(true);
+      setTimeout(() => setLoaded(false), 2000);
+    } else {
+      alert(`Errore: ${result.error}`);
+    }
   };
 
   const tools: { id: SettingsTool; label: string; icon: typeof BoxSelect }[] = [
@@ -141,6 +164,28 @@ const SettingsSidebar = () => {
           {applied ? <Check className="h-4 w-4 mr-2" /> : <Upload className="h-4 w-4 mr-2" />}
           {applied ? 'Configurazione applicata!' : 'Applica al simulatore'}
         </Button>
+
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            onClick={handleSaveToFile}
+            size="sm"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+            disabled={components.length === 0 && pins.length === 0}
+          >
+            {saved ? <Check className="h-4 w-4 mr-1" /> : <Save className="h-4 w-4 mr-1" />}
+            {saved ? 'Salvato!' : 'Salva su File'}
+          </Button>
+          <Button
+            onClick={handleLoadFromFile}
+            variant="outline"
+            size="sm"
+            className="w-full border-gray-600 text-gray-300 hover:text-white hover:bg-gray-700"
+          >
+            {loaded ? <Check className="h-4 w-4 mr-1" /> : <FolderOpen className="h-4 w-4 mr-1" />}
+            {loaded ? 'Caricato!' : 'Carica da File'}
+          </Button>
+        </div>
+
         <Button
           onClick={handleDownloadJson}
           variant="outline"

@@ -18,6 +18,7 @@ const SNAP_RADIUS = 15;
 const PCBViewer = () => {
   const {
     selectComponent,
+    foundComponents,
     activeTool, mousePosition, updateMousePosition,
     activeProbe, probe1, probe2, snapTarget,
     setSnapTarget, hookProbe, unhookProbe,
@@ -58,15 +59,21 @@ const PCBViewer = () => {
 
   // Snap detection: cerca il pin più vicino in base al filter specificato
   const findClosestPin = (mouseX: number, mouseY: number, filterType: 'all' | 'uart-only' = 'all'): string | null => {
+    if (!pcbContainerRef.current) return null;
+
     let closestPin: string | null = null;
     let minDistance = SNAP_RADIUS;
     const pinsToCheck = filterType === 'uart-only'
       ? getAllPins().filter(pin => pin.isUart)
       : getAllPins(); // 'all': cerca tra TUTTI i pin (measurement + UART)
+
+    // Usa getBoundingClientRect() per calcolo preciso come il browser
+    const containerRect = pcbContainerRef.current.getBoundingClientRect();
+
     pinsToCheck.forEach(pin => {
       const [left, top, width, height] = pin.coords;
-      const pinX = (left + width / 2) * containerDims.width / 100;
-      const pinY = (top + height / 2) * containerDims.height / 100;
+      const pinX = (left + width / 2) * containerRect.width / 100;
+      const pinY = (top + height / 2) * containerRect.height / 100;
       const distance = Math.sqrt(Math.pow(mouseX - pinX, 2) + Math.pow(mouseY - pinY, 2));
       if (distance < minDistance) {
         minDistance = distance;
@@ -104,23 +111,42 @@ const PCBViewer = () => {
     setUartSnapTarget(null);
   };
   
-  // Posizione pixel di qualsiasi pin (measurement o UART)
-  const getPinPosition = (pinId: string | null) => {
-    if (!pinId || containerDims.width === 0) return null;
+  // Posizione percentuale del centro di qualsiasi pin (measurement o UART)
+  const getPinCenterPercent = (pinId: string | null): { x: number; y: number } | null => {
+    if (!pinId) return null;
     const coords = getPinCoords(pinId);
     if (!coords) return null;
     const [left, top, width, height] = coords;
-    return { x: (left + width / 2) * containerDims.width / 100, y: (top + height / 2) * containerDims.height / 100 };
+    return { x: left + width / 2, y: top + height / 2 };
+  };
+
+  // Posizione pixel di qualsiasi pin (measurement o UART)
+  const getPinPosition = (pinId: string | null) => {
+    if (!pinId || !pcbContainerRef.current) return null;
+    const centerPercent = getPinCenterPercent(pinId);
+    if (!centerPercent) return null;
+
+    // Usa getBoundingClientRect() per calcolo preciso come il browser
+    const containerRect = pcbContainerRef.current.getBoundingClientRect();
+    return {
+      x: centerPercent.x * containerRect.width / 100,
+      y: centerPercent.y * containerRect.height / 100
+    };
   };
   
+  const probe1Percent = getPinCenterPercent(probe1.hookedTo);
+  const probe2Percent = getPinCenterPercent(probe2.hookedTo);
+  const snapTargetPercent = snapTarget ? getPinCenterPercent(snapTarget) : null;
+
+  // Per i cavi SVG servono posizioni in pixel
   const probe1Pos = getPinPosition(probe1.hookedTo);
   const probe2Pos = getPinPosition(probe2.hookedTo);
   let activeProbePos = mousePosition;
-  if(snapTarget && activeProbe) {
+  if (snapTarget && activeProbe) {
     const snapPos = getPinPosition(snapTarget);
-    if(snapPos) activeProbePos = snapPos;
+    if (snapPos) activeProbePos = snapPos;
   }
-  
+
   const getWireOrigin = (probeNumber: 'first' | 'second') => {
     if (!multimeterPosition) return null;
     const offsetX = probeNumber === 'first' ? 30 : 220;
@@ -148,6 +174,9 @@ const PCBViewer = () => {
     return { x: adapterPosition.x + o.x, y: adapterPosition.y + o.y };
   };
 
+  const uartSnapTargetPercent = uartSnapTarget ? getPinCenterPercent(uartSnapTarget) : null;
+
+  // Per i cavi UART servono posizioni in pixel
   let activeUartProbePos = mousePosition;
   if (uartSnapTarget && activeAdapterPin) {
     const snapPos = getPinPosition(uartSnapTarget);
@@ -219,21 +248,43 @@ const PCBViewer = () => {
       </div>
 
       <div className="absolute inset-0">
-        {/* Overlay pin per il multimetro: mostra TUTTI i pin */}
+        {/* Overlay componenti trovati: sempre visibili con bordo verde */}
+        {exerciseData.components.map((component) => {
+          if (!foundComponents.includes(component.id)) return null;
+          const [left, top, width, height] = component.coords;
+          return (
+            <div
+              key={`found-${component.id}`}
+              className="absolute border-2 border-green-500 bg-green-500/20 rounded-md pointer-events-none"
+              style={{
+                left: `${left}%`,
+                top: `${top}%`,
+                width: `${width}%`,
+                height: `${height}%`,
+              }}
+            />
+          );
+        })}
+        {/* Pallini e controlli multimetro */}
         {activeTool === 'multimeter' && (
           <>
-            <div className="group" style={probe1Pos ? { position: 'absolute', left: probe1Pos.x - 12, top: probe1Pos.y - 12, zIndex: 20 } : { display: 'none' }}>
-              <div className="w-6 h-6 bg-red-500 rounded-full border-2 border-white/50 shadow-md"/>
-              <div className="absolute -inset-2 pointer-events-auto cursor-pointer" onClick={(e) => {e.stopPropagation(); unhookProbe('first');}}><XCircle size={16} className="text-white bg-red-600 rounded-full absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity"/></div>
-            </div>
-            <div className="group" style={probe2Pos ? { position: 'absolute', left: probe2Pos.x - 12, top: probe2Pos.y - 12, zIndex: 20 } : { display: 'none' }}>
-              <div className="w-6 h-6 bg-black rounded-full border-2 border-white/50 shadow-md"/>
-              <div className="absolute -inset-2 pointer-events-auto cursor-pointer" onClick={(e) => {e.stopPropagation(); unhookProbe('second');}}><XCircle size={16} className="text-white bg-gray-700 rounded-full absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity"/></div>
-            </div>
-            {activeProbe && activeProbePos && <div className="absolute pointer-events-none z-20" style={{ left: activeProbePos.x - 12, top: activeProbePos.y - 12}}><div className={cn("w-6 h-6 rounded-full border-2 bg-white/20 animate-probe-pulse", activeProbe === 'first' ? 'border-red-500' : 'border-black')} /></div>}
-            {getAllPins().map(pin => (
-              <div key={pin.id} className={cn('absolute border border-dashed pointer-events-auto transition-colors', snapTarget === pin.id ? 'border-yellow-400 bg-yellow-400/30 border-solid' : 'border-cyan-400/30')} style={{ left: `${pin.coords[0]}%`, top: `${pin.coords[1]}%`, width: `${pin.coords[2]}%`, height: `${pin.coords[3]}%`}}/>
-            ))}
+            {probe1Percent && (
+              <div className="group absolute z-20" style={{ left: `${probe1Percent.x}%`, top: `${probe1Percent.y}%`, transform: 'translate(-50%, -50%)' }}>
+                <div className="w-6 h-6 bg-red-500 rounded-full border-2 border-white/50 shadow-md"/>
+                <div className="absolute -inset-2 pointer-events-auto cursor-pointer" onClick={(e) => {e.stopPropagation(); unhookProbe('first');}}><XCircle size={16} className="text-white bg-red-600 rounded-full absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity"/></div>
+              </div>
+            )}
+            {probe2Percent && (
+              <div className="group absolute z-20" style={{ left: `${probe2Percent.x}%`, top: `${probe2Percent.y}%`, transform: 'translate(-50%, -50%)' }}>
+                <div className="w-6 h-6 bg-black rounded-full border-2 border-white/50 shadow-md"/>
+                <div className="absolute -inset-2 pointer-events-auto cursor-pointer" onClick={(e) => {e.stopPropagation(); unhookProbe('second');}}><XCircle size={16} className="text-white bg-gray-700 rounded-full absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity"/></div>
+              </div>
+            )}
+            {activeProbe && snapTargetPercent && (
+              <div className="absolute pointer-events-none z-20" style={{ left: `${snapTargetPercent.x}%`, top: `${snapTargetPercent.y}%`, transform: 'translate(-50%, -50%)' }}>
+                <div className={cn("w-6 h-6 rounded-full border-2 bg-white/20 animate-probe-pulse", activeProbe === 'first' ? 'border-red-500' : 'border-black')} />
+              </div>
+            )}
           </>
         )}
         {/* Overlay UART: mostra solo pallini di connessione, NO box pin */}
@@ -241,10 +292,10 @@ const PCBViewer = () => {
           <>
             {/* Pallini di connessione sui pin PCB */}
             {uartConnections.filter(c => c.pcbPinId).map(conn => {
-              const pos = getPinPosition(conn.pcbPinId);
-              if (!pos) return null;
+              const pinPercent = getPinCenterPercent(conn.pcbPinId);
+              if (!pinPercent) return null;
               return (
-                <div key={conn.adapterPin} className="group" style={{ position: 'absolute', left: pos.x - 10, top: pos.y - 10, zIndex: 20 }}>
+                <div key={conn.adapterPin} className="group absolute z-20" style={{ left: `${pinPercent.x}%`, top: `${pinPercent.y}%`, transform: 'translate(-50%, -50%)' }}>
                   <div className="w-5 h-5 rounded-full border-2 border-white/50 shadow-md" style={{ backgroundColor: WIRE_COLORS[conn.adapterPin] }} />
                   {activeTool === 'probes' && (
                     <div className="absolute -inset-2 pointer-events-auto cursor-pointer" onClick={(e) => { e.stopPropagation(); unhookUartProbe(conn.adapterPin); }}>
@@ -255,8 +306,8 @@ const PCBViewer = () => {
               );
             })}
             {/* Cursore attivo durante il drag (solo in modalità probes) */}
-            {activeTool === 'probes' && activeAdapterPin && activeUartProbePos && (
-              <div className="absolute pointer-events-none z-20" style={{ left: activeUartProbePos.x - 10, top: activeUartProbePos.y - 10 }}>
+            {activeTool === 'probes' && activeAdapterPin && uartSnapTargetPercent && (
+              <div className="absolute pointer-events-none z-20" style={{ left: `${uartSnapTargetPercent.x}%`, top: `${uartSnapTargetPercent.y}%`, transform: 'translate(-50%, -50%)' }}>
                 <div className="w-5 h-5 rounded-full border-2 bg-white/20 animate-probe-pulse" style={{ borderColor: WIRE_COLORS[activeAdapterPin] }} />
               </div>
             )}
