@@ -2,7 +2,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useRef, useState, useLayoutEffect } from 'react';
+import { useRef, useState, useLayoutEffect, useEffect } from 'react';
 import { exerciseData, getAllPins, getPinCoords } from '@/data/exercise';
 import { useExerciseStore } from '@/store/exerciseStore';
 import { cn } from '@/lib/utils';
@@ -11,8 +11,6 @@ import Multimeter from './Multimeter';
 import UartProbesAdapter, { WIRE_COLORS } from './UartProbesAdapter';
 import type { AdapterPin } from '@/store/exerciseStore';
 
-const LENS_RADIUS = 120;
-const ZOOM_LEVEL = 2.5;
 const SNAP_RADIUS = 15;
 
 const PCBViewer = () => {
@@ -24,6 +22,8 @@ const PCBViewer = () => {
     setSnapTarget, hookProbe, unhookProbe,
     uartConnections, activeAdapterPin, uartSnapTarget,
     setUartSnapTarget, hookUartProbe, unhookUartProbe, uartConnected,
+    lensRadius, lensZoomLevel, lensVisible, lensIsAnchored, lensAnchorPosition,
+    toggleLensAnchor, setLensAnchorPosition,
   } = useExerciseStore();
 
   const pcbContainerRef = useRef<HTMLDivElement>(null);
@@ -32,6 +32,7 @@ const PCBViewer = () => {
   const [multimeterPosition, setMultimeterPosition] = useState<{ x: number; y: number } | null>(null);
   const [adapterPosition, setAdapterPosition] = useState<{ x: number; y: number } | null>(null);
   const [bounds, setBounds] = useState<DOMRect | null>(null);
+  const [isDraggingLens, setIsDraggingLens] = useState(false);
 
   useLayoutEffect(() => {
     const pcbElement = pcbContainerRef.current?.parentElement;
@@ -52,9 +53,38 @@ const PCBViewer = () => {
     return () => window.removeEventListener('resize', updateDimensionsAndBounds);
   }, []);
 
-  const handleContainerClick = () => {
+  useEffect(() => {
+    if (!isDraggingLens) return;
+
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (pcbContainerRef.current) {
+        const rect = pcbContainerRef.current.getBoundingClientRect();
+        setLensAnchorPosition({
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top,
+        });
+      }
+    };
+
+    const handleGlobalMouseUp = () => {
+      setIsDraggingLens(false);
+    };
+
+    window.addEventListener('mousemove', handleGlobalMouseMove);
+    window.addEventListener('mouseup', handleGlobalMouseUp);
+
+    return () => {
+      window.removeEventListener('mousemove', handleGlobalMouseMove);
+      window.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, [isDraggingLens, setLensAnchorPosition]);
+
+  const handleContainerClick = (e: React.MouseEvent) => {
     if (activeTool === 'multimeter' && snapTarget) hookProbe();
     if (activeTool === 'probes' && uartSnapTarget) hookUartProbe();
+    if (lensVisible && activeTool === 'pointer' && mousePosition && !isDraggingLens && !lensIsAnchored) {
+      toggleLensAnchor();
+    }
   };
 
   // Snap detection: cerca il pin più vicino in base al filter specificato
@@ -88,7 +118,7 @@ const PCBViewer = () => {
     const rect = pcbContainerRef.current.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
-    if (activeTool === 'magnifier') updateMousePosition({ x: mouseX, y: mouseY });
+    if (lensVisible && !lensIsAnchored && activeTool === 'pointer') updateMousePosition({ x: mouseX, y: mouseY });
     if (activeTool === 'multimeter' && activeProbe) {
       updateMousePosition({ x: mouseX, y: mouseY });
       const closest = findClosestPin(mouseX, mouseY, 'all'); // TUTTI i pin (measurement + UART)
@@ -192,10 +222,9 @@ const PCBViewer = () => {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onClick={handleContainerClick}
-      className={cn( 'relative', activeTool === 'magnifier' ? 'cursor-none' : '', activeTool === 'multimeter' && activeProbe ? 'cursor-none' : '', activeTool === 'probes' && activeAdapterPin ? 'cursor-none' : '' )}
+      className={cn( 'relative', activeTool === 'multimeter' && activeProbe ? 'cursor-none' : '', activeTool === 'probes' && activeAdapterPin ? 'cursor-none' : '' )}
     >
       <Image src={exerciseData.pcbImage} alt="Vista PCB" width={1024} height={768} priority className="h-auto w-full block rounded-lg" draggable={false}/>
-      
       {activeTool === 'multimeter' && <Multimeter onPositionChange={setMultimeterPosition} bounds={bounds} />}
       {showUartOverlay && <UartProbesAdapter onPositionChange={setAdapterPosition} bounds={bounds} readOnly={activeTool !== 'probes'} />}
 
@@ -244,7 +273,38 @@ const PCBViewer = () => {
             })}
           </svg>
         )}
-        {activeTool === 'magnifier' && mousePosition && imageUrl && containerDims.width > 0 && <div className="absolute rounded-full border-4 border-blue-500 shadow-lg" style={{ left: mousePosition.x, top: mousePosition.y, transform: 'translate(-50%, -50%)', width: LENS_RADIUS * 2, height: LENS_RADIUS * 2, backgroundImage: `url(${imageUrl})`, backgroundSize: `${containerDims.width * ZOOM_LEVEL}px ${containerDims.height * ZOOM_LEVEL}px`, backgroundPosition: `-${mousePosition.x * ZOOM_LEVEL - LENS_RADIUS}px -${mousePosition.y * ZOOM_LEVEL - LENS_RADIUS}px`, backgroundRepeat: 'no-repeat'}}/>}
+        {lensVisible && imageUrl && containerDims.width > 0 && (() => {
+          const lensPosition = lensIsAnchored && lensAnchorPosition ? lensAnchorPosition : mousePosition;
+          if (!lensPosition) return null;
+
+          const isLensInteractive = activeTool === 'pointer';
+          return (
+            <div
+              className={cn(
+                "absolute rounded-full border-4 shadow-lg transition-colors",
+                lensIsAnchored ? (isLensInteractive ? "border-green-500 cursor-move" : "border-green-500/50") : "border-blue-500"
+              )}
+              style={{
+                left: lensPosition.x,
+                top: lensPosition.y,
+                transform: 'translate(-50%, -50%)',
+                width: lensRadius * 2,
+                height: lensRadius * 2,
+                backgroundImage: `url(${imageUrl})`,
+                backgroundSize: `${containerDims.width * lensZoomLevel}px ${containerDims.height * lensZoomLevel}px`,
+                backgroundPosition: `-${lensPosition.x * lensZoomLevel - lensRadius}px -${lensPosition.y * lensZoomLevel - lensRadius}px`,
+                backgroundRepeat: 'no-repeat',
+                pointerEvents: lensIsAnchored && isLensInteractive ? 'auto' : 'none',
+              }}
+              onMouseDown={(e) => {
+                if (lensIsAnchored && isLensInteractive) {
+                  e.stopPropagation();
+                  setIsDraggingLens(true);
+                }
+              }}
+            />
+          );
+        })()}
       </div>
 
       <div className="absolute inset-0">

@@ -29,6 +29,11 @@ interface ExerciseState {
   activeAdapterPin: AdapterPin | null;
   uartSnapTarget: string | null;
   uartConnected: boolean;
+  lensRadius: number;
+  lensZoomLevel: number;
+  lensVisible: boolean;
+  lensIsAnchored: boolean;
+  lensAnchorPosition: MousePosition | null;
 }
 
 interface ExerciseActions {
@@ -47,6 +52,11 @@ interface ExerciseActions {
   setUartSnapTarget: (pinId: string | null) => void;
   hookUartProbe: () => void;
   unhookUartProbe: (adapterPin: AdapterPin) => void;
+  setLensRadius: (radius: number) => void;
+  setLensZoomLevel: (zoom: number) => void;
+  toggleLensVisible: () => void;
+  toggleLensAnchor: () => void;
+  setLensAnchorPosition: (position: MousePosition | null) => void;
 }
 
 type ExerciseStore = ExerciseState & ExerciseActions;
@@ -74,6 +84,11 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   activeAdapterPin: null,
   uartSnapTarget: null,
   uartConnected: false,
+  lensRadius: 120,
+  lensZoomLevel: 2.5,
+  lensVisible: false,
+  lensIsAnchored: false,
+  lensAnchorPosition: null,
 
   // Azioni
   resetExercise: () => set({
@@ -103,14 +118,17 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   // ===                     MODIFICA CHIAVE QUI                           ===
   // =========================================================================
   setActiveTool: (tool) => {
+    const { lensVisible, lensIsAnchored } = get();
+
     // Prima di tutto, imposta lo strumento attivo
     set({ activeTool: tool });
 
-    // Nasconde la lente se non è il tool attivo
-    if (tool !== 'magnifier') {
-      set({ mousePosition: null });
+    // Se la lente è visibile ma NON ancorata, e si seleziona un tool diverso da pointer,
+    // disattiva automaticamente la lente
+    if (lensVisible && !lensIsAnchored && tool !== 'pointer') {
+      set({ lensVisible: false });
     }
-    
+
     // Se lo strumento selezionato NON è il multimetro,
     // esegui una pulizia completa dello stato del multimetro.
     if (tool !== 'multimeter') {
@@ -275,4 +293,24 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
       });
     }
   },
+
+  setLensRadius: (radius) => set({ lensRadius: Math.max(50, Math.min(200, radius)) }),
+  setLensZoomLevel: (zoom) => set({ lensZoomLevel: Math.max(1.5, Math.min(5, zoom)) }),
+  toggleLensVisible: () => {
+    const { lensVisible } = get();
+    if (lensVisible) {
+      set({ lensVisible: false, lensIsAnchored: false, lensAnchorPosition: null });
+    } else {
+      set({ lensVisible: true });
+    }
+  },
+  toggleLensAnchor: () => {
+    const { lensIsAnchored, mousePosition } = get();
+    if (lensIsAnchored) {
+      set({ lensIsAnchored: false, lensAnchorPosition: null });
+    } else {
+      set({ lensIsAnchored: true, lensAnchorPosition: mousePosition });
+    }
+  },
+  setLensAnchorPosition: (position) => set({ lensAnchorPosition: position }),
 }));

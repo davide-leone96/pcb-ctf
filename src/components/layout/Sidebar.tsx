@@ -15,7 +15,7 @@ const tools: { id: Tool; label: string; icon: LucideIcon }[] = [
 ];
 
 const Sidebar = () => {
-  const { activeTool, setActiveTool, uartConnected } = useExerciseStore();
+  const { activeTool, setActiveTool, uartConnected, lensVisible, toggleLensVisible } = useExerciseStore();
 
   return (
     <aside className="flex flex-col items-center gap-y-4 rounded-lg bg-gray-800 p-4">
@@ -23,13 +23,24 @@ const Sidebar = () => {
 
       {tools.map((tool) => {
         const isLocked = tool.id === 'terminal' && !uartConnected;
+        const isMagnifier = tool.id === 'magnifier';
+        const isActive = isMagnifier ? lensVisible : activeTool === tool.id;
+        const handleClick = () => {
+          if (isLocked) return;
+          if (isMagnifier) {
+            toggleLensVisible();
+          } else {
+            setActiveTool(tool.id);
+          }
+        };
+
         return (
           <div key={tool.id} className="relative">
             <ToolButton
               label={isLocked ? `${tool.label} (collega UART)` : tool.label}
               icon={tool.icon}
-              isActive={activeTool === tool.id}
-              onClick={() => !isLocked && setActiveTool(tool.id)}
+              isActive={isActive}
+              onClick={handleClick}
             />
             {isLocked && (
               <div className="absolute -bottom-1 -right-1 rounded-full bg-yellow-600 p-0.5">

@@ -58,7 +58,7 @@ export default function Home() {
               <FlagDisplay flag={activeTool === 'terminal' ? buildTerminalFlag(terminalDiscoveries) : flag} />
             </div>
           </div>
-          
+
           <div className="border-2 border-dashed border-gray-500 rounded-lg p-4">
             <PCBViewer />
           </div>
