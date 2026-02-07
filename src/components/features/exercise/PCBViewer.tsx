@@ -82,7 +82,16 @@ const PCBViewer = () => {
   const handleContainerClick = (e: React.MouseEvent) => {
     if (activeTool === 'multimeter' && snapTarget) hookProbe();
     if (activeTool === 'probes' && uartSnapTarget) hookUartProbe();
-    if (lensVisible && activeTool === 'pointer' && mousePosition && !isDraggingLens && !lensIsAnchored) {
+
+    // Permetti ancoraggio lente se:
+    // - activeTool è pointer (sempre)
+    // - activeTool è multimeter con entrambi i puntali agganciati
+    // - activeTool è probes con tutte e 3 le connessioni fatte
+    const isMultimeterComplete = activeTool === 'multimeter' && probe1.hookedTo && probe2.hookedTo;
+    const isUartComplete = activeTool === 'probes' && uartConnections.every(c => c.pcbPinId !== null);
+    const canAnchorLens = activeTool === 'pointer' || isMultimeterComplete || isUartComplete;
+
+    if (lensVisible && canAnchorLens && mousePosition && !isDraggingLens && !lensIsAnchored) {
       toggleLensAnchor();
     }
   };
@@ -118,7 +127,12 @@ const PCBViewer = () => {
     const rect = pcbContainerRef.current.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
-    if (lensVisible && !lensIsAnchored && activeTool === 'pointer') updateMousePosition({ x: mouseX, y: mouseY });
+
+    // Aggiorna sempre mousePosition se la lente è visibile e non ancorata (indipendentemente dal tool)
+    if (lensVisible && !lensIsAnchored) {
+      updateMousePosition({ x: mouseX, y: mouseY });
+    }
+
     if (activeTool === 'multimeter' && activeProbe) {
       updateMousePosition({ x: mouseX, y: mouseY });
       const closest = findClosestPin(mouseX, mouseY, 'all'); // TUTTI i pin (measurement + UART)
@@ -277,7 +291,14 @@ const PCBViewer = () => {
           const lensPosition = lensIsAnchored && lensAnchorPosition ? lensAnchorPosition : mousePosition;
           if (!lensPosition) return null;
 
-          const isLensInteractive = activeTool === 'pointer';
+          // La lente può essere spostata se:
+          // - activeTool è pointer (sempre)
+          // - activeTool è multimeter senza puntale attivo (nessun cavo in movimento)
+          // - activeTool è probes senza pin dell'adattatore attivo (nessun cavo in movimento)
+          const isMultimeterIdle = activeTool === 'multimeter' && !activeProbe;
+          const isUartIdle = activeTool === 'probes' && !activeAdapterPin;
+          const isLensInteractive = activeTool === 'pointer' || isMultimeterIdle || isUartIdle;
+
           return (
             <div
               className={cn(

@@ -15,7 +15,7 @@ export default function Home() {
   const { config: exerciseData, isLoading } = useExerciseConfig();
 
   // --- 2. Estrai 'isFinished', 'flag', e 'resetExercise' dallo store ---
-  const { currentStep, flag, isFinished, resetExercise, activeTool, terminalDiscoveries, uartConnected } = useExerciseStore();
+  const { currentStep, flag, uartFlag, isFinished, resetExercise, activeTool, terminalDiscoveries, uartConnected } = useExerciseStore();
 
   // Show loading state while configuration is being loaded
   if (isLoading) {
@@ -55,7 +55,15 @@ export default function Home() {
               />
             </div>
             <div className="md:col-span-1">
-              <FlagDisplay flag={activeTool === 'terminal' ? buildTerminalFlag(terminalDiscoveries) : flag} />
+              <FlagDisplay
+                flag={
+                  activeTool === 'terminal'
+                    ? buildTerminalFlag(terminalDiscoveries)
+                    : uartConnected
+                      ? uartFlag
+                      : flag
+                }
+              />
             </div>
           </div>
 
