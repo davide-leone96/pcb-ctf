@@ -4,6 +4,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useExerciseStore } from '@/store/exerciseStore';
 import { X, Monitor, Wifi } from 'lucide-react';
+import TerminalChallengeCompleteDialog from './TerminalChallengeCompleteDialog';
 import {
   UBOOT_BOOT_LINES,
   KERNEL_BOOT_LINES,
@@ -162,6 +163,7 @@ const Terminal = () => {
   const [currentInput, setCurrentInput] = useState('');
   const [cmdHistoryIndex, setCmdHistoryIndex] = useState(-1);
   const [bootTimer, setBootTimer] = useState(4);
+  const [showCompleteDialog, setShowCompleteDialog] = useState(false);
 
   const terminalEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -208,16 +210,15 @@ const Terminal = () => {
   const discoverFlag = useCallback((flagId: string) => {
     if (terminalDiscoveries.includes(flagId)) return;
     addTerminalDiscovery(flagId);
-    const flag = FLAG_PARTS.find(f => f.id === flagId);
-    if (flag) {
-      // Add to the currently active tab's history
-      const setter = activeTab === 'uart' ? setUartHistory : setLocalHistory;
-      setter(h => [...h, {
-        type: 'flag' as const,
-        content: `[!] FLAG PART DISCOVERED: ${flag.part} - ${flag.description}`
-      }]);
+    // Flag piece will appear silently in the flag box above (no terminal feedback)
+  }, [terminalDiscoveries, addTerminalDiscovery]);
+
+  // Show completion dialog when all flag parts are discovered
+  useEffect(() => {
+    if (terminalDiscoveries.length === FLAG_PARTS.length) {
+      setShowCompleteDialog(true);
     }
-  }, [terminalDiscoveries, addTerminalDiscovery, activeTab]);
+  }, [terminalDiscoveries]);
 
   // ============================================
   // BOOT SEQUENCES (UART only)
@@ -1064,16 +1065,15 @@ Analysis tools:
           </div>
         )}
 
-        {/* Complete flag display */}
-        {discoveredCount === FLAG_PARTS.length && (
-          <div className="bg-yellow-900/30 border border-yellow-600/50 rounded px-3 py-2 mt-2">
-            <div className="text-yellow-400 font-bold text-sm">CONGRATULATIONS! All flag parts discovered!</div>
-            <div className="text-yellow-300 mt-1 text-base font-mono">{COMPLETE_FLAG}</div>
-          </div>
-        )}
-
         <div ref={terminalEndRef} />
       </div>
+
+      {/* Challenge Complete Dialog */}
+      <TerminalChallengeCompleteDialog
+        isOpen={showCompleteDialog}
+        onClose={() => setShowCompleteDialog(false)}
+        flag={COMPLETE_FLAG}
+      />
     </div>
   );
 };
