@@ -1,7 +1,7 @@
 // src/store/exerciseStore.ts
 
 import { create } from 'zustand';
-import { exerciseData, type Exercise } from '@/data/exercise';
+import type { Exercise } from '@/data/exercise';
 
 export type Tool = 'pointer' | 'magnifier' | 'multimeter' | 'probes' | 'terminal';
 export type MultimeterMode = 'V' | 'Ohm';
@@ -94,13 +94,13 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   // Stato iniziale (legacy)
   currentStep: 0,
   foundComponents: [],
-  flag: exerciseData.initialFlag,
+  flag: 'flag{????????????????????}',
   uartFlag: '',
   isFinished: false,
   activeTool: 'pointer',
-  multimeterUnlocked: false,
-  uartUnlocked: false,
-  terminalUnlocked: false,
+  multimeterUnlocked: true,
+  uartUnlocked: true,
+  terminalUnlocked: true,
   mousePosition: null,
   measuredComponentId: null,
   multimeterMode: 'V',
@@ -124,28 +124,43 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   lensAnchorPosition: null,
 
   // Azioni
-  resetExercise: () => set({
-    currentStep: 0,
-    foundComponents: [],
-    flag: exerciseData.initialFlag,
-    isFinished: false,
-    activeTool: 'pointer',
-    mousePosition: null,
-    measuredComponentId: null,
-    multimeterMode: 'V',
-    activeProbe: null,
-    probe1: { hookedTo: null },
-    probe2: { hookedTo: null },
-    snapTarget: null,
-    uartConnections: [
-      { adapterPin: 'adapter-tx', pcbPinId: null },
-      { adapterPin: 'adapter-rx', pcbPinId: null },
-      { adapterPin: 'adapter-gnd', pcbPinId: null },
-    ],
-    activeAdapterPin: null,
-    uartSnapTarget: null,
-    uartConnected: false,
-  }),
+  resetExercise: () => {
+    const { exerciseData: data } = get();
+    set({
+      currentStepIndex: 0,
+      currentObjectiveIndex: 0,
+      stepMode: 'education',
+      isSimulatorEnabled: false,
+      currentStep: 0,
+      foundComponents: [],
+      flag: data?.initialFlag || 'flag{????????????????????}',
+      isFinished: false,
+      activeTool: 'pointer',
+      mousePosition: null,
+      measuredComponentId: null,
+      multimeterMode: 'V',
+      activeProbe: null,
+      probe1: { hookedTo: null },
+      probe2: { hookedTo: null },
+      snapTarget: null,
+      terminalDiscoveries: [],
+      uartConnections: [
+        { adapterPin: 'adapter-tx', pcbPinId: null },
+        { adapterPin: 'adapter-rx', pcbPinId: null },
+        { adapterPin: 'adapter-gnd', pcbPinId: null },
+      ],
+      activeAdapterPin: null,
+      uartSnapTarget: null,
+      uartConnected: false,
+      uartFlag: '',
+      multimeterUnlocked: true,
+      uartUnlocked: true,
+      terminalUnlocked: true,
+      lensVisible: false,
+      lensIsAnchored: false,
+      lensAnchorPosition: null,
+    });
+  },
   
   // =========================================================================
   // ===                     MODIFICA CHIAVE QUI                           ===
@@ -248,7 +263,7 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   },
   
   addTerminalDiscovery: (id) => {
-    const { terminalDiscoveries, foundComponents, uartConnected } = get();
+    const { terminalDiscoveries, foundComponents, uartConnected, exerciseData: data } = get();
     if (!terminalDiscoveries.includes(id)) {
       const newDiscoveries = [...terminalDiscoveries, id];
 
@@ -256,7 +271,7 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
       // 1. Tutti i componenti trovati
       // 2. UART connesso
       // 3. Tutte le 6 discovery del terminale fatte (vedi FLAG_PARTS in terminalData.ts)
-      const allComponentsFound = foundComponents.length === exerciseData.components.length;
+      const allComponentsFound = data?.components ? foundComponents.length === data.components.length : false;
       const allDiscoveriesDone = newDiscoveries.length === 6; // 6 = numero di FLAG_PARTS
       const exerciseIsNowFinished = allComponentsFound && uartConnected && allDiscoveriesDone;
 
@@ -288,8 +303,8 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   setUartSnapTarget: (pinId) => set({ uartSnapTarget: pinId }),
 
   hookUartProbe: () => {
-    const { activeAdapterPin, uartSnapTarget, uartConnections, foundComponents } = get();
-    if (!activeAdapterPin || !uartSnapTarget) return;
+    const { activeAdapterPin, uartSnapTarget, uartConnections, exerciseData: data } = get();
+    if (!activeAdapterPin || !uartSnapTarget || !data) return;
 
     // Impedisci di collegare due adapter pin allo stesso PCB pin
     const alreadyUsed = uartConnections.find(
@@ -309,7 +324,7 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
     };
     const allCorrect = updated.every(conn => {
       if (!conn.pcbPinId) return false;
-      const pin = exerciseData.uartPins.find(p => p.id === conn.pcbPinId);
+      const pin = data.uartPins?.find(p => p.id === conn.pcbPinId);
       if (!pin) return false;
       return pin.role === correctMapping[conn.adapterPin];
     });
@@ -338,23 +353,53 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   },
 
   selectComponent: (componentId) => {
-    const { currentStep, foundComponents, isFinished } = get();
-    if (isFinished) return;
-    const correctComponent = exerciseData.components[currentStep];
-    if (correctComponent && componentId === correctComponent.id) {
-      const newFoundComponents = [...foundComponents, componentId];
-      let newFlag = exerciseData.initialFlag;
-      let revealedPart = '';
-      newFoundComponents.forEach(id => {
-        const part = exerciseData.components.find(c => c.id === id)?.flagPart || '';
-        revealedPart += part;
-      });
-      newFlag = `flag{${revealedPart}}`;
+    const {
+      currentStepIndex,
+      currentObjectiveIndex,
+      stepMode,
+      foundComponents,
+      exerciseData: data
+    } = get();
 
+    // Solo se siamo in modalità active
+    if (stepMode !== 'active' || !data || !data.steps) return;
+
+    const currentStep = data.steps[currentStepIndex];
+    if (!currentStep || !currentStep.objectives) return;
+
+    const currentObjective = currentStep.objectives[currentObjectiveIndex];
+    if (!currentObjective || componentId !== currentObjective.id) return;
+
+    // Componente corretto! Aggiorna stato
+    const newFoundComponents = [...foundComponents, componentId];
+
+    // Costruisci flag progressiva con tutti gli obiettivi completati finora
+    let flagContent = '';
+    for (let i = 0; i <= currentObjectiveIndex; i++) {
+      flagContent += currentStep.objectives[i].flagPart;
+    }
+    const newFlag = `flag{${flagContent}}`;
+
+    // Verifica se è l'ultimo obiettivo dello step
+    const isLastObjective = currentObjectiveIndex === currentStep.objectives.length - 1;
+
+    if (isLastObjective) {
+      // Ultimo obiettivo completato -> modalità completed
       set({
-        currentStep: currentStep + 1,
         foundComponents: newFoundComponents,
         flag: newFlag,
+        stepMode: 'completed',
+        isSimulatorEnabled: false,
+        lensVisible: false,
+        lensIsAnchored: false,
+        lensAnchorPosition: null,
+      });
+    } else {
+      // Passa al prossimo obiettivo
+      set({
+        foundComponents: newFoundComponents,
+        flag: newFlag,
+        currentObjectiveIndex: currentObjectiveIndex + 1,
       });
     }
   },
@@ -362,7 +407,7 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   setLensRadius: (radius) => set({ lensRadius: Math.max(50, Math.min(200, radius)) }),
   setLensZoomLevel: (zoom) => set({ lensZoomLevel: Math.max(1.5, Math.min(5, zoom)) }),
   toggleLensVisible: () => {
-    const { lensVisible, activeTool, probe1, probe2, uartConnections } = get();
+    const { lensVisible, activeTool, probe1, probe2, uartConnections, mousePosition } = get();
 
     if (lensVisible) {
       // Se la lente è visibile, nascondila
@@ -388,11 +433,23 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
       }
       // pointer e terminal possono sempre attivare la lente
 
+      const initialPosition = mousePosition || { x: 400, y: 300 };
+
       if (shouldSwitchToPointer) {
-        // Se il tool non è completo, passa a pointer prima di attivare la lente
-        set({ activeTool: 'pointer', lensVisible: true });
+        set({
+          activeTool: 'pointer',
+          lensVisible: true,
+          lensIsAnchored: true,
+          lensAnchorPosition: initialPosition,
+          mousePosition: initialPosition,
+        });
       } else if (canActivateLens) {
-        set({ lensVisible: true });
+        set({
+          lensVisible: true,
+          lensIsAnchored: true,
+          lensAnchorPosition: initialPosition,
+          mousePosition: initialPosition,
+        });
       }
     }
   },
@@ -407,14 +464,14 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   setLensAnchorPosition: (position) => set({ lensAnchorPosition: position }),
 
   validateFlag: (inputFlag, toolId) => {
-    const { flag, uartFlag } = get();
+    const { flag, uartFlag, exerciseData: data } = get();
 
     // Gestione flag progressiva (componenti) -> sblocca multimetro E UART contemporaneamente
     if ((toolId === 'multimeter' || toolId === 'probes') && inputFlag === flag) {
       set({
         multimeterUnlocked: true,
         uartUnlocked: true,
-        flag: exerciseData.initialFlag  // Resetta dopo sblocco
+        flag: data?.initialFlag || 'flag{????????????????????}'  // Resetta dopo sblocco
       });
       return true;
     }
@@ -450,53 +507,43 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   },
 
   startStep: () => {
+    const { exerciseData: data } = get();
     set({
       stepMode: 'active',
       isSimulatorEnabled: true,
+      foundComponents: [],
+      flag: data?.initialFlag || 'flag{????????????????????}',
     });
   },
 
   validateAndCompleteStep: (inputFlag) => {
-    const { exerciseData: data, currentStepIndex, currentObjectiveIndex } = get();
+    const { exerciseData: data, currentStepIndex, flag } = get();
     if (!data || !data.steps || !data.steps[currentStepIndex]) return false;
 
-    const currentStep = data.steps[currentStepIndex];
-    const currentObjective = currentStep.objectives[currentObjectiveIndex];
+    // La flag deve corrispondere a quella completa dello step corrente
+    if (inputFlag !== flag) return false;
 
-    // Build expected flag from all objectives up to current one
-    let expectedFlag = 'flag{';
-    for (let i = 0; i <= currentObjectiveIndex; i++) {
-      expectedFlag += currentStep.objectives[i]?.flagPart || '';
-    }
-    expectedFlag += '}';
+    // Flag valida - passa allo step successivo
+    const isLastStep = currentStepIndex === data.steps.length - 1;
 
-    if (inputFlag !== expectedFlag) return false;
-
-    // Valid flag - progress to next objective or step
-    const isLastObjective = currentObjectiveIndex === currentStep.objectives.length - 1;
-
-    if (isLastObjective) {
-      // Last objective of current step - check if there's a next step
-      const isLastStep = currentStepIndex === data.steps.length - 1;
-
-      if (isLastStep) {
-        // Finished all steps
-        set({
-          stepMode: 'completed',
-          isSimulatorEnabled: false,
-        });
-      } else {
-        // Move to next step
-        set({
-          currentStepIndex: currentStepIndex + 1,
-          currentObjectiveIndex: 0,
-          stepMode: 'education',
-          isSimulatorEnabled: false,
-        });
-      }
+    if (isLastStep) {
+      // Tutti gli step completati
+      set({
+        isFinished: true,
+      });
     } else {
-      // Move to next objective in current step
-      set({ currentObjectiveIndex: currentObjectiveIndex + 1 });
+      // Passa allo step successivo
+      set({
+        currentStepIndex: currentStepIndex + 1,
+        currentObjectiveIndex: 0,
+        stepMode: 'education',
+        isSimulatorEnabled: false,
+        foundComponents: [],
+        flag: data.initialFlag,
+        lensVisible: false,
+        lensIsAnchored: false,
+        lensAnchorPosition: null,
+      });
     }
 
     return true;
