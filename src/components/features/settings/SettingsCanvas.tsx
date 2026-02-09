@@ -1,7 +1,6 @@
 // src/components/features/settings/SettingsCanvas.tsx
 'use client';
 
-import Image from 'next/image';
 import { useRef, useState, useLayoutEffect, useEffect } from 'react';
 import { useSettingsStore } from '@/store/settingsStore';
 import { cn } from '@/lib/utils';
@@ -26,20 +25,52 @@ const SettingsCanvas = () => {
   } = useSettingsStore();
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
   const [containerDims, setContainerDims] = useState({ width: 0, height: 0 });
 
   useLayoutEffect(() => {
     const updateDimensions = () => {
-      if (containerRef.current) {
+      if (imageRef.current && containerRef.current) {
+        // Usa le dimensioni EFFETTIVE dell'immagine renderizzata
+        const imgRect = imageRef.current.getBoundingClientRect();
+        const containerRect = containerRef.current.getBoundingClientRect();
+
+        console.log('🔧 [SettingsCanvas] Dimensioni aggiornate:', {
+          immagine: { width: imgRect.width, height: imgRect.height },
+          container: { width: containerRect.width, height: containerRect.height },
+          offset: {
+            left: imgRect.left - containerRect.left,
+            top: imgRect.top - containerRect.top
+          },
+          naturalSize: {
+            width: imageRef.current.naturalWidth,
+            height: imageRef.current.naturalHeight
+          }
+        });
+
         setContainerDims({
-          width: containerRef.current.offsetWidth,
-          height: containerRef.current.offsetHeight,
+          width: imgRect.width,
+          height: imgRect.height,
         });
       }
     };
-    updateDimensions();
+
+    const img = imageRef.current;
+    if (img) {
+      if (img.complete) {
+        updateDimensions();
+      } else {
+        img.addEventListener('load', updateDimensions);
+      }
+    }
+
     window.addEventListener('resize', updateDimensions);
-    return () => window.removeEventListener('resize', updateDimensions);
+    return () => {
+      window.removeEventListener('resize', updateDimensions);
+      if (img) {
+        img.removeEventListener('load', updateDimensions);
+      }
+    };
   }, []);
 
   // --- Drag handling for component tool ---
@@ -49,8 +80,8 @@ const SettingsCanvas = () => {
     if (activeTool !== 'component') return;
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging.current || !containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
+      if (!isDragging.current || !imageRef.current) return;
+      const rect = imageRef.current.getBoundingClientRect();
       const x = ((e.clientX - rect.left) / rect.width) * 100;
       const y = ((e.clientY - rect.top) / rect.height) * 100;
       updateDrag(
@@ -74,13 +105,21 @@ const SettingsCanvas = () => {
   }, [activeTool, updateDrag, endDrag]);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!containerRef.current) return;
+    if (!imageRef.current) return;
     // Don't start interactions if clicking on a popup
     if ((e.target as HTMLElement).closest('[data-popup]')) return;
 
-    const rect = containerRef.current.getBoundingClientRect();
+    const rect = imageRef.current.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+    console.log('🖱️ [SettingsCanvas] MouseDown:', {
+      clientPos: `(${e.clientX}, ${e.clientY})`,
+      imgRect: { left: rect.left, top: rect.top, width: rect.width, height: rect.height },
+      relativePos: `(${(e.clientX - rect.left).toFixed(0)}px, ${(e.clientY - rect.top).toFixed(0)}px)`,
+      percentPos: `(${x.toFixed(2)}%, ${y.toFixed(2)}%)`,
+      tool: activeTool
+    });
 
     if (activeTool === 'component') {
       isDragging.current = true;
@@ -90,10 +129,10 @@ const SettingsCanvas = () => {
   };
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!containerRef.current) return;
+    if (!imageRef.current) return;
     if ((e.target as HTMLElement).closest('[data-popup]')) return;
 
-    const rect = containerRef.current.getBoundingClientRect();
+    const rect = imageRef.current.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
 
@@ -133,18 +172,18 @@ const SettingsCanvas = () => {
         activeTool === 'pin' ? 'cursor-crosshair' : '',
       )}
     >
-      <Image
-        src={pcbImagePath}
-        alt="PCB Image"
-        width={1024}
-        height={768}
-        priority
-        className="h-auto w-full block rounded-lg"
-        draggable={false}
-      />
+      {/* Wrapper relativo che si adatta esattamente alle dimensioni dell'immagine */}
+      <div className="relative inline-block w-full">
+        <img
+          ref={imageRef}
+          src={pcbImagePath}
+          alt="PCB Image"
+          className="h-auto w-full block rounded-lg"
+          draggable={false}
+        />
 
-      {/* Overlay layer for saved components */}
-      <div className="absolute inset-0 pointer-events-none">
+        {/* Overlay layer for saved components */}
+        <div className="absolute inset-0 pointer-events-none">
         {components.map(comp => {
           const [left, top, width, height] = comp.coords;
           const isActive = comp.id === activeComponentId;
@@ -253,6 +292,8 @@ const SettingsCanvas = () => {
           <PinPopup pin={activePin} containerDims={containerDims} />
         </div>
       )}
+      {/* Chiusura wrapper relativo all'immagine */}
+      </div>
     </div>
   );
 };

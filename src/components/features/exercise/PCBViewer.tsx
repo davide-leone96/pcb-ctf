@@ -1,7 +1,6 @@
 // src/components/features/exercise/PCBViewer.tsx
 'use client';
 
-import Image from 'next/image';
 import { useRef, useState, useLayoutEffect, useEffect, useMemo } from 'react';
 import { exerciseData, getAllPins, getPinCoords } from '@/data/exercise';
 import { useExerciseStore } from '@/store/exerciseStore';
@@ -28,6 +27,7 @@ const PCBViewer = () => {
   } = useExerciseStore();
 
   const pcbContainerRef = useRef<HTMLDivElement>(null);
+  const pcbImageRef = useRef<HTMLImageElement>(null);
   const [imageUrl, setImageUrl] = useState('');
   const [containerDims, setContainerDims] = useState({ width: 0, height: 0 });
   const [multimeterPosition, setMultimeterPosition] = useState<{ x: number; y: number } | null>(null);
@@ -36,30 +36,59 @@ const PCBViewer = () => {
   const [isDraggingLens, setIsDraggingLens] = useState(false);
 
   useLayoutEffect(() => {
-    const pcbElement = pcbContainerRef.current?.parentElement;
-    if (!pcbElement) return;
     const updateDimensionsAndBounds = () => {
-      if (pcbContainerRef.current) {
-        setContainerDims({
-          width: pcbContainerRef.current.offsetWidth,
-          height: pcbContainerRef.current.offsetHeight,
+      if (pcbContainerRef.current && pcbImageRef.current) {
+        // Usa le dimensioni EFFETTIVE dell'immagine renderizzata
+        const imgRect = pcbImageRef.current.getBoundingClientRect();
+        const containerRect = pcbContainerRef.current.getBoundingClientRect();
+
+        console.log('📺 [PCBViewer] Dimensioni aggiornate:', {
+          immagine: { width: imgRect.width, height: imgRect.height },
+          container: { width: containerRect.width, height: containerRect.height },
+          offset: {
+            left: imgRect.left - containerRect.left,
+            top: imgRect.top - containerRect.top
+          },
+          naturalSize: {
+            width: pcbImageRef.current.naturalWidth,
+            height: pcbImageRef.current.naturalHeight
+          }
         });
-        const currentBounds = pcbElement.getBoundingClientRect();
-        setBounds(currentBounds);
+
+        setContainerDims({
+          width: imgRect.width,
+          height: imgRect.height,
+        });
+        setBounds(imgRect);
       }
     };
     setImageUrl(window.location.origin + exerciseData.pcbImage);
-    updateDimensionsAndBounds();
+
+    // Aggiorna quando l'immagine è caricata
+    const img = pcbImageRef.current;
+    if (img) {
+      if (img.complete) {
+        updateDimensionsAndBounds();
+      } else {
+        img.addEventListener('load', updateDimensionsAndBounds);
+      }
+    }
+
     window.addEventListener('resize', updateDimensionsAndBounds);
-    return () => window.removeEventListener('resize', updateDimensionsAndBounds);
+    return () => {
+      window.removeEventListener('resize', updateDimensionsAndBounds);
+      if (img) {
+        img.removeEventListener('load', updateDimensionsAndBounds);
+      }
+    };
   }, []);
 
   useEffect(() => {
     if (!isDraggingLens) return;
 
     const handleGlobalMouseMove = (e: MouseEvent) => {
-      if (pcbContainerRef.current) {
-        const rect = pcbContainerRef.current.getBoundingClientRect();
+      if (pcbImageRef.current) {
+        const rect = pcbImageRef.current.getBoundingClientRect();
         setLensAnchorPosition({
           x: e.clientX - rect.left,
           y: e.clientY - rect.top,
@@ -99,21 +128,21 @@ const PCBViewer = () => {
 
   // Snap detection: cerca il pin più vicino in base al filter specificato
   const findClosestPin = (mouseX: number, mouseY: number, filterType: 'all' | 'uart-only' = 'all'): string | null => {
-    if (!pcbContainerRef.current) return null;
+    if (!pcbImageRef.current) return null;
 
     let closestPin: string | null = null;
     let minDistance = SNAP_RADIUS;
     const pinsToCheck = filterType === 'uart-only'
-      ? getAllPins().filter(pin => pin.isUart)
-      : getAllPins(); // 'all': cerca tra TUTTI i pin (measurement + UART)
+      ? getAllPins(exerciseData).filter(pin => pin.isUart)
+      : getAllPins(exerciseData); // 'all': cerca tra TUTTI i pin (measurement + UART)
 
-    // Usa getBoundingClientRect() per calcolo preciso come il browser
-    const containerRect = pcbContainerRef.current.getBoundingClientRect();
+    // ⚠️ CRITICO: Usa l'immagine, non il container!
+    const imgRect = pcbImageRef.current.getBoundingClientRect();
 
     pinsToCheck.forEach(pin => {
       const [left, top, width, height] = pin.coords;
-      const pinX = (left + width / 2) * containerRect.width / 100;
-      const pinY = (top + height / 2) * containerRect.height / 100;
+      const pinX = (left + width / 2) * imgRect.width / 100;
+      const pinY = (top + height / 2) * imgRect.height / 100;
       const distance = Math.sqrt(Math.pow(mouseX - pinX, 2) + Math.pow(mouseY - pinY, 2));
       if (distance < minDistance) {
         minDistance = distance;
@@ -124,10 +153,13 @@ const PCBViewer = () => {
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!pcbContainerRef.current) return;
-    const rect = pcbContainerRef.current.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
+    if (!pcbContainerRef.current || !pcbImageRef.current) return;
+    const containerRect = pcbContainerRef.current.getBoundingClientRect();
+    const imgRect = pcbImageRef.current.getBoundingClientRect();
+
+    // Mouse position relativa all'immagine (non al container)
+    const mouseX = e.clientX - imgRect.left;
+    const mouseY = e.clientY - imgRect.top;
 
     // Aggiorna sempre mousePosition se la lente è visibile e non ancorata (indipendentemente dal tool)
     if (lensVisible && !lensIsAnchored) {
@@ -159,7 +191,7 @@ const PCBViewer = () => {
   // Posizione percentuale del centro di qualsiasi pin (measurement o UART)
   const getPinCenterPercent = (pinId: string | null): { x: number; y: number } | null => {
     if (!pinId) return null;
-    const coords = getPinCoords(pinId);
+    const coords = getPinCoords(pinId, exerciseData);
     if (!coords) return null;
     const [left, top, width, height] = coords;
     return { x: left + width / 2, y: top + height / 2 };
@@ -256,9 +288,11 @@ const PCBViewer = () => {
       onClick={handleContainerClick}
       className={cn( 'relative', activeTool === 'multimeter' && activeProbe ? 'cursor-none' : '', activeTool === 'probes' && activeAdapterPin ? 'cursor-none' : '' )}
     >
-      <Image src={exerciseData.pcbImage} alt="Vista PCB" width={1024} height={768} priority className="h-auto w-full block rounded-lg" draggable={false}/>
-      {activeTool === 'multimeter' && <Multimeter onPositionChange={setMultimeterPosition} bounds={bounds} />}
-      {showUartOverlay && <UartProbesAdapter onPositionChange={setAdapterPosition} bounds={bounds} readOnly={activeTool !== 'probes'} />}
+      {/* Wrapper relativo che si adatta esattamente alle dimensioni dell'immagine */}
+      <div className="relative inline-block w-full">
+        <img ref={pcbImageRef} src={exerciseData.pcbImage} alt="Vista PCB" className="h-auto w-full block rounded-lg" draggable={false} />
+        {activeTool === 'multimeter' && <Multimeter onPositionChange={setMultimeterPosition} bounds={bounds} />}
+        {showUartOverlay && <UartProbesAdapter onPositionChange={setAdapterPosition} bounds={bounds} readOnly={activeTool !== 'probes'} />}
 
       <div className="absolute inset-0 pointer-events-none z-10">
         {activeTool === 'multimeter' && (
@@ -380,9 +414,29 @@ const PCBViewer = () => {
 
       <div className="absolute inset-0">
         {/* Overlay componenti trovati: sempre visibili con bordo verde */}
-        {exerciseData.components.map((component) => {
+        {exerciseData.components.map((component, index) => {
           if (!foundComponents.includes(component.id)) return null;
           const [left, top, width, height] = component.coords;
+
+          // Log solo una volta per sessione
+          if (index === 0 && containerDims.width > 0) {
+            console.log('🎯 [PCBViewer] Rendering componenti:', {
+              totalComponents: exerciseData.components.length,
+              foundComponents: foundComponents.length,
+              esempio: {
+                id: component.id,
+                coords: `[${left}%, ${top}%, ${width}%, ${height}%]`,
+                pixelCalc: {
+                  left: `${(left * containerDims.width / 100).toFixed(0)}px`,
+                  top: `${(top * containerDims.height / 100).toFixed(0)}px`,
+                  width: `${(width * containerDims.width / 100).toFixed(0)}px`,
+                  height: `${(height * containerDims.height / 100).toFixed(0)}px`
+                }
+              },
+              containerDims
+            });
+          }
+
           return (
             <div
               key={`found-${component.id}`}
@@ -449,6 +503,8 @@ const PCBViewer = () => {
           const [left, top, width, height] = component.coords;
           return <div key={component.id} onClick={(e) => { e.stopPropagation(); selectComponent(component.id); }} className="absolute pointer-events-auto cursor-pointer rounded-md" style={{ left: `${left}%`, top: `${top}%`, width: `${width}%`, height: `${height}%`}}/>
         })}
+      </div>
+      {/* Chiusura wrapper relativo all'immagine */}
       </div>
     </div>
   );

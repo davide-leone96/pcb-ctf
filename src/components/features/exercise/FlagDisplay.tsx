@@ -11,8 +11,11 @@ interface FlagDisplayProps {
 
 const FlagDisplay = ({ flag }: FlagDisplayProps) => {
   const [copied, setCopied] = useState(false);
+  const isFlagComplete = !flag.includes('?');
 
   const handleCopy = async () => {
+    if (!isFlagComplete) return;
+
     try {
       await navigator.clipboard.writeText(flag);
       setCopied(true);
@@ -25,10 +28,14 @@ const FlagDisplay = ({ flag }: FlagDisplayProps) => {
   return (
     <div
       onClick={handleCopy}
-      className="flex items-center justify-between rounded-lg bg-black p-4 font-mono text-sm text-green-400 h-full cursor-pointer hover:bg-gray-950 transition-colors group relative"
-      title="Click per copiare la flag"
+      className={`flex items-center justify-between rounded-lg bg-black p-4 font-mono text-sm text-green-400 h-full transition-colors group relative ${
+        isFlagComplete
+          ? 'cursor-pointer hover:bg-gray-950'
+          : 'cursor-not-allowed opacity-75'
+      }`}
+      title={isFlagComplete ? "Click per copiare la flag" : "Completa la flag per copiarla"}
     >
-      <p className="break-all flex-1">
+      <p className={`break-all flex-1 ${!isFlagComplete ? 'select-none' : ''}`}>
         <span className="text-gray-500">{'> '}</span>
         {flag}
       </p>
@@ -36,7 +43,11 @@ const FlagDisplay = ({ flag }: FlagDisplayProps) => {
         {copied ? (
           <Check className="h-4 w-4 text-green-500" />
         ) : (
-          <Copy className="h-4 w-4 text-gray-500 group-hover:text-green-400 transition-colors" />
+          <Copy className={`h-4 w-4 transition-colors ${
+            isFlagComplete
+              ? 'text-gray-500 group-hover:text-green-400'
+              : 'text-gray-700'
+          }`} />
         )}
       </div>
       {copied && (

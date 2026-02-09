@@ -215,7 +215,7 @@ const LensContentLayer: React.FC<LensContentLayerProps> = ({
           ) {
             elements.push({
               type: 'wire',
-              color: WIRE_COLORS[conn.adapterPin],
+              color: WIRE_COLORS[conn.adapterPin as AdapterPin],
               pathD,
               strokeWidth: 3,
             });
@@ -226,7 +226,7 @@ const LensContentLayer: React.FC<LensContentLayerProps> = ({
         if (pinPos && isPointInLens(pinPos, lensViewport)) {
           elements.push({
             type: 'ball',
-            color: WIRE_COLORS[conn.adapterPin],
+            color: WIRE_COLORS[conn.adapterPin as AdapterPin],
             position: pinPos,
             size: 20, // w-5 h-5
           });
