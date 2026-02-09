@@ -191,6 +191,16 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       flagPart: '',
       coords,
     };
+
+    console.log('💾 [SettingsStore] Componente creato:', {
+      id,
+      coords: `[${coords[0].toFixed(2)}%, ${coords[1].toFixed(2)}%, ${coords[2].toFixed(2)}%, ${coords[3].toFixed(2)}%]`,
+      dragState: {
+        start: `(${dragState.startX.toFixed(2)}%, ${dragState.startY.toFixed(2)}%)`,
+        end: `(${dragState.currentX.toFixed(2)}%, ${dragState.currentY.toFixed(2)}%)`
+      }
+    });
+
     set({
       components: [...components, newComponent],
       dragState: null,
@@ -373,13 +383,38 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       }));
 
     const flagParts = hardwareComponents.map(c => c.flagPart).join('');
+
+    // Crea uno step di default con tutti i componenti come objectives
+    const defaultStep = {
+      id: 'step-1',
+      title: 'Hardware Analysis',
+      description: 'Identifica i componenti principali del PCB.',
+      expectedFlag: `flag{${flagParts}}`,
+      objectives: hardwareComponents.map(c => ({
+        id: c.id,
+        name: c.name,
+        instruction: c.instruction,
+        hint: c.hint,
+        flagPart: c.flagPart,
+        coords: c.coords
+      }))
+    };
+
     const exercise: Exercise = {
       pcbImage: pcbImagePath,
+      steps: [defaultStep],
       components: hardwareComponents,
       pins: measurementPins,
       uartPins,
       initialFlag: `flag{${'?'.repeat(flagParts.length || 20)}}`,
     };
+
+    console.log('📦 [SettingsStore] Export configurazione:', {
+      steps: exercise.steps.length,
+      components: exercise.components.length,
+      pins: exercise.pins.length,
+      uartPins: exercise.uartPins.length
+    });
 
     return JSON.stringify(exercise, null, 2);
   },
@@ -391,6 +426,12 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
 
   applyConfig: () => {
     const json = get().exportAsJson();
+    const parsed = JSON.parse(json);
+    console.log('💾 [SettingsStore] Configurazione salvata in localStorage:', {
+      steps: parsed.steps?.length || 0,
+      components: parsed.components?.length || 0,
+      objectives: parsed.steps?.[0]?.objectives?.length || 0
+    });
     localStorage.setItem(SETTINGS_STORAGE_KEY, json);
   },
 

@@ -16,14 +16,17 @@ export function useExerciseConfig() {
         const result = await response.json();
 
         if (result.success && result.data) {
-          // Usa la configurazione salvata su file
-          setConfig(result.data);
+          const loadedData = result.data as Exercise;
+          if (loadedData.steps && Array.isArray(loadedData.steps) && loadedData.steps.length > 0) {
+            setConfig(loadedData);
+          } else {
+            console.warn('Loaded config missing steps structure, using defaults');
+            setConfig(defaultData);
+          }
         } else {
-          // Usa la configurazione di default
           setConfig(defaultData);
         }
       } catch (error) {
-        // In caso di errore, usa la configurazione di default
         console.warn('Failed to load config from file, using defaults:', error);
         setConfig(defaultData);
       } finally {

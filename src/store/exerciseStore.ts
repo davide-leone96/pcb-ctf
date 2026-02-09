@@ -1,17 +1,26 @@
 // src/store/exerciseStore.ts
 
 import { create } from 'zustand';
-import { exerciseData } from '@/data/exercise';
+import { exerciseData, type Exercise } from '@/data/exercise';
 
 export type Tool = 'pointer' | 'magnifier' | 'multimeter' | 'probes' | 'terminal';
 export type MultimeterMode = 'V' | 'Ohm';
 export type AdapterPin = 'adapter-tx' | 'adapter-rx' | 'adapter-gnd';
+export type StepMode = 'education' | 'active' | 'completed';
 
-interface MousePosition { x: number; y: number; }
-interface ProbeState { hookedTo: string | null; }
-interface UartConnection { adapterPin: AdapterPin; pcbPinId: string | null; }
+export interface MousePosition { x: number; y: number; }
+export interface ProbeState { hookedTo: string | null; }
+export interface UartConnection { adapterPin: AdapterPin; pcbPinId: string | null; }
 
 interface ExerciseState {
+  // Step management
+  exerciseData: Exercise | null;
+  currentStepIndex: number;
+  currentObjectiveIndex: number;
+  stepMode: StepMode;
+  isSimulatorEnabled: boolean;
+
+  // Legacy (kept for compatibility)
   currentStep: number;
   foundComponents: string[];
   flag: string;
@@ -41,6 +50,12 @@ interface ExerciseState {
 }
 
 interface ExerciseActions {
+  // Step management
+  setExerciseData: (data: Exercise) => void;
+  startStep: () => void;
+  validateAndCompleteStep: (inputFlag: string) => boolean;
+
+  // Legacy actions
   selectComponent: (componentId: string) => void;
   resetExercise: () => void;
   setActiveTool: (tool: Tool) => void;
@@ -69,7 +84,14 @@ interface ExerciseActions {
 type ExerciseStore = ExerciseState & ExerciseActions;
 
 export const useExerciseStore = create<ExerciseStore>((set, get) => ({
-  // Stato iniziale
+  // Step management state
+  exerciseData: null,
+  currentStepIndex: 0,
+  currentObjectiveIndex: 0,
+  stepMode: 'education',
+  isSimulatorEnabled: false,
+
+  // Stato iniziale (legacy)
   currentStep: 0,
   foundComponents: [],
   flag: exerciseData.initialFlag,
@@ -414,5 +436,69 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
     } else if (toolId === 'terminal') {
       set({ terminalUnlocked: true });
     }
+  },
+
+  // Step management actions
+  setExerciseData: (data) => {
+    set({
+      exerciseData: data,
+      currentStepIndex: 0,
+      currentObjectiveIndex: 0,
+      stepMode: 'education',
+      isSimulatorEnabled: false,
+    });
+  },
+
+  startStep: () => {
+    set({
+      stepMode: 'active',
+      isSimulatorEnabled: true,
+    });
+  },
+
+  validateAndCompleteStep: (inputFlag) => {
+    const { exerciseData: data, currentStepIndex, currentObjectiveIndex } = get();
+    if (!data || !data.steps || !data.steps[currentStepIndex]) return false;
+
+    const currentStep = data.steps[currentStepIndex];
+    const currentObjective = currentStep.objectives[currentObjectiveIndex];
+
+    // Build expected flag from all objectives up to current one
+    let expectedFlag = 'flag{';
+    for (let i = 0; i <= currentObjectiveIndex; i++) {
+      expectedFlag += currentStep.objectives[i]?.flagPart || '';
+    }
+    expectedFlag += '}';
+
+    if (inputFlag !== expectedFlag) return false;
+
+    // Valid flag - progress to next objective or step
+    const isLastObjective = currentObjectiveIndex === currentStep.objectives.length - 1;
+
+    if (isLastObjective) {
+      // Last objective of current step - check if there's a next step
+      const isLastStep = currentStepIndex === data.steps.length - 1;
+
+      if (isLastStep) {
+        // Finished all steps
+        set({
+          stepMode: 'completed',
+          isSimulatorEnabled: false,
+        });
+      } else {
+        // Move to next step
+        set({
+          currentStepIndex: currentStepIndex + 1,
+          currentObjectiveIndex: 0,
+          stepMode: 'education',
+          isSimulatorEnabled: false,
+        });
+      }
+    } else {
+      // Move to next objective in current step
+      set({ currentObjectiveIndex: currentObjectiveIndex + 1 });
+    }
+
+    return true;
   },
 }));
