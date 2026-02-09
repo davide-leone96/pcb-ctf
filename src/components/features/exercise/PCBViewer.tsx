@@ -2,7 +2,7 @@
 'use client';
 
 import { useRef, useState, useLayoutEffect, useEffect, useMemo } from 'react';
-import { exerciseData, getAllPins, getPinCoords } from '@/data/exercise';
+import { getAllPins, getPinCoords } from '@/data/exercise';
 import { useExerciseStore } from '@/store/exerciseStore';
 import { cn } from '@/lib/utils';
 import { XCircle } from 'lucide-react';
@@ -15,6 +15,10 @@ const SNAP_RADIUS = 15;
 
 const PCBViewer = () => {
   const {
+    exerciseData,
+    currentStepIndex,
+    currentObjectiveIndex,
+    stepMode,
     selectComponent,
     foundComponents,
     activeTool, mousePosition, updateMousePosition,
@@ -62,7 +66,9 @@ const PCBViewer = () => {
         setBounds(imgRect);
       }
     };
-    setImageUrl(window.location.origin + exerciseData.pcbImage);
+    if (exerciseData?.pcbImage) {
+      setImageUrl(window.location.origin + exerciseData.pcbImage);
+    }
 
     // Aggiorna quando l'immagine è caricata
     const img = pcbImageRef.current;
@@ -81,7 +87,7 @@ const PCBViewer = () => {
         img.removeEventListener('load', updateDimensionsAndBounds);
       }
     };
-  }, []);
+  }, [exerciseData]);
 
   useEffect(() => {
     if (!isDraggingLens) return;
@@ -128,7 +134,7 @@ const PCBViewer = () => {
 
   // Snap detection: cerca il pin più vicino in base al filter specificato
   const findClosestPin = (mouseX: number, mouseY: number, filterType: 'all' | 'uart-only' = 'all'): string | null => {
-    if (!pcbImageRef.current) return null;
+    if (!pcbImageRef.current || !exerciseData) return null;
 
     let closestPin: string | null = null;
     let minDistance = SNAP_RADIUS;
@@ -190,7 +196,7 @@ const PCBViewer = () => {
   
   // Posizione percentuale del centro di qualsiasi pin (measurement o UART)
   const getPinCenterPercent = (pinId: string | null): { x: number; y: number } | null => {
-    if (!pinId) return null;
+    if (!pinId || !exerciseData) return null;
     const coords = getPinCoords(pinId, exerciseData);
     if (!coords) return null;
     const [left, top, width, height] = coords;
@@ -279,6 +285,14 @@ const PCBViewer = () => {
       zoomLevel: lensZoomLevel,
     };
   }, [lensIsAnchored, lensAnchorPosition, mousePosition, lensRadius, lensZoomLevel]);
+
+  // Se exerciseData non è caricato, non renderizzare nulla
+  if (!exerciseData || !exerciseData.steps) {
+    return null;
+  }
+
+  const currentStep = exerciseData.steps[currentStepIndex];
+  const currentStepObjectives = currentStep?.objectives || [];
 
   return (
     <div
@@ -414,17 +428,17 @@ const PCBViewer = () => {
 
       <div className="absolute inset-0">
         {/* Overlay componenti trovati: sempre visibili con bordo verde */}
-        {exerciseData.components.map((component, index) => {
-          if (!foundComponents.includes(component.id)) return null;
-          const [left, top, width, height] = component.coords;
+        {currentStepObjectives.map((objective, index) => {
+          if (!foundComponents.includes(objective.id)) return null;
+          const [left, top, width, height] = objective.coords;
 
           // Log solo una volta per sessione
           if (index === 0 && containerDims.width > 0) {
-            console.log('🎯 [PCBViewer] Rendering componenti:', {
-              totalComponents: exerciseData.components.length,
+            console.log('🎯 [PCBViewer] Rendering obiettivi:', {
+              totalObjectives: currentStepObjectives.length,
               foundComponents: foundComponents.length,
               esempio: {
-                id: component.id,
+                id: objective.id,
                 coords: `[${left}%, ${top}%, ${width}%, ${height}%]`,
                 pixelCalc: {
                   left: `${(left * containerDims.width / 100).toFixed(0)}px`,
@@ -439,7 +453,7 @@ const PCBViewer = () => {
 
           return (
             <div
-              key={`found-${component.id}`}
+              key={`found-${objective.id}`}
               className="absolute border-2 border-green-500 bg-green-500/20 rounded-md pointer-events-none"
               style={{
                 left: `${left}%`,
@@ -498,10 +512,10 @@ const PCBViewer = () => {
             )}
           </>
         )}
-        {/* Hotspot componenti: invisibili, solo click handler */}
-        {activeTool === 'pointer' && exerciseData.components.map((component) => {
-          const [left, top, width, height] = component.coords;
-          return <div key={component.id} onClick={(e) => { e.stopPropagation(); selectComponent(component.id); }} className="absolute pointer-events-auto cursor-pointer rounded-md" style={{ left: `${left}%`, top: `${top}%`, width: `${width}%`, height: `${height}%`}}/>
+        {/* Hotspot componenti: invisibili, solo click handler - mostra solo gli obiettivi dello step corrente */}
+        {activeTool === 'pointer' && stepMode === 'active' && currentStepObjectives.map((objective) => {
+          const [left, top, width, height] = objective.coords;
+          return <div key={objective.id} onClick={(e) => { e.stopPropagation(); selectComponent(objective.id); }} className="absolute pointer-events-auto cursor-pointer rounded-md" style={{ left: `${left}%`, top: `${top}%`, width: `${width}%`, height: `${height}%`}}/>
         })}
       </div>
       {/* Chiusura wrapper relativo all'immagine */}

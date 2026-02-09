@@ -28,6 +28,7 @@ export default function Home() {
     activeTool,
     terminalDiscoveries,
     uartConnected,
+    lensVisible,
     startStep,
     validateAndCompleteStep,
     setExerciseData,
@@ -128,7 +129,7 @@ export default function Home() {
 
           <div className="border-2 border-dashed border-gray-500 rounded-lg p-4 relative">
             {!isSimulatorEnabled && (
-              <div className="absolute inset-0 bg-gray-900/80 backdrop-blur-sm rounded-lg z-10 flex items-center justify-center">
+              <div className={`absolute inset-0 bg-gray-900/80 backdrop-blur-sm rounded-lg z-10 flex items-center justify-center ${lensVisible ? 'pointer-events-none' : ''}`}>
                 <p className="text-gray-400 text-lg">Clicca su "Start" per iniziare</p>
               </div>
             )}
