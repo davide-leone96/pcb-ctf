@@ -3,9 +3,12 @@
 /**
  * Definisce la struttura di un singolo componente hardware cliccabile sul PCB.
  */
+export type ObjectiveType = 'component' | 'uart' | 'terminal';
+
 export interface Objective {
   id: string;
   name: string;
+  type?: ObjectiveType;
   instruction: string;
   hint: string;
   flagPart: string;
@@ -106,11 +109,91 @@ const defaultExerciseData: Exercise = {
     },
     {
       id: 'step-2',
-      title: 'Power Analysis',
+      title: 'UART Connection',
       description:
-        'Ottimo lavoro! Ora che hai identificato i componenti principali, è il momento di analizzare l\'alimentazione del circuito. In questo step utilizzerai il multimetro per misurare tensioni e resistenze. Imparerai a identificare i punti di alimentazione critici del PCB.',
-      expectedFlag: 'flag{POWER_ANALYSIS_COMPLETE}',
-      objectives: [],
+        "Ottimo lavoro! Ora che hai identificato i componenti principali, è il momento di stabilire una connessione seriale UART con il dispositivo. Dovrai collegare le sonde dell'adattatore USB-to-Serial ai pin UART che hai individuato sul PCB. Ricorda la regola fondamentale: TX va su RX e viceversa (crossover). Seleziona lo strumento 'Connessione UART' dalla sidebar per iniziare.",
+      expectedFlag: 'flag{UART_CONNECTED}',
+      objectives: [
+        {
+          id: 'uart-connect',
+          name: 'Connessione UART',
+          type: 'uart',
+          instruction:
+            "Collega le 3 sonde dall'adattatore USB-to-Serial ai pin UART del PCB: TX dell'adattatore va su RX del PCB, RX dell'adattatore va su TX del PCB, e GND su GND. Seleziona lo strumento 'Connessione UART' dalla sidebar.",
+          hint: 'Ricorda il crossover: TX→RX, RX→TX. Il GND è sempre GND. Cerca i pin nella parte inferiore della scheda.',
+          flagPart: 'UART_CONNECTED',
+          coords: [0, 0, 0, 0],
+        },
+      ],
+    },
+    {
+      id: 'step-3',
+      title: 'Terminal Challenge',
+      description:
+        "Connessione UART stabilita! Ora hai accesso alla console seriale del dispositivo. In questo step dovrai esplorare il sistema embedded attraverso il terminale, analizzare la configurazione di U-Boot, ottenere accesso root, cercare credenziali e vulnerabilità. Ogni scoperta rivelerà una parte della flag finale. Seleziona lo strumento 'Terminale' dalla sidebar per iniziare.",
+      expectedFlag: 'flag{b00t_r00t_h4sh_l34k_1nj3ct_sh3ll}',
+      objectives: [
+        {
+          id: 'boot',
+          name: 'Boot Analysis',
+          type: 'terminal',
+          instruction:
+            "Analizza la configurazione di U-Boot. Usa il comando 'printenv' nella shell U-Boot per esaminare le variabili d'ambiente. Cerca inconsistenze tra il bootloader e il kernel.",
+          hint: "Confronta 'rootfstype' nel printenv con il filesystem effettivamente montato dal kernel. Sono diversi?",
+          flagPart: 'b00t',
+          coords: [0, 0, 0, 0],
+        },
+        {
+          id: 'root',
+          name: 'Root Access',
+          type: 'terminal',
+          instruction:
+            "Ottieni accesso root al sistema. Dopo il boot del kernel, il dispositivo chiederà un login. Prova credenziali comuni per dispositivi embedded.",
+          hint: "I router TP-Link spesso usano credenziali di default. Prova 'root' come utente. La password potrebbe essere 'sohoadmin'.",
+          flagPart: '_r00t',
+          coords: [0, 0, 0, 0],
+        },
+        {
+          id: 'hash',
+          name: 'Hash Cracking',
+          type: 'terminal',
+          instruction:
+            "Esamina il file /etc/shadow per trovare gli hash delle password. Usa il tab 'Local Machine' per crackarli con hashcat o john.",
+          hint: "Usa 'cat /etc/shadow' nel tab UART, poi copia l'hash MD5 e usa 'hashcat <hash> rockyou.txt' nel tab Local Machine.",
+          flagPart: '_h4sh',
+          coords: [0, 0, 0, 0],
+        },
+        {
+          id: 'leak',
+          name: 'Data Leak',
+          type: 'terminal',
+          instruction:
+            "Analizza la partizione di configurazione del dispositivo. Usa il comando 'strings' per estrarre dati leggibili dai dispositivi a blocchi in /dev/.",
+          hint: "Prova 'strings /dev/mtdblock3'. La partizione config spesso contiene credenziali WiFi e configurazioni in chiaro.",
+          flagPart: '_l34k',
+          coords: [0, 0, 0, 0],
+        },
+        {
+          id: 'inject',
+          name: 'Command Injection',
+          type: 'terminal',
+          instruction:
+            "Analizza il web server del dispositivo. Usa 'strings' sul binario httpd per cercare vulnerabilità di command injection.",
+          hint: "Prova 'strings /usr/bin/httpd | grep exec'. Cerca funzioni come execFormatCmd che potrebbero essere vulnerabili.",
+          flagPart: '_1nj3ct',
+          coords: [0, 0, 0, 0],
+        },
+        {
+          id: 'shell',
+          name: 'Backdoor Discovery',
+          type: 'terminal',
+          instruction:
+            "Cerca file sospetti nel sistema. Analizza i processi in esecuzione con 'ps' e indaga su binari insoliti in /usr/bin/.",
+          hint: "Usa 'ps' per vedere i processi attivi. Noti qualcosa di sospetto? Prova 'strings /usr/bin/backdoorTest' o 'file /usr/bin/backdoorTest'.",
+          flagPart: '_sh3ll',
+          coords: [0, 0, 0, 0],
+        },
+      ],
     },
   ],
 
@@ -161,6 +244,24 @@ const defaultExerciseData: Exercise = {
  * Carica la configurazione da localStorage se presente,
  * altrimenti usa i dati di default hardcoded.
  */
+/**
+ * Unisce la configurazione caricata con gli step di default mancanti (UART + Terminal).
+ * La pagina /settings salva solo Step 1, quindi Step 2 e 3 devono essere sempre aggiunti.
+ */
+function mergeWithDefaultSteps(loaded: Exercise): Exercise {
+  const defaultSteps = defaultExerciseData.steps || [];
+  const loadedSteps = loaded.steps || [];
+
+  const defaultUartStep = defaultSteps.find(s => s.id === 'step-2');
+  const defaultTerminalStep = defaultSteps.find(s => s.id === 'step-3');
+
+  const mergedSteps = [...loadedSteps];
+  if (!loadedSteps.some(s => s.id === 'step-2') && defaultUartStep) mergedSteps.push(defaultUartStep);
+  if (!loadedSteps.some(s => s.id === 'step-3') && defaultTerminalStep) mergedSteps.push(defaultTerminalStep);
+
+  return { ...loaded, steps: mergedSteps };
+}
+
 function loadExerciseData(): Exercise {
   if (typeof window !== 'undefined') {
     try {
@@ -173,13 +274,14 @@ function loadExerciseData(): Exercise {
         const hasValidComponents = parsed.components && Array.isArray(parsed.components) && parsed.components.length > 0;
 
         if (hasValidSteps || hasValidComponents) {
+          const merged = mergeWithDefaultSteps(parsed);
           console.log('✅ [Exercise] Configurazione caricata da localStorage:', {
-            steps: parsed.steps?.length || 0,
-            components: parsed.components?.length || 0,
-            pins: parsed.pins?.length || 0,
-            uartPins: parsed.uartPins?.length || 0
+            steps: merged.steps?.length || 0,
+            components: merged.components?.length || 0,
+            pins: merged.pins?.length || 0,
+            uartPins: merged.uartPins?.length || 0
           });
-          return parsed;
+          return merged;
         }
       }
     } catch (error) {
