@@ -54,6 +54,7 @@ interface ExerciseActions {
   setExerciseData: (data: Exercise) => void;
   startStep: () => void;
   validateAndCompleteStep: (inputFlag: string) => boolean;
+  _completeCurrentObjective: () => void;
 
   // Legacy actions
   selectComponent: (componentId: string) => void;
@@ -263,22 +264,19 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   },
   
   addTerminalDiscovery: (id) => {
-    const { terminalDiscoveries, foundComponents, uartConnected, exerciseData: data } = get();
+    const { terminalDiscoveries } = get();
     if (!terminalDiscoveries.includes(id)) {
       const newDiscoveries = [...terminalDiscoveries, id];
 
-      // Controlla se l'esercizio è completato (tutte le 3 condizioni):
-      // 1. Tutti i componenti trovati
-      // 2. UART connesso
-      // 3. Tutte le 6 discovery del terminale fatte (vedi FLAG_PARTS in terminalData.ts)
-      const allComponentsFound = data?.components ? foundComponents.length === data.components.length : false;
-      const allDiscoveriesDone = newDiscoveries.length === 6; // 6 = numero di FLAG_PARTS
-      const exerciseIsNowFinished = allComponentsFound && uartConnected && allDiscoveriesDone;
+      set({ terminalDiscoveries: newDiscoveries });
 
-      set({
-        terminalDiscoveries: newDiscoveries,
-        isFinished: exerciseIsNowFinished
-      });
+      // Se la discovery corrisponde all'obiettivo corrente di tipo 'terminal', completalo
+      const { stepMode, exerciseData: storeData, currentStepIndex, currentObjectiveIndex } = get();
+      const currentStep = storeData?.steps?.[currentStepIndex];
+      const currentObj = currentStep?.objectives?.[currentObjectiveIndex];
+      if (stepMode === 'active' && currentObj?.type === 'terminal' && currentObj.id === id) {
+        get()._completeCurrentObjective();
+      }
     }
   },
 
@@ -337,11 +335,20 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
     };
 
     if (allCorrect) {
-      // Genera la flag UART che servirà per sbloccare il terminale
       newState.uartFlag = 'flag{UART_CONNECTED}';
     }
 
     set(newState);
+
+    // Se la connessione UART è corretta, completa l'obiettivo corrente se è di tipo 'uart'
+    if (allCorrect) {
+      const { stepMode, exerciseData: storeData, currentStepIndex, currentObjectiveIndex } = get();
+      const currentStep = storeData?.steps?.[currentStepIndex];
+      const currentObj = currentStep?.objectives?.[currentObjectiveIndex];
+      if (stepMode === 'active' && currentObj?.type === 'uart') {
+        get()._completeCurrentObjective();
+      }
+    }
   },
 
   unhookUartProbe: (adapterPin) => {
@@ -353,38 +360,52 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   },
 
   selectComponent: (componentId) => {
-    const {
-      currentStepIndex,
-      currentObjectiveIndex,
-      stepMode,
-      foundComponents,
-      exerciseData: data
-    } = get();
+    const { currentStepIndex, currentObjectiveIndex, stepMode, exerciseData: data } = get();
 
-    // Solo se siamo in modalità active
     if (stepMode !== 'active' || !data || !data.steps) return;
 
     const currentStep = data.steps[currentStepIndex];
     if (!currentStep || !currentStep.objectives) return;
 
     const currentObjective = currentStep.objectives[currentObjectiveIndex];
-    if (!currentObjective || componentId !== currentObjective.id) return;
+    if (!currentObjective) return;
 
-    // Componente corretto! Aggiorna stato
-    const newFoundComponents = [...foundComponents, componentId];
+    // Solo obiettivi di tipo component (o senza tipo = default component)
+    const objType = currentObjective.type || 'component';
+    if (objType !== 'component') return;
+    if (componentId !== currentObjective.id) return;
 
-    // Costruisci flag progressiva con tutti gli obiettivi completati finora
+    get()._completeCurrentObjective();
+  },
+
+  _completeCurrentObjective: () => {
+    const {
+      currentStepIndex,
+      currentObjectiveIndex,
+      foundComponents,
+      exerciseData: data,
+    } = get();
+
+    if (!data || !data.steps) return;
+
+    const currentStep = data.steps[currentStepIndex];
+    if (!currentStep || !currentStep.objectives) return;
+
+    const currentObjective = currentStep.objectives[currentObjectiveIndex];
+    if (!currentObjective) return;
+
+    const newFoundComponents = [...foundComponents, currentObjective.id];
+
+    // Costruisci flag progressiva
     let flagContent = '';
     for (let i = 0; i <= currentObjectiveIndex; i++) {
       flagContent += currentStep.objectives[i].flagPart;
     }
     const newFlag = `flag{${flagContent}}`;
 
-    // Verifica se è l'ultimo obiettivo dello step
     const isLastObjective = currentObjectiveIndex === currentStep.objectives.length - 1;
 
     if (isLastObjective) {
-      // Ultimo obiettivo completato -> modalità completed
       set({
         foundComponents: newFoundComponents,
         flag: newFlag,
@@ -395,7 +416,6 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
         lensAnchorPosition: null,
       });
     } else {
-      // Passa al prossimo obiettivo
       set({
         foundComponents: newFoundComponents,
         flag: newFlag,
