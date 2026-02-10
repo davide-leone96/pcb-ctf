@@ -6,7 +6,7 @@ import type {
   HardwareComponent, MeasurementPin, UartPin, UartRole, Exercise,
   ObjectiveType,
 } from '@/data/exercise';
-import { SETTINGS_STORAGE_KEY, ALL_TOOLS, defaultExerciseData, type Tool } from '@/data/exercise';
+import { SETTINGS_STORAGE_KEY, ALL_TOOLS, defaultExerciseData, mergeWithDefaultSteps, type Tool } from '@/data/exercise';
 
 // --- Draft types ---
 
@@ -710,7 +710,8 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   loadFromStorage: () => {
     try {
       const saved = localStorage.getItem(SETTINGS_STORAGE_KEY);
-      const exercise: Exercise = saved ? JSON.parse(saved) : defaultExerciseData;
+      const raw: Exercise = saved ? JSON.parse(saved) : defaultExerciseData;
+      const exercise = mergeWithDefaultSteps(raw);
 
       // Converti steps → DraftStep[] con DraftObjective[]
       let draftSteps: DraftStep[] = [];

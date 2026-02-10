@@ -254,7 +254,7 @@ export const defaultExerciseData: Exercise = {
  * Unisce la configurazione caricata con gli step di default mancanti (UART + Terminal).
  * La pagina /settings salva solo Step 1, quindi Step 2 e 3 devono essere sempre aggiunti.
  */
-function mergeWithDefaultSteps(loaded: Exercise): Exercise {
+export function mergeWithDefaultSteps(loaded: Exercise): Exercise {
   const defaultSteps = defaultExerciseData.steps || [];
   const loadedSteps = loaded.steps || [];
 
