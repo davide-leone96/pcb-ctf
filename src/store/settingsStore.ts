@@ -2,10 +2,31 @@
 'use client';
 
 import { create } from 'zustand';
-import type { HardwareComponent, MeasurementPin, UartPin, UartRole, Exercise } from '@/data/exercise';
-import { SETTINGS_STORAGE_KEY } from '@/data/exercise';
+import type {
+  HardwareComponent, MeasurementPin, UartPin, UartRole, Exercise,
+  ObjectiveType,
+} from '@/data/exercise';
+import { SETTINGS_STORAGE_KEY, ALL_TOOLS, defaultExerciseData, type Tool } from '@/data/exercise';
 
-// --- Draft types (editable versions of the exercise types) ---
+// --- Draft types ---
+
+export interface DraftObjective {
+  id: string;
+  name: string;
+  type: ObjectiveType;
+  instruction: string;
+  hint: string;
+  flagPart: string;
+  coords: [number, number, number, number]; // solo per type='component'
+}
+
+export interface DraftStep {
+  id: string;
+  title: string;
+  description: string;
+  availableTools: Tool[];
+  objectives: DraftObjective[];
+}
 
 export interface DraftComponent {
   id: string;
@@ -13,7 +34,7 @@ export interface DraftComponent {
   instruction: string;
   hint: string;
   flagPart: string;
-  coords: [number, number, number, number]; // [left%, top%, width%, height%]
+  coords: [number, number, number, number];
 }
 
 export type PinType = 'custom' | 'tx' | 'rx' | 'gnd' | 'vcc';
@@ -25,8 +46,8 @@ export interface DraftPin {
   pinType: PinType;
   label: string;
   shape: PinShape;
-  size: number; // percentage width/height
-  coords: [number, number]; // [left%, top%] center point
+  size: number;
+  coords: [number, number];
   voltageMode: ValueMode;
   voltageFixed: number;
   voltageMin: number;
@@ -39,10 +60,10 @@ export interface DraftPin {
   hint: string;
 }
 
-export type SettingsTool = 'component' | 'pin';
+export type SettingsTool = 'component' | 'pin' | 'objective';
 
 export interface DragState {
-  startX: number; // percentage
+  startX: number;
   startY: number;
   currentX: number;
   currentY: number;
@@ -53,11 +74,14 @@ export interface DragState {
 interface SettingsState {
   activeTool: SettingsTool;
   components: DraftComponent[];
+  activeComponentId: string | null;
+  steps: DraftStep[];
+  activeStepId: string | null;
+  activeObjectiveId: string | null;
   pins: DraftPin[];
+  activePinId: string | null;
+  pendingPinCoords: [number, number] | null;
   dragState: DragState | null;
-  activeComponentId: string | null; // editing / just created
-  activePinId: string | null; // editing / just created
-  pendingPinCoords: [number, number] | null; // pin placement before save
   pcbImagePath: string;
 }
 
@@ -65,15 +89,34 @@ interface SettingsActions {
   setActiveTool: (tool: SettingsTool) => void;
   setPcbImagePath: (path: string) => void;
 
-  // Component actions
-  startDrag: (x: number, y: number) => void;
-  updateDrag: (x: number, y: number) => void;
-  endDrag: () => void;
+  // Component actions (Init)
+  editComponent: (id: string) => void;
   cancelComponentEdit: () => void;
   saveComponent: (data: Omit<DraftComponent, 'id' | 'coords'>) => void;
   updateComponent: (id: string, data: Partial<Omit<DraftComponent, 'id' | 'coords'>>) => void;
   deleteComponent: (id: string) => void;
-  editComponent: (id: string) => void;
+
+  // Step actions
+  addStep: () => void;
+  deleteStep: (stepId: string) => void;
+  reorderStep: (stepId: string, direction: 'up' | 'down') => void;
+  selectStep: (stepId: string | null) => void;
+  updateStep: (stepId: string, data: Partial<Pick<DraftStep, 'title' | 'description' | 'availableTools'>>) => void;
+  toggleStepTool: (stepId: string, tool: Tool) => void;
+
+  // Objective actions
+  addObjective: (stepId: string, type: ObjectiveType) => void;
+  deleteObjective: (stepId: string, objectiveId: string) => void;
+  reorderObjective: (stepId: string, objectiveId: string, direction: 'up' | 'down') => void;
+  editObjective: (objectiveId: string) => void;
+  cancelObjectiveEdit: () => void;
+  saveObjective: (data: Omit<DraftObjective, 'id' | 'coords' | 'type'>) => void;
+  updateObjective: (id: string, data: Partial<Omit<DraftObjective, 'id' | 'coords' | 'type'>>) => void;
+
+  // Canvas drag
+  startDrag: (x: number, y: number) => void;
+  updateDrag: (x: number, y: number) => void;
+  endDrag: () => void;
 
   // Pin actions
   placePin: (x: number, y: number) => void;
@@ -95,6 +138,8 @@ interface SettingsActions {
 
 type SettingsStore = SettingsState & SettingsActions;
 
+let stepCounter = 0;
+let objectiveCounter = 0;
 let componentCounter = 0;
 let pinCounter = 0;
 
@@ -111,29 +156,67 @@ const dragToCoords = (drag: DragState): [number, number, number, number] => {
   return [left, top, width, height];
 };
 
+/** Trova l'obiettivo e il suo step dato l'objectiveId */
+const findObjectiveInSteps = (
+  steps: DraftStep[],
+  objectiveId: string
+): { step: DraftStep; objective: DraftObjective; stepIndex: number; objIndex: number } | null => {
+  for (let si = 0; si < steps.length; si++) {
+    const step = steps[si];
+    for (let oi = 0; oi < step.objectives.length; oi++) {
+      if (step.objectives[oi].id === objectiveId) {
+        return { step, objective: step.objectives[oi], stepIndex: si, objIndex: oi };
+      }
+    }
+  }
+  return null;
+};
+
+/** Aggiorna gli obiettivi di uno step specifico */
+const updateStepObjectives = (
+  steps: DraftStep[],
+  stepId: string,
+  updater: (objectives: DraftObjective[]) => DraftObjective[]
+): DraftStep[] =>
+  steps.map(s => s.id === stepId ? { ...s, objectives: updater(s.objectives) } : s);
+
 export const useSettingsStore = create<SettingsStore>((set, get) => ({
   // Initial state
   activeTool: 'component',
   components: [],
-  pins: [],
-  dragState: null,
   activeComponentId: null,
+  steps: [],
+  activeStepId: null,
+  activeObjectiveId: null,
+  pins: [],
   activePinId: null,
   pendingPinCoords: null,
+  dragState: null,
   pcbImagePath: '/images/pcb_v2.jpg',
 
-  // Tool
+  // --- Tool ---
+
   setActiveTool: (tool) => {
     const state = get();
-    // Cancel any pending edits when switching tools
-    if (state.dragState || state.activeComponentId) {
-      // If there's an unsaved new component, remove it
+    // Cancel pending component edits
+    if (state.activeComponentId) {
       const comp = state.components.find(c => c.id === state.activeComponentId);
       if (comp && comp.name === '') {
         set({ components: state.components.filter(c => c.id !== state.activeComponentId) });
       }
     }
-    if (state.pendingPinCoords || state.activePinId) {
+    // Cancel pending objective edits
+    if (state.activeObjectiveId) {
+      const found = findObjectiveInSteps(state.steps, state.activeObjectiveId);
+      if (found && found.objective.name === '') {
+        set({
+          steps: updateStepObjectives(state.steps, found.step.id,
+            objs => objs.filter(o => o.id !== state.activeObjectiveId)),
+        });
+      }
+    }
+    // Cancel pending pin edits
+    if (state.activePinId) {
       const pin = state.pins.find(p => p.id === state.activePinId);
       if (pin && pin.label === '') {
         set({ pins: state.pins.filter(p => p.id !== state.activePinId) });
@@ -143,6 +226,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       activeTool: tool,
       dragState: null,
       activeComponentId: null,
+      activeObjectiveId: null,
       activePinId: null,
       pendingPinCoords: null,
     });
@@ -150,61 +234,14 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
 
   setPcbImagePath: (path) => set({ pcbImagePath: path }),
 
-  // --- Component actions ---
+  // --- Component actions (Init) ---
 
-  startDrag: (x, y) => {
-    const state = get();
-    // Cancel any current component edit
-    if (state.activeComponentId) {
-      const comp = state.components.find(c => c.id === state.activeComponentId);
-      if (comp && comp.name === '') {
-        set({ components: state.components.filter(c => c.id !== state.activeComponentId) });
-      }
-    }
+  editComponent: (id) => {
     set({
-      dragState: { startX: x, startY: y, currentX: x, currentY: y },
-      activeComponentId: null,
-    });
-  },
-
-  updateDrag: (x, y) => {
-    const { dragState } = get();
-    if (!dragState) return;
-    set({ dragState: { ...dragState, currentX: x, currentY: y } });
-  },
-
-  endDrag: () => {
-    const { dragState, components } = get();
-    if (!dragState) return;
-    const coords = dragToCoords(dragState);
-    // Min threshold: 1% width and 1% height
-    if (coords[2] < 1 || coords[3] < 1) {
-      set({ dragState: null });
-      return;
-    }
-    const id = `comp-${++componentCounter}`;
-    const newComponent: DraftComponent = {
-      id,
-      name: '',
-      instruction: '',
-      hint: '',
-      flagPart: '',
-      coords,
-    };
-
-    console.log('💾 [SettingsStore] Componente creato:', {
-      id,
-      coords: `[${coords[0].toFixed(2)}%, ${coords[1].toFixed(2)}%, ${coords[2].toFixed(2)}%, ${coords[3].toFixed(2)}%]`,
-      dragState: {
-        start: `(${dragState.startX.toFixed(2)}%, ${dragState.startY.toFixed(2)}%)`,
-        end: `(${dragState.currentX.toFixed(2)}%, ${dragState.currentY.toFixed(2)}%)`
-      }
-    });
-
-    set({
-      components: [...components, newComponent],
-      dragState: null,
       activeComponentId: id,
+      activeObjectiveId: null,
+      activePinId: null,
+      pendingPinCoords: null,
     });
   },
 
@@ -212,7 +249,6 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     const { activeComponentId, components } = get();
     if (!activeComponentId) return;
     const comp = components.find(c => c.id === activeComponentId);
-    // Remove if it was never saved (name is empty)
     if (comp && comp.name === '') {
       set({
         components: components.filter(c => c.id !== activeComponentId),
@@ -227,17 +263,14 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     const { activeComponentId, components } = get();
     if (!activeComponentId) return;
     set({
-      components: components.map(c =>
-        c.id === activeComponentId ? { ...c, ...data } : c
-      ),
+      components: components.map(c => c.id === activeComponentId ? { ...c, ...data } : c),
       activeComponentId: null,
     });
   },
 
   updateComponent: (id, data) => {
-    const { components } = get();
     set({
-      components: components.map(c => c.id === id ? { ...c, ...data } : c),
+      components: get().components.map(c => c.id === id ? { ...c, ...data } : c),
       activeComponentId: null,
     });
   },
@@ -249,15 +282,242 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     });
   },
 
-  editComponent: (id) => {
-    set({ activeComponentId: id, activePinId: null, pendingPinCoords: null });
+  // --- Step actions ---
+
+  addStep: () => {
+    const { steps } = get();
+    const id = `step-${++stepCounter}`;
+    const newStep: DraftStep = {
+      id,
+      title: `Step ${steps.length + 1}`,
+      description: '',
+      availableTools: [...ALL_TOOLS],
+      objectives: [],
+    };
+    set({
+      steps: [...steps, newStep],
+      activeStepId: id,
+    });
   },
 
-  // --- Pin actions ---
+  deleteStep: (stepId) => {
+    const { steps, activeStepId } = get();
+    const filtered = steps.filter(s => s.id !== stepId);
+    set({
+      steps: filtered,
+      activeStepId: activeStepId === stepId ? (filtered[0]?.id ?? null) : activeStepId,
+      activeObjectiveId: null,
+    });
+  },
+
+  reorderStep: (stepId, direction) => {
+    const { steps } = get();
+    const index = steps.findIndex(s => s.id === stepId);
+    if (index < 0) return;
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= steps.length) return;
+    const newSteps = [...steps];
+    [newSteps[index], newSteps[newIndex]] = [newSteps[newIndex], newSteps[index]];
+    set({ steps: newSteps });
+  },
+
+  selectStep: (stepId) => set({ activeStepId: stepId, activeObjectiveId: null }),
+
+  updateStep: (stepId, data) => {
+    set({
+      steps: get().steps.map(s => s.id === stepId ? { ...s, ...data } : s),
+    });
+  },
+
+  toggleStepTool: (stepId, tool) => {
+    set({
+      steps: get().steps.map(s => {
+        if (s.id !== stepId) return s;
+        const has = s.availableTools.includes(tool);
+        return {
+          ...s,
+          availableTools: has
+            ? s.availableTools.filter(t => t !== tool)
+            : [...s.availableTools, tool],
+        };
+      }),
+    });
+  },
+
+  // --- Objective actions ---
+
+  addObjective: (stepId, type) => {
+    const id = `obj-${++objectiveCounter}`;
+    const newObj: DraftObjective = {
+      id,
+      name: '',
+      type,
+      instruction: '',
+      hint: '',
+      flagPart: '',
+      coords: [0, 0, 0, 0],
+    };
+    set({
+      steps: updateStepObjectives(get().steps, stepId, objs => [...objs, newObj]),
+      activeObjectiveId: id,
+      activeStepId: stepId,
+    });
+  },
+
+  deleteObjective: (stepId, objectiveId) => {
+    const { activeObjectiveId } = get();
+    set({
+      steps: updateStepObjectives(get().steps, stepId, objs => objs.filter(o => o.id !== objectiveId)),
+      activeObjectiveId: activeObjectiveId === objectiveId ? null : activeObjectiveId,
+    });
+  },
+
+  reorderObjective: (stepId, objectiveId, direction) => {
+    set({
+      steps: updateStepObjectives(get().steps, stepId, objs => {
+        const index = objs.findIndex(o => o.id === objectiveId);
+        if (index < 0) return objs;
+        const newIndex = direction === 'up' ? index - 1 : index + 1;
+        if (newIndex < 0 || newIndex >= objs.length) return objs;
+        const newObjs = [...objs];
+        [newObjs[index], newObjs[newIndex]] = [newObjs[newIndex], newObjs[index]];
+        return newObjs;
+      }),
+    });
+  },
+
+  editObjective: (objectiveId) => {
+    const found = findObjectiveInSteps(get().steps, objectiveId);
+    if (!found) return;
+    set({
+      activeObjectiveId: objectiveId,
+      activeStepId: found.step.id,
+      activeComponentId: null,
+      activePinId: null,
+      pendingPinCoords: null,
+    });
+  },
+
+  cancelObjectiveEdit: () => {
+    const { activeObjectiveId, steps } = get();
+    if (!activeObjectiveId) return;
+    const found = findObjectiveInSteps(steps, activeObjectiveId);
+    if (found && found.objective.name === '') {
+      set({
+        steps: updateStepObjectives(steps, found.step.id,
+          objs => objs.filter(o => o.id !== activeObjectiveId)),
+        activeObjectiveId: null,
+      });
+    } else {
+      set({ activeObjectiveId: null });
+    }
+  },
+
+  saveObjective: (data) => {
+    const { activeObjectiveId, steps } = get();
+    if (!activeObjectiveId) return;
+    const found = findObjectiveInSteps(steps, activeObjectiveId);
+    if (!found) return;
+    set({
+      steps: updateStepObjectives(steps, found.step.id,
+        objs => objs.map(o => o.id === activeObjectiveId ? { ...o, ...data } : o)),
+      activeObjectiveId: null,
+    });
+  },
+
+  updateObjective: (id, data) => {
+    const { steps } = get();
+    const found = findObjectiveInSteps(steps, id);
+    if (!found) return;
+    set({
+      steps: updateStepObjectives(steps, found.step.id,
+        objs => objs.map(o => o.id === id ? { ...o, ...data } : o)),
+      activeObjectiveId: null,
+    });
+  },
+
+  // --- Canvas drag (for component tool AND objective tool) ---
+
+  startDrag: (x, y) => {
+    const state = get();
+    // 'component' tool: always allowed
+    // 'objective' tool: requires active step
+    if (state.activeTool === 'objective' && !state.activeStepId) return;
+    if (state.activeTool !== 'component' && state.activeTool !== 'objective') return;
+
+    // Cancel current component edit
+    if (state.activeComponentId) {
+      const comp = state.components.find(c => c.id === state.activeComponentId);
+      if (comp && comp.name === '') {
+        set({ components: state.components.filter(c => c.id !== state.activeComponentId) });
+      }
+    }
+    // Cancel current objective edit
+    if (state.activeObjectiveId) {
+      const found = findObjectiveInSteps(state.steps, state.activeObjectiveId);
+      if (found && found.objective.name === '') {
+        set({
+          steps: updateStepObjectives(state.steps, found.step.id,
+            objs => objs.filter(o => o.id !== state.activeObjectiveId)),
+        });
+      }
+    }
+    set({
+      dragState: { startX: x, startY: y, currentX: x, currentY: y },
+      activeComponentId: null,
+      activeObjectiveId: null,
+    });
+  },
+
+  updateDrag: (x, y) => {
+    const { dragState } = get();
+    if (!dragState) return;
+    set({ dragState: { ...dragState, currentX: x, currentY: y } });
+  },
+
+  endDrag: () => {
+    const { dragState, activeTool, activeStepId, steps, components } = get();
+    if (!dragState) return;
+    const coords = dragToCoords(dragState);
+    if (coords[2] < 1 || coords[3] < 1) {
+      set({ dragState: null });
+      return;
+    }
+
+    if (activeTool === 'component') {
+      const id = `comp-${++componentCounter}`;
+      const newComp: DraftComponent = {
+        id, name: '', instruction: '', hint: '', flagPart: '', coords,
+      };
+      set({
+        components: [...components, newComp],
+        dragState: null,
+        activeComponentId: id,
+      });
+    } else if (activeTool === 'objective') {
+      if (!activeStepId) return;
+      const id = `obj-${++objectiveCounter}`;
+      const newObj: DraftObjective = {
+        id,
+        name: '',
+        type: 'component',
+        instruction: '',
+        hint: '',
+        flagPart: '',
+        coords,
+      };
+      set({
+        steps: updateStepObjectives(steps, activeStepId, objs => [...objs, newObj]),
+        dragState: null,
+        activeObjectiveId: id,
+      });
+    }
+  },
+
+  // --- Pin actions (global, unchanged logic) ---
 
   placePin: (x, y) => {
     const state = get();
-    // Cancel current pin edit if unsaved
     if (state.activePinId) {
       const pin = state.pins.find(p => p.id === state.activePinId);
       if (pin && pin.label === '') {
@@ -346,6 +606,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     set({
       activePinId: id,
       activeComponentId: null,
+      activeObjectiveId: null,
       pendingPinCoords: pin.coords,
     });
   },
@@ -353,9 +614,32 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   // --- Export ---
 
   exportAsJson: () => {
-    const { components, pins, pcbImagePath } = get();
+    const { steps, components, pins, pcbImagePath } = get();
 
-    const hardwareComponents: HardwareComponent[] = components.map(c => ({
+    // Converti step e obiettivi
+    const exportSteps = steps.map(s => {
+      const objectives = s.objectives.map(o => ({
+        id: o.id,
+        name: o.name,
+        type: o.type !== 'component' ? o.type : undefined,
+        instruction: o.instruction,
+        hint: o.hint,
+        flagPart: o.flagPart || o.name.toUpperCase().replace(/\s+/g, '_'),
+        coords: o.coords,
+      }));
+      const flagParts = objectives.map(o => o.flagPart).join('');
+      return {
+        id: s.id,
+        title: s.title,
+        description: s.description,
+        expectedFlag: `flag{${flagParts}}`,
+        availableTools: s.availableTools,
+        objectives,
+      };
+    });
+
+    // Init components (globali)
+    const initComponents: HardwareComponent[] = components.map(c => ({
       id: c.id,
       name: c.name,
       instruction: c.instruction,
@@ -363,6 +647,22 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       flagPart: c.flagPart || c.name.toUpperCase().replace(/\s+/g, '_'),
       coords: c.coords,
     }));
+
+    // Retrocompatibilità: anche component objectives dagli step
+    const stepComponents: HardwareComponent[] = steps.flatMap(s =>
+      s.objectives
+        .filter(o => o.type === 'component')
+        .map(o => ({
+          id: o.id,
+          name: o.name,
+          instruction: o.instruction,
+          hint: o.hint,
+          flagPart: o.flagPart || o.name.toUpperCase().replace(/\s+/g, '_'),
+          coords: o.coords,
+        }))
+    );
+
+    const hardwareComponents = [...initComponents, ...stepComponents];
 
     const measurementPins: MeasurementPin[] = pins
       .filter(p => p.pinType === 'custom')
@@ -382,39 +682,17 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         coords: [p.coords[0] - p.size / 2, p.coords[1] - p.size / 2, p.size, p.size] as [number, number, number, number],
       }));
 
-    const flagParts = hardwareComponents.map(c => c.flagPart).join('');
-
-    // Crea uno step di default con tutti i componenti come objectives
-    const defaultStep = {
-      id: 'step-1',
-      title: 'Hardware Analysis',
-      description: 'Identifica i componenti principali del PCB.',
-      expectedFlag: `flag{${flagParts}}`,
-      objectives: hardwareComponents.map(c => ({
-        id: c.id,
-        name: c.name,
-        instruction: c.instruction,
-        hint: c.hint,
-        flagPart: c.flagPart,
-        coords: c.coords
-      }))
-    };
+    // initialFlag basata sul primo step
+    const firstStepFlagLen = exportSteps[0]?.objectives.map(o => o.flagPart).join('').length || 20;
 
     const exercise: Exercise = {
       pcbImage: pcbImagePath,
-      steps: [defaultStep],
+      steps: exportSteps,
       components: hardwareComponents,
       pins: measurementPins,
       uartPins,
-      initialFlag: `flag{${'?'.repeat(flagParts.length || 20)}}`,
+      initialFlag: `flag{${'?'.repeat(firstStepFlagLen)}}`,
     };
-
-    console.log('📦 [SettingsStore] Export configurazione:', {
-      steps: exercise.steps.length,
-      components: exercise.components.length,
-      pins: exercise.pins.length,
-      uartPins: exercise.uartPins.length
-    });
 
     return JSON.stringify(exercise, null, 2);
   },
@@ -426,30 +704,98 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
 
   applyConfig: () => {
     const json = get().exportAsJson();
-    const parsed = JSON.parse(json);
-    console.log('💾 [SettingsStore] Configurazione salvata in localStorage:', {
-      steps: parsed.steps?.length || 0,
-      components: parsed.components?.length || 0,
-      objectives: parsed.steps?.[0]?.objectives?.length || 0
-    });
     localStorage.setItem(SETTINGS_STORAGE_KEY, json);
   },
 
   loadFromStorage: () => {
     try {
       const saved = localStorage.getItem(SETTINGS_STORAGE_KEY);
-      if (!saved) return;
-      const exercise = JSON.parse(saved) as Exercise;
+      const exercise: Exercise = saved ? JSON.parse(saved) : defaultExerciseData;
 
-      // Converti HardwareComponent[] → DraftComponent[]
-      const components: DraftComponent[] = exercise.components.map((c, i) => {
-        const id = `comp-${i + 1}`;
-        componentCounter = Math.max(componentCounter, i + 1);
-        return { id, name: c.name, instruction: c.instruction, hint: c.hint, flagPart: c.flagPart, coords: c.coords };
-      });
+      // Converti steps → DraftStep[] con DraftObjective[]
+      let draftSteps: DraftStep[] = [];
+      let draftComponents: DraftComponent[] = [];
 
-      // Converti MeasurementPin[] → DraftPin[] (custom)
-      const mPins: DraftPin[] = exercise.pins.map((p, i) => {
+      if (exercise.steps && exercise.steps.length > 0) {
+        // Raccogli gli ID di tutti gli obiettivi component dentro gli step
+        const stepObjIds = new Set<string>();
+
+        draftSteps = exercise.steps.map((s, si) => {
+          const id = s.id || `step-${si + 1}`;
+          stepCounter = Math.max(stepCounter, si + 1);
+          return {
+            id,
+            title: s.title || `Step ${si + 1}`,
+            description: s.description || '',
+            availableTools: (s as any).availableTools || [...ALL_TOOLS],
+            objectives: (s.objectives || []).map((o, oi) => {
+              const objId = o.id || `obj-${++objectiveCounter}`;
+              objectiveCounter = Math.max(objectiveCounter, oi + 1);
+              if (!o.type || o.type === 'component') stepObjIds.add(objId);
+              return {
+                id: objId,
+                name: o.name || '',
+                type: (o.type || 'component') as ObjectiveType,
+                instruction: o.instruction || '',
+                hint: o.hint || '',
+                flagPart: o.flagPart || '',
+                coords: o.coords || [0, 0, 0, 0],
+              };
+            }),
+          };
+        });
+
+        // Componenti globali = exercise.components che NON sono step objectives
+        if (exercise.components) {
+          draftComponents = exercise.components
+            .filter(c => !stepObjIds.has(c.id))
+            .map((c, i) => {
+              const id = c.id || `comp-${++componentCounter}`;
+              componentCounter = Math.max(componentCounter, i + 1);
+              return {
+                id,
+                name: c.name || '',
+                instruction: c.instruction || '',
+                hint: c.hint || '',
+                flagPart: c.flagPart || '',
+                coords: c.coords || [0, 0, 0, 0],
+              };
+            });
+        }
+      } else if (exercise.components && exercise.components.length > 0) {
+        // Formato vecchio: solo components flat → Init components + un default step
+        draftComponents = exercise.components.map((c, i) => {
+          const id = c.id || `comp-${++componentCounter}`;
+          componentCounter = Math.max(componentCounter, i + 1);
+          return {
+            id,
+            name: c.name,
+            instruction: c.instruction,
+            hint: c.hint,
+            flagPart: c.flagPart,
+            coords: c.coords,
+          };
+        });
+        draftSteps = [{
+          id: 'step-1',
+          title: 'Hardware Analysis',
+          description: '',
+          availableTools: [...ALL_TOOLS],
+          objectives: exercise.components.map((c, i) => ({
+            id: `obj-from-${c.id || i}`,
+            name: c.name,
+            type: 'component' as const,
+            instruction: c.instruction,
+            hint: c.hint,
+            flagPart: c.flagPart,
+            coords: c.coords,
+          })),
+        }];
+        stepCounter = 1;
+      }
+
+      // Converti pin
+      const mPins: DraftPin[] = (exercise.pins || []).map((p, i) => {
         const id = `pin-m-${i + 1}`;
         const [left, top, width, height] = p.coords;
         return {
@@ -462,8 +808,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         };
       });
 
-      // Converti UartPin[] → DraftPin[] (uart types)
-      const uPins: DraftPin[] = exercise.uartPins.map((p, i) => {
+      const uPins: DraftPin[] = (exercise.uartPins || []).map((p, i) => {
         const id = `pin-u-${i + 1}`;
         const [left, top, width, height] = p.coords;
         const uartDefaults: Record<string, { v: number; r: number }> = {
@@ -483,13 +828,16 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       pinCounter = mPins.length + uPins.length;
 
       set({
-        components,
-        pins: [...mPins, ...uPins],
-        pcbImagePath: exercise.pcbImage,
+        components: draftComponents,
         activeComponentId: null,
+        steps: draftSteps,
+        activeStepId: draftSteps[0]?.id ?? null,
+        activeObjectiveId: null,
+        pins: [...mPins, ...uPins],
         activePinId: null,
         pendingPinCoords: null,
         dragState: null,
+        pcbImagePath: exercise.pcbImage || '/images/pcb_v2.jpg',
       });
     } catch { /* ignore invalid data */ }
   },
@@ -503,12 +851,9 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         body: json,
       });
       const result = await response.json();
-
-      // Salva anche in localStorage per sync
       if (result.success) {
         localStorage.setItem(SETTINGS_STORAGE_KEY, json);
       }
-
       return result;
     } catch (error: any) {
       return { success: false, error: error.message };
@@ -519,14 +864,11 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     try {
       const response = await fetch('/api/config/load');
       const result = await response.json();
-
       if (result.success && result.data) {
-        // Salva in localStorage e poi carica
         localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(result.data));
         get().loadFromStorage();
         return { success: true, message: 'Configurazione caricata con successo' };
       }
-
       return result;
     } catch (error: any) {
       return { success: false, error: error.message };

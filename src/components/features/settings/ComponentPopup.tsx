@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 
 interface ComponentPopupProps {
   component: DraftComponent;
-  /** Container dimensions for positioning */
   containerDims: { width: number; height: number };
 }
 
@@ -41,11 +40,11 @@ const ComponentPopup = ({ component, containerDims }: ComponentPopupProps) => {
     }
   };
 
-  // Position popup to the right of the component area, or left if not enough space
+  // Positioning based on coords
   const [left, top, width, height] = component.coords;
+  const popupWidth = 320;
   const compRightPx = ((left + width) / 100) * containerDims.width;
   const compTopPx = (top / 100) * containerDims.height;
-  const popupWidth = 320;
   const spaceRight = containerDims.width - compRightPx;
   const compLeftPx = (left / 100) * containerDims.width;
 
@@ -57,7 +56,7 @@ const ComponentPopup = ({ component, containerDims }: ComponentPopupProps) => {
   } else {
     posX = Math.max(8, (containerDims.width - popupWidth) / 2);
   }
-  const posY = Math.max(8, Math.min(compTopPx, containerDims.height - 350));
+  const posY = Math.max(8, Math.min(compTopPx, containerDims.height - 320));
 
   return (
     <div
@@ -66,10 +65,13 @@ const ComponentPopup = ({ component, containerDims }: ComponentPopupProps) => {
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
     >
-      {/* Coordinates badge */}
+      {/* Header */}
       <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-700">
+        <span className="text-xs px-1.5 py-0.5 rounded border bg-green-600/30 text-green-300 border-green-500/50">
+          Componente
+        </span>
         <span className="text-xs font-mono text-gray-400">
-          [{left.toFixed(1)}, {top.toFixed(1)}, {width.toFixed(1)}, {height.toFixed(1)}]%
+          [{component.coords[0].toFixed(1)}, {component.coords[1].toFixed(1)}, {component.coords[2].toFixed(1)}, {component.coords[3].toFixed(1)}]%
         </span>
       </div>
 
@@ -80,21 +82,21 @@ const ComponentPopup = ({ component, containerDims }: ComponentPopupProps) => {
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="es. CPU, ROM, UART..."
-          className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+          placeholder="es. CPU, ROM, Flash..."
+          className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition-colors"
           autoFocus
         />
       </div>
 
       {/* Instruction */}
       <div className="mb-3">
-        <label className="block text-xs text-gray-400 mb-1">Descrizione didattica</label>
+        <label className="block text-xs text-gray-400 mb-1">Descrizione</label>
         <textarea
           value={instruction}
           onChange={(e) => setInstruction(e.target.value)}
-          placeholder="Istruzione per lo studente..."
-          rows={3}
-          className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors resize-none"
+          placeholder="Descrizione del componente..."
+          rows={2}
+          className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition-colors resize-none"
         />
       </div>
 
@@ -105,8 +107,8 @@ const ComponentPopup = ({ component, containerDims }: ComponentPopupProps) => {
           type="text"
           value={hint}
           onChange={(e) => setHint(e.target.value)}
-          placeholder="Suggerimento per lo studente..."
-          className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+          placeholder="Suggerimento..."
+          className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition-colors"
         />
       </div>
 
@@ -118,7 +120,7 @@ const ComponentPopup = ({ component, containerDims }: ComponentPopupProps) => {
           value={flagPart}
           onChange={(e) => setFlagPart(e.target.value)}
           placeholder={name ? name.toUpperCase().replace(/\s+/g, '_') : 'auto da nome'}
-          className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors font-mono"
+          className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition-colors font-mono"
         />
       </div>
 
@@ -127,7 +129,7 @@ const ComponentPopup = ({ component, containerDims }: ComponentPopupProps) => {
         <Button variant="ghost" size="sm" onClick={cancelComponentEdit} className="text-gray-400 hover:text-white">
           Annulla
         </Button>
-        <Button size="sm" onClick={handleConfirm} className="bg-blue-600 hover:bg-blue-700">
+        <Button size="sm" onClick={handleConfirm} className="bg-green-600 hover:bg-green-700">
           Conferma
         </Button>
       </div>

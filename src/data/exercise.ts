@@ -4,6 +4,8 @@
  * Definisce la struttura di un singolo componente hardware cliccabile sul PCB.
  */
 export type ObjectiveType = 'component' | 'uart' | 'terminal';
+export type Tool = 'pointer' | 'magnifier' | 'multimeter' | 'probes' | 'terminal';
+export const ALL_TOOLS: Tool[] = ['pointer', 'magnifier', 'multimeter', 'probes', 'terminal'];
 
 export interface Objective {
   id: string;
@@ -21,6 +23,7 @@ export interface Step {
   description: string;
   objectives: Objective[];
   expectedFlag: string;
+  availableTools?: Tool[];
 }
 
 export interface HardwareComponent {
@@ -66,7 +69,7 @@ export interface Exercise {
 
 export const SETTINGS_STORAGE_KEY = 'pcb-ctf-exercise-config';
 
-const defaultExerciseData: Exercise = {
+export const defaultExerciseData: Exercise = {
   pcbImage: '/images/pcb_v2.jpg',
   initialFlag: 'flag{????????????????????}',
 
@@ -77,6 +80,7 @@ const defaultExerciseData: Exercise = {
       description:
         'Benvenuto nella prima sfida! In questo step imparerai a identificare i componenti principali di un circuito stampato (PCB). Dovrai individuare la CPU, la memoria ROM e il connettore UART. Usa gli strumenti a tua disposizione per esplorare la scheda e completare gli obiettivi.',
       expectedFlag: 'flag{STM32F4|75xx_UART_OK}',
+      availableTools: ['pointer', 'magnifier', 'multimeter'],
       objectives: [
         {
           id: 'cpu',
@@ -113,6 +117,7 @@ const defaultExerciseData: Exercise = {
       description:
         "Ottimo lavoro! Ora che hai identificato i componenti principali, è il momento di stabilire una connessione seriale UART con il dispositivo. Dovrai collegare le sonde dell'adattatore USB-to-Serial ai pin UART che hai individuato sul PCB. Ricorda la regola fondamentale: TX va su RX e viceversa (crossover). Seleziona lo strumento 'Connessione UART' dalla sidebar per iniziare.",
       expectedFlag: 'flag{UART_CONNECTED}',
+      availableTools: ['pointer', 'magnifier', 'probes'],
       objectives: [
         {
           id: 'uart-connect',
@@ -132,6 +137,7 @@ const defaultExerciseData: Exercise = {
       description:
         "Connessione UART stabilita! Ora hai accesso alla console seriale del dispositivo. In questo step dovrai esplorare il sistema embedded attraverso il terminale, analizzare la configurazione di U-Boot, ottenere accesso root, cercare credenziali e vulnerabilità. Ogni scoperta rivelerà una parte della flag finale. Seleziona lo strumento 'Terminale' dalla sidebar per iniziare.",
       expectedFlag: 'flag{b00t_r00t_h4sh_l34k_1nj3ct_sh3ll}',
+      availableTools: ['terminal'],
       objectives: [
         {
           id: 'boot',
