@@ -2,8 +2,9 @@
 
 import { create } from 'zustand';
 import type { Exercise } from '@/data/exercise';
+import { type Tool, ALL_TOOLS } from '@/data/exercise';
 
-export type Tool = 'pointer' | 'magnifier' | 'multimeter' | 'probes' | 'terminal';
+export type { Tool };
 export type MultimeterMode = 'V' | 'Ohm';
 export type AdapterPin = 'adapter-tx' | 'adapter-rx' | 'adapter-gnd';
 export type StepMode = 'education' | 'active' | 'completed';
@@ -527,13 +528,23 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   },
 
   startStep: () => {
-    const { exerciseData: data } = get();
-    set({
+    const { exerciseData: data, currentStepIndex, activeTool } = get();
+    const currentStep = data?.steps?.[currentStepIndex];
+    const availableTools = currentStep?.availableTools;
+
+    // Se il tool attivo non è tra quelli disponibili per lo step, switch al primo disponibile
+    const updates: Partial<ExerciseState> = {
       stepMode: 'active',
       isSimulatorEnabled: true,
       foundComponents: [],
       flag: data?.initialFlag || 'flag{????????????????????}',
-    });
+    };
+
+    if (availableTools?.length && !availableTools.includes(activeTool)) {
+      updates.activeTool = availableTools[0];
+    }
+
+    set(updates);
   },
 
   validateAndCompleteStep: (inputFlag) => {

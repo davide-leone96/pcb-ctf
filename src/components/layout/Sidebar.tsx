@@ -17,14 +17,21 @@ const tools: { id: Tool; label: string; icon: LucideIcon }[] = [
 const Sidebar = () => {
   const {
     activeTool, setActiveTool,
-    lensVisible, toggleLensVisible
+    lensVisible, toggleLensVisible,
+    exerciseData, currentStepIndex,
   } = useExerciseStore();
+
+  const currentStep = exerciseData?.steps?.[currentStepIndex];
+  const availableTools = currentStep?.availableTools;
+  const visibleTools = availableTools?.length
+    ? tools.filter(t => availableTools.includes(t.id))
+    : tools;
 
   return (
     <aside className="flex flex-col items-center gap-y-4 rounded-lg bg-gray-800 p-4">
       <h2 className="sr-only">Barra degli Strumenti</h2>
 
-      {tools.map((tool) => {
+      {visibleTools.map((tool) => {
         const isMagnifier = tool.id === 'magnifier';
         const isActive = isMagnifier ? lensVisible : activeTool === tool.id;
 

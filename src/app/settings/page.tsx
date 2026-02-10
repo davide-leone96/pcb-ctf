@@ -8,7 +8,7 @@ import SettingsCanvas from '@/components/features/settings/SettingsCanvas';
 
 export default function SettingsPage() {
   const loadFromStorage = useSettingsStore(s => s.loadFromStorage);
-  const hasItems = useSettingsStore(s => s.components.length > 0 || s.pins.length > 0);
+  const hasItems = useSettingsStore(s => s.steps.length > 0 || s.components.length > 0 || s.pins.length > 0);
 
   // Carica la configurazione salvata al primo accesso (solo se lo store è vuoto)
   useEffect(() => {
