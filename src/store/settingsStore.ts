@@ -14,6 +14,7 @@ export interface DraftObjective {
   id: string;
   name: string;
   type: ObjectiveType;
+  componentId: string;
   instruction: string;
   hint: string;
   flagPart: string;
@@ -105,13 +106,13 @@ interface SettingsActions {
   toggleStepTool: (stepId: string, tool: Tool) => void;
 
   // Objective actions
-  addObjective: (stepId: string, type: ObjectiveType) => void;
+  addObjective: (stepId: string, componentId: string) => void;
   deleteObjective: (stepId: string, objectiveId: string) => void;
   reorderObjective: (stepId: string, objectiveId: string, direction: 'up' | 'down') => void;
   editObjective: (objectiveId: string) => void;
   cancelObjectiveEdit: () => void;
-  saveObjective: (data: Omit<DraftObjective, 'id' | 'coords' | 'type'>) => void;
-  updateObjective: (id: string, data: Partial<Omit<DraftObjective, 'id' | 'coords' | 'type'>>) => void;
+  saveObjective: (data: Omit<DraftObjective, 'id' | 'coords' | 'type' | 'componentId'>) => void;
+  updateObjective: (id: string, data: Partial<Omit<DraftObjective, 'id' | 'coords' | 'type' | 'componentId'>>) => void;
 
   // Canvas drag
   startDrag: (x: number, y: number) => void;
@@ -346,16 +347,19 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
 
   // --- Objective actions ---
 
-  addObjective: (stepId, type) => {
+  addObjective: (stepId, componentId) => {
+    const comp = get().components.find(c => c.id === componentId);
+    if (!comp) return;
     const id = `obj-${++objectiveCounter}`;
     const newObj: DraftObjective = {
       id,
-      name: '',
-      type,
+      name: comp.name,
+      type: 'component',
+      componentId,
       instruction: '',
       hint: '',
       flagPart: '',
-      coords: [0, 0, 0, 0],
+      coords: comp.coords,
     };
     set({
       steps: updateStepObjectives(get().steps, stepId, objs => [...objs, newObj]),
@@ -440,10 +444,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
 
   startDrag: (x, y) => {
     const state = get();
-    // 'component' tool: always allowed
-    // 'objective' tool: requires active step
-    if (state.activeTool === 'objective' && !state.activeStepId) return;
-    if (state.activeTool !== 'component' && state.activeTool !== 'objective') return;
+    if (state.activeTool !== 'component') return;
 
     // Cancel current component edit
     if (state.activeComponentId) {
@@ -494,23 +495,8 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         dragState: null,
         activeComponentId: id,
       });
-    } else if (activeTool === 'objective') {
-      if (!activeStepId) return;
-      const id = `obj-${++objectiveCounter}`;
-      const newObj: DraftObjective = {
-        id,
-        name: '',
-        type: 'component',
-        instruction: '',
-        hint: '',
-        flagPart: '',
-        coords,
-      };
-      set({
-        steps: updateStepObjectives(steps, activeStepId, objs => [...objs, newObj]),
-        dragState: null,
-        activeObjectiveId: id,
-      });
+    } else {
+      set({ dragState: null });
     }
   },
 
@@ -737,6 +723,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
                 id: objId,
                 name: o.name || '',
                 type: (o.type || 'component') as ObjectiveType,
+                componentId: (o as any).componentId || '',
                 instruction: o.instruction || '',
                 hint: o.hint || '',
                 flagPart: o.flagPart || '',
@@ -786,6 +773,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
             id: `obj-from-${c.id || i}`,
             name: c.name,
             type: 'component' as const,
+            componentId: c.id || '',
             instruction: c.instruction,
             hint: c.hint,
             flagPart: c.flagPart,
