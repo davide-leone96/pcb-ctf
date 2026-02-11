@@ -81,7 +81,7 @@ const SettingsCanvas = () => {
   const isDragging = useRef(false);
 
   useEffect(() => {
-    if (activeTool !== 'objective' && activeTool !== 'component') return;
+    if (activeTool !== 'component') return;
 
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging.current || !imageRef.current) return;
@@ -116,7 +116,7 @@ const SettingsCanvas = () => {
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
 
-    if (activeTool === 'objective' || activeTool === 'component') {
+    if (activeTool === 'component') {
       isDragging.current = true;
       startDrag(x, y);
       e.preventDefault();
@@ -150,7 +150,7 @@ const SettingsCanvas = () => {
   };
 
   const dragRect = getDragRect();
-  const canDrag = activeTool === 'objective' || activeTool === 'component';
+  const canDrag = activeTool === 'component';
 
   return (
     <div

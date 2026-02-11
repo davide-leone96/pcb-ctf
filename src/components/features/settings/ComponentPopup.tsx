@@ -15,23 +15,18 @@ const ComponentPopup = ({ component, containerDims }: ComponentPopupProps) => {
 
   const isNew = component.name === '';
   const [name, setName] = useState(component.name);
-  const [instruction, setInstruction] = useState(component.instruction);
-  const [hint, setHint] = useState(component.hint);
-  const [flagPart, setFlagPart] = useState(component.flagPart);
 
   useEffect(() => {
     setName(component.name);
-    setInstruction(component.instruction);
-    setHint(component.hint);
-    setFlagPart(component.flagPart);
   }, [component]);
 
   const handleConfirm = () => {
+    const finalName = name || 'Componente';
     const data = {
-      name: name || 'Componente',
-      instruction,
-      hint,
-      flagPart: flagPart || name.toUpperCase().replace(/\s+/g, '_'),
+      name: finalName,
+      instruction: '',
+      hint: '',
+      flagPart: finalName.toUpperCase().replace(/\s+/g, '_'),
     };
     if (isNew) {
       saveComponent(data);
@@ -56,7 +51,7 @@ const ComponentPopup = ({ component, containerDims }: ComponentPopupProps) => {
   } else {
     posX = Math.max(8, (containerDims.width - popupWidth) / 2);
   }
-  const posY = Math.max(8, Math.min(compTopPx, containerDims.height - 320));
+  const posY = Math.max(8, Math.min(compTopPx, containerDims.height - 180));
 
   return (
     <div
@@ -76,7 +71,7 @@ const ComponentPopup = ({ component, containerDims }: ComponentPopupProps) => {
       </div>
 
       {/* Name */}
-      <div className="mb-3">
+      <div className="mb-4">
         <label className="block text-xs text-gray-400 mb-1">Nome componente</label>
         <input
           type="text"
@@ -85,42 +80,6 @@ const ComponentPopup = ({ component, containerDims }: ComponentPopupProps) => {
           placeholder="es. CPU, ROM, Flash..."
           className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition-colors"
           autoFocus
-        />
-      </div>
-
-      {/* Instruction */}
-      <div className="mb-3">
-        <label className="block text-xs text-gray-400 mb-1">Descrizione</label>
-        <textarea
-          value={instruction}
-          onChange={(e) => setInstruction(e.target.value)}
-          placeholder="Descrizione del componente..."
-          rows={2}
-          className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition-colors resize-none"
-        />
-      </div>
-
-      {/* Hint */}
-      <div className="mb-3">
-        <label className="block text-xs text-gray-400 mb-1">Hint</label>
-        <input
-          type="text"
-          value={hint}
-          onChange={(e) => setHint(e.target.value)}
-          placeholder="Suggerimento..."
-          className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition-colors"
-        />
-      </div>
-
-      {/* Flag Part */}
-      <div className="mb-4">
-        <label className="block text-xs text-gray-400 mb-1">Flag Part</label>
-        <input
-          type="text"
-          value={flagPart}
-          onChange={(e) => setFlagPart(e.target.value)}
-          placeholder={name ? name.toUpperCase().replace(/\s+/g, '_') : 'auto da nome'}
-          className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition-colors font-mono"
         />
       </div>
 

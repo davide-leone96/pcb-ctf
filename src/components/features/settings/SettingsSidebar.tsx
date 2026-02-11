@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { useSettingsStore, type DraftStep, type DraftObjective, type DraftComponent, type DraftPin, type SettingsTool } from '@/store/settingsStore';
-import { ALL_TOOLS, type Tool, type ObjectiveType } from '@/data/exercise';
+import { ALL_TOOLS, type Tool } from '@/data/exercise';
 import { cn } from '@/lib/utils';
 import {
   BoxSelect, MapPin, Pencil, Trash2, Download, Copy, Check, Save, FolderOpen,
@@ -33,18 +33,6 @@ const TOOL_LABELS: Record<Tool, string> = {
   multimeter: 'Multimetro',
   probes: 'UART',
   terminal: 'Terminale',
-};
-
-const OBJ_TYPE_LABELS: Record<ObjectiveType, string> = {
-  component: 'Componente',
-  uart: 'UART',
-  terminal: 'Terminale',
-};
-
-const OBJ_TYPE_COLORS: Record<ObjectiveType, string> = {
-  component: 'text-blue-400',
-  uart: 'text-green-400',
-  terminal: 'text-yellow-400',
 };
 
 const PIN_TYPE_COLORS: Record<string, string> = {
@@ -253,7 +241,8 @@ const SettingsSidebar = () => {
                     onReorder={(dir) => reorderStep(step.id, dir)}
                     onUpdateStep={(data) => updateStep(step.id, data)}
                     onToggleTool={(tool) => toggleStepTool(step.id, tool)}
-                    onAddObjective={(type) => addObjective(step.id, type)}
+                    onAddObjective={(componentId) => addObjective(step.id, componentId)}
+                    availableComponents={components}
                     onDeleteObjective={(objId) => deleteObjective(step.id, objId)}
                     onReorderObjective={(objId, dir) => reorderObjective(step.id, objId, dir)}
                     onEditObjective={editObjective}
@@ -308,6 +297,7 @@ const StepItem = ({
   step, index, isExpanded, isFirst, isLast,
   onToggle, onDelete, onReorder, onUpdateStep, onToggleTool,
   onAddObjective, onDeleteObjective, onReorderObjective, onEditObjective,
+  availableComponents,
 }: {
   step: DraftStep;
   index: number;
@@ -319,10 +309,11 @@ const StepItem = ({
   onReorder: (dir: 'up' | 'down') => void;
   onUpdateStep: (data: Partial<Pick<DraftStep, 'title' | 'description'>>) => void;
   onToggleTool: (tool: Tool) => void;
-  onAddObjective: (type: ObjectiveType) => void;
+  onAddObjective: (componentId: string) => void;
   onDeleteObjective: (objId: string) => void;
   onReorderObjective: (objId: string, dir: 'up' | 'down') => void;
   onEditObjective: (objId: string) => void;
+  availableComponents: DraftComponent[];
 }) => {
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleValue, setTitleValue] = useState(step.title);
@@ -425,16 +416,21 @@ const StepItem = ({
                   <Plus className="h-3.5 w-3.5" />
                 </button>
                 {showAddMenu && (
-                  <div className="absolute right-0 top-full mt-1 bg-gray-700 border border-gray-600 rounded-lg shadow-xl z-50 py-1 min-w-[140px]">
-                    {(['component', 'uart', 'terminal'] as ObjectiveType[]).map(type => (
-                      <button
-                        key={type}
-                        onClick={() => { onAddObjective(type); setShowAddMenu(false); }}
-                        className="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-600 transition-colors flex items-center gap-2"
-                      >
-                        <span className={OBJ_TYPE_COLORS[type]}>{OBJ_TYPE_LABELS[type]}</span>
-                      </button>
-                    ))}
+                  <div className="absolute right-0 top-full mt-1 bg-gray-700 border border-gray-600 rounded-lg shadow-xl z-50 py-1 min-w-[160px]">
+                    {availableComponents.length === 0 ? (
+                      <p className="px-3 py-1.5 text-xs text-gray-400 italic">Crea prima un componente nella tab Init</p>
+                    ) : (
+                      availableComponents.map(comp => (
+                        <button
+                          key={comp.id}
+                          onClick={() => { onAddObjective(comp.id); setShowAddMenu(false); }}
+                          className="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-600 transition-colors flex items-center gap-2"
+                        >
+                          <div className="w-2.5 h-2.5 flex-shrink-0 border border-green-400/60 bg-green-500/15 rounded-sm" />
+                          <span className="text-blue-300">{comp.name || 'Senza nome'}</span>
+                        </button>
+                      ))
+                    )}
                   </div>
                 )}
               </div>
@@ -479,8 +475,8 @@ const ObjectiveItem = ({
   onReorder: (dir: 'up' | 'down') => void;
 }) => (
   <div className="flex items-center gap-1.5 px-1.5 py-1 rounded hover:bg-gray-700/50 group">
-    <span className={cn('text-[10px] font-mono flex-shrink-0', OBJ_TYPE_COLORS[objective.type])}>
-      {OBJ_TYPE_LABELS[objective.type].substring(0, 3).toUpperCase()}
+    <span className="text-[10px] font-mono flex-shrink-0 text-blue-400">
+      COM
     </span>
     <span className="text-xs truncate flex-1">{objective.name || 'Senza nome'}</span>
     <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">

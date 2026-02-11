@@ -5,16 +5,8 @@ import { useState, useEffect } from 'react';
 import { useSettingsStore, type DraftObjective } from '@/store/settingsStore';
 import { Button } from '@/components/ui/button';
 
-const TYPE_LABELS: Record<string, string> = {
-  component: 'Componente',
-  uart: 'UART',
-  terminal: 'Terminale',
-};
-
 const TYPE_COLORS: Record<string, string> = {
   component: 'bg-blue-600/30 text-blue-300 border-blue-500/50',
-  uart: 'bg-green-600/30 text-green-300 border-green-500/50',
-  terminal: 'bg-purple-600/30 text-purple-300 border-purple-500/50',
 };
 
 interface ObjectivePopupProps {
@@ -25,14 +17,12 @@ interface ObjectivePopupProps {
 const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
   const { saveObjective, updateObjective, cancelObjectiveEdit } = useSettingsStore();
 
-  const isNew = objective.name === '';
-  const [name, setName] = useState(objective.name);
+  const isNew = objective.instruction === '' && objective.hint === '' && objective.flagPart === '';
   const [instruction, setInstruction] = useState(objective.instruction);
   const [hint, setHint] = useState(objective.hint);
   const [flagPart, setFlagPart] = useState(objective.flagPart);
 
   useEffect(() => {
-    setName(objective.name);
     setInstruction(objective.instruction);
     setHint(objective.hint);
     setFlagPart(objective.flagPart);
@@ -40,10 +30,10 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
 
   const handleConfirm = () => {
     const data = {
-      name: name || 'Obiettivo',
+      name: objective.name,
       instruction,
       hint,
-      flagPart: flagPart || name.toUpperCase().replace(/\s+/g, '_'),
+      flagPart: flagPart || objective.name.toUpperCase().replace(/\s+/g, '_'),
     };
     if (isNew) {
       saveObjective(data);
@@ -86,29 +76,16 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
     >
-      {/* Type badge + Coordinates */}
+      {/* Component name + Coordinates */}
       <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-700">
-        <span className={`text-xs px-1.5 py-0.5 rounded border ${TYPE_COLORS[objective.type]}`}>
-          {TYPE_LABELS[objective.type]}
+        <span className={`text-xs px-1.5 py-0.5 rounded border ${TYPE_COLORS[objective.type] || TYPE_COLORS.component}`}>
+          {objective.name || 'Componente'}
         </span>
         {hasCoords && (
           <span className="text-xs font-mono text-gray-400">
             [{objective.coords[0].toFixed(1)}, {objective.coords[1].toFixed(1)}, {objective.coords[2].toFixed(1)}, {objective.coords[3].toFixed(1)}]%
           </span>
         )}
-      </div>
-
-      {/* Name */}
-      <div className="mb-3">
-        <label className="block text-xs text-gray-400 mb-1">Nome obiettivo</label>
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="es. CPU, ROM, UART..."
-          className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
-          autoFocus
-        />
       </div>
 
       {/* Instruction */}
@@ -120,6 +97,7 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
           placeholder="Istruzione per lo studente..."
           rows={3}
           className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors resize-none"
+          autoFocus
         />
       </div>
 
@@ -142,7 +120,7 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
           type="text"
           value={flagPart}
           onChange={(e) => setFlagPart(e.target.value)}
-          placeholder={name ? name.toUpperCase().replace(/\s+/g, '_') : 'auto da nome'}
+          placeholder={objective.name ? objective.name.toUpperCase().replace(/\s+/g, '_') : 'auto da nome'}
           className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors font-mono"
         />
       </div>
