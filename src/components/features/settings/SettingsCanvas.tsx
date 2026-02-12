@@ -1,7 +1,7 @@
 // src/components/features/settings/SettingsCanvas.tsx
 'use client';
 
-import { useRef, useState, useLayoutEffect, useEffect, useMemo } from 'react';
+import { useRef, useState, useLayoutEffect, useEffect, useMemo, useCallback } from 'react';
 import { useSettingsStore } from '@/store/settingsStore';
 import { cn } from '@/lib/utils';
 import ComponentPopup from './ComponentPopup';
@@ -24,11 +24,14 @@ const SettingsCanvas = () => {
     startDrag, updateDrag, endDrag,
     placePin, movePinCoords,
     editComponent, editObjective, editPin, selectStep,
+    canvasZoom, canvasRotation, canvasPanX, canvasPanY, canvasPanMode,
+    setPan, setCanvasZoom, uploadImage,
   } = useSettingsStore();
 
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   const [containerDims, setContainerDims] = useState({ width: 0, height: 0 });
+  const [isDragOverImage, setIsDragOverImage] = useState(false);
 
   // All component-type objectives across all steps (with step reference)
   const allComponentObjectives = useMemo(() =>
@@ -53,11 +56,14 @@ const SettingsCanvas = () => {
   const activeComponent = activeComponentId ? components.find(c => c.id === activeComponentId) : null;
   const activePin = activePinId ? pins.find(p => p.id === activePinId) : null;
 
+  // Use offsetWidth/offsetHeight for pre-transform dimensions
   useLayoutEffect(() => {
     const updateDimensions = () => {
-      if (imageRef.current && containerRef.current) {
-        const imgRect = imageRef.current.getBoundingClientRect();
-        setContainerDims({ width: imgRect.width, height: imgRect.height });
+      if (imageRef.current) {
+        setContainerDims({
+          width: imageRef.current.offsetWidth,
+          height: imageRef.current.offsetHeight,
+        });
       }
     };
 
@@ -75,9 +81,9 @@ const SettingsCanvas = () => {
       window.removeEventListener('resize', updateDimensions);
       if (img) img.removeEventListener('load', updateDimensions);
     };
-  }, []);
+  }, [pcbImagePath]);
 
-  // --- Drag handling for component and objective tools ---
+  // --- Drag handling for component tool ---
   const isDragging = useRef(false);
 
   useEffect(() => {
@@ -108,7 +114,69 @@ const SettingsCanvas = () => {
     };
   }, [activeTool, updateDrag, endDrag]);
 
+  // --- Middle-click pan ---
+  const isPanning = useRef(false);
+  const panStart = useRef({ x: 0, y: 0 });
+  const panOrigin = useRef({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handlePanMove = (e: MouseEvent) => {
+      if (!isPanning.current) return;
+      const dx = e.clientX - panStart.current.x;
+      const dy = e.clientY - panStart.current.y;
+      setPan(panOrigin.current.x + dx, panOrigin.current.y + dy);
+    };
+
+    const handlePanUp = (e: MouseEvent) => {
+      if (e.button === 1 || e.button === 0) {
+        isPanning.current = false;
+      }
+    };
+
+    window.addEventListener('mousemove', handlePanMove);
+    window.addEventListener('mouseup', handlePanUp);
+    return () => {
+      window.removeEventListener('mousemove', handlePanMove);
+      window.removeEventListener('mouseup', handlePanUp);
+    };
+  }, [setPan]);
+
+  // --- Ctrl+scroll zoom ---
+  const handleWheel = useCallback((e: WheelEvent) => {
+    if (e.ctrlKey) {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -0.1 : 0.1;
+      const store = useSettingsStore.getState();
+      store.setCanvasZoom(store.canvasZoom + delta);
+    }
+  }, []);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    return () => el.removeEventListener('wheel', handleWheel);
+  }, [handleWheel]);
+
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Middle-click pan (always available)
+    if (e.button === 1) {
+      e.preventDefault();
+      isPanning.current = true;
+      panStart.current = { x: e.clientX, y: e.clientY };
+      panOrigin.current = { x: canvasPanX, y: canvasPanY };
+      return;
+    }
+
+    // Left-click pan when pan mode is active
+    if (e.button === 0 && canvasPanMode) {
+      e.preventDefault();
+      isPanning.current = true;
+      panStart.current = { x: e.clientX, y: e.clientY };
+      panOrigin.current = { x: canvasPanX, y: canvasPanY };
+      return;
+    }
+
     if (!imageRef.current) return;
     if ((e.target as HTMLElement).closest('[data-popup]')) return;
 
@@ -124,6 +192,7 @@ const SettingsCanvas = () => {
   };
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (canvasPanMode) return;
     if (!imageRef.current) return;
     if ((e.target as HTMLElement).closest('[data-popup]')) return;
 
@@ -137,6 +206,25 @@ const SettingsCanvas = () => {
       } else {
         placePin(x, y);
       }
+    }
+  };
+
+  // --- Drag-and-drop image upload ---
+  const handleFileDragOver = (e: React.DragEvent) => {
+    if (e.dataTransfer.types.includes('Files')) {
+      e.preventDefault();
+      setIsDragOverImage(true);
+    }
+  };
+
+  const handleFileDragLeave = () => setIsDragOverImage(false);
+
+  const handleFileDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOverImage(false);
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      await uploadImage(file);
     }
   };
 
@@ -157,13 +245,34 @@ const SettingsCanvas = () => {
       ref={containerRef}
       onMouseDown={handleMouseDown}
       onClick={handleClick}
+      onDragOver={handleFileDragOver}
+      onDragLeave={handleFileDragLeave}
+      onDrop={handleFileDrop}
       className={cn(
-        'relative select-none',
-        canDrag ? 'cursor-crosshair' : '',
-        activeTool === 'pin' ? 'cursor-crosshair' : '',
+        'relative select-none overflow-hidden',
+        canvasPanMode ? 'cursor-grab active:cursor-grabbing' :
+          canDrag ? 'cursor-crosshair' :
+            activeTool === 'pin' ? 'cursor-crosshair' : '',
+        isDragOverImage && 'ring-2 ring-blue-400 ring-inset',
       )}
     >
-      <div className="relative inline-block w-full">
+      {/* Drop overlay */}
+      {isDragOverImage && (
+        <div className="absolute inset-0 bg-blue-500/10 z-50 flex items-center justify-center pointer-events-none">
+          <span className="text-blue-300 text-sm font-medium bg-black/60 px-3 py-1.5 rounded">
+            Rilascia per caricare immagine
+          </span>
+        </div>
+      )}
+
+      {/* Transform wrapper: zoom + rotate + pan */}
+      <div
+        className="relative inline-block w-full origin-center"
+        style={{
+          transform: `translate(${canvasPanX}px, ${canvasPanY}px) scale(${canvasZoom}) rotate(${canvasRotation}deg)`,
+          transformOrigin: 'center center',
+        }}
+      >
         <img
           ref={imageRef}
           src={pcbImagePath}
