@@ -4,9 +4,11 @@
 import { create } from 'zustand';
 import type {
   HardwareComponent, MeasurementPin, UartPin, UartRole, Exercise,
-  ObjectiveType,
+  ObjectiveType, PinCondition, PinLogic,
 } from '@/data/exercise';
 import { SETTINGS_STORAGE_KEY, ALL_TOOLS, defaultExerciseData, mergeWithDefaultSteps, type Tool } from '@/data/exercise';
+
+export type { PinCondition, PinLogic };
 
 // --- Draft types ---
 
@@ -15,6 +17,8 @@ export interface DraftObjective {
   name: string;
   type: ObjectiveType;
   componentId: string;
+  pinConditions: PinCondition[];
+  pinLogic: PinLogic;
   instruction: string;
   hint: string;
   flagPart: string;
@@ -107,6 +111,7 @@ interface SettingsActions {
 
   // Objective actions
   addObjective: (stepId: string, componentId: string) => void;
+  addPinObjective: (stepId: string, pinIds: string[], logic: PinLogic) => void;
   deleteObjective: (stepId: string, objectiveId: string) => void;
   reorderObjective: (stepId: string, objectiveId: string, direction: 'up' | 'down') => void;
   editObjective: (objectiveId: string) => void;
@@ -139,10 +144,11 @@ interface SettingsActions {
 
 type SettingsStore = SettingsState & SettingsActions;
 
-let stepCounter = 0;
-let objectiveCounter = 0;
-let componentCounter = 0;
-let pinCounter = 0;
+/** Genera un ID univoco con prefisso, basato su hash del timestamp in ms + componente random */
+const generateId = (prefix: string): string => {
+  const hash = Date.now().toString(36) + Math.random().toString(36).substring(2, 7);
+  return `${prefix}-${hash}`;
+};
 
 const resolveValue = (mode: ValueMode, fixed: number, min: number, max: number): number => {
   if (mode === 'fixed') return fixed;
@@ -287,7 +293,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
 
   addStep: () => {
     const { steps } = get();
-    const id = `step-${++stepCounter}`;
+    const id = generateId('step');
     const newStep: DraftStep = {
       id,
       title: `Step ${steps.length + 1}`,
@@ -350,16 +356,44 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   addObjective: (stepId, componentId) => {
     const comp = get().components.find(c => c.id === componentId);
     if (!comp) return;
-    const id = `obj-${++objectiveCounter}`;
+    const id = generateId('obj');
     const newObj: DraftObjective = {
       id,
       name: comp.name,
       type: 'component',
       componentId,
+      pinConditions: [],
+      pinLogic: 'AND',
       instruction: '',
       hint: '',
       flagPart: '',
       coords: comp.coords,
+    };
+    set({
+      steps: updateStepObjectives(get().steps, stepId, objs => [...objs, newObj]),
+      activeObjectiveId: id,
+      activeStepId: stepId,
+    });
+  },
+
+  addPinObjective: (stepId, pinIds, logic) => {
+    const { pins } = get();
+    const selectedPins = pins.filter(p => pinIds.includes(p.id));
+    if (selectedPins.length === 0) return;
+    const id = generateId('obj');
+    const name = selectedPins.map(p => p.label || p.pinType.toUpperCase()).join(', ');
+    const pinConditions: PinCondition[] = pinIds.map(pinId => ({ pinId, terminal: '' }));
+    const newObj: DraftObjective = {
+      id,
+      name,
+      type: 'pin',
+      componentId: '',
+      pinConditions,
+      pinLogic: logic,
+      instruction: '',
+      hint: '',
+      flagPart: '',
+      coords: [0, 0, 0, 0],
     };
     set({
       steps: updateStepObjectives(get().steps, stepId, objs => [...objs, newObj]),
@@ -486,7 +520,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     }
 
     if (activeTool === 'component') {
-      const id = `comp-${++componentCounter}`;
+      const id = generateId('comp');
       const newComp: DraftComponent = {
         id, name: '', instruction: '', hint: '', flagPart: '', coords,
       };
@@ -510,7 +544,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         set({ pins: state.pins.filter(p => p.id !== state.activePinId) });
       }
     }
-    const id = `pin-${++pinCounter}`;
+    const id = generateId('pin');
     const newPin: DraftPin = {
       id,
       pinType: 'custom',
@@ -612,6 +646,9 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         hint: o.hint,
         flagPart: o.flagPart || o.name.toUpperCase().replace(/\s+/g, '_'),
         coords: o.coords,
+        ...(o.type === 'pin' && o.pinConditions.length > 0
+          ? { pinConditions: o.pinConditions, pinLogic: o.pinLogic }
+          : {}),
       }));
       const flagParts = objectives.map(o => o.flagPart).join('');
       return {
@@ -708,22 +745,22 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         const stepObjIds = new Set<string>();
 
         draftSteps = exercise.steps.map((s, si) => {
-          const id = s.id || `step-${si + 1}`;
-          stepCounter = Math.max(stepCounter, si + 1);
+          const id = s.id || generateId('step');
           return {
             id,
             title: s.title || `Step ${si + 1}`,
             description: s.description || '',
             availableTools: (s as any).availableTools || [...ALL_TOOLS],
             objectives: (s.objectives || []).map((o, oi) => {
-              const objId = o.id || `obj-${++objectiveCounter}`;
-              objectiveCounter = Math.max(objectiveCounter, oi + 1);
+              const objId = o.id || generateId('obj');
               if (!o.type || o.type === 'component') stepObjIds.add(objId);
               return {
                 id: objId,
                 name: o.name || '',
                 type: (o.type || 'component') as ObjectiveType,
                 componentId: (o as any).componentId || '',
+                pinConditions: (o as any).pinConditions || ((o as any).pinIds || []).map((pid: string) => ({ pinId: pid, terminal: '' })),
+                pinLogic: ((o as any).pinLogic || 'AND') as PinLogic,
                 instruction: o.instruction || '',
                 hint: o.hint || '',
                 flagPart: o.flagPart || '',
@@ -738,8 +775,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
           draftComponents = exercise.components
             .filter(c => !stepObjIds.has(c.id))
             .map((c, i) => {
-              const id = c.id || `comp-${++componentCounter}`;
-              componentCounter = Math.max(componentCounter, i + 1);
+              const id = c.id || generateId('comp');
               return {
                 id,
                 name: c.name || '',
@@ -753,8 +789,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       } else if (exercise.components && exercise.components.length > 0) {
         // Formato vecchio: solo components flat → Init components + un default step
         draftComponents = exercise.components.map((c, i) => {
-          const id = c.id || `comp-${++componentCounter}`;
-          componentCounter = Math.max(componentCounter, i + 1);
+          const id = c.id || generateId('comp');
           return {
             id,
             name: c.name,
@@ -774,13 +809,14 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
             name: c.name,
             type: 'component' as const,
             componentId: c.id || '',
+            pinConditions: [],
+            pinLogic: 'AND' as PinLogic,
             instruction: c.instruction,
             hint: c.hint,
             flagPart: c.flagPart,
             coords: c.coords,
           })),
         }];
-        stepCounter = 1;
       }
 
       // Converti pin
@@ -813,8 +849,6 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
           description: '', hint: '',
         };
       });
-
-      pinCounter = mPins.length + uPins.length;
 
       set({
         components: draftComponents,

@@ -3,9 +3,16 @@
 /**
  * Definisce la struttura di un singolo componente hardware cliccabile sul PCB.
  */
-export type ObjectiveType = 'component' | 'uart' | 'terminal';
+export type ObjectiveType = 'component' | 'uart' | 'terminal' | 'pin';
 export type Tool = 'pointer' | 'magnifier' | 'multimeter' | 'probes' | 'terminal';
 export const ALL_TOOLS: Tool[] = ['pointer', 'magnifier', 'multimeter', 'probes', 'terminal'];
+
+export interface PinCondition {
+  pinId: string;
+  terminal: string; // 'probe1' | 'probe2' | 'adapter-tx' | 'adapter-rx' | 'adapter-gnd'
+}
+
+export type PinLogic = 'AND' | 'OR';
 
 export interface Objective {
   id: string;
@@ -15,6 +22,8 @@ export interface Objective {
   hint: string;
   flagPart: string;
   coords: [number, number, number, number];
+  pinConditions?: PinCondition[];
+  pinLogic?: PinLogic;
 }
 
 export interface Step {
