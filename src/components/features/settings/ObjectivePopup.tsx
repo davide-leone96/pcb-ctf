@@ -62,9 +62,10 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
     }
   };
 
-  // Positioning: use coords if component type with area, otherwise center
+  // Positioning: keep popup inside image bounds with scrollbar if needed
   const hasCoords = objective.type === 'component' && objective.coords[2] > 0 && objective.coords[3] > 0;
   const popupWidth = 320;
+  const popupMaxHeight = Math.min(350, containerDims.height - 16);
 
   let posX: number;
   let posY: number;
@@ -73,26 +74,30 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
     const [left, top, width, height] = objective.coords;
     const compRightPx = ((left + width) / 100) * containerDims.width;
     const compTopPx = (top / 100) * containerDims.height;
-    const spaceRight = containerDims.width - compRightPx;
     const compLeftPx = (left / 100) * containerDims.width;
+    const spaceRight = containerDims.width - compRightPx;
 
     if (spaceRight >= popupWidth + 16) {
-      posX = compRightPx + 12;
+      // Prefer right side
+      posX = Math.min(compRightPx + 12, containerDims.width - popupWidth - 8);
     } else if (compLeftPx >= popupWidth + 16) {
-      posX = compLeftPx - popupWidth - 12;
+      // Try left side
+      posX = Math.max(8, compLeftPx - popupWidth - 12);
     } else {
-      posX = Math.max(8, (containerDims.width - popupWidth) / 2);
+      // Center it, ensuring it stays within bounds
+      posX = Math.max(8, Math.min((containerDims.width - popupWidth) / 2, containerDims.width - popupWidth - 8));
     }
-    posY = Math.max(8, Math.min(compTopPx, containerDims.height - 350));
+    posY = Math.max(8, Math.min(compTopPx, containerDims.height - popupMaxHeight - 8));
   } else {
-    posX = Math.max(8, (containerDims.width - popupWidth) / 2);
-    posY = Math.max(8, containerDims.height / 2 - 175);
+    // Center it for pin-type objectives
+    posX = Math.max(8, Math.min((containerDims.width - popupWidth) / 2, containerDims.width - popupWidth - 8));
+    posY = Math.max(8, Math.min(containerDims.height / 2 - 175, containerDims.height - popupMaxHeight - 8));
   }
 
   return (
     <div
-      className="absolute bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-600 rounded-lg p-4 text-white shadow-2xl ring-1 ring-white/10 z-40 pointer-events-auto"
-      style={{ left: posX, top: posY, width: popupWidth }}
+      className="absolute bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-600 rounded-lg p-4 text-white shadow-2xl ring-1 ring-white/10 z-40 pointer-events-auto overflow-y-auto"
+      style={{ left: posX, top: posY, width: popupWidth, maxHeight: popupMaxHeight }}
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
     >

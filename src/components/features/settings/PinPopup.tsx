@@ -121,29 +121,36 @@ const PinPopup = ({ pin, containerDims }: PinPopupProps) => {
     }
   };
 
-  // Position popup to the right of pin, or left if no space
+  // Position popup: keep inside image bounds with scrollbar if needed
+  const popupWidth = 340;
+  const popupMaxHeight = Math.min(500, containerDims.height - 16);
+
   const pinPxX = (pin.coords[0] / 100) * containerDims.width;
   const pinPxY = (pin.coords[1] / 100) * containerDims.height;
-  const popupWidth = 340;
   const spaceRight = containerDims.width - pinPxX;
 
   let posX: number;
   if (spaceRight >= popupWidth + 40) {
-    posX = pinPxX + 24;
+    // Prefer right side
+    posX = Math.min(pinPxX + 24, containerDims.width - popupWidth - 8);
   } else if (pinPxX >= popupWidth + 40) {
-    posX = pinPxX - popupWidth - 24;
+    // Try left side
+    posX = Math.max(8, pinPxX - popupWidth - 24);
   } else {
-    posX = Math.max(8, (containerDims.width - popupWidth) / 2);
+    // Center it, ensuring it stays within bounds
+    posX = Math.max(8, Math.min((containerDims.width - popupWidth) / 2, containerDims.width - popupWidth - 8));
   }
-  const posY = Math.max(8, Math.min(pinPxY - 20, containerDims.height - 500));
+
+  // Vertical positioning: keep within container bounds
+  const posY = Math.max(8, Math.min(pinPxY - 20, containerDims.height - popupMaxHeight - 8));
 
   const inputCls = "w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors";
   const labelCls = "block text-xs text-gray-400 mb-1";
 
   return (
     <div
-      className="absolute bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-600 rounded-lg p-4 text-white shadow-2xl ring-1 ring-white/10 z-40 pointer-events-auto overflow-y-auto max-h-[90%]"
-      style={{ left: posX, top: posY, width: popupWidth }}
+      className="absolute bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-600 rounded-lg p-4 text-white shadow-2xl ring-1 ring-white/10 z-40 pointer-events-auto overflow-y-auto"
+      style={{ left: posX, top: posY, width: popupWidth, maxHeight: popupMaxHeight }}
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
     >

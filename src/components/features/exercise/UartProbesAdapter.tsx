@@ -28,26 +28,29 @@ const UartProbesAdapter = ({ onPositionChange, bounds, readOnly = false }: UartP
   const {
     uartConnections, activeAdapterPin, uartConnected,
     selectAdapterPin, unhookUartProbe,
+    uartAdapterPosition, setUartAdapterPosition
   } = useExerciseStore();
 
   const adapterRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    if (bounds && !position && adapterRef.current) {
+    if (bounds && !uartAdapterPosition && adapterRef.current) {
       const padding = 16;
       // Posizione container-relative (angolo in alto a sinistra)
       const newPos = { x: padding, y: padding };
-      setPosition(newPos);
+      setUartAdapterPosition(newPos);
       onPositionChange(newPos);
     }
-  }, [bounds, position, onPositionChange]);
+  }, [bounds, uartAdapterPosition, onPositionChange, setUartAdapterPosition]);
 
   useEffect(() => {
+    if (uartAdapterPosition) {
+      onPositionChange(uartAdapterPosition);
+    }
     return () => { onPositionChange(null); };
-  }, [onPositionChange]);
+  }, [uartAdapterPosition, onPositionChange]);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -61,7 +64,7 @@ const UartProbesAdapter = ({ onPositionChange, bounds, readOnly = false }: UartP
       const clampedX = Math.max(0, Math.min(newX, containerRect.width - adapterRef.current.offsetWidth));
       const clampedY = Math.max(0, Math.min(newY, containerRect.height - adapterRef.current.offsetHeight));
       const newPosition = { x: clampedX, y: clampedY };
-      setPosition(newPosition);
+      setUartAdapterPosition(newPosition);
       onPositionChange(newPosition);
     };
     const handleMouseUp = () => setIsDragging(false);
@@ -73,7 +76,7 @@ const UartProbesAdapter = ({ onPositionChange, bounds, readOnly = false }: UartP
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, offset, onPositionChange]);
+  }, [isDragging, offset, onPositionChange, setUartAdapterPosition]);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!adapterRef.current) return;
@@ -96,7 +99,7 @@ const UartProbesAdapter = ({ onPositionChange, bounds, readOnly = false }: UartP
       ref={adapterRef}
       onMouseDown={handleMouseDown}
       className="absolute bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-600 rounded-lg p-3 w-72 text-white shadow-2xl pointer-events-auto z-30 cursor-move ring-1 ring-white/10"
-      style={position ? { left: `${position.x}px`, top: `${position.y}px`, visibility: 'visible' } : { visibility: 'hidden' }}
+      style={uartAdapterPosition ? { left: `${uartAdapterPosition.x}px`, top: `${uartAdapterPosition.y}px`, visibility: 'visible' } : { visibility: 'hidden' }}
     >
       {/* Header */}
       <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-700">

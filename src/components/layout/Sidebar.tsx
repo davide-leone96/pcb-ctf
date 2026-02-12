@@ -37,9 +37,16 @@ const Sidebar = () => {
 
         const handleClick = () => {
           if (isMagnifier) {
-            toggleLensVisible();
+            toggleLensVisible();  // Mantiene comportamento esistente
+          } else if (tool.id === 'pointer') {
+            setActiveTool('pointer');  // Pointer non togglabile
           } else {
-            setActiveTool(tool.id);
+            // Toggle per multimeter, probes, terminal
+            if (isActive) {
+              setActiveTool('pointer');  // Disattiva tornando a pointer
+            } else {
+              setActiveTool(tool.id);    // Attiva normalmente
+            }
           }
         };
 
