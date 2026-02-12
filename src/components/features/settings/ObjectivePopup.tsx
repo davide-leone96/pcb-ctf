@@ -2,11 +2,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSettingsStore, type DraftObjective } from '@/store/settingsStore';
+import { useSettingsStore, type DraftObjective, type PinCondition } from '@/store/settingsStore';
 import { Button } from '@/components/ui/button';
+
+const TERMINAL_OPTIONS = [
+  { value: '', label: 'Seleziona terminale...' },
+  { value: 'probe1', label: 'Multimetro - Puntale 1' },
+  { value: 'probe2', label: 'Multimetro - Puntale 2' },
+  { value: 'adapter-tx', label: 'UART Adapter - TX' },
+  { value: 'adapter-rx', label: 'UART Adapter - RX' },
+  { value: 'adapter-gnd', label: 'UART Adapter - GND' },
+];
 
 const TYPE_COLORS: Record<string, string> = {
   component: 'bg-blue-600/30 text-blue-300 border-blue-500/50',
+  pin: 'bg-cyan-600/30 text-cyan-300 border-cyan-500/50',
 };
 
 interface ObjectivePopupProps {
@@ -15,22 +25,30 @@ interface ObjectivePopupProps {
 }
 
 const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
-  const { saveObjective, updateObjective, cancelObjectiveEdit } = useSettingsStore();
+  const { saveObjective, updateObjective, cancelObjectiveEdit, pins } = useSettingsStore();
 
   const isNew = objective.instruction === '' && objective.hint === '' && objective.flagPart === '';
   const [instruction, setInstruction] = useState(objective.instruction);
   const [hint, setHint] = useState(objective.hint);
   const [flagPart, setFlagPart] = useState(objective.flagPart);
+  const [conditions, setConditions] = useState<PinCondition[]>(objective.pinConditions);
 
   useEffect(() => {
     setInstruction(objective.instruction);
     setHint(objective.hint);
     setFlagPart(objective.flagPart);
+    setConditions(objective.pinConditions);
   }, [objective]);
+
+  const updateConditionTerminal = (pinId: string, terminal: string) => {
+    setConditions(prev => prev.map(c => c.pinId === pinId ? { ...c, terminal } : c));
+  };
 
   const handleConfirm = () => {
     const data = {
       name: objective.name,
+      pinConditions: conditions,
+      pinLogic: objective.pinLogic,
       instruction,
       hint,
       flagPart: flagPart || objective.name.toUpperCase().replace(/\s+/g, '_'),
@@ -87,6 +105,43 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
           </span>
         )}
       </div>
+
+      {/* Pin conditions */}
+      {objective.type === 'pin' && conditions.length > 0 && (
+        <div className="mb-3">
+          <label className="block text-xs text-gray-400 mb-1.5">
+            Condizioni ({objective.pinLogic})
+          </label>
+          <div className="space-y-1.5">
+            {conditions.map((cond, idx) => {
+              const pin = pins.find(p => p.id === cond.pinId);
+              const pinLabel = pin?.label || pin?.pinType.toUpperCase() || cond.pinId;
+              return (
+                <div key={cond.pinId}>
+                  {idx > 0 && (
+                    <div className="flex justify-center -my-0.5">
+                      <span className="text-[10px] font-mono text-cyan-400/60">{objective.pinLogic}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 bg-gray-700/30 rounded px-2 py-1.5">
+                    <span className="text-xs text-cyan-300 flex-shrink-0 min-w-[50px]">{pinLabel}</span>
+                    <span className="text-[10px] text-gray-500">&rarr;</span>
+                    <select
+                      value={cond.terminal}
+                      onChange={(e) => updateConditionTerminal(cond.pinId, e.target.value)}
+                      className="flex-1 bg-gray-700/50 border border-gray-600 rounded px-1.5 py-1 text-xs text-white focus:outline-none focus:border-cyan-500 transition-colors"
+                    >
+                      {TERMINAL_OPTIONS.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Instruction */}
       <div className="mb-3">

@@ -22,7 +22,6 @@ export default function Home() {
     stepMode,
     isSimulatorEnabled,
     flag,
-    uartFlag,
     isFinished,
     resetExercise,
     activeTool,
@@ -118,9 +117,7 @@ export default function Home() {
                   flag={
                     activeTool === 'terminal'
                       ? buildTerminalFlag(terminalDiscoveries)
-                      : uartConnected
-                        ? uartFlag
-                        : flag
+                      : flag
                   }
                 />
               </div>

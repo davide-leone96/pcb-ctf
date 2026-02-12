@@ -1,7 +1,7 @@
 // src/store/exerciseStore.ts
 
 import { create } from 'zustand';
-import type { Exercise } from '@/data/exercise';
+import type { Exercise, PinCondition } from '@/data/exercise';
 import { type Tool, ALL_TOOLS } from '@/data/exercise';
 
 export type { Tool };
@@ -56,6 +56,7 @@ interface ExerciseActions {
   startStep: () => void;
   validateAndCompleteStep: (inputFlag: string) => boolean;
   _completeCurrentObjective: () => void;
+  _checkPinConditions: () => void;
 
   // Legacy actions
   selectComponent: (componentId: string) => void;
@@ -262,6 +263,9 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
         snapTarget: null,
       });
     }
+
+    // Check pin conditions after each probe connection
+    get()._checkPinConditions();
   },
   
   addTerminalDiscovery: (id) => {
@@ -350,6 +354,9 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
         get()._completeCurrentObjective();
       }
     }
+
+    // Check pin conditions after each UART connection
+    get()._checkPinConditions();
   },
 
   unhookUartProbe: (adapterPin) => {
@@ -395,6 +402,9 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
     const currentObjective = currentStep.objectives[currentObjectiveIndex];
     if (!currentObjective) return;
 
+    // Previeni doppio completamento dello stesso obiettivo
+    if (foundComponents.includes(currentObjective.id)) return;
+
     const newFoundComponents = [...foundComponents, currentObjective.id];
 
     // Costruisci flag progressiva
@@ -406,7 +416,12 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
 
     const isLastObjective = currentObjectiveIndex === currentStep.objectives.length - 1;
 
-    if (isLastObjective) {
+    // Verifica che TUTTI gli obiettivi precedenti siano stati completati
+    const allPriorCompleted = currentStep.objectives
+      .slice(0, currentObjectiveIndex)
+      .every(obj => newFoundComponents.includes(obj.id));
+
+    if (isLastObjective && allPriorCompleted) {
       set({
         foundComponents: newFoundComponents,
         flag: newFlag,
@@ -422,6 +437,42 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
         flag: newFlag,
         currentObjectiveIndex: currentObjectiveIndex + 1,
       });
+    }
+  },
+
+  _checkPinConditions: () => {
+    const {
+      stepMode, exerciseData: data, currentStepIndex, currentObjectiveIndex,
+      probe1, probe2, uartConnections,
+    } = get();
+
+    if (stepMode !== 'active' || !data?.steps) return;
+
+    const currentStep = data.steps[currentStepIndex];
+    const currentObj = currentStep?.objectives?.[currentObjectiveIndex];
+    if (!currentObj || currentObj.type !== 'pin') return;
+
+    const conditions = currentObj.pinConditions;
+    const logic = currentObj.pinLogic || 'AND';
+    if (!conditions || conditions.length === 0) return;
+
+    const isConditionMet = (cond: PinCondition) => {
+      switch (cond.terminal) {
+        case 'probe1': return probe1.hookedTo === cond.pinId;
+        case 'probe2': return probe2.hookedTo === cond.pinId;
+        case 'adapter-tx': return uartConnections.find(c => c.adapterPin === 'adapter-tx')?.pcbPinId === cond.pinId;
+        case 'adapter-rx': return uartConnections.find(c => c.adapterPin === 'adapter-rx')?.pcbPinId === cond.pinId;
+        case 'adapter-gnd': return uartConnections.find(c => c.adapterPin === 'adapter-gnd')?.pcbPinId === cond.pinId;
+        default: return false;
+      }
+    };
+
+    const satisfied = logic === 'AND'
+      ? conditions.every(isConditionMet)
+      : conditions.some(isConditionMet);
+
+    if (satisfied) {
+      get()._completeCurrentObjective();
     }
   },
 
@@ -548,13 +599,21 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   },
 
   validateAndCompleteStep: (inputFlag) => {
-    const { exerciseData: data, currentStepIndex, flag } = get();
+    const { exerciseData: data, currentStepIndex, flag, foundComponents } = get();
     if (!data || !data.steps || !data.steps[currentStepIndex]) return false;
+
+    const currentStep = data.steps[currentStepIndex];
+
+    // Verifica che TUTTI gli obiettivi dello step siano stati completati
+    const allObjectivesCompleted = currentStep.objectives.every(
+      obj => foundComponents.includes(obj.id)
+    );
+    if (!allObjectivesCompleted) return false;
 
     // La flag deve corrispondere a quella completa dello step corrente
     if (inputFlag !== flag) return false;
 
-    // Flag valida - passa allo step successivo
+    // Flag valida e tutti gli obiettivi completati - passa allo step successivo
     const isLastStep = currentStepIndex === data.steps.length - 1;
 
     if (isLastStep) {

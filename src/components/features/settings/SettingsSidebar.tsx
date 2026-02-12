@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useSettingsStore, type DraftStep, type DraftObjective, type DraftComponent, type DraftPin, type SettingsTool } from '@/store/settingsStore';
+import { useSettingsStore, type DraftStep, type DraftObjective, type DraftComponent, type DraftPin, type SettingsTool, type PinLogic } from '@/store/settingsStore';
 import { ALL_TOOLS, type Tool } from '@/data/exercise';
 import { cn } from '@/lib/utils';
 import {
@@ -59,7 +59,7 @@ const SettingsSidebar = () => {
     components, editComponent, deleteComponent,
     steps, activeStepId, selectStep,
     addStep, deleteStep, reorderStep, updateStep, toggleStepTool,
-    addObjective, deleteObjective, reorderObjective, editObjective,
+    addObjective, addPinObjective, deleteObjective, reorderObjective, editObjective,
     pins, editPin, deletePin,
     exportAsJson, exportAsTypeScript, applyConfig,
     saveToFile, loadFromFile,
@@ -242,7 +242,9 @@ const SettingsSidebar = () => {
                     onUpdateStep={(data) => updateStep(step.id, data)}
                     onToggleTool={(tool) => toggleStepTool(step.id, tool)}
                     onAddObjective={(componentId) => addObjective(step.id, componentId)}
+                    onAddPinObjective={(pinIds, logic) => addPinObjective(step.id, pinIds, logic)}
                     availableComponents={components}
+                    availablePins={pins}
                     onDeleteObjective={(objId) => deleteObjective(step.id, objId)}
                     onReorderObjective={(objId, dir) => reorderObjective(step.id, objId, dir)}
                     onEditObjective={editObjective}
@@ -296,8 +298,8 @@ const SettingsSidebar = () => {
 const StepItem = ({
   step, index, isExpanded, isFirst, isLast,
   onToggle, onDelete, onReorder, onUpdateStep, onToggleTool,
-  onAddObjective, onDeleteObjective, onReorderObjective, onEditObjective,
-  availableComponents,
+  onAddObjective, onAddPinObjective, onDeleteObjective, onReorderObjective, onEditObjective,
+  availableComponents, availablePins,
 }: {
   step: DraftStep;
   index: number;
@@ -310,14 +312,18 @@ const StepItem = ({
   onUpdateStep: (data: Partial<Pick<DraftStep, 'title' | 'description'>>) => void;
   onToggleTool: (tool: Tool) => void;
   onAddObjective: (componentId: string) => void;
+  onAddPinObjective: (pinIds: string[], logic: PinLogic) => void;
   onDeleteObjective: (objId: string) => void;
   onReorderObjective: (objId: string, dir: 'up' | 'down') => void;
   onEditObjective: (objId: string) => void;
   availableComponents: DraftComponent[];
+  availablePins: DraftPin[];
 }) => {
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleValue, setTitleValue] = useState(step.title);
-  const [showAddMenu, setShowAddMenu] = useState(false);
+  const [showAddMenu, setShowAddMenu] = useState<null | 'root' | 'component' | 'pin'>(null);
+  const [selectedPinIds, setSelectedPinIds] = useState<string[]>([]);
+  const [pinLogic, setPinLogic] = useState<PinLogic>('AND');
 
   const handleTitleSave = () => {
     onUpdateStep({ title: titleValue || `Step ${index + 1}` });
@@ -409,7 +415,7 @@ const StepItem = ({
               <span className="text-[10px] text-gray-500 uppercase">Obiettivi ({step.objectives.length})</span>
               <div className="relative">
                 <button
-                  onClick={() => setShowAddMenu(!showAddMenu)}
+                  onClick={() => setShowAddMenu(showAddMenu ? null : 'root')}
                   className="text-gray-400 hover:text-white transition-colors p-0.5"
                   title="Aggiungi obiettivo"
                 >
@@ -417,19 +423,133 @@ const StepItem = ({
                 </button>
                 {showAddMenu && (
                   <div className="absolute right-0 top-full mt-1 bg-gray-700 border border-gray-600 rounded-lg shadow-xl z-50 py-1 min-w-[160px]">
-                    {availableComponents.length === 0 ? (
-                      <p className="px-3 py-1.5 text-xs text-gray-400 italic">Crea prima un componente nella tab Init</p>
-                    ) : (
-                      availableComponents.map(comp => (
+                    {showAddMenu === 'root' && (
+                      <>
                         <button
-                          key={comp.id}
-                          onClick={() => { onAddObjective(comp.id); setShowAddMenu(false); }}
+                          onClick={() => setShowAddMenu('component')}
                           className="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-600 transition-colors flex items-center gap-2"
                         >
-                          <div className="w-2.5 h-2.5 flex-shrink-0 border border-green-400/60 bg-green-500/15 rounded-sm" />
-                          <span className="text-blue-300">{comp.name || 'Senza nome'}</span>
+                          <BoxSelect className="h-3 w-3 text-blue-400" />
+                          <span className="text-white">Componente</span>
+                          <ChevronRight className="h-3 w-3 text-gray-400 ml-auto" />
                         </button>
-                      ))
+                        <button
+                          onClick={() => { setShowAddMenu('pin'); setSelectedPinIds([]); setPinLogic('AND'); }}
+                          className="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-600 transition-colors flex items-center gap-2"
+                        >
+                          <MapPin className="h-3 w-3 text-cyan-400" />
+                          <span className="text-white">Pin</span>
+                          <ChevronRight className="h-3 w-3 text-gray-400 ml-auto" />
+                        </button>
+                      </>
+                    )}
+                    {showAddMenu === 'component' && (
+                      <>
+                        <button
+                          onClick={() => setShowAddMenu('root')}
+                          className="w-full text-left px-3 py-1 text-[10px] text-gray-400 hover:text-white hover:bg-gray-600 transition-colors flex items-center gap-1 border-b border-gray-600 mb-1"
+                        >
+                          <ArrowUp className="h-2.5 w-2.5 rotate-[-90deg]" />
+                          Indietro
+                        </button>
+                        {availableComponents.length === 0 ? (
+                          <p className="px-3 py-1.5 text-xs text-gray-400 italic">Crea prima un componente nella tab Init</p>
+                        ) : (
+                          availableComponents.map(comp => (
+                            <button
+                              key={comp.id}
+                              onClick={() => { onAddObjective(comp.id); setShowAddMenu(null); }}
+                              className="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-600 transition-colors flex items-center gap-2"
+                            >
+                              <div className="w-2.5 h-2.5 flex-shrink-0 border border-green-400/60 bg-green-500/15 rounded-sm" />
+                              <span className="text-blue-300">{comp.name || 'Senza nome'}</span>
+                            </button>
+                          ))
+                        )}
+                      </>
+                    )}
+                    {showAddMenu === 'pin' && (
+                      <>
+                        <button
+                          onClick={() => setShowAddMenu('root')}
+                          className="w-full text-left px-3 py-1 text-[10px] text-gray-400 hover:text-white hover:bg-gray-600 transition-colors flex items-center gap-1 border-b border-gray-600 mb-1"
+                        >
+                          <ArrowUp className="h-2.5 w-2.5 rotate-[-90deg]" />
+                          Indietro
+                        </button>
+                        {availablePins.length === 0 ? (
+                          <p className="px-3 py-1.5 text-xs text-gray-400 italic">Crea prima un pin nella tab Init</p>
+                        ) : (
+                          <>
+                            <div className="max-h-[180px] overflow-y-auto">
+                              {availablePins.map(pin => {
+                                const checked = selectedPinIds.includes(pin.id);
+                                const color = PIN_TYPE_COLORS[pin.pinType] || PIN_TYPE_COLORS.custom;
+                                return (
+                                  <label
+                                    key={pin.id}
+                                    className="w-full px-3 py-1.5 text-xs hover:bg-gray-600 transition-colors flex items-center gap-2 cursor-pointer"
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={checked}
+                                      onChange={() => setSelectedPinIds(prev =>
+                                        checked ? prev.filter(id => id !== pin.id) : [...prev, pin.id]
+                                      )}
+                                      className="accent-cyan-500 h-3 w-3 flex-shrink-0"
+                                    />
+                                    <div
+                                      className={cn('w-2.5 h-2.5 flex-shrink-0 border', pin.shape === 'circle' ? 'rounded-full' : 'rounded-sm')}
+                                      style={{ borderColor: color, backgroundColor: `${color}33` }}
+                                    />
+                                    <span className="text-cyan-300 truncate">{pin.label || pin.pinType.toUpperCase()}</span>
+                                    <span className="text-[10px] font-mono ml-auto" style={{ color }}>
+                                      {PIN_TYPE_LABELS[pin.pinType] || pin.pinType.toUpperCase()}
+                                    </span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                            <div className="px-3 pt-1.5 pb-1 border-t border-gray-600 mt-1 space-y-1.5">
+                              {selectedPinIds.length >= 2 && (
+                                <div className="flex items-center gap-1">
+                                  <span className="text-[10px] text-gray-400">Logica:</span>
+                                  <button
+                                    onClick={() => setPinLogic('AND')}
+                                    className={cn(
+                                      'px-2 py-0.5 rounded text-[10px] font-mono transition-colors',
+                                      pinLogic === 'AND' ? 'bg-cyan-600 text-white' : 'bg-gray-600 text-gray-400 hover:text-white'
+                                    )}
+                                  >
+                                    AND
+                                  </button>
+                                  <button
+                                    onClick={() => setPinLogic('OR')}
+                                    className={cn(
+                                      'px-2 py-0.5 rounded text-[10px] font-mono transition-colors',
+                                      pinLogic === 'OR' ? 'bg-cyan-600 text-white' : 'bg-gray-600 text-gray-400 hover:text-white'
+                                    )}
+                                  >
+                                    OR
+                                  </button>
+                                </div>
+                              )}
+                              <button
+                                onClick={() => { onAddPinObjective(selectedPinIds, pinLogic); setShowAddMenu(null); setSelectedPinIds([]); }}
+                                disabled={selectedPinIds.length === 0}
+                                className={cn(
+                                  'w-full px-2 py-1 rounded text-xs font-medium transition-colors',
+                                  selectedPinIds.length > 0
+                                    ? 'bg-cyan-600 hover:bg-cyan-700 text-white'
+                                    : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                                )}
+                              >
+                                Aggiungi {selectedPinIds.length > 0 ? `(${selectedPinIds.length})` : ''}
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </>
                     )}
                   </div>
                 )}
@@ -475,8 +595,8 @@ const ObjectiveItem = ({
   onReorder: (dir: 'up' | 'down') => void;
 }) => (
   <div className="flex items-center gap-1.5 px-1.5 py-1 rounded hover:bg-gray-700/50 group">
-    <span className="text-[10px] font-mono flex-shrink-0 text-blue-400">
-      COM
+    <span className={cn('text-[10px] font-mono flex-shrink-0', objective.type === 'pin' ? 'text-cyan-400' : 'text-blue-400')}>
+      {objective.type === 'pin' ? `PIN\u00B7${objective.pinLogic}` : 'COM'}
     </span>
     <span className="text-xs truncate flex-1">{objective.name || 'Senza nome'}</span>
     <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
