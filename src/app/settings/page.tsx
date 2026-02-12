@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { useSettingsStore } from '@/store/settingsStore';
 import SettingsSidebar from '@/components/features/settings/SettingsSidebar';
 import SettingsCanvas from '@/components/features/settings/SettingsCanvas';
+import CanvasToolbar from '@/components/features/settings/CanvasToolbar';
 
 export default function SettingsPage() {
   const loadFromStorage = useSettingsStore(s => s.loadFromStorage);
@@ -25,7 +26,8 @@ export default function SettingsPage() {
           <SettingsSidebar />
         </div>
         <div className="flex-grow">
-          <div className="border-2 border-dashed border-gray-500 rounded-lg p-4">
+          <CanvasToolbar />
+          <div className="border-2 border-dashed border-gray-500 rounded-lg p-4 overflow-hidden">
             <SettingsCanvas />
           </div>
         </div>

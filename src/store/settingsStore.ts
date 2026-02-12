@@ -88,11 +88,30 @@ interface SettingsState {
   pendingPinCoords: [number, number] | null;
   dragState: DragState | null;
   pcbImagePath: string;
+  canvasZoom: number;
+  canvasRotation: number;
+  canvasPanX: number;
+  canvasPanY: number;
+  canvasPanMode: boolean;
 }
 
 interface SettingsActions {
   setActiveTool: (tool: SettingsTool) => void;
   setPcbImagePath: (path: string) => void;
+
+  // Canvas transform
+  setCanvasZoom: (zoom: number) => void;
+  zoomIn: () => void;
+  zoomOut: () => void;
+  setCanvasRotation: (degrees: number) => void;
+  rotateBy: (degrees: number) => void;
+  togglePanMode: () => void;
+  resetCanvasTransform: () => void;
+  setPan: (x: number, y: number) => void;
+
+  // Image management
+  uploadImage: (file: File) => Promise<{ success: boolean; path?: string; error?: string }>;
+  deleteImage: () => Promise<void>;
 
   // Component actions (Init)
   editComponent: (id: string) => void;
@@ -200,6 +219,11 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   pendingPinCoords: null,
   dragState: null,
   pcbImagePath: '/images/pcb_v2.jpg',
+  canvasZoom: 1,
+  canvasRotation: 0,
+  canvasPanX: 0,
+  canvasPanY: 0,
+  canvasPanMode: false,
 
   // --- Tool ---
 
@@ -240,6 +264,46 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   },
 
   setPcbImagePath: (path) => set({ pcbImagePath: path }),
+
+  // --- Canvas transform ---
+
+  setCanvasZoom: (zoom) => set({ canvasZoom: Math.max(0.25, Math.min(4, zoom)) }),
+  zoomIn: () => set(s => ({ canvasZoom: Math.min(4, s.canvasZoom + 0.25) })),
+  zoomOut: () => set(s => ({ canvasZoom: Math.max(0.25, s.canvasZoom - 0.25) })),
+  setCanvasRotation: (degrees) => set({ canvasRotation: degrees }),
+  rotateBy: (degrees) => set(s => ({ canvasRotation: s.canvasRotation + degrees })),
+  togglePanMode: () => set(s => ({ canvasPanMode: !s.canvasPanMode })),
+  resetCanvasTransform: () => set({ canvasZoom: 1, canvasRotation: 0, canvasPanX: 0, canvasPanY: 0, canvasPanMode: false }),
+  setPan: (x, y) => set({ canvasPanX: x, canvasPanY: y }),
+
+  uploadImage: async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      const response = await fetch('/api/images/upload', { method: 'POST', body: formData });
+      const result = await response.json();
+      if (result.success) {
+        set({ pcbImagePath: result.path });
+      }
+      return result;
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  },
+
+  deleteImage: async () => {
+    const { pcbImagePath } = get();
+    if (pcbImagePath !== '/images/pcb_v2.jpg') {
+      try {
+        await fetch('/api/images/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imagePath: pcbImagePath }),
+        });
+      } catch { /* ignore */ }
+    }
+    set({ pcbImagePath: '/images/pcb_v2.jpg' });
+  },
 
   // --- Component actions (Init) ---
 
@@ -641,7 +705,8 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       const objectives = s.objectives.map(o => ({
         id: o.id,
         name: o.name,
-        type: o.type !== 'component' ? o.type : undefined,
+        type: o.type,
+        ...(o.type === 'component' && o.componentId ? { componentId: o.componentId } : {}),
         instruction: o.instruction,
         hint: o.hint,
         flagPart: o.flagPart || o.name.toUpperCase().replace(/\s+/g, '_'),

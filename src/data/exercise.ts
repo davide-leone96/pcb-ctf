@@ -18,6 +18,7 @@ export interface Objective {
   id: string;
   name: string;
   type?: ObjectiveType;
+  componentId?: string;
   instruction: string;
   hint: string;
   flagPart: string;
