@@ -56,13 +56,14 @@ const SettingsCanvas = () => {
   const activeComponent = activeComponentId ? components.find(c => c.id === activeComponentId) : null;
   const activePin = activePinId ? pins.find(p => p.id === activePinId) : null;
 
-  // Use offsetWidth/offsetHeight for pre-transform dimensions
+  // Use getBoundingClientRect for accurate post-transform dimensions
   useLayoutEffect(() => {
     const updateDimensions = () => {
       if (imageRef.current) {
+        const rect = imageRef.current.getBoundingClientRect();
         setContainerDims({
-          width: imageRef.current.offsetWidth,
-          height: imageRef.current.offsetHeight,
+          width: rect.width,
+          height: rect.height,
         });
       }
     };
@@ -420,25 +421,17 @@ const SettingsCanvas = () => {
           />
         )}
 
-        {/* Component popup (Init) */}
+        {/* Popups - inside transform wrapper, contained within image */}
         {activeComponent && containerDims.width > 0 && (
-          <div data-popup>
-            <ComponentPopup component={activeComponent} containerDims={containerDims} />
-          </div>
+          <ComponentPopup component={activeComponent} containerDims={containerDims} />
         )}
 
-        {/* Objective popup (Challenge) */}
         {activeObjective && containerDims.width > 0 && (
-          <div data-popup>
-            <ObjectivePopup objective={activeObjective} containerDims={containerDims} />
-          </div>
+          <ObjectivePopup objective={activeObjective} containerDims={containerDims} />
         )}
 
-        {/* Pin popup */}
         {activePin && containerDims.width > 0 && (
-          <div data-popup>
-            <PinPopup pin={activePin} containerDims={containerDims} />
-          </div>
+          <PinPopup pin={activePin} containerDims={containerDims} />
         )}
       </div>
     </div>

@@ -223,10 +223,18 @@ const PCBViewer = () => {
   // Per i cavi SVG servono posizioni in pixel
   const probe1Pos = getPinPosition(probe1.hookedTo);
   const probe2Pos = getPinPosition(probe2.hookedTo);
+
+  // Posizione della probe attiva: usa snap target se disponibile, altrimenti mouse
   let activeProbePos = mousePosition;
   if (snapTarget && activeProbe) {
     const snapPos = getPinPosition(snapTarget);
     if (snapPos) activeProbePos = snapPos;
+  }
+  // Fallback: se mouse non disponibile ma probe attiva, usa posizione multimetro
+  if (!activeProbePos && activeProbe && multimeterPosition) {
+    const offsetX = activeProbe === 'first' ? 30 : 220;
+    const offsetY = 120;
+    activeProbePos = { x: multimeterPosition.x + offsetX, y: multimeterPosition.y + offsetY };
   }
 
   const getWireOrigin = (probeNumber: 'first' | 'second') => {
@@ -261,11 +269,21 @@ const PCBViewer = () => {
 
   const uartSnapTargetPercent = uartSnapTarget ? getPinCenterPercent(uartSnapTarget) : null;
 
-  // Per i cavi UART servono posizioni in pixel
+  // Posizione del cavo UART attivo: usa snap target se disponibile, altrimenti mouse
   let activeUartProbePos = mousePosition;
   if (uartSnapTarget && activeAdapterPin) {
     const snapPos = getPinPosition(uartSnapTarget);
     if (snapPos) activeUartProbePos = snapPos;
+  }
+  // Fallback: se mouse non disponibile ma pin attivo, usa posizione adapter
+  if (!activeUartProbePos && activeAdapterPin && adapterPosition) {
+    const offsets: Record<AdapterPin, { x: number; y: number }> = {
+      'adapter-tx':  { x: 100, y: 150 },
+      'adapter-rx':  { x: 160, y: 150 },
+      'adapter-gnd': { x: 220, y: 150 },
+    };
+    const o = offsets[activeAdapterPin];
+    activeUartProbePos = { x: adapterPosition.x + o.x, y: adapterPosition.y + o.y };
   }
 
   // L'overlay UART (adapter, cavi, pallini) è visibile sia in modalità probes che terminal
@@ -317,16 +335,16 @@ const PCBViewer = () => {
 
               {/* Se il puntale 1 è attivo, disegna il suo cavo che segue il mouse */}
               {activeProbe === 'first' && (
-                <path d={getCurvePath(wireOrigin1, activeProbePos)} stroke="#EF4444" strokeWidth="4" fill="none" />
+                <path d={getCurvePath(wireOrigin1, activeProbePos)} stroke="#EF4444" strokeWidth="4" fill="none" strokeDasharray="8,4" opacity="0.7" />
               )}
               {/* Altrimenti, se è agganciato, disegna il cavo fisso */}
               {probe1Pos && activeProbe !== 'first' && (
                 <path d={getCurvePath(wireOrigin1, probe1Pos)} stroke="#EF4444" strokeWidth="4" fill="none" />
               )}
-              
+
               {/* Se il puntale 2 è attivo, disegna il suo cavo che segue il mouse */}
               {activeProbe === 'second' && (
-                <path d={getCurvePath(wireOrigin2, activeProbePos)} stroke="black" strokeWidth="4" fill="none" />
+                <path d={getCurvePath(wireOrigin2, activeProbePos)} stroke="black" strokeWidth="4" fill="none" strokeDasharray="8,4" opacity="0.7" />
               )}
               {/* Altrimenti, se è agganciato, disegna il cavo fisso */}
               {probe2Pos && activeProbe !== 'second' && (
@@ -343,11 +361,11 @@ const PCBViewer = () => {
 
               if (conn.adapterPin === activeAdapterPin) {
                 const endPos = uartSnapTarget ? getPinPosition(uartSnapTarget) : mousePosition;
-                return <path key={conn.adapterPin} d={getCurvePath(wireOrigin, endPos)} stroke={color} strokeWidth="3" fill="none" strokeDasharray="8,4" opacity="0.7" />;
+                return <path key={conn.adapterPin} d={getCurvePath(wireOrigin, endPos)} stroke={color} strokeWidth="4" fill="none" strokeDasharray="8,4" opacity="0.7" />;
               }
               if (conn.pcbPinId) {
                 const pinPos = getPinPosition(conn.pcbPinId);
-                return <path key={conn.adapterPin} d={getCurvePath(wireOrigin, pinPos)} stroke={color} strokeWidth="3" fill="none" />;
+                return <path key={conn.adapterPin} d={getCurvePath(wireOrigin, pinPos)} stroke={color} strokeWidth="4" fill="none" />;
               }
               return null;
             })}

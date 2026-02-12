@@ -48,6 +48,8 @@ interface ExerciseState {
   lensVisible: boolean;
   lensIsAnchored: boolean;
   lensAnchorPosition: MousePosition | null;
+  multimeterPosition: MousePosition | null;
+  uartAdapterPosition: MousePosition | null;
 }
 
 interface ExerciseActions {
@@ -80,6 +82,8 @@ interface ExerciseActions {
   toggleLensVisible: () => void;
   toggleLensAnchor: () => void;
   setLensAnchorPosition: (position: MousePosition | null) => void;
+  setMultimeterPosition: (position: MousePosition | null) => void;
+  setUartAdapterPosition: (position: MousePosition | null) => void;
   validateFlag: (inputFlag: string, toolId: 'multimeter' | 'probes' | 'terminal') => boolean;
   unlockTool: (toolId: 'multimeter' | 'probes' | 'terminal') => void;
 }
@@ -125,6 +129,8 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   lensVisible: false,
   lensIsAnchored: false,
   lensAnchorPosition: null,
+  multimeterPosition: null,
+  uartAdapterPosition: null,
 
   // Azioni
   resetExercise: () => {
@@ -181,12 +187,10 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
     }
 
     // Se lo strumento selezionato NON è il multimetro,
-    // esegui una pulizia completa dello stato del multimetro.
+    // pulisci solo lo stato transitorio (mantieni i collegamenti probe1/probe2)
     if (tool !== 'multimeter') {
       set({
         activeProbe: null,
-        probe1: { hookedTo: null },
-        probe2: { hookedTo: null },
         snapTarget: null,
       });
     }
@@ -252,7 +256,7 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
     if (activeProbe === 'first') {
       set({
         probe1: { hookedTo: snapTarget },
-        activeProbe: 'second',
+        activeProbe: null,  // Non selezionare automaticamente probe2
         snapTarget: null,
       });
     } else {
@@ -479,11 +483,11 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   setLensRadius: (radius) => set({ lensRadius: Math.max(50, Math.min(200, radius)) }),
   setLensZoomLevel: (zoom) => set({ lensZoomLevel: Math.max(1.5, Math.min(5, zoom)) }),
   toggleLensVisible: () => {
-    const { lensVisible, activeTool, probe1, probe2, uartConnections, mousePosition } = get();
+    const { lensVisible, activeTool, probe1, probe2, uartConnections, mousePosition, lensAnchorPosition } = get();
 
     if (lensVisible) {
-      // Se la lente è visibile, nascondila
-      set({ lensVisible: false, lensIsAnchored: false, lensAnchorPosition: null });
+      // Se la lente è visibile, nascondila ma mantieni posizione e stato ancoraggio
+      set({ lensVisible: false });
     } else {
       // Se vogliamo mostrare la lente, verifica che il tool corrente sia completo
       let canActivateLens = true;
@@ -505,7 +509,8 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
       }
       // pointer e terminal possono sempre attivare la lente
 
-      const initialPosition = mousePosition || { x: 400, y: 300 };
+      // Usa la posizione salvata se esiste, altrimenti mousePosition o default
+      const initialPosition = lensAnchorPosition || mousePosition || { x: 400, y: 300 };
 
       if (shouldSwitchToPointer) {
         set({
@@ -534,6 +539,8 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
     }
   },
   setLensAnchorPosition: (position) => set({ lensAnchorPosition: position }),
+  setMultimeterPosition: (position) => set({ multimeterPosition: position }),
+  setUartAdapterPosition: (position) => set({ uartAdapterPosition: position }),
 
   validateFlag: (inputFlag, toolId) => {
     const { flag, uartFlag, exerciseData: data } = get();

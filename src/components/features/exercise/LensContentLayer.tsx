@@ -217,7 +217,7 @@ const LensContentLayer: React.FC<LensContentLayerProps> = ({
               type: 'wire',
               color: WIRE_COLORS[conn.adapterPin as AdapterPin],
               pathD,
-              strokeWidth: 3,
+              strokeWidth: 4,
             });
           }
         }
@@ -252,7 +252,7 @@ const LensContentLayer: React.FC<LensContentLayerProps> = ({
               type: 'wire',
               color: WIRE_COLORS[activeAdapterPin],
               pathD,
-              strokeWidth: 3,
+              strokeWidth: 4,
             });
           }
         }

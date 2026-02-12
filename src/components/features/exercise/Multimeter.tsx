@@ -56,10 +56,12 @@ const calculateReading = (
 };
 
 const Multimeter = ({ onPositionChange, bounds }: MultimeterProps) => {
-  const { multimeterMode, setMultimeterMode, probe1, probe2, activeProbe, selectProbe } = useExerciseStore();
+  const {
+    multimeterMode, setMultimeterMode, probe1, probe2, activeProbe, selectProbe,
+    multimeterPosition, setMultimeterPosition
+  } = useExerciseStore();
   const multimeterRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [noise, setNoise] = useState(0);
 
@@ -72,20 +74,23 @@ const Multimeter = ({ onPositionChange, bounds }: MultimeterProps) => {
   }, []);
 
   useEffect(() => {
-    if (bounds && !position && multimeterRef.current) {
+    if (bounds && !multimeterPosition && multimeterRef.current) {
       const multimeterWidth = multimeterRef.current.offsetWidth;
       const padding = 16;
       const initialX = bounds.width - multimeterWidth - padding;
       const initialY = padding;
       const newPos = { x: initialX, y: initialY };
-      setPosition(newPos);
+      setMultimeterPosition(newPos);
       onPositionChange(newPos);
     }
-  }, [bounds, position, onPositionChange]);
+  }, [bounds, multimeterPosition, onPositionChange, setMultimeterPosition]);
 
   useEffect(() => {
+    if (multimeterPosition) {
+      onPositionChange(multimeterPosition);
+    }
     return () => { onPositionChange(null); };
-  }, [onPositionChange]);
+  }, [multimeterPosition, onPositionChange]);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -98,7 +103,7 @@ const Multimeter = ({ onPositionChange, bounds }: MultimeterProps) => {
       const clampedX = Math.max(0, Math.min(newX, containerRect.width - multimeterRef.current.offsetWidth));
       const clampedY = Math.max(0, Math.min(newY, containerRect.height - multimeterRef.current.offsetHeight));
       const newPosition = { x: clampedX, y: clampedY };
-      setPosition(newPosition);
+      setMultimeterPosition(newPosition);
       onPositionChange(newPosition);
     };
     const handleMouseUp = () => setIsDragging(false);
@@ -110,7 +115,7 @@ const Multimeter = ({ onPositionChange, bounds }: MultimeterProps) => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, offset, onPositionChange]);
+  }, [isDragging, offset, onPositionChange, setMultimeterPosition]);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!multimeterRef.current) return;
@@ -141,7 +146,7 @@ const Multimeter = ({ onPositionChange, bounds }: MultimeterProps) => {
       ref={multimeterRef}
       onMouseDown={handleMouseDown}
       className="absolute bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-600 rounded-lg p-3 w-64 text-white shadow-2xl pointer-events-auto z-30 cursor-move ring-1 ring-white/10"
-      style={position ? { left: `${position.x}px`, top: `${position.y}px`, visibility: 'visible' } : { visibility: 'hidden' }}
+      style={multimeterPosition ? { left: `${multimeterPosition.x}px`, top: `${multimeterPosition.y}px`, visibility: 'visible' } : { visibility: 'hidden' }}
     >
       <div className="bg-cyan-900/50 backdrop-blur-sm border border-cyan-700 text-right p-2 rounded-md mb-3 shadow-inner select-none">
         <span className="text-4xl font-mono text-cyan-300 text-shadow-lcd">{displayValue}</span>
