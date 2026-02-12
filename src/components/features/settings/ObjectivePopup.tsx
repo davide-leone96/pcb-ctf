@@ -32,12 +32,14 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
   const [hint, setHint] = useState(objective.hint);
   const [flagPart, setFlagPart] = useState(objective.flagPart);
   const [conditions, setConditions] = useState<PinCondition[]>(objective.pinConditions);
+  const [pinLogic, setPinLogic] = useState<'AND' | 'OR'>(objective.pinLogic);
 
   useEffect(() => {
     setInstruction(objective.instruction);
     setHint(objective.hint);
     setFlagPart(objective.flagPart);
     setConditions(objective.pinConditions);
+    setPinLogic(objective.pinLogic);
   }, [objective]);
 
   const updateConditionTerminal = (pinId: string, terminal: string) => {
@@ -48,7 +50,7 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
     const data = {
       name: objective.name,
       pinConditions: conditions,
-      pinLogic: objective.pinLogic,
+      pinLogic,
       instruction,
       hint,
       flagPart: flagPart || objective.name.toUpperCase().replace(/\s+/g, '_'),
@@ -109,9 +111,25 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
       {/* Pin conditions */}
       {objective.type === 'pin' && conditions.length > 0 && (
         <div className="mb-3">
-          <label className="block text-xs text-gray-400 mb-1.5">
-            Condizioni ({objective.pinLogic})
-          </label>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="text-xs text-gray-400">Condizioni</label>
+            <div className="flex rounded overflow-hidden border border-gray-600">
+              <button
+                type="button"
+                onClick={() => setPinLogic('AND')}
+                className={`px-2 py-0.5 text-[10px] font-mono transition-colors ${pinLogic === 'AND' ? 'bg-cyan-600 text-white' : 'bg-gray-700/50 text-gray-400 hover:text-white'}`}
+              >
+                AND
+              </button>
+              <button
+                type="button"
+                onClick={() => setPinLogic('OR')}
+                className={`px-2 py-0.5 text-[10px] font-mono transition-colors ${pinLogic === 'OR' ? 'bg-cyan-600 text-white' : 'bg-gray-700/50 text-gray-400 hover:text-white'}`}
+              >
+                OR
+              </button>
+            </div>
+          </div>
           <div className="space-y-1.5">
             {conditions.map((cond, idx) => {
               const pin = pins.find(p => p.id === cond.pinId);
@@ -120,7 +138,7 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
                 <div key={cond.pinId}>
                   {idx > 0 && (
                     <div className="flex justify-center -my-0.5">
-                      <span className="text-[10px] font-mono text-cyan-400/60">{objective.pinLogic}</span>
+                      <span className="text-[10px] font-mono text-cyan-400/60">{pinLogic}</span>
                     </div>
                   )}
                   <div className="flex items-center gap-2 bg-gray-700/30 rounded px-2 py-1.5">
