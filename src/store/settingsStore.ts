@@ -112,6 +112,7 @@ interface SettingsActions {
   // Image management
   uploadImage: (file: File) => Promise<{ success: boolean; path?: string; error?: string }>;
   deleteImage: () => Promise<void>;
+  applyImageTransformations: () => Promise<{ success: boolean; error?: string }>;
 
   // Component actions (Init)
   editComponent: (id: string) => void;
@@ -159,6 +160,7 @@ interface SettingsActions {
   loadFromStorage: () => void;
   saveToFile: () => Promise<{ success: boolean; message?: string; error?: string }>;
   loadFromFile: () => Promise<{ success: boolean; message?: string; error?: string }>;
+  resetAllConfig: () => void;
 }
 
 type SettingsStore = SettingsState & SettingsActions;
@@ -277,14 +279,32 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   setPan: (x, y) => set({ canvasPanX: x, canvasPanY: y }),
 
   uploadImage: async (file) => {
+    // Salva il path dell'immagine vecchia da eliminare dopo
+    const oldImagePath = get().pcbImagePath;
+
     try {
       const formData = new FormData();
       formData.append('image', file);
       const response = await fetch('/api/images/upload', { method: 'POST', body: formData });
       const result = await response.json();
+
       if (result.success) {
         set({ pcbImagePath: result.path });
+
+        // Elimina la vecchia immagine se non è quella di default
+        if (oldImagePath !== '/images/pcb_v2.jpg') {
+          try {
+            await fetch('/api/images/delete', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ imagePath: oldImagePath }),
+            });
+          } catch (error) {
+            console.warn('Failed to delete old image:', error);
+          }
+        }
       }
+
       return result;
     } catch (error: any) {
       return { success: false, error: error.message };
@@ -303,6 +323,180 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       } catch { /* ignore */ }
     }
     set({ pcbImagePath: '/images/pcb_v2.jpg' });
+  },
+
+  applyImageTransformations: async () => {
+    const { pcbImagePath, canvasZoom, canvasRotation, canvasPanX, canvasPanY, components, pins, steps } = get();
+
+    // Se non ci sono trasformazioni da applicare, return
+    if (canvasZoom === 1 && canvasRotation === 0 && canvasPanX === 0 && canvasPanY === 0) {
+      return { success: false, error: 'Nessuna trasformazione da applicare' };
+    }
+
+    // Salva il path dell'immagine vecchia da eliminare dopo
+    const oldImagePath = pcbImagePath;
+
+    try {
+      // Carica l'immagine corrente
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = pcbImagePath;
+      });
+
+      // Calcola le dimensioni del canvas trasformato
+      const angleRad = (canvasRotation * Math.PI) / 180;
+      const cos = Math.abs(Math.cos(angleRad));
+      const sin = Math.abs(Math.sin(angleRad));
+
+      // Dimensioni del canvas: solo rotazione, SENZA zoom (per cropping)
+      const rotatedWidth = img.width * cos + img.height * sin;
+      const rotatedHeight = img.width * sin + img.height * cos;
+
+      // Crea canvas con dimensioni originali (ruotate ma non zoomate)
+      const canvas = document.createElement('canvas');
+      canvas.width = rotatedWidth;
+      canvas.height = rotatedHeight;
+      const ctx = canvas.getContext('2d')!;
+
+      // Applica trasformazioni nello stesso ordine del CSS: pan → zoom → rotate
+      // Converti pan da percentuale a pixel dell'immagine
+      const panXPx = (canvasPanX / 100) * img.width;
+      const panYPx = (canvasPanY / 100) * img.height;
+
+      // Il pan sposta il centro di rotazione/zoom
+      ctx.translate(rotatedWidth / 2 + panXPx, rotatedHeight / 2 + panYPx);
+      ctx.rotate(angleRad);
+      ctx.scale(canvasZoom, canvasZoom);
+      ctx.translate(-img.width / 2, -img.height / 2);
+      ctx.drawImage(img, 0, 0);
+
+      // Converti canvas in blob (PNG per qualità massima senza perdita)
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((b) => b ? resolve(b) : reject(new Error('Failed to create blob')), 'image/png');
+      });
+
+      // Carica la nuova immagine (uploadImage si occupa già di eliminare la vecchia)
+      const file = new File([blob], 'transformed-pcb.png', { type: 'image/png' });
+      const uploadResult = await get().uploadImage(file);
+
+      if (!uploadResult.success) {
+        return { success: false, error: uploadResult.error };
+      }
+
+      // Nota: uploadImage() ha già eliminato la vecchia immagine automaticamente
+
+      // Trasforma le coordinate (con cropping e pan)
+      const transformCoord = (x: number, y: number): [number, number] => {
+        // Converti % -> pixel (immagine originale)
+        const xPx = (x / 100) * img.width;
+        const yPx = (y / 100) * img.height;
+
+        // Trasformazioni nello stesso ordine del canvas: pan → rotate → scale
+        // 1. Posizione relativa al centro dell'immagine
+        let tx = xPx - img.width / 2;
+        let ty = yPx - img.height / 2;
+
+        // 2. Applica zoom
+        tx *= canvasZoom;
+        ty *= canvasZoom;
+
+        // 3. Applica rotazione
+        const rotX = tx * Math.cos(angleRad) - ty * Math.sin(angleRad);
+        const rotY = tx * Math.sin(angleRad) + ty * Math.cos(angleRad);
+
+        // 4. Trasla al centro del canvas con offset pan (converti pan % -> pixel)
+        const finalX = rotX + rotatedWidth / 2 + panXPx;
+        const finalY = rotY + rotatedHeight / 2 + panYPx;
+
+        // Converti pixel -> % (canvas croppato)
+        return [(finalX / rotatedWidth) * 100, (finalY / rotatedHeight) * 100];
+      };
+
+      // Trasforma componenti
+      const transformedComponents = components.map(comp => {
+        const [left, top, width, height] = comp.coords;
+
+        // Trasforma tutti e 4 gli angoli del rettangolo
+        const topLeft = transformCoord(left, top);
+        const topRight = transformCoord(left + width, top);
+        const bottomLeft = transformCoord(left, top + height);
+        const bottomRight = transformCoord(left + width, top + height);
+
+        // Calcola il bounding box che contiene tutti i punti trasformati
+        const allX = [topLeft[0], topRight[0], bottomLeft[0], bottomRight[0]];
+        const allY = [topLeft[1], topRight[1], bottomLeft[1], bottomRight[1]];
+
+        const newLeft = Math.min(...allX);
+        const newTop = Math.min(...allY);
+        const newWidth = Math.max(...allX) - newLeft;
+        const newHeight = Math.max(...allY) - newTop;
+
+        return {
+          ...comp,
+          coords: [newLeft, newTop, newWidth, newHeight] as [number, number, number, number],
+        };
+      });
+
+      // Trasforma pin
+      const transformedPins = pins.map(pin => {
+        const [x, y] = pin.coords;
+        const [newX, newY] = transformCoord(x, y);
+        return { ...pin, coords: [newX, newY] as [number, number] };
+      });
+
+      // Trasforma obiettivi negli step
+      const transformedSteps = steps.map(step => ({
+        ...step,
+        objectives: step.objectives.map(obj => {
+          if (obj.type === 'component' && obj.coords) {
+            const [left, top, width, height] = obj.coords;
+
+            // Trasforma tutti e 4 gli angoli del rettangolo
+            const topLeft = transformCoord(left, top);
+            const topRight = transformCoord(left + width, top);
+            const bottomLeft = transformCoord(left, top + height);
+            const bottomRight = transformCoord(left + width, top + height);
+
+            // Calcola il bounding box che contiene tutti i punti trasformati
+            const allX = [topLeft[0], topRight[0], bottomLeft[0], bottomRight[0]];
+            const allY = [topLeft[1], topRight[1], bottomLeft[1], bottomRight[1]];
+
+            const newLeft = Math.min(...allX);
+            const newTop = Math.min(...allY);
+            const newWidth = Math.max(...allX) - newLeft;
+            const newHeight = Math.max(...allY) - newTop;
+
+            return {
+              ...obj,
+              coords: [newLeft, newTop, newWidth, newHeight] as [number, number, number, number],
+            };
+          }
+          return obj;
+        }),
+      }));
+
+      // Aggiorna lo stato
+      set({
+        pcbImagePath: uploadResult.path!,
+        components: transformedComponents,
+        pins: transformedPins,
+        steps: transformedSteps,
+        canvasZoom: 1,
+        canvasRotation: 0,
+        canvasPanX: 0,
+        canvasPanY: 0,
+        canvasPanMode: false,
+      });
+
+      return { success: true };
+    } catch (error: any) {
+      console.error('Error applying transformations:', error);
+      return { success: false, error: error.message };
+    }
   },
 
   // --- Component actions (Init) ---
@@ -961,5 +1155,30 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     } catch (error: any) {
       return { success: false, error: error.message };
     }
+  },
+
+  resetAllConfig: () => {
+    // Cancella localStorage
+    localStorage.removeItem(SETTINGS_STORAGE_KEY);
+
+    // Resetta lo stato ai valori iniziali
+    set({
+      activeTool: 'component',
+      components: [],
+      activeComponentId: null,
+      steps: [],
+      activeStepId: null,
+      activeObjectiveId: null,
+      pins: [],
+      activePinId: null,
+      pendingPinCoords: null,
+      dragState: null,
+      pcbImagePath: '/images/pcb_v2.jpg',
+      canvasZoom: 1,
+      canvasRotation: 0,
+      canvasPanX: 0,
+      canvasPanY: 0,
+      canvasPanMode: false,
+    });
   },
 }));

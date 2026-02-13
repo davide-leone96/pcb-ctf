@@ -3,7 +3,7 @@ import path from 'path';
 import { NextRequest, NextResponse } from 'next/server';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
+const MAX_SIZE = 20 * 1024 * 1024; // 20 MB (per supportare PNG trasformati)
 
 export async function POST(request: NextRequest) {
   try {

@@ -122,10 +122,14 @@ const SettingsCanvas = () => {
 
   useEffect(() => {
     const handlePanMove = (e: MouseEvent) => {
-      if (!isPanning.current) return;
+      if (!isPanning.current || !imageRef.current) return;
+      const rect = imageRef.current.getBoundingClientRect();
       const dx = e.clientX - panStart.current.x;
       const dy = e.clientY - panStart.current.y;
-      setPan(panOrigin.current.x + dx, panOrigin.current.y + dy);
+      // Converti il pan da pixel schermo a percentuale dell'immagine
+      const dxPercent = (dx / rect.width) * 100;
+      const dyPercent = (dy / rect.height) * 100;
+      setPan(panOrigin.current.x + dxPercent, panOrigin.current.y + dyPercent);
     };
 
     const handlePanUp = (e: MouseEvent) => {
@@ -270,7 +274,7 @@ const SettingsCanvas = () => {
       <div
         className="relative inline-block w-full origin-center"
         style={{
-          transform: `translate(${canvasPanX}px, ${canvasPanY}px) scale(${canvasZoom}) rotate(${canvasRotation}deg)`,
+          transform: `translate(${canvasPanX}%, ${canvasPanY}%) scale(${canvasZoom}) rotate(${canvasRotation}deg)`,
           transformOrigin: 'center center',
         }}
       >
@@ -279,6 +283,7 @@ const SettingsCanvas = () => {
           src={pcbImagePath}
           alt="PCB Image"
           className="h-auto w-full block rounded-lg"
+          style={{ imageRendering: 'high-quality' }}
           draggable={false}
         />
 
