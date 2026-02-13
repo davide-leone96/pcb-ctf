@@ -57,7 +57,7 @@ const CanvasToolbar = () => {
     }
   };
 
-  const isDefaultImage = pcbImagePath === '/images/pcb_v2.jpg';
+  const hasImage = pcbImagePath !== '';
   const displayAngle = (((canvasRotation % 360) + 360) % 360);
   const hasTransformations = canvasZoom !== 1 || canvasRotation !== 0 || canvasPanX !== 0 || canvasPanY !== 0;
 
@@ -97,12 +97,12 @@ const CanvasToolbar = () => {
       {/* Delete */}
       <button
         onClick={deleteImage}
-        disabled={isDefaultImage}
+        disabled={!hasImage}
         className={cn(
           'p-1 rounded transition-colors',
-          isDefaultImage ? 'text-gray-600 cursor-not-allowed' : 'text-gray-400 hover:text-red-400',
+          !hasImage ? 'text-gray-600 cursor-not-allowed' : 'text-gray-400 hover:text-red-400',
         )}
-        title="Elimina immagine e ripristina default"
+        title="Elimina immagine corrente"
       >
         <Trash2 className="h-3.5 w-3.5" />
       </button>
