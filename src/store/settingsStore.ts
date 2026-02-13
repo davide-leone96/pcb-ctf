@@ -220,7 +220,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   activePinId: null,
   pendingPinCoords: null,
   dragState: null,
-  pcbImagePath: '/images/pcb_v2.jpg',
+  pcbImagePath: '',
   canvasZoom: 1,
   canvasRotation: 0,
   canvasPanX: 0,
@@ -291,8 +291,8 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       if (result.success) {
         set({ pcbImagePath: result.path });
 
-        // Elimina la vecchia immagine se non è quella di default
-        if (oldImagePath !== '/images/pcb_v2.jpg') {
+        // Elimina la vecchia immagine se presente e non è quella di default
+        if (oldImagePath && oldImagePath !== '/images/pcb_v2.jpg') {
           try {
             await fetch('/api/images/delete', {
               method: 'POST',
@@ -313,7 +313,8 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
 
   deleteImage: async () => {
     const { pcbImagePath } = get();
-    if (pcbImagePath !== '/images/pcb_v2.jpg') {
+    // Elimina l'immagine corrente se non è vuota e non è quella di default
+    if (pcbImagePath && pcbImagePath !== '/images/pcb_v2.jpg') {
       try {
         await fetch('/api/images/delete', {
           method: 'POST',
@@ -322,11 +323,17 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         });
       } catch { /* ignore */ }
     }
-    set({ pcbImagePath: '/images/pcb_v2.jpg' });
+    // Resetta a nessuna immagine
+    set({ pcbImagePath: '', canvasZoom: 1, canvasRotation: 0, canvasPanX: 0, canvasPanY: 0 });
   },
 
   applyImageTransformations: async () => {
     const { pcbImagePath, canvasZoom, canvasRotation, canvasPanX, canvasPanY, components, pins, steps } = get();
+
+    // Verifica che ci sia un'immagine caricata
+    if (!pcbImagePath) {
+      return { success: false, error: 'Nessuna immagine caricata' };
+    }
 
     // Se non ci sono trasformazioni da applicare, return
     if (canvasZoom === 1 && canvasRotation === 0 && canvasPanX === 0 && canvasPanY === 0) {
@@ -1119,7 +1126,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         activePinId: null,
         pendingPinCoords: null,
         dragState: null,
-        pcbImagePath: exercise.pcbImage || '/images/pcb_v2.jpg',
+        pcbImagePath: exercise.pcbImage || '',
       });
     } catch { /* ignore invalid data */ }
   },
@@ -1173,7 +1180,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       activePinId: null,
       pendingPinCoords: null,
       dragState: null,
-      pcbImagePath: '/images/pcb_v2.jpg',
+      pcbImagePath: '',
       canvasZoom: 1,
       canvasRotation: 0,
       canvasPanX: 0,

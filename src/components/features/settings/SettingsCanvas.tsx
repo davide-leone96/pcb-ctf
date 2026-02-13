@@ -4,6 +4,7 @@
 import { useRef, useState, useLayoutEffect, useEffect, useMemo, useCallback } from 'react';
 import { useSettingsStore } from '@/store/settingsStore';
 import { cn } from '@/lib/utils';
+import { Upload } from 'lucide-react';
 import ComponentPopup from './ComponentPopup';
 import ObjectivePopup from './ObjectivePopup';
 import PinPopup from './PinPopup';
@@ -244,6 +245,59 @@ const SettingsCanvas = () => {
 
   const dragRect = getDragRect();
   const canDrag = activeTool === 'component';
+  const hasImage = pcbImagePath !== '';
+
+  // Empty state with upload area
+  if (!hasImage) {
+    return (
+      <div
+        onDragOver={handleFileDragOver}
+        onDragLeave={handleFileDragLeave}
+        onDrop={handleFileDrop}
+        className={cn(
+          'relative min-h-[500px] flex items-center justify-center rounded-lg transition-all',
+          isDragOverImage
+            ? 'bg-blue-500/10 border-2 border-blue-400 border-dashed'
+            : 'bg-gray-800/50 border-2 border-gray-600 border-dashed hover:border-gray-500 hover:bg-gray-800/70',
+        )}
+      >
+        <div className="text-center px-6 py-12">
+          <div className={cn(
+            'mx-auto w-24 h-24 rounded-full flex items-center justify-center mb-6 transition-all',
+            isDragOverImage ? 'bg-blue-500/20 scale-110' : 'bg-gray-700/50',
+          )}>
+            <Upload className={cn(
+              'w-12 h-12 transition-colors',
+              isDragOverImage ? 'text-blue-400' : 'text-gray-400',
+            )} />
+          </div>
+
+          <h3 className="text-xl font-semibold text-gray-200 mb-2">
+            {isDragOverImage ? 'Rilascia qui' : 'Nessuna immagine caricata'}
+          </h3>
+
+          <p className="text-gray-400 text-sm mb-6 max-w-md">
+            {isDragOverImage
+              ? 'Rilascia il file per caricarlo'
+              : 'Carica un\'immagine PCB per iniziare a configurare componenti, pin e obiettivi'}
+          </p>
+
+          {!isDragOverImage && (
+            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+              <div className="text-xs text-gray-500">
+                Trascina un'immagine qui oppure usa il pulsante carica nella toolbar
+              </div>
+            </div>
+          )}
+
+          <div className="mt-6 flex items-center justify-center gap-2 text-xs text-gray-500">
+            <span>Formati supportati:</span>
+            <span className="text-gray-400 font-mono">JPEG, PNG, WebP</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
