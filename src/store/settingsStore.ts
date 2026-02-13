@@ -562,8 +562,18 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   },
 
   updateComponentCoords: (id, coords) => {
+    // Aggiorna le coordinate del componente
     set({
       components: get().components.map(c => c.id === id ? { ...c, coords } : c),
+      // Sincronizza le coordinate negli obiettivi degli step che referenziano questo componente
+      steps: get().steps.map(step => ({
+        ...step,
+        objectives: step.objectives.map(obj =>
+          obj.type === 'component' && obj.componentId === id
+            ? { ...obj, coords }
+            : obj
+        ),
+      })),
     });
   },
 

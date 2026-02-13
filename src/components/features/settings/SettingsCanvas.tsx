@@ -290,6 +290,9 @@ const SettingsCanvas = () => {
   const canDrag = activeTool === 'component';
   const hasImage = pcbImagePath !== '';
 
+  // Determine which tab is active
+  const isInitTab = activeTool === 'component' || activeTool === 'pin';
+
   // Empty state with upload area
   if (!hasImage) {
     return (
@@ -384,9 +387,10 @@ const SettingsCanvas = () => {
           draggable={false}
         />
 
-        {/* Overlay: Init components (green border) */}
-        <div className="absolute inset-0 pointer-events-none">
-          {components.filter(c => c.coords[2] > 0 && c.coords[3] > 0).map(comp => {
+        {/* Overlay: Init components (green border) - only in Init tab */}
+        {isInitTab && (
+          <div className="absolute inset-0 pointer-events-none">
+            {components.filter(c => c.coords[2] > 0 && c.coords[3] > 0).map(comp => {
             const [left, top, width, height] = comp.coords;
             const isActive = comp.id === activeComponentId;
             const isDragging = draggingItem?.type === 'component' && draggingItem?.id === comp.id;
@@ -431,10 +435,12 @@ const SettingsCanvas = () => {
               </div>
             );
           })}
-        </div>
+          </div>
+        )}
 
-        {/* Overlay: component-type objectives from ALL steps (blue border) */}
-        <div className="absolute inset-0 pointer-events-none">
+        {/* Overlay: component-type objectives from ALL steps (blue border) - only in Challenge tab */}
+        {!isInitTab && (
+          <div className="absolute inset-0 pointer-events-none">
           {allComponentObjectives.map(obj => {
             const [left, top, width, height] = obj.coords;
             const isActiveStep = obj.stepId === activeStepId;
@@ -471,10 +477,12 @@ const SettingsCanvas = () => {
               </div>
             );
           })}
-        </div>
+          </div>
+        )}
 
-        {/* Overlay: pins */}
-        <div className="absolute inset-0 pointer-events-none">
+        {/* Overlay: pins - only in Init tab */}
+        {isInitTab && (
+          <div className="absolute inset-0 pointer-events-none">
           {pins.map(pin => {
             const isActive = pin.id === activePinId;
             const isDragging = draggingItem?.type === 'pin' && draggingItem?.id === pin.id;
@@ -533,7 +541,8 @@ const SettingsCanvas = () => {
               </div>
             );
           })}
-        </div>
+          </div>
+        )}
 
         {/* Active drag rectangle */}
         {dragRect && (
