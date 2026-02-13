@@ -9,12 +9,11 @@ import CanvasToolbar from '@/components/features/settings/CanvasToolbar';
 
 export default function SettingsPage() {
   const loadFromStorage = useSettingsStore(s => s.loadFromStorage);
-  const hasItems = useSettingsStore(s => s.steps.length > 0 || s.components.length > 0 || s.pins.length > 0);
 
-  // Carica la configurazione salvata al primo accesso (solo se lo store è vuoto)
+  // Carica sempre la configurazione salvata all'avvio
   useEffect(() => {
-    if (!hasItems) loadFromStorage();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    loadFromStorage();
+  }, [loadFromStorage]);
 
   return (
     <main className="flex min-h-screen flex-col items-center bg-gray-900 p-6 lg:p-12">

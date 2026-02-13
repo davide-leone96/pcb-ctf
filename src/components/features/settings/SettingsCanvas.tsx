@@ -28,11 +28,16 @@ const SettingsCanvas = () => {
     canvasZoom, canvasRotation, canvasPanX, canvasPanY, canvasPanMode,
     setPan, setCanvasZoom, uploadImage,
   } = useSettingsStore();
+  const updateComponentCoords = useSettingsStore(s => s.updateComponentCoords);
+  const updatePinCoords = useSettingsStore(s => s.updatePinCoords);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   const [containerDims, setContainerDims] = useState({ width: 0, height: 0 });
   const [isDragOverImage, setIsDragOverImage] = useState(false);
+
+  // Dragging state for components/pins
+  const [draggingItem, setDraggingItem] = useState<{ type: 'component' | 'pin'; id: string; startX: number; startY: number; initialCoords: number[] } | null>(null);
 
   // All component-type objectives across all steps (with step reference)
   const allComponentObjectives = useMemo(() =>
@@ -115,6 +120,44 @@ const SettingsCanvas = () => {
       window.removeEventListener('mouseup', handleMouseUp);
     };
   }, [activeTool, updateDrag, endDrag]);
+
+  // --- Dragging items (components/pins) ---
+  useEffect(() => {
+    if (!draggingItem || !imageRef.current) return;
+
+    const handleDragMove = (e: MouseEvent) => {
+      const rect = imageRef.current!.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+      const dx = x - draggingItem.startX;
+      const dy = y - draggingItem.startY;
+
+      if (draggingItem.type === 'component') {
+        const [left, top, width, height] = draggingItem.initialCoords as [number, number, number, number];
+        const newLeft = Math.max(0, Math.min(100 - width, left + dx));
+        const newTop = Math.max(0, Math.min(100 - height, top + dy));
+        updateComponentCoords(draggingItem.id, [newLeft, newTop, width, height]);
+      } else if (draggingItem.type === 'pin') {
+        const [px, py] = draggingItem.initialCoords as [number, number];
+        const newX = Math.max(0, Math.min(100, px + dx));
+        const newY = Math.max(0, Math.min(100, py + dy));
+        updatePinCoords(draggingItem.id, [newX, newY]);
+      }
+    };
+
+    const handleDragEnd = () => {
+      setDraggingItem(null);
+    };
+
+    window.addEventListener('mousemove', handleDragMove);
+    window.addEventListener('mouseup', handleDragEnd);
+
+    return () => {
+      window.removeEventListener('mousemove', handleDragMove);
+      window.removeEventListener('mouseup', handleDragEnd);
+    };
+  }, [draggingItem, updateComponentCoords, updatePinCoords]);
 
   // --- Middle-click pan ---
   const isPanning = useRef(false);
@@ -346,21 +389,42 @@ const SettingsCanvas = () => {
           {components.filter(c => c.coords[2] > 0 && c.coords[3] > 0).map(comp => {
             const [left, top, width, height] = comp.coords;
             const isActive = comp.id === activeComponentId;
+            const isDragging = draggingItem?.type === 'component' && draggingItem?.id === comp.id;
             return (
               <div
                 key={comp.id}
                 className={cn(
-                  'absolute border-2 rounded-sm transition-colors pointer-events-auto cursor-pointer',
+                  'absolute border-2 rounded-sm transition-colors pointer-events-auto',
+                  isDragging ? 'cursor-grabbing' : 'cursor-move',
                   isActive
                     ? 'border-green-400 bg-green-500/30 ring-1 ring-green-400/50'
                     : 'border-green-400/60 bg-green-500/15 hover:bg-green-500/25',
                 )}
                 style={{ left: `${left}%`, top: `${top}%`, width: `${width}%`, height: `${height}%` }}
-                onClick={(e) => { e.stopPropagation(); editComponent(comp.id); }}
-                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  if (!isDragging) {
+                    e.stopPropagation();
+                    editComponent(comp.id);
+                  }
+                }}
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  if (!imageRef.current) return;
+                  const rect = imageRef.current.getBoundingClientRect();
+                  const x = ((e.clientX - rect.left) / rect.width) * 100;
+                  const y = ((e.clientY - rect.top) / rect.height) * 100;
+                  setDraggingItem({
+                    type: 'component',
+                    id: comp.id,
+                    startX: x,
+                    startY: y,
+                    initialCoords: [left, top, width, height],
+                  });
+                }}
+                title="Trascina per spostare"
               >
                 {comp.name && (
-                  <span className="absolute -top-5 left-0 text-xs text-green-300 whitespace-nowrap bg-black/70 px-1 rounded select-none">
+                  <span className="absolute -top-5 left-0 text-xs text-green-300 whitespace-nowrap bg-black/70 px-1 rounded select-none pointer-events-none">
                     {comp.name}
                   </span>
                 )}
@@ -413,6 +477,7 @@ const SettingsCanvas = () => {
         <div className="absolute inset-0 pointer-events-none">
           {pins.map(pin => {
             const isActive = pin.id === activePinId;
+            const isDragging = draggingItem?.type === 'pin' && draggingItem?.id === pin.id;
             const color = PIN_TYPE_COLORS[pin.pinType] || PIN_TYPE_COLORS.custom;
             const sizePx = (pin.size / 100) * containerDims.width;
             const leftPx = (pin.coords[0] / 100) * containerDims.width - sizePx / 2;
@@ -422,7 +487,8 @@ const SettingsCanvas = () => {
               <div
                 key={pin.id}
                 className={cn(
-                  'absolute border-2 transition-colors pointer-events-auto cursor-pointer',
+                  'absolute border-2 transition-colors pointer-events-auto',
+                  isDragging ? 'cursor-grabbing' : 'cursor-move',
                   pin.shape === 'circle' ? 'rounded-full' : 'rounded-sm',
                   isActive ? 'ring-2 ring-white/50' : '',
                 )}
@@ -434,12 +500,31 @@ const SettingsCanvas = () => {
                   borderColor: color,
                   backgroundColor: `${color}33`,
                 }}
-                onClick={(e) => { e.stopPropagation(); editPin(pin.id); }}
-                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  if (!isDragging) {
+                    e.stopPropagation();
+                    editPin(pin.id);
+                  }
+                }}
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  if (!imageRef.current) return;
+                  const rect = imageRef.current.getBoundingClientRect();
+                  const x = ((e.clientX - rect.left) / rect.width) * 100;
+                  const y = ((e.clientY - rect.top) / rect.height) * 100;
+                  setDraggingItem({
+                    type: 'pin',
+                    id: pin.id,
+                    startX: x,
+                    startY: y,
+                    initialCoords: pin.coords,
+                  });
+                }}
+                title="Trascina per spostare"
               >
                 {pin.label && (
                   <span
-                    className="absolute -top-5 left-1/2 -translate-x-1/2 text-xs whitespace-nowrap bg-black/70 px-1 rounded select-none"
+                    className="absolute -top-5 left-1/2 -translate-x-1/2 text-xs whitespace-nowrap bg-black/70 px-1 rounded select-none pointer-events-none"
                     style={{ color }}
                   >
                     {pin.label}
