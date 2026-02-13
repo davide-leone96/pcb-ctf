@@ -28,6 +28,7 @@ const PCBViewer = () => {
     setUartSnapTarget, hookUartProbe, unhookUartProbe, uartConnected,
     lensRadius, lensZoomLevel, lensVisible, lensIsAnchored, lensAnchorPosition,
     toggleLensAnchor, setLensAnchorPosition,
+    isSimulatorEnabled,
   } = useExerciseStore();
 
   const pcbContainerRef = useRef<HTMLDivElement>(null);
@@ -323,14 +324,14 @@ const PCBViewer = () => {
       {/* Wrapper relativo che si adatta esattamente alle dimensioni dell'immagine */}
       <div className="relative inline-block w-full">
         <img ref={pcbImageRef} src={exerciseData.pcbImage} alt="Vista PCB" className="h-auto w-full block rounded-lg" draggable={false} />
-        {activeTool === 'multimeter' && <Multimeter onPositionChange={setMultimeterPosition} bounds={bounds} />}
-        {showUartOverlay && <UartProbesAdapter onPositionChange={setAdapterPosition} bounds={bounds} readOnly={activeTool !== 'probes'} />}
+        {isSimulatorEnabled && activeTool === 'multimeter' && <Multimeter onPositionChange={setMultimeterPosition} bounds={bounds} />}
+        {isSimulatorEnabled && showUartOverlay && <UartProbesAdapter onPositionChange={setAdapterPosition} bounds={bounds} readOnly={activeTool !== 'probes'} />}
 
       <div className="absolute inset-0 pointer-events-none z-10">
-        {activeTool === 'multimeter' && (
+        {isSimulatorEnabled && activeTool === 'multimeter' && (
             <svg width="100%" height="100%" className="absolute inset-0" style={{ filter: 'drop-shadow(2px 2px 2px rgba(0,0,0,0.4))' }}>
               <defs><filter id="shadow"><feDropShadow dx="2" dy="2" stdDeviation="2" floodColor="rgba(0,0,0,0.4)"/></filter></defs>
-              
+
               {/* === LOGICA DI RENDERING DEI CAVI CORRETTA E SEMPLIFICATA === */}
 
               {/* Se il puntale 1 è attivo, disegna il suo cavo che segue il mouse */}
@@ -353,7 +354,7 @@ const PCBViewer = () => {
 
             </svg>
         )}
-        {showUartOverlay && (
+        {isSimulatorEnabled && showUartOverlay && (
           <svg width="100%" height="100%" className="absolute inset-0" style={{ filter: 'drop-shadow(2px 2px 2px rgba(0,0,0,0.4))' }}>
             {uartConnections.map(conn => {
               const wireOrigin = getUartWireOrigin(conn.adapterPin);
@@ -483,7 +484,7 @@ const PCBViewer = () => {
           );
         })}
         {/* Pallini e controlli multimetro */}
-        {activeTool === 'multimeter' && (
+        {isSimulatorEnabled && activeTool === 'multimeter' && (
           <>
             {probe1Percent && (
               <div className="group absolute z-20" style={{ left: `${probe1Percent.x}%`, top: `${probe1Percent.y}%`, transform: 'translate(-50%, -50%)' }}>
@@ -505,7 +506,7 @@ const PCBViewer = () => {
           </>
         )}
         {/* Overlay UART: mostra solo pallini di connessione, NO box pin */}
-        {showUartOverlay && (
+        {isSimulatorEnabled && showUartOverlay && (
           <>
             {/* Pallini di connessione sui pin PCB */}
             {uartConnections.filter(c => c.pcbPinId).map(conn => {
