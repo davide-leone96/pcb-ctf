@@ -6,20 +6,22 @@ import { useSettingsStore } from '@/store/settingsStore';
 import { cn } from '@/lib/utils';
 import {
   Upload, Trash2, ZoomIn, ZoomOut, Crosshair,
-  RotateCw, RotateCcw, RefreshCw,
+  RotateCw, RotateCcw, RefreshCw, Save, Check,
 } from 'lucide-react';
 
 const CanvasToolbar = () => {
   const {
-    canvasZoom, canvasRotation, pcbImagePath, canvasPanMode,
+    canvasZoom, canvasRotation, pcbImagePath, canvasPanMode, canvasPanX, canvasPanY,
     zoomIn, zoomOut,
     setCanvasRotation, rotateBy,
     togglePanMode, resetCanvasTransform,
-    uploadImage, deleteImage,
+    uploadImage, deleteImage, applyImageTransformations,
   } = useSettingsStore();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   const handleFileSelect = async (file: File) => {
     if (!file.type.startsWith('image/')) return;
@@ -43,8 +45,21 @@ const CanvasToolbar = () => {
     if (file) handleFileSelect(file);
   };
 
+  const handleApplyTransformations = async () => {
+    setIsSaving(true);
+    const result = await applyImageTransformations();
+    setIsSaving(false);
+    if (result.success) {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } else {
+      alert(`Errore: ${result.error}`);
+    }
+  };
+
   const isDefaultImage = pcbImagePath === '/images/pcb_v2.jpg';
   const displayAngle = (((canvasRotation % 360) + 360) % 360);
+  const hasTransformations = canvasZoom !== 1 || canvasRotation !== 0 || canvasPanX !== 0 || canvasPanY !== 0;
 
   return (
     <div className="flex items-center gap-1.5 bg-gray-800 rounded-lg px-2 py-1.5 mb-2 flex-wrap">
@@ -157,6 +172,36 @@ const CanvasToolbar = () => {
       {/* Reset */}
       <button onClick={resetCanvasTransform} className="p-1 text-gray-400 hover:text-white transition-colors" title="Reset trasformazioni">
         <RefreshCw className="h-3.5 w-3.5" />
+      </button>
+
+      {/* Apply transformations */}
+      <button
+        onClick={handleApplyTransformations}
+        disabled={!hasTransformations || isSaving}
+        className={cn(
+          'flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors',
+          hasTransformations && !isSaving
+            ? 'bg-green-600 hover:bg-green-700 text-white'
+            : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+        )}
+        title="Salva le trasformazioni in modo permanente"
+      >
+        {isSaving ? (
+          <>
+            <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+            <span>Salvataggio...</span>
+          </>
+        ) : saved ? (
+          <>
+            <Check className="h-3.5 w-3.5" />
+            <span>Salvato!</span>
+          </>
+        ) : (
+          <>
+            <Save className="h-3.5 w-3.5" />
+            <span>Salva trasformazioni</span>
+          </>
+        )}
       </button>
     </div>
   );

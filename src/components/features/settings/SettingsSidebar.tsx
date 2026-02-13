@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import {
   BoxSelect, MapPin, Pencil, Trash2, Download, Copy, Check, Save, FolderOpen,
   Plus, ChevronDown, ChevronRight, ArrowUp, ArrowDown,
-  Hand, Search, Wrench, Cable, TerminalSquare, type LucideIcon,
+  Hand, Search, Wrench, Cable, TerminalSquare, RotateCcw, type LucideIcon,
 } from 'lucide-react';
 import {
   AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader,
@@ -62,7 +62,7 @@ const SettingsSidebar = () => {
     addObjective, addPinObjective, deleteObjective, reorderObjective, editObjective,
     pins, editPin, deletePin,
     exportAsJson, exportAsTypeScript, applyConfig,
-    saveToFile, loadFromFile,
+    saveToFile, loadFromFile, resetAllConfig,
   } = useSettingsStore();
 
   const [copied, setCopied] = useState(false);
@@ -288,6 +288,42 @@ const SettingsSidebar = () => {
             {copied ? 'Copiato!' : 'TS'}
           </Button>
         </div>
+
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full border-red-600/50 text-red-400 hover:text-white hover:bg-red-600 hover:border-red-600"
+              disabled={!hasContent}
+            >
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Reset configurazione
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent className="bg-gray-800 border-gray-600 text-white">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Ripulire tutte le configurazioni?</AlertDialogTitle>
+              <AlertDialogDescription className="text-gray-400">
+                Questa azione cancellerà tutti i componenti, pin, step e obiettivi configurati.
+                Anche l&apos;immagine PCB personalizzata verrà rimossa.
+                <br /><br />
+                <strong className="text-red-400">Questa azione non può essere annullata.</strong>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600 hover:text-white">
+                Annulla
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={resetAllConfig}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                Reset completo
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </aside>
   );
