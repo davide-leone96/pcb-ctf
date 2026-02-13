@@ -62,7 +62,7 @@ const SettingsSidebar = () => {
     addObjective, addPinObjective, deleteObjective, reorderObjective, editObjective,
     pins, editPin, deletePin,
     exportAsJson, exportAsTypeScript, applyConfig,
-    saveToFile, loadFromFile, resetAllConfig,
+    saveToFile, loadFromFile, resetAllConfig, resetInitComponents,
   } = useSettingsStore();
 
   const [copied, setCopied] = useState(false);
@@ -171,6 +171,44 @@ const SettingsSidebar = () => {
                 Pin
               </button>
             </div>
+
+            {/* Reset Init button */}
+            {(components.length > 0 || pins.length > 0) && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full border-yellow-600/50 text-yellow-400 hover:text-white hover:bg-yellow-600 hover:border-yellow-600 text-xs"
+                  >
+                    <Trash2 className="h-3 w-3 mr-1" />
+                    Reset Init
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="bg-gray-800 border-gray-600 text-white">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Cancellare tutti i componenti e pin?</AlertDialogTitle>
+                    <AlertDialogDescription className="text-gray-400">
+                      Questa azione eliminerà tutti i componenti e pin della tab Init.
+                      Gli step e obiettivi non saranno toccati.
+                      <br /><br />
+                      <strong className="text-yellow-400">Questa azione non può essere annullata.</strong>
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel className="bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600 hover:text-white">
+                      Annulla
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={resetInitComponents}
+                      className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                    >
+                      Reset Init
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
 
             {/* Init: Components section */}
             <div>

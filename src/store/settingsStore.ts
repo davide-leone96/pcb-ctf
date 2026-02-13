@@ -119,6 +119,7 @@ interface SettingsActions {
   cancelComponentEdit: () => void;
   saveComponent: (data: Omit<DraftComponent, 'id' | 'coords'>) => void;
   updateComponent: (id: string, data: Partial<Omit<DraftComponent, 'id' | 'coords'>>) => void;
+  updateComponentCoords: (id: string, coords: [number, number, number, number]) => void;
   deleteComponent: (id: string) => void;
 
   // Step actions
@@ -150,6 +151,7 @@ interface SettingsActions {
   cancelPinEdit: () => void;
   savePin: (data: Omit<DraftPin, 'id' | 'coords'>) => void;
   updatePin: (id: string, data: Partial<Omit<DraftPin, 'id' | 'coords'>>) => void;
+  updatePinCoords: (id: string, coords: [number, number]) => void;
   deletePin: (id: string) => void;
   editPin: (id: string) => void;
 
@@ -161,6 +163,7 @@ interface SettingsActions {
   saveToFile: () => Promise<{ success: boolean; message?: string; error?: string }>;
   loadFromFile: () => Promise<{ success: boolean; message?: string; error?: string }>;
   resetAllConfig: () => void;
+  resetInitComponents: () => void;
 }
 
 type SettingsStore = SettingsState & SettingsActions;
@@ -323,8 +326,19 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         });
       } catch { /* ignore */ }
     }
-    // Resetta a nessuna immagine
-    set({ pcbImagePath: '', canvasZoom: 1, canvasRotation: 0, canvasPanX: 0, canvasPanY: 0 });
+    // Resetta a nessuna immagine e pulisce componenti e pin della tab Init
+    set({
+      pcbImagePath: '',
+      canvasZoom: 1,
+      canvasRotation: 0,
+      canvasPanX: 0,
+      canvasPanY: 0,
+      components: [],
+      pins: [],
+      activeComponentId: null,
+      activePinId: null,
+      pendingPinCoords: null,
+    });
   },
 
   applyImageTransformations: async () => {
@@ -544,6 +558,12 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     set({
       components: get().components.map(c => c.id === id ? { ...c, ...data } : c),
       activeComponentId: null,
+    });
+  },
+
+  updateComponentCoords: (id, coords) => {
+    set({
+      components: get().components.map(c => c.id === id ? { ...c, coords } : c),
     });
   },
 
@@ -877,6 +897,12 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     });
   },
 
+  updatePinCoords: (id: string, coords: [number, number]) => {
+    set({
+      pins: get().pins.map(p => p.id === id ? { ...p, coords } : p),
+    });
+  },
+
   deletePin: (id) => {
     set({
       pins: get().pins.filter(p => p.id !== id),
@@ -1186,6 +1212,18 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       canvasPanX: 0,
       canvasPanY: 0,
       canvasPanMode: false,
+    });
+  },
+
+  resetInitComponents: () => {
+    // Resetta solo componenti e pin della tab Init
+    set({
+      components: [],
+      pins: [],
+      activeComponentId: null,
+      activePinId: null,
+      pendingPinCoords: null,
+      dragState: null,
     });
   },
 }));
