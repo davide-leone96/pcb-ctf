@@ -349,13 +349,23 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
 
     set(newState);
 
-    // Se la connessione UART è corretta, completa l'obiettivo corrente se è di tipo 'uart'
+    // Se la connessione UART è corretta, completa l'obiettivo corrente
     if (allCorrect) {
       const { stepMode, exerciseData: storeData, currentStepIndex, currentObjectiveIndex } = get();
       const currentStep = storeData?.steps?.[currentStepIndex];
       const currentObj = currentStep?.objectives?.[currentObjectiveIndex];
-      if (stepMode === 'active' && currentObj?.type === 'uart') {
-        get()._completeCurrentObjective();
+      if (stepMode === 'active') {
+        // Completa obiettivi di tipo 'uart' direttamente
+        if (currentObj?.type === 'uart') {
+          get()._completeCurrentObjective();
+        }
+        // Completa anche obiettivi di tipo 'pin' che hanno condizioni adapter
+        // (configurati via settings page con pin conditions per UART)
+        else if (currentObj?.type === 'pin' && currentObj.pinConditions?.some(
+          (c: any) => c.terminal?.startsWith('adapter-')
+        )) {
+          get()._completeCurrentObjective();
+        }
       }
     }
 

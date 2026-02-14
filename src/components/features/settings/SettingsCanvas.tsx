@@ -1,10 +1,12 @@
 // src/components/features/settings/SettingsCanvas.tsx
 'use client';
 
-import { useRef, useState, useLayoutEffect, useEffect, useMemo, useCallback } from 'react';
+import { useRef, useState, useLayoutEffect, useEffect, useMemo, useCallback, type ChangeEvent } from 'react';
 import { useSettingsStore } from '@/store/settingsStore';
+import { useTerminalSettingsStore } from '@/store/terminalSettingsStore';
 import { cn } from '@/lib/utils';
-import { Upload } from 'lucide-react';
+import { Upload, Terminal, TerminalSquare, Braces, Flag, Cpu, FolderTree, Layers, FileCode, Check, AlertTriangle, Pencil, RotateCcw } from 'lucide-react';
+import yaml from 'js-yaml';
 import ComponentPopup from './ComponentPopup';
 import ObjectivePopup from './ObjectivePopup';
 import PinPopup from './PinPopup';
@@ -292,6 +294,12 @@ const SettingsCanvas = () => {
 
   // Determine which tab is active
   const isInitTab = activeTool === 'component' || activeTool === 'pin';
+  const isTerminalTab = activeTool === 'terminal-config';
+
+  // Terminal tab: show config preview
+  if (isTerminalTab) {
+    return <TerminalConfigPreview />;
+  }
 
   // Empty state with upload area
   if (!hasImage) {
@@ -439,7 +447,7 @@ const SettingsCanvas = () => {
         )}
 
         {/* Overlay: component-type objectives from ALL steps (blue border) - only in Challenge tab */}
-        {!isInitTab && (
+        {!isInitTab && !isTerminalTab && (
           <div className="absolute inset-0 pointer-events-none">
           {allComponentObjectives.map(obj => {
             const [left, top, width, height] = obj.coords;
@@ -586,6 +594,300 @@ const SettingsCanvas = () => {
         {activePin && containerDims.width > 0 && (
           <PinPopup pin={activePin} containerDims={containerDims} />
         )}
+      </div>
+    </div>
+  );
+};
+
+// ============================================
+// TERMINAL CONFIG PREVIEW
+// ============================================
+
+const TerminalConfigPreview = () => {
+  const { tabs, commands, bootStages, filesystemEntries, flagParts, completeFlag, exportAsTerminalConfig, loadFromTerminalConfig, initialized } = useTerminalSettingsStore();
+  const [viewMode, setViewMode] = useState<'summary' | 'json' | 'yaml'>('summary');
+  const [editorContent, setEditorContent] = useState('');
+  const [parseError, setParseError] = useState<string | null>(null);
+  const [importSuccess, setImportSuccess] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+
+  // Serialize current config to the given format
+  const serializeConfig = useCallback((format: 'json' | 'yaml') => {
+    const config = exportAsTerminalConfig();
+    if (format === 'json') {
+      return JSON.stringify(config, null, 2);
+    }
+    return yaml.dump(config, { indent: 2, lineWidth: 120, noRefs: true, sortKeys: false });
+  }, [exportAsTerminalConfig]);
+
+  // Initialize editor content ONLY when view mode changes to a code view
+  const prevViewModeRef = useRef(viewMode);
+  useEffect(() => {
+    const modeChanged = prevViewModeRef.current !== viewMode;
+    prevViewModeRef.current = viewMode;
+
+    if (modeChanged && (viewMode === 'json' || viewMode === 'yaml')) {
+      setEditorContent(serializeConfig(viewMode));
+      setParseError(null);
+      setImportSuccess(false);
+      setIsDirty(false);
+    }
+  }, [viewMode, serializeConfig]);
+
+  // Handle textarea changes
+  const handleEditorChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
+    setEditorContent(e.target.value);
+    setParseError(null);
+    setImportSuccess(false);
+    setIsDirty(true);
+  }, []);
+
+  // Parse and import the edited config
+  const handleImport = useCallback(() => {
+    try {
+      let parsed: any;
+      if (viewMode === 'json') {
+        parsed = JSON.parse(editorContent);
+      } else if (viewMode === 'yaml') {
+        parsed = yaml.load(editorContent);
+      } else {
+        return;
+      }
+
+      if (!parsed || typeof parsed !== 'object' || !parsed.tabs) {
+        setParseError('Configurazione non valida: manca la proprietà "tabs"');
+        return;
+      }
+
+      loadFromTerminalConfig(parsed);
+      setParseError(null);
+      setImportSuccess(true);
+      setIsDirty(false);
+      setTimeout(() => setImportSuccess(false), 2500);
+    } catch (err: any) {
+      setParseError(err.message || 'Errore di parsing');
+    }
+  }, [editorContent, viewMode, loadFromTerminalConfig]);
+
+  // Reset editor content to current store state
+  const handleReset = useCallback(() => {
+    if (viewMode === 'json' || viewMode === 'yaml') {
+      setEditorContent(serializeConfig(viewMode));
+      setParseError(null);
+      setImportSuccess(false);
+      setIsDirty(false);
+    }
+  }, [viewMode, serializeConfig]);
+
+  if (!initialized) {
+    return (
+      <div className="relative min-h-[500px] flex items-center justify-center rounded-lg bg-gray-800/50 border-2 border-gray-600 border-dashed">
+        <div className="text-center px-6 py-12">
+          <div className="mx-auto w-24 h-24 rounded-full flex items-center justify-center mb-6 bg-gray-700/50">
+            <TerminalSquare className="w-12 h-12 text-gray-400" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-200 mb-2">Configurazione terminale</h3>
+          <p className="text-gray-400 text-sm">
+            La configurazione verr&agrave; caricata automaticamente.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const dirs = filesystemEntries.filter(e => e.type === 'directory');
+  const files = filesystemEntries.filter(e => e.type === 'file');
+  const isCodeView = viewMode === 'json' || viewMode === 'yaml';
+
+  return (
+    <div className="relative min-h-[500px] flex flex-col rounded-lg bg-gray-900/80 border border-gray-700 overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 bg-gray-800/80 border-b border-gray-700">
+        <div className="flex items-center gap-2">
+          <TerminalSquare className="h-4 w-4 text-green-400" />
+          <span className="text-sm font-medium text-white">Terminal Config Preview</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setViewMode(viewMode === 'json' ? 'summary' : 'json')}
+            className={cn(
+              'flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors',
+              viewMode === 'json' ? 'bg-green-600/50 text-white' : 'bg-gray-700 text-gray-400 hover:text-white'
+            )}
+          >
+            <Braces className="h-3 w-3" />
+            JSON
+          </button>
+          <button
+            onClick={() => setViewMode(viewMode === 'yaml' ? 'summary' : 'yaml')}
+            className={cn(
+              'flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors',
+              viewMode === 'yaml' ? 'bg-purple-600/50 text-white' : 'bg-gray-700 text-gray-400 hover:text-white'
+            )}
+          >
+            <FileCode className="h-3 w-3" />
+            YAML
+          </button>
+        </div>
+      </div>
+
+      {/* Editor toolbar - shown in JSON/YAML views */}
+      {isCodeView && (
+        <div className="flex items-center gap-2 px-4 py-2 bg-gray-800/50 border-b border-gray-700/50">
+          <button
+            onClick={handleImport}
+            disabled={!isDirty}
+            className={cn(
+              'flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-colors',
+              importSuccess
+                ? 'bg-green-600/60 text-white'
+                : isDirty
+                  ? 'bg-blue-600/60 text-white hover:bg-blue-600/80'
+                  : 'bg-gray-700/50 text-gray-500 cursor-not-allowed'
+            )}
+          >
+            {importSuccess ? <Check className="h-3 w-3" /> : <Pencil className="h-3 w-3" />}
+            {importSuccess ? 'Importato!' : 'Importa modifiche'}
+          </button>
+          <button
+            onClick={handleReset}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium bg-gray-700 text-gray-300 hover:text-white hover:bg-gray-600 transition-colors"
+            title="Ricarica dallo store corrente"
+          >
+            <RotateCcw className="h-3 w-3" />
+            Ricarica
+          </button>
+          {isDirty && !parseError && !importSuccess && (
+            <span className="text-[10px] text-amber-400 ml-auto">Modifiche non salvate</span>
+          )}
+          {parseError && (
+            <div className="flex items-center gap-1.5 text-xs text-red-400 ml-auto flex-1 min-w-0 justify-end">
+              <AlertTriangle className="h-3 w-3 flex-shrink-0" />
+              <span className="truncate">{parseError}</span>
+            </div>
+          )}
+          {importSuccess && (
+            <span className="text-xs text-green-400 ml-auto">Configurazione importata nello store</span>
+          )}
+        </div>
+      )}
+
+      {viewMode === 'json' ? (
+        /* JSON Editor */
+        <div className="flex-1 overflow-auto">
+          <textarea
+            value={editorContent}
+            onChange={handleEditorChange}
+            spellCheck={false}
+            className="w-full h-full min-h-[400px] bg-transparent text-[10px] font-mono text-gray-300 resize-none outline-none p-4 focus:bg-gray-900/50"
+            placeholder="Incolla qui la configurazione JSON..."
+          />
+        </div>
+      ) : viewMode === 'yaml' ? (
+        /* YAML Editor */
+        <div className="flex-1 overflow-auto">
+          <textarea
+            value={editorContent}
+            onChange={handleEditorChange}
+            spellCheck={false}
+            className="w-full h-full min-h-[400px] bg-transparent text-[10px] font-mono text-purple-200 resize-none outline-none p-4 focus:bg-gray-900/50"
+            placeholder="Incolla qui la configurazione YAML..."
+          />
+        </div>
+      ) : (
+        /* Summary view */
+        <div className="flex-1 overflow-auto p-4 space-y-4">
+          {/* Stats grid */}
+          <div className="grid grid-cols-2 gap-3">
+            <StatCard icon={Layers} label="Tab" count={tabs.length} color="purple" />
+            <StatCard icon={Terminal} label="Comandi" count={commands.length} color="green" />
+            <StatCard icon={Flag} label="Flag" count={flagParts.length} color="amber" />
+            <StatCard icon={Cpu} label="Boot Stages" count={bootStages.length} color="blue" />
+            <StatCard icon={FolderTree} label="Directory" count={dirs.length} color="cyan" />
+            <StatCard icon={FolderTree} label="File" count={files.length} color="emerald" />
+          </div>
+
+          {/* Tabs detail */}
+          {tabs.map(tab => {
+            const tabCmds = commands.filter(c => c.tabId === tab.id);
+            const tabStages = bootStages.filter(b => b.tabId === tab.id);
+            const tabDirs = dirs.filter(d => d.tabId === tab.id);
+            const tabFiles = files.filter(f => f.tabId === tab.id);
+
+            return (
+              <div key={tab.id} className="rounded border border-gray-700 bg-gray-800/40 p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Layers className="h-3.5 w-3.5 text-purple-400" />
+                  <span className="text-sm font-medium text-white">{tab.name}</span>
+                  <span className="text-[10px] text-gray-500 font-mono ml-auto">{tab.id}</span>
+                </div>
+                <div className="grid grid-cols-4 gap-2 text-[10px] text-gray-400">
+                  <div>{tabCmds.length} comandi</div>
+                  <div>{tabStages.length} boot stages</div>
+                  <div>{tabDirs.length} directory</div>
+                  <div>{tabFiles.length} file</div>
+                </div>
+                {tabCmds.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {tabCmds.slice(0, 20).map(cmd => (
+                      <span key={cmd.id} className={cn(
+                        'px-1.5 py-0.5 rounded text-[10px] font-mono',
+                        cmd.handler === 'builtin' ? 'bg-yellow-600/20 text-yellow-400' : 'bg-green-600/20 text-green-400'
+                      )}>
+                        {cmd.name || '?'}
+                      </span>
+                    ))}
+                    {tabCmds.length > 20 && (
+                      <span className="text-[10px] text-gray-500">+{tabCmds.length - 20} altri</span>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Flag preview */}
+          {flagParts.length > 0 && (
+            <div className="rounded border border-amber-700/50 bg-amber-900/20 p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <Flag className="h-3.5 w-3.5 text-amber-400" />
+                <span className="text-sm font-medium text-amber-300">Flag System</span>
+              </div>
+              <div className="font-mono text-xs text-amber-200/80 mb-2">{completeFlag}</div>
+              <div className="flex flex-wrap gap-1">
+                {flagParts.map(fp => (
+                  <span key={fp.id} className="px-1.5 py-0.5 rounded bg-amber-700/30 text-[10px] font-mono text-amber-300">
+                    {fp.id}: {fp.part}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const StatCard = ({ icon: Icon, label, count, color }: { icon: typeof Terminal; label: string; count: number; color: string }) => {
+  const colorMap: Record<string, string> = {
+    purple: 'text-purple-400 bg-purple-400/10',
+    green: 'text-green-400 bg-green-400/10',
+    amber: 'text-amber-400 bg-amber-400/10',
+    blue: 'text-blue-400 bg-blue-400/10',
+    cyan: 'text-cyan-400 bg-cyan-400/10',
+    emerald: 'text-emerald-400 bg-emerald-400/10',
+  };
+  const cls = colorMap[color] || colorMap.green;
+
+  return (
+    <div className="rounded border border-gray-700 bg-gray-800/40 p-2.5 flex items-center gap-2">
+      <div className={cn('w-8 h-8 rounded flex items-center justify-center flex-shrink-0', cls.split(' ')[1])}>
+        <Icon className={cn('h-4 w-4', cls.split(' ')[0])} />
+      </div>
+      <div>
+        <div className="text-lg font-semibold text-white leading-tight">{count}</div>
+        <div className="text-[10px] text-gray-400">{label}</div>
       </div>
     </div>
   );

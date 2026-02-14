@@ -65,7 +65,7 @@ export interface DraftPin {
   hint: string;
 }
 
-export type SettingsTool = 'component' | 'pin' | 'objective';
+export type SettingsTool = 'component' | 'pin' | 'objective' | 'terminal-config';
 
 export interface DragState {
   startX: number;

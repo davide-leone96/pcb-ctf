@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import { useSettingsStore, type DraftStep, type DraftObjective, type DraftComponent, type DraftPin, type SettingsTool, type PinLogic } from '@/store/settingsStore';
+import { useTerminalSettingsStore } from '@/store/terminalSettingsStore';
 import { ALL_TOOLS, type Tool } from '@/data/exercise';
 import { cn } from '@/lib/utils';
 import {
@@ -10,6 +11,7 @@ import {
   Plus, ChevronDown, ChevronRight, ArrowUp, ArrowDown,
   Hand, Search, Wrench, Cable, TerminalSquare, RotateCcw, type LucideIcon,
 } from 'lucide-react';
+import TerminalSettingsPanel from './TerminalSettingsPanel';
 import {
   AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader,
   AlertDialogFooter, AlertDialogTitle, AlertDialogDescription,
@@ -109,40 +111,56 @@ const SettingsSidebar = () => {
   };
 
   const isInitTab = activeTool === 'component' || activeTool === 'pin';
+  const isTerminalTab = activeTool === 'terminal-config';
+
+  const terminalStore = useTerminalSettingsStore();
 
   const hasContent = steps.length > 0 || components.length > 0 || pins.length > 0;
+  const hasAnyContent = hasContent || terminalStore.initialized;
 
   return (
     <aside className="flex flex-col gap-y-3 rounded-lg bg-gray-800 p-4 w-72 text-white max-h-[calc(100vh-8rem)] overflow-hidden">
-      {/* Tab selector: Init / Challenge */}
+      {/* Tab selector: Init / Challenge / Terminal */}
       <div>
-        <div className="flex gap-2">
+        <div className="flex gap-1">
           <button
             onClick={() => setActiveTool('component')}
             className={cn(
-              'flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm transition-colors flex-1',
+              'flex items-center gap-1 px-2 py-2 rounded-lg text-xs transition-colors flex-1',
               isInitTab ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-400 hover:bg-gray-600 hover:text-white'
             )}
           >
-            <MapPin className="h-4 w-4" />
+            <MapPin className="h-3.5 w-3.5" />
             Init
           </button>
           <button
             onClick={() => setActiveTool('objective')}
             className={cn(
-              'flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm transition-colors flex-1',
-              !isInitTab ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-400 hover:bg-gray-600 hover:text-white'
+              'flex items-center gap-1 px-2 py-2 rounded-lg text-xs transition-colors flex-1',
+              !isInitTab && !isTerminalTab ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-400 hover:bg-gray-600 hover:text-white'
             )}
           >
-            <BoxSelect className="h-4 w-4" />
+            <BoxSelect className="h-3.5 w-3.5" />
             Challenge
+          </button>
+          <button
+            onClick={() => setActiveTool('terminal-config')}
+            className={cn(
+              'flex items-center gap-1 px-2 py-2 rounded-lg text-xs transition-colors flex-1',
+              isTerminalTab ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-400 hover:bg-gray-600 hover:text-white'
+            )}
+          >
+            <TerminalSquare className="h-3.5 w-3.5" />
+            Terminal
           </button>
         </div>
       </div>
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto min-h-0 space-y-3">
-        {isInitTab ? (
+        {isTerminalTab ? (
+          <TerminalSettingsPanel />
+        ) : isInitTab ? (
           <>
             {/* Sub-tool selector: Componente / Pin */}
             <div className="flex gap-1">
@@ -297,10 +315,10 @@ const SettingsSidebar = () => {
       {/* Action buttons */}
       <div className="pt-3 border-t border-gray-700 space-y-2">
         <Button
-          onClick={() => { applyConfig(); setApplied(true); setTimeout(() => setApplied(false), 2000); }}
+          onClick={() => { applyConfig(); terminalStore.applyTerminalConfig(); setApplied(true); setTimeout(() => setApplied(false), 2000); }}
           size="sm"
           className="w-full bg-green-600 hover:bg-green-700 text-white"
-          disabled={!hasContent}
+          disabled={!hasAnyContent}
         >
           {applied ? <Check className="h-4 w-4 mr-2" /> : <Save className="h-4 w-4 mr-2" />}
           {applied ? 'Configurazione applicata!' : 'Applica al simulatore'}

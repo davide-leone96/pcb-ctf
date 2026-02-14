@@ -78,13 +78,60 @@ export function isFile(path: string, filesystem: FilesystemStructure): boolean {
 }
 
 /**
- * Get directory entries (files and subdirectories)
+ * Compute directory entries by scanning directory and file keys.
+ * Removes the need to manually specify entries for each directory.
+ */
+export function computeDirectoryEntries(
+  path: string,
+  filesystem: FilesystemStructure
+): string[] {
+  const normalizedPath = path === '/' ? '' : path;
+  const entries = new Set<string>();
+
+  // Scan subdirectories
+  for (const dirPath of Object.keys(filesystem.directories)) {
+    if (dirPath === path) continue; // skip self
+    const parent = dirPath.substring(0, dirPath.lastIndexOf('/')) || '/';
+    if (parent === path || (path === '/' && parent === '')) {
+      const childName = dirPath.substring(normalizedPath.length + 1);
+      // Only direct children (no '/' in the remaining name)
+      if (childName && !childName.includes('/')) {
+        entries.add(childName);
+      }
+    }
+  }
+
+  // Scan files
+  for (const filePath of Object.keys(filesystem.files)) {
+    const parent = filePath.substring(0, filePath.lastIndexOf('/')) || '/';
+    if (parent === path || (path === '/' && parent === '')) {
+      const childName = filePath.substring(normalizedPath.length + 1);
+      if (childName && !childName.includes('/')) {
+        entries.add(childName);
+      }
+    }
+  }
+
+  return Array.from(entries).sort();
+}
+
+/**
+ * Get directory entries (files and subdirectories).
+ * Returns the union of:
+ * - Stored entries (from directories[path] array) - includes virtual entries
+ * - Auto-computed entries (from directory/file keys) - ensures real children appear
+ * This eliminates redundancy while preserving virtual entries (e.g. /bin/busybox).
  */
 export function getDirectoryEntries(
   path: string,
   filesystem: FilesystemStructure
 ): string[] {
-  return filesystem.directories[path] || [];
+  const stored = filesystem.directories[path];
+  if (stored === undefined) return [];
+
+  const computed = computeDirectoryEntries(path, filesystem);
+  const merged = new Set([...stored, ...computed]);
+  return Array.from(merged).sort();
 }
 
 /**

@@ -9,7 +9,7 @@ import { CommandExecutor } from '@/lib/terminal-command-executor';
 import { TerminalConfigLoader } from '@/lib/terminal-config-loader';
 import { registerBuiltinHandlers, getFileType, getStringsOutput } from '@/lib/terminal-builtin-handlers';
 import { resolvePath, pathExists, isDirectory } from '@/lib/terminal-filesystem';
-import terminalConfig from '@/config/terminal.config';
+import { useTerminalConfig } from '@/hooks/useTerminalConfig';
 import type { CommandContext } from '@/types/terminal-config';
 
 // ============================================
@@ -45,8 +45,11 @@ let persistedLocalCmdHistory: string[] = [];
 export default function Terminal() {
   const { terminalDiscoveries, addTerminalDiscovery } = useExerciseStore();
 
-  // Initialize configuration and executor
-  const configLoader = useMemo(() => new TerminalConfigLoader(terminalConfig), []);
+  // Load terminal config dynamically (localStorage → static fallback)
+  const { config: terminalConfigDynamic } = useTerminalConfig();
+
+  // Initialize configuration and executor (rebuild when config changes)
+  const configLoader = useMemo(() => new TerminalConfigLoader(terminalConfigDynamic), [terminalConfigDynamic]);
   const executor = useMemo(() => {
     const exec = new CommandExecutor();
     registerBuiltinHandlers(exec);
