@@ -15,8 +15,8 @@ import type {
   FlagUnlock,
   ConditionCheck,
   FilesystemStructure,
+  FilesystemTree,
 } from '@/types/terminal-config';
-import { computeDirectoryEntries } from '@/lib/terminal-filesystem';
 
 // ============================================
 // CONSTANTS
@@ -24,6 +24,96 @@ import { computeDirectoryEntries } from '@/lib/terminal-filesystem';
 
 export const TERMINAL_STORAGE_KEY = 'pcb-ctf-terminal-config';
 const TERMINAL_DRAFT_STORAGE_KEY = 'pcb-ctf-terminal-settings-draft';
+
+// ============================================
+// ID GENERATOR
+// ============================================
+
+const generateId = (prefix: string): string => {
+  const hash = Date.now().toString(36) + Math.random().toString(36).substring(2, 7);
+  return `${prefix}-${hash}`;
+};
+
+// ============================================
+// TREE HELPERS
+// ============================================
+
+/** Build a nested FilesystemTree from flat DraftFilesystemEntry array. */
+function buildTree(entries: DraftFilesystemEntry[]): FilesystemTree {
+  const tree: FilesystemTree = {};
+
+  // Sort by depth so parents exist before children
+  const sorted = [...entries].sort((a, b) => {
+    const dA = a.path.split('/').filter(Boolean).length;
+    const dB = b.path.split('/').filter(Boolean).length;
+    return dA - dB;
+  });
+
+  for (const entry of sorted) {
+    if (entry.path === '/') continue; // root = tree itself
+
+    const parts = entry.path.split('/').filter(Boolean);
+    let current: FilesystemTree = tree;
+
+    // Navigate/create intermediate dirs
+    for (let i = 0; i < parts.length - 1; i++) {
+      if (typeof current[parts[i]] !== 'object') {
+        current[parts[i]] = {};
+      }
+      current = current[parts[i]] as FilesystemTree;
+    }
+
+    const name = parts[parts.length - 1];
+    if (entry.type === 'directory') {
+      if (!current[name] || typeof current[name] === 'string') {
+        current[name] = {};
+      }
+    } else {
+      current[name] = entry.content || '';
+    }
+  }
+
+  return tree;
+}
+
+/** Flatten a FilesystemTree into DraftFilesystemEntry array (for store import). */
+function flattenTreeToEntries(
+  tree: FilesystemTree,
+  tabId: string,
+  basePath: string = '/'
+): DraftFilesystemEntry[] {
+  const entries: DraftFilesystemEntry[] = [];
+
+  // Add current directory (except root which is added by caller)
+  if (basePath !== '/') {
+    entries.push({
+      id: generateId('fs'),
+      tabId,
+      path: basePath,
+      type: 'directory',
+      content: '',
+    });
+  }
+
+  for (const [name, value] of Object.entries(tree)) {
+    if (!name || name.includes('/')) continue;
+    const fullPath = basePath === '/' ? `/${name}` : `${basePath}/${name}`;
+
+    if (typeof value === 'string') {
+      entries.push({
+        id: generateId('fs'),
+        tabId,
+        path: fullPath,
+        type: 'file',
+        content: value,
+      });
+    } else if (value && typeof value === 'object') {
+      entries.push(...flattenTreeToEntries(value, tabId, fullPath));
+    }
+  }
+
+  return entries;
+}
 
 // ============================================
 // DRAFT TYPES
@@ -34,6 +124,7 @@ export interface DraftTab {
   name: string;
   initialPath: string;
   environment: Record<string, string>;
+  defaultBootStage: string; // default bootStage constraint for commands in this tab
 }
 
 export interface DraftCommand {
@@ -49,13 +140,23 @@ export interface DraftCommand {
   minArgs: number;
   maxArgs: number;
   // Output
-  outputType: 'none' | 'static' | 'conditional';
+  outputType: 'none' | 'static' | 'conditional' | 'lookup';
   staticLines: string[];
   conditionalRules: DraftConditionalRule[];
   defaultOutputLines: string[];
+  // Lookup output
+  lookupMatchType: 'equals' | 'contains' | 'regex';
+  lookupArgIndex: number;
+  lookupEntries: DraftLookupEntry[];
   // Side effects
   flagUnlocks: DraftFlagUnlock[];
   stateChanges: Record<string, string>;
+}
+
+export interface DraftLookupEntry {
+  id: string;
+  matchValue: string;
+  outputLines: string[];
 }
 
 export interface DraftConditionalRule {
@@ -99,7 +200,6 @@ export interface DraftFilesystemEntry {
   path: string;
   type: 'file' | 'directory';
   content: string; // for files: file content
-  extraEntries: string[]; // for directories: virtual entries not backed by file/dir records
 }
 
 export type TerminalSection = 'commands' | 'flags' | 'boot' | 'filesystem' | 'tabs';
@@ -179,11 +279,6 @@ interface TerminalSettingsState {
 // HELPERS
 // ============================================
 
-const generateId = (prefix: string): string => {
-  const hash = Date.now().toString(36) + Math.random().toString(36).substring(2, 7);
-  return `${prefix}-${hash}`;
-};
-
 function commandDefToDraft(name: string, cmd: CommandDefinition, tabId: string): DraftCommand {
   const bootStages: string[] = [];
   if (cmd.constraints?.state?.bootStage) {
@@ -217,10 +312,13 @@ function commandDefToDraft(name: string, cmd: CommandDefinition, tabId: string):
     }
   }
 
-  let outputType: 'none' | 'static' | 'conditional' = 'none';
+  let outputType: 'none' | 'static' | 'conditional' | 'lookup' = 'none';
   let staticLines: string[] = [];
   let conditionalRules: DraftConditionalRule[] = [];
   let defaultOutputLines: string[] = [];
+  let lookupMatchType: 'equals' | 'contains' | 'regex' = 'contains';
+  let lookupArgIndex = 0;
+  let lookupEntries: DraftLookupEntry[] = [];
 
   if (cmd.output) {
     if (cmd.output.type === 'static') {
@@ -238,6 +336,18 @@ function commandDefToDraft(name: string, cmd: CommandDefinition, tabId: string):
           flagUnlockId: '',
         });
       }
+      if (cmd.output.default && cmd.output.default.type === 'static') {
+        defaultOutputLines = cmd.output.default.lines;
+      }
+    } else if (cmd.output.type === 'lookup') {
+      outputType = 'lookup';
+      lookupMatchType = cmd.output.matchType;
+      lookupArgIndex = cmd.output.argIndex;
+      lookupEntries = Object.entries(cmd.output.table).map(([key, lines]) => ({
+        id: generateId('lu'),
+        matchValue: key,
+        outputLines: lines,
+      }));
       if (cmd.output.default && cmd.output.default.type === 'static') {
         defaultOutputLines = cmd.output.default.lines;
       }
@@ -266,6 +376,9 @@ function commandDefToDraft(name: string, cmd: CommandDefinition, tabId: string):
     staticLines,
     conditionalRules,
     defaultOutputLines,
+    lookupMatchType,
+    lookupArgIndex,
+    lookupEntries,
     flagUnlocks,
     stateChanges,
   };
@@ -301,6 +414,20 @@ function draftToCommandDef(draft: DraftCommand): CommandDefinition {
         },
         then: { type: 'static' as const, lines: rule.outputLines },
       })),
+      ...(draft.defaultOutputLines.length > 0 ? {
+        default: { type: 'static' as const, lines: draft.defaultOutputLines },
+      } : {}),
+    };
+  } else if (draft.outputType === 'lookup' && (draft.lookupEntries || []).length > 0) {
+    const table: Record<string, string[]> = {};
+    for (const entry of draft.lookupEntries) {
+      table[entry.matchValue] = entry.outputLines;
+    }
+    output = {
+      type: 'lookup',
+      argIndex: draft.lookupArgIndex || 0,
+      matchType: draft.lookupMatchType || 'contains',
+      table,
       ...(draft.defaultOutputLines.length > 0 ? {
         default: { type: 'static' as const, lines: draft.defaultOutputLines },
       } : {}),
@@ -377,6 +504,7 @@ export const useTerminalSettingsStore = create<TerminalSettingsState>()(
       name: `Tab ${get().tabs.length + 1}`,
       initialPath: '/',
       environment: { USER: 'root', HOME: '/root', PATH: '/bin:/sbin:/usr/bin:/usr/sbin', SHELL: '/bin/sh' },
+      defaultBootStage: '',
     };
     set({ tabs: [...get().tabs, newTab], activeTabId: id });
   },
@@ -417,6 +545,9 @@ export const useTerminalSettingsStore = create<TerminalSettingsState>()(
       staticLines: [],
       conditionalRules: [],
       defaultOutputLines: [],
+      lookupMatchType: 'contains',
+      lookupArgIndex: 0,
+      lookupEntries: [],
       flagUnlocks: [],
       stateChanges: {},
     };
@@ -522,7 +653,7 @@ export const useTerminalSettingsStore = create<TerminalSettingsState>()(
     const id = generateId('fs');
     const newEntry: DraftFilesystemEntry = {
       id, tabId, path: type === 'directory' ? '/new-dir' : '/new-file.txt',
-      type, content: '', extraEntries: [],
+      type, content: '',
     };
     set({ filesystemEntries: [...get().filesystemEntries, newEntry], activeFilesystemEntryId: id });
   },
@@ -578,49 +709,29 @@ export const useTerminalSettingsStore = create<TerminalSettingsState>()(
         })),
       } : undefined;
 
-      // Filesystem for this tab
+      // Filesystem for this tab — export as nested tree
       const tabFs = filesystemEntries.filter(f => f.tabId === tab.id);
-      const directories: Record<string, string[]> = {};
-      const files: Record<string, any> = {};
-
-      // Collect extra entries per directory for merging after auto-compute
-      const extraEntriesMap: Record<string, string[]> = {};
-
-      for (const entry of tabFs) {
-        if (entry.type === 'directory') {
-          directories[entry.path] = [];
-          const extra = entry.extraEntries || [];
-          if (extra.length > 0) {
-            extraEntriesMap[entry.path] = extra;
-          }
-        } else {
-          files[entry.path] = {
-            name: entry.path.split('/').pop() || '',
-            type: 'file',
-            content: entry.content,
-            permissions: '-rw-r--r--',
-            owner: tab.environment.USER || 'root',
-          };
-        }
-      }
-
-      // Merge: auto-computed entries + virtual (extra) entries
-      const fs: FilesystemStructure = { directories, files };
-      for (const dirPath of Object.keys(directories)) {
-        const computed = computeDirectoryEntries(dirPath, fs);
-        const extra = extraEntriesMap[dirPath] || [];
-        const merged = new Set([...computed, ...extra]);
-        directories[dirPath] = Array.from(merged).sort();
-      }
+      const tree = buildTree(tabFs);
 
       return {
         id: tab.id,
         name: tab.name,
         initialPath: tab.initialPath,
-        filesystem: { directories, files },
+        filesystem: {
+          tree,
+          directories: {},
+          files: {},
+          fileDefaults: {
+            permissions: '-rw-r--r--',
+            owner: tab.environment.USER || 'root',
+          },
+        },
         commands: commandsRecord,
         ...(bootSequence ? { bootSequence } : {}),
         environment: tab.environment,
+        ...(tab.defaultBootStage ? {
+          defaultConstraints: { state: { bootStage: tab.defaultBootStage } },
+        } : {}),
       };
     });
 
@@ -652,18 +763,26 @@ export const useTerminalSettingsStore = create<TerminalSettingsState>()(
     const filesystemEntries: DraftFilesystemEntry[] = [];
 
     for (const tab of config.tabs) {
+      // Extract default bootStage from tab defaultConstraints
+      const defaultBootStage = (typeof tab.defaultConstraints?.state?.bootStage === 'string')
+        ? tab.defaultConstraints.state.bootStage
+        : '';
+
       tabs.push({
         id: tab.id,
         name: tab.name,
         initialPath: tab.initialPath || '/',
         environment: tab.environment || {},
+        defaultBootStage,
       });
 
-      // Commands
-      if (tab.commands) {
-        for (const [name, cmd] of Object.entries(tab.commands)) {
-          commands.push(commandDefToDraft(name, cmd, tab.id));
-        }
+      // Commands: global commands first, then tab-specific (tab overrides global)
+      const allCommands: Record<string, CommandDefinition> = {
+        ...(config.globalCommands || {}),
+        ...(tab.commands || {}),
+      };
+      for (const [name, cmd] of Object.entries(allCommands)) {
+        commands.push(commandDefToDraft(name, cmd, tab.id));
       }
 
       // Boot stages
@@ -683,35 +802,38 @@ export const useTerminalSettingsStore = create<TerminalSettingsState>()(
 
       // Filesystem
       if (tab.filesystem) {
-        // First pass: collect all file paths for this tab to compute which entries are "extra"
-        const filePaths = new Set(Object.keys(tab.filesystem.files));
-        const dirPaths = new Set(Object.keys(tab.filesystem.directories));
-
-        for (const [dirPath, storedEntries] of Object.entries(tab.filesystem.directories)) {
-          // Compute which entries are auto-derivable from keys
-          const computed = computeDirectoryEntries(dirPath, tab.filesystem);
-          const computedSet = new Set(computed);
-          // Extra entries = stored entries that aren't auto-computable
-          const extra = (storedEntries || []).filter(e => !computedSet.has(e));
-
+        if (tab.filesystem.tree) {
+          // Tree format — flatten to entries
+          // Add root directory
           filesystemEntries.push({
             id: generateId('fs'),
             tabId: tab.id,
-            path: dirPath,
+            path: '/',
             type: 'directory',
             content: '',
-            extraEntries: extra,
           });
-        }
-        for (const [filePath, fileNode] of Object.entries(tab.filesystem.files)) {
-          filesystemEntries.push({
-            id: generateId('fs'),
-            tabId: tab.id,
-            path: filePath,
-            type: 'file',
-            content: fileNode.content || '',
-            extraEntries: [],
-          });
+          filesystemEntries.push(...flattenTreeToEntries(tab.filesystem.tree, tab.id));
+        } else {
+          // Flat format (backward compat)
+          for (const dirPath of Object.keys(tab.filesystem.directories || {})) {
+            filesystemEntries.push({
+              id: generateId('fs'),
+              tabId: tab.id,
+              path: dirPath,
+              type: 'directory',
+              content: '',
+            });
+          }
+          for (const [filePath, fileEntry] of Object.entries(tab.filesystem.files || {})) {
+            const content = typeof fileEntry === 'string' ? fileEntry : (fileEntry.content || '');
+            filesystemEntries.push({
+              id: generateId('fs'),
+              tabId: tab.id,
+              path: filePath,
+              type: 'file',
+              content,
+            });
+          }
         }
       }
     }
@@ -830,11 +952,27 @@ export const useTerminalSettingsStore = create<TerminalSettingsState>()(
       }),
       merge: (persisted: any, current) => {
         const merged = { ...current, ...(persisted as object) };
-        // Migrate old filesystem entries that lack extraEntries
+        // Migrate old filesystem entries: drop extraEntries (replaced by tree format)
         if (Array.isArray(merged.filesystemEntries)) {
-          merged.filesystemEntries = merged.filesystemEntries.map((e: any) => ({
-            ...e,
-            extraEntries: e.extraEntries || [],
+          merged.filesystemEntries = merged.filesystemEntries.map((e: any) => {
+            const { extraEntries, ...rest } = e;
+            return rest;
+          });
+        }
+        // Migrate old tabs that lack defaultBootStage
+        if (Array.isArray(merged.tabs)) {
+          merged.tabs = merged.tabs.map((t: any) => ({
+            ...t,
+            defaultBootStage: t.defaultBootStage || '',
+          }));
+        }
+        // Migrate old commands that lack lookup fields
+        if (Array.isArray(merged.commands)) {
+          merged.commands = merged.commands.map((c: any) => ({
+            ...c,
+            lookupMatchType: c.lookupMatchType || 'contains',
+            lookupArgIndex: c.lookupArgIndex ?? 0,
+            lookupEntries: c.lookupEntries || [],
           }));
         }
         return merged;

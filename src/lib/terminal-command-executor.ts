@@ -14,6 +14,7 @@ import type {
   ConditionCheck,
   ConditionalOutput,
   TemplateOutput,
+  LookupOutput,
 } from '@/types/terminal-config';
 
 export class CommandExecutor {
@@ -253,7 +254,7 @@ export class CommandExecutor {
   // ============================================
 
   private executeBuiltinCommand(command: CommandDefinition, context: CommandContext): string[] {
-    const builtinType = command.builtinType || command.name;
+    const builtinType = command.builtinType || command.name || '';
     const handler = this.builtinHandlers.get(builtinType);
 
     if (!handler) {
@@ -314,9 +315,37 @@ export class CommandExecutor {
         return scriptFn(context);
       }
 
+      case 'lookup':
+        return this.generateLookupOutput(outputDef, context);
+
       default:
         return [];
     }
+  }
+
+  private generateLookupOutput(output: LookupOutput, context: CommandContext): string[] {
+    const arg = context.args[output.argIndex || 0];
+    if (!arg) {
+      return output.default ? this.generateOutput(output.default, context) : [];
+    }
+
+    for (const [key, lines] of Object.entries(output.table)) {
+      let matched = false;
+      switch (output.matchType) {
+        case 'equals':
+          matched = arg === key;
+          break;
+        case 'contains':
+          matched = arg.includes(key);
+          break;
+        case 'regex':
+          matched = new RegExp(key).test(arg);
+          break;
+      }
+      if (matched) return lines;
+    }
+
+    return output.default ? this.generateOutput(output.default, context) : [];
   }
 
   private generateConditionalOutput(output: ConditionalOutput, context: CommandContext): string[] {

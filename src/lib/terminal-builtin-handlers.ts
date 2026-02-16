@@ -10,14 +10,12 @@ import {
   pathExists,
   isDirectory,
   isFile,
-  getDirectoryEntries,
   getFileContent,
   listDirectory,
   findFiles,
   grepFiles,
   getFileNode,
 } from './terminal-filesystem';
-import { STRINGS_OUTPUT, FILE_TYPES } from '@/data/terminalData';
 
 /**
  * Register all builtin handlers with the CommandExecutor
@@ -28,21 +26,10 @@ export function registerBuiltinHandlers(executor: any): void {
   executor.registerBuiltinHandler('cd', handleCd);
   executor.registerBuiltinHandler('pwd', handlePwd);
   executor.registerBuiltinHandler('cat', handleCat);
-  executor.registerBuiltinHandler('file', handleFile);
 
   // Search operations
   executor.registerBuiltinHandler('grep', handleGrep);
   executor.registerBuiltinHandler('find', handleFind);
-
-  // System info
-  executor.registerBuiltinHandler('mount', handleMount);
-  executor.registerBuiltinHandler('ps', handlePs);
-
-  // U-Boot commands
-  executor.registerBuiltinHandler('help', handleHelp);
-  executor.registerBuiltinHandler('printenv', handlePrintenv);
-  executor.registerBuiltinHandler('version', handleVersion);
-  executor.registerBuiltinHandler('md', handleMd);
 
   // Special
   executor.registerBuiltinHandler('clear', handleClear);
@@ -136,49 +123,6 @@ function handleCat(context: CommandContext): string[] {
 }
 
 /**
- * Determine file type
- */
-function handleFile(context: CommandContext): string[] {
-  const results: string[] = [];
-
-  for (const arg of context.args) {
-    const targetPath = resolvePath(arg, context.currentPath);
-
-    if (!pathExists(targetPath, context.filesystem)) {
-      results.push(`${arg}: cannot open '${arg}' (No such file or directory)`);
-      continue;
-    }
-
-    if (isDirectory(targetPath, context.filesystem)) {
-      results.push(`${arg}: directory`);
-      continue;
-    }
-
-    // Check if we have a predefined file type
-    const fileType = FILE_TYPES[targetPath];
-    if (fileType) {
-      results.push(fileType);
-    } else {
-      // Default file type
-      const node = getFileNode(targetPath, context.filesystem);
-      if (node?.content) {
-        // Try to detect type from content
-        const content = node.content;
-        if (content.includes('#!/bin/sh') || content.includes('#!/bin/bash')) {
-          results.push(`${arg}: Bourne-Again shell script, ASCII text executable`);
-        } else {
-          results.push(`${arg}: ASCII text`);
-        }
-      } else {
-        results.push(`${arg}: data`);
-      }
-    }
-  }
-
-  return results;
-}
-
-/**
  * Search for patterns in files
  */
 function handleGrep(context: CommandContext): string[] {
@@ -234,56 +178,6 @@ function handleFind(context: CommandContext): string[] {
 }
 
 /**
- * Display mounted filesystems
- */
-function handleMount(context: CommandContext): string[] {
-  // Return predefined mount output from terminalData
-  const { MOUNT_OUTPUT } = require('@/data/terminalData');
-  return MOUNT_OUTPUT.split('\n');
-}
-
-/**
- * Display process status
- */
-function handlePs(context: CommandContext): string[] {
-  // Return predefined ps output from terminalData
-  const { PS_OUTPUT } = require('@/data/terminalData');
-  return PS_OUTPUT.split('\n');
-}
-
-/**
- * Display help (U-Boot)
- */
-function handleHelp(context: CommandContext): string[] {
-  const { UBOOT_HELP } = require('@/data/terminalData');
-  return UBOOT_HELP.split('\n');
-}
-
-/**
- * Print environment variables (U-Boot)
- */
-function handlePrintenv(context: CommandContext): string[] {
-  const { UBOOT_PRINTENV } = require('@/data/terminalData');
-  return UBOOT_PRINTENV.split('\n');
-}
-
-/**
- * Print version (U-Boot)
- */
-function handleVersion(context: CommandContext): string[] {
-  const { UBOOT_VERSION } = require('@/data/terminalData');
-  return [UBOOT_VERSION];
-}
-
-/**
- * Memory display (U-Boot)
- */
-function handleMd(context: CommandContext): string[] {
-  const { UBOOT_MD } = require('@/data/terminalData');
-  return UBOOT_MD.split('\n');
-}
-
-/**
  * Clear screen (special command)
  */
 function handleClear(context: CommandContext): string[] {
@@ -293,6 +187,8 @@ function handleClear(context: CommandContext): string[] {
 
 /**
  * Custom function: Get file type dynamically
+ * Used as fallback when no lookup table entry matches.
+ * All known file types should be in the command's lookup table in the config.
  */
 export function getFileType(context: CommandContext): string[] {
   if (context.args.length === 0) {
@@ -301,12 +197,6 @@ export function getFileType(context: CommandContext): string[] {
 
   const targetPath = resolvePath(context.args[0], context.currentPath);
 
-  // Check predefined types first
-  if (FILE_TYPES[targetPath]) {
-    return [FILE_TYPES[targetPath]];
-  }
-
-  // Default logic
   if (!pathExists(targetPath, context.filesystem)) {
     return [`${context.args[0]}: cannot open (No such file or directory)`];
   }
@@ -315,11 +205,22 @@ export function getFileType(context: CommandContext): string[] {
     return [`${context.args[0]}: directory`];
   }
 
+  // Content-based type detection
+  const node = getFileNode(targetPath, context.filesystem);
+  if (node?.content) {
+    if (node.content.includes('#!/bin/sh') || node.content.includes('#!/bin/bash')) {
+      return [`${context.args[0]}: Bourne-Again shell script, ASCII text executable`];
+    }
+    return [`${context.args[0]}: ASCII text`];
+  }
+
   return [`${context.args[0]}: data`];
 }
 
 /**
  * Custom function: Get strings output dynamically
+ * Used as fallback when no lookup table entry matches.
+ * All known strings outputs should be in the command's lookup table in the config.
  */
 export function getStringsOutput(context: CommandContext): string[] {
   if (context.args.length === 0) {
@@ -328,19 +229,13 @@ export function getStringsOutput(context: CommandContext): string[] {
 
   const targetPath = resolvePath(context.args[0], context.currentPath);
 
-  // Check predefined strings output
-  if (STRINGS_OUTPUT[targetPath]) {
-    return STRINGS_OUTPUT[targetPath].split('\n');
-  }
-
-  // Default: try to get file content
+  // Try to extract printable strings from file content
   const content = getFileContent(targetPath, context.filesystem);
   if (content) {
-    // Filter printable strings (simplified)
     return content
       .split('\n')
       .filter(line => line.trim().length > 0)
-      .slice(0, 20); // Limit output
+      .slice(0, 20);
   }
 
   return [`strings: '${context.args[0]}': No such file`];

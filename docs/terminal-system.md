@@ -113,8 +113,12 @@ src/
 │   └── terminalSettingsStore.ts    # Zustand store per editing settings
 ├── components/features/exercise/
 │   └── Terminal.tsx                 # Componente React principale
-└── data/
-    └── terminalData.ts             # Dati statici (filesystem, boot lines, output)
+├── data/
+│   ├── terminalData.ts             # Dati statici (filesystem, boot lines, output)
+│   └── terminal.override.json      # Override configurazione (generato da Settings UI)
+└── app/api/terminal-config/
+    ├── save/route.ts               # POST: salva override config su file
+    └── load/route.ts               # GET: carica override config da file
 ```
 
 ---
@@ -175,14 +179,15 @@ L'editor ha 4 tab interni:
 - **Nome comando**: il nome con cui verra' invocato (es. `cat`, `scan`, `dump`)
 - **Descrizione**: testo descrittivo
 - **Tipo handler**: `Builtin` (usa un handler predefinito) o `Custom` (output dalla configurazione)
-- **Tipo builtin** (solo se Builtin): seleziona tra `ls`, `cat`, `cd`, `pwd`, `grep`, `find`, `file`, `mount`, `ps`, `help`, `printenv`, `version`, `md`, `clear`, `strings`
+- **Tipo builtin** (solo se Builtin): seleziona tra `ls`, `cat`, `cd`, `pwd`, `grep`, `find`, `clear`
 - **Aliases**: nomi alternativi per il comando. Digitare nel campo e premere Enter o cliccare +. Per rimuovere, cliccare la X sull'alias.
 
 **Tab Output:**
 - **Tipo output**:
   - `Nessuno`: il comando non produce output (utile per comandi che cambiano solo stato)
   - `Statico`: output fisso. Inserire le righe in una textarea (una per riga)
-  - `Condizionale`: output che varia in base agli argomenti
+  - `Condizionale`: output che varia in base alle condizioni sugli argomenti
+  - `Lookup`: output tabellare basato su matching di un argomento contro una tabella di valori
 
 Per l'output **Condizionale**:
 1. Cliccare + per aggiungere una regola
@@ -193,11 +198,23 @@ Per l'output **Condizionale**:
    - **Output**: righe di output quando la condizione matcha
 3. In fondo, **Output default**: righe mostrate quando nessuna regola corrisponde
 
-Esempio pratico: il comando `strings` con 3 regole condizionali:
-- Se arg[0] contiene "mtdblock3" → mostra output partizione config
-- Se arg[0] contiene "httpd" → mostra stringhe del web server
-- Se arg[0] contiene "backdoorTest" → mostra stringhe del backdoor
-- Default → "strings: file not found"
+Per l'output **Lookup**:
+1. Configurare **Arg Index** (quale argomento usare come chiave) e **Match Type** (`Equals`, `Contains`, `Regex`)
+2. Cliccare + per aggiungere entries alla tabella
+3. Ogni entry ha:
+   - **Match Value**: valore da confrontare con l'argomento
+   - **Output Lines**: righe di output quando il match riesce
+4. In fondo, **Output default**: righe mostrate quando nessuna entry corrisponde. Se il default e' di tipo `dynamic`, il generatore viene invocato come funzione custom.
+
+Esempio pratico: il comando `strings` con output **Lookup** (`argIndex: 0`, `matchType: contains`):
+- "mtdblock3" → mostra output partizione config
+- "httpd" → mostra stringhe del web server
+- "backdoorTest" → mostra stringhe del backdoor
+- Default (dynamic, generator: `getStringsOutput`) → fallback per file non in tabella
+
+Esempio pratico: il comando `file` con output **Lookup** (`argIndex: 0`, `matchType: equals`):
+- "/usr/bin/backdoorTest" → mostra tipo file specifico
+- Default (dynamic, generator: `getFileType`) → detection automatica basata su contenuto
 
 **Tab Effetti:**
 - **Flag Unlock**: aggiunge flag che vengono sbloccate quando il comando viene eseguito
@@ -278,13 +295,9 @@ Usare le frecce su/giu che appaiono al passaggio del mouse per cambiare l'ordine
 2. Espandere ed editare:
    - **Path**: percorso assoluto della directory (es. `/etc`, `/usr/bin`)
 
-Ogni directory mostra due tipi di voci:
+Ogni directory mostra le **voci auto-calcolate** (chip verdi): corrispondono a sotto-directory e file che hanno un record nella configurazione. Vengono derivate automaticamente dai path delle altre directory e dei file — non servono essere specificate manualmente.
 
-- **Voci reali** (chip verdi, auto-calcolate): Corrispondono a sotto-directory e file che hanno un record effettivo nella configurazione. Non servono essere specificate manualmente: vengono derivate dai path delle altre directory e dei file.
-  Ad esempio, se esistono `/etc/shadow` (file) e `/etc/config` (directory), la directory `/etc` mostrera' automaticamente `config  shadow` come voci reali.
-
-- **Voci extra** (textarea editabile): Nomi di file che appaiono nell'output di `ls` ma non hanno contenuto definito. Servono per rendere il filesystem realistico senza dover creare un record file per ogni voce.
-  Ad esempio, `/bin` contiene `busybox`, `cat`, `chmod`, ecc. - file che appaiono quando si fa `ls /bin` ma che non hanno contenuto leggibile con `cat`.
+Ad esempio, se esistono `/etc/shadow` (file) e `/etc/config` (directory), la directory `/etc` mostrera' automaticamente `config  shadow` come voci.
 
 #### Aggiungere un file
 
@@ -293,7 +306,9 @@ Ogni directory mostra due tipi di voci:
    - **Path**: percorso assoluto completo (es. `/etc/shadow`)
    - **Contenuto**: testo del file nella textarea
 
-Il file apparira' automaticamente come voce reale nella directory padre, purche' la directory padre sia definita.
+Il file apparira' automaticamente come voce nella directory padre. Se la directory padre non esiste, va creata separatamente.
+
+Per aggiungere file "vuoti" che appaiono in `ls` ma senza contenuto leggibile (es. binari in `/bin`), creare un file con contenuto vuoto.
 
 ### 3.7 Gestione dei Tab
 
@@ -382,9 +397,10 @@ Ecco un esempio di workflow completo per configurare una nuova sfida terminale:
    - Compilare la flag completa nel campo in cima
 
 5. **Creare i comandi**: Sezione Comandi → per ogni tab:
-   - Aggiungere i comandi necessari
-   - Per comandi standard (ls, cat, cd, pwd): usare handler Builtin
-   - Per comandi con output specifico: usare handler Custom con output Statico o Condizionale
+   - I comandi base (ls, cat, cd, pwd, clear) sono gia' disponibili come globalCommands
+   - Aggiungere comandi specifici del tab
+   - Per comandi con output fisso: usare handler Custom con output Statico
+   - Per comandi con output variabile: usare handler Custom con output Condizionale o Lookup
    - Collegare i flag unlock ai comandi appropriati (tab Effetti)
    - Impostare i vincoli di boot stage (tab Vincoli)
 
@@ -450,7 +466,8 @@ type CommandOutput =
   | DynamicOutput      // Chiama una funzione registrata
   | ConditionalOutput  // Branching basato su condizioni
   | TemplateOutput     // Interpolazione di variabili in un template
-  | ScriptOutput;      // Esecuzione di una funzione script
+  | ScriptOutput       // Esecuzione di una funzione script
+  | LookupOutput;      // Tabella di matching su argomento
 ```
 
 **StaticOutput**: L'output piu' semplice.
@@ -490,6 +507,35 @@ type CommandOutput =
 **ScriptOutput**: Come dynamic ma per funzioni script.
 ```typescript
 { type: 'script', script: 'functionName' }
+```
+
+**LookupOutput**: Tabella di matching su un argomento specifico. Cerca nell'argomento indicato da `argIndex` e confronta con le chiavi della `table` usando `matchType`.
+```typescript
+{
+  type: 'lookup',
+  argIndex: 0,                          // Quale argomento usare (0-based)
+  matchType: 'contains' | 'equals' | 'regex',  // Strategia di matching
+  table: {
+    'mtdblock3': ['riga1', 'riga2'],    // Chiave → output lines
+    'httpd': ['riga1', 'riga2'],
+  },
+  default?: CommandOutput               // Fallback (puo' essere dynamic)
+}
+```
+
+Esempio pratico (comando `strings`):
+```typescript
+output: {
+  type: 'lookup',
+  argIndex: 0,
+  matchType: 'contains',
+  table: {
+    'mtdblock3': ['config_partition_data...'],
+    'httpd': ['HTTP/1.1...'],
+    'backdoorTest': ['backdoor_strings...'],
+  },
+  default: { type: 'dynamic', generator: 'getStringsOutput' }
+}
 ```
 
 ### 4.3 ConditionCheck
@@ -561,7 +607,7 @@ La definizione completa di un comando.
 
 ```typescript
 interface CommandDefinition {
-  name: string;                    // Nome primario del comando
+  name?: string;                   // Nome (opzionale — derivato dalla chiave nel record commands)
   aliases?: string[];              // Nomi alternativi
   description: string;             // Descrizione breve
   usage?: string;                  // Stringa di usage
@@ -574,18 +620,56 @@ interface CommandDefinition {
 }
 ```
 
+**Nota su `name`**: Il campo `name` e' opzionale. Se omesso, viene derivato automaticamente dalla chiave nel record `commands` (o `globalCommands`) durante l'inizializzazione del `TerminalConfigLoader`. Esempio: `commands: { ls: { description: '...', handler: 'builtin' } }` → il comando avra' `name: 'ls'` impostato dal loader.
+
 I quattro tipi di handler:
 - **`builtin`**: Usa un handler registrato nel CommandExecutor (es. `ls`, `cat`, `cd`). Identificato da `builtinType`.
-- **`custom`**: Genera output dalla definizione `output` della configurazione. Non chiama handler specifici.
+- **`custom`**: Genera output dalla definizione `output` della configurazione. Non chiama handler specifici. Questo include comandi con output statico, condizionale, lookup, ecc.
 - **`dynamic`**: Chiama una funzione registrata con `registerCustomFunction()`.
 - **`script`**: Come dynamic, ma per script inline.
 
 ### 4.6 Filesystem
 
+Il filesystem supporta due formati di input: **tree** (nidificato) e **flat** (piatto). Il config loader normalizza entrambi allo stesso formato interno flat.
+
+#### FilesystemTree (formato nidificato)
+
+```typescript
+interface FilesystemTree {
+  [name: string]: string | FilesystemTree;
+}
+```
+
+Struttura ricorsiva dove:
+- `typeof value === 'string'` → **file** (il valore e' il contenuto)
+- `typeof value === 'object'` → **directory** (anche `{}` = directory vuota)
+
+Esempio:
+```typescript
+tree: {
+  bin: { busybox: '', sh: '' },
+  etc: {
+    passwd: 'root:x:0:0:root:/root:/bin/sh',
+    shadow: 'root:$1$GTN.gpri$DlSyKvZKMR9A9Uj9e9wR3/:0:0:99999:7:::'
+  },
+  dev: {},
+  root: {}
+}
+```
+
+#### FilesystemStructure
+
 ```typescript
 interface FilesystemStructure {
-  directories: Record<string, string[]>;  // path -> entries (auto-calcolate a runtime)
-  files: Record<string, FileNode>;        // full path -> dati file
+  tree?: FilesystemTree;                        // Formato nidificato (input only — appiattito dal loader)
+  directories: Record<string, string[]>;         // path -> entries (auto-calcolate dal loader)
+  files: Record<string, FileNode | string>;      // full path -> dati file o stringa contenuto (shorthand)
+  fileDefaults?: FileDefaults;                   // Default per permessi/owner
+}
+
+interface FileDefaults {
+  permissions?: string;  // es. '-rw-r--r--'
+  owner?: string;        // es. 'root'
 }
 
 interface FileNode {
@@ -600,27 +684,41 @@ interface FileNode {
 }
 ```
 
-Il filesystem e' un'astrazione piatta: le directory sono mappe `path -> entries[]`, i file sono mappe `path -> FileNode`. Non e' un albero ricorsivo.
+**File string shorthand**: I file possono essere specificati come semplice stringa di contenuto invece di un oggetto `FileNode` completo. Il config loader espande automaticamente gli shorthand applicando `fileDefaults` per permessi e owner.
 
-**Entries ibride**: gli array di entries nelle directory contengono l'unione di:
-- **Voci auto-calcolate**: derivate dai path delle altre directory e dei file (tramite `computeDirectoryEntries()`). Non serve specificarle manualmente.
-- **Voci extra/virtuali**: nomi presenti solo nel listing `ls` ma senza record file (es. binari in `/bin`). Queste vanno specificate manualmente.
-
-Al runtime, `getDirectoryEntries()` fonde entrambe le fonti. In export, l'array contiene l'unione completa.
-
-Esempio:
 ```typescript
-directories: {
-  '/': ['bin', 'etc', 'root', 'usr'],      // 'etc', 'root' auto da dir keys; 'bin', 'usr' auto da dir keys
-  '/etc': ['shadow', 'passwd', 'config'],    // 'shadow', 'passwd' auto da file keys; 'config' auto da dir keys
-  '/bin': ['busybox', 'cat', 'sh', ...],     // tutte extra (nessun file record per i binari)
-  '/root': [],
-}
-files: {
-  '/etc/shadow': { name: 'shadow', type: 'file', content: 'root:$1$GTN...', permissions: '-rw-------', owner: 'root' },
-  '/etc/passwd': { name: 'passwd', type: 'file', content: 'root:x:0:0:root:/root:/bin/sh', ... },
+// Shorthand (solo contenuto)
+files: { '/etc/passwd': 'root:x:0:0:root:/root:/bin/sh' }
+
+// Equivalente espanso (dopo normalizzazione)
+files: { '/etc/passwd': { name: 'passwd', type: 'file', content: 'root:x:0:0:root:/root:/bin/sh', permissions: '-rw-r--r--', owner: 'root' } }
+```
+
+**Entries auto-calcolate**: Gli array di entries nelle directory sono calcolati automaticamente dal config loader tramite `computeDirectoryEntries()`, che scansiona le chiavi di `directories` e `files` per determinare i figli diretti. Non e' necessario specificare manualmente le entries.
+
+#### Formato flat (legacy/compatibile)
+
+```typescript
+filesystem: {
+  directories: {
+    '/': [],        // entries auto-calcolate dal loader
+    '/etc': [],
+    '/root': [],
+  },
+  files: {
+    '/etc/shadow': { name: 'shadow', type: 'file', content: 'root:$1$GTN...', permissions: '-rw-------', owner: 'root' },
+    '/etc/passwd': 'root:x:0:0:root:/root:/bin/sh',  // shorthand
+  },
+  fileDefaults: { permissions: '-rw-r--r--', owner: 'root' },
 }
 ```
+
+#### Architettura di normalizzazione
+
+Il `TerminalConfigLoader` normalizza il filesystem in 3 step (vedi sezione 6):
+1. **Flatten tree**: Se `tree` e' presente, viene appiattito in `directories`/`files`
+2. **Expand file shorthand**: Stringhe → `FileNode` con `fileDefaults` applicati
+3. **Compute entries**: Directory entries calcolate da chiavi directories/files
 
 ### 4.7 Boot Sequence
 
@@ -669,12 +767,17 @@ interface TabConfig {
   id: string;                               // 'uart' | 'local'
   name: string;                             // Nome visibile
   filesystem: FilesystemStructure;           // Filesystem dedicato
-  commands: Record<string, CommandDefinition>; // Comandi disponibili
+  commands: Record<string, CommandDefinition>; // Comandi specifici del tab
   bootSequence?: BootSequence;               // Sequenza di boot (opzionale)
   initialPath?: string;                      // Path iniziale
   environment?: Record<string, string>;      // Variabili ambiente
+  defaultConstraints?: CommandConstraints;   // Constraint default per tutti i comandi del tab
 }
 ```
+
+**`defaultConstraints`**: Constraint applicati automaticamente a tutti i comandi del tab (inclusi i `globalCommands`). I constraint a livello di comando hanno la precedenza (merge shallow: un campo nel constraint del comando sovrascrive lo stesso campo nei default).
+
+Esempio: il tab UART ha `defaultConstraints: { state: { bootStage: 'shell' } }`. Tutti i comandi in questo tab richiedono lo stage `shell` per default, a meno che non specifichino un proprio `constraints.state` (es. i comandi U-Boot specificano `bootStage: 'uboot_shell'`).
 
 ### 4.10 TerminalConfig (Root)
 
@@ -730,7 +833,21 @@ interface CommandExecutionResult {
 
 Contiene la configurazione completa di default per la sfida TP-Link WR841N. Viene usata come fallback quando non esiste una configurazione custom in localStorage.
 
+### Global Commands
+
+Comandi definiti a livello root e disponibili in **tutti** i tab. I comandi tab-specifici con lo stesso nome sovrascrivono quelli globali.
+
+| Comando | Handler | Note |
+|---------|---------|------|
+| `ls` | builtin (`ls`) | Supporta `-l`, `-a`, `-la` |
+| `cd` | builtin (`cd`) | Max 1 argomento |
+| `pwd` | builtin (`pwd`) | - |
+| `cat` | builtin (`cat`) | Min 1 argomento |
+| `clear` | builtin (`clear`) | - |
+
 ### Tab UART Console
+
+**Default Constraints**: `{ state: { bootStage: 'shell' } }` — tutti i comandi del tab richiedono lo stage `shell` per default.
 
 **Boot sequence** (8 stage):
 
@@ -745,30 +862,28 @@ Contiene la configurazione completa di default per la sfida TP-Link WR841N. Vien
 | `password` | Password Prompt | - | - | Si (password) |
 | `shell` | Shell | - | - | Si (comandi Linux) |
 
-**Comandi U-Boot** (disponibili solo nello stage `uboot_shell`):
+**Comandi U-Boot** (override `defaultConstraints` con `bootStage: 'uboot_shell'`):
 
 | Comando | Alias | Handler | Flag Unlock |
 |---------|-------|---------|-------------|
-| `?` | `help` | builtin (`help`) | - |
-| `printenv` | - | builtin (`printenv`) | `boot` |
-| `version` | - | builtin (`version`) | - |
-| `md` | - | builtin (`md`) | - |
-| `boot` | - | custom | - (transita a `kernel_boot`) |
+| `?` | `help` | custom (static) | - |
+| `printenv` | - | custom (static) | `boot` |
+| `version` | - | custom (static) | - |
+| `md` | - | custom (static) | - |
+| `boot` | - | custom (static) | - (transita a `kernel_boot`) |
 
-**Comandi Shell** (disponibili solo nello stage `shell`):
+**Comandi Shell** (usano `defaultConstraints` → stage `shell`):
 
 | Comando | Handler | Note |
 |---------|---------|------|
-| `ls` | builtin | Supporta `-l`, `-a`, `-la` |
-| `cd` | builtin | Max 1 argomento |
-| `pwd` | builtin | - |
-| `cat` | builtin | Min 1 argomento |
-| `file` | custom (conditional) | Flag `shell` se argomento = `/usr/bin/backdoorTest` |
-| `strings` | custom (conditional) | Flag `leak`/`inject`/`shell` in base all'argomento |
-| `mount` | builtin | Output statico predefinito |
-| `ps` | builtin | Output statico predefinito |
-| `grep` | builtin | Min 1 argomento |
-| `find` | builtin | Supporta `-name`, `-type` |
+| `file` | custom (lookup) | Flag `shell` se argomento = `/usr/bin/backdoorTest` |
+| `strings` | custom (lookup) | Flag `leak`/`inject`/`shell` in base all'argomento |
+| `mount` | custom (static) | Output statico predefinito |
+| `ps` | custom (static) | Output statico predefinito |
+| `grep` | builtin (`grep`) | Min 1 argomento |
+| `find` | builtin (`find`) | Supporta `-name`, `-type` |
+
+Nota: `ls`, `cd`, `pwd`, `cat`, `clear` sono ereditati dai `globalCommands`.
 
 **Sequenza di login**:
 
@@ -783,13 +898,10 @@ Shell semplice senza boot sequence, che simula un sistema Kali Linux.
 
 | Comando | Handler | Flag Unlock |
 |---------|---------|-------------|
-| `ls` | builtin | - |
-| `cd` | builtin | - |
-| `pwd` | builtin | - |
-| `cat` | builtin | - |
 | `hashcat` | custom (conditional) | `hash` se argomento matcha hash MD5 |
 | `john` | custom (conditional) | `hash` se argomento contiene "shadow" |
-| `clear` | builtin | - |
+
+Nota: `ls`, `cd`, `pwd`, `cat`, `clear` sono ereditati dai `globalCommands`.
 
 ---
 
@@ -807,12 +919,34 @@ Il Config Loader e' il punto di accesso centrale alla configurazione. Carica, va
 const loader = new TerminalConfigLoader(config);
 ```
 
-Il costruttore chiama `initialize()` che:
-1. Costruisce `tabsMap: Map<string, TabConfig>` per accesso O(1) ai tab per ID
-2. Per ogni tab, costruisce `commandsCache: Map<string, Map<string, CommandDefinition>>`:
-   - Prima aggiunge i `globalCommands` (se presenti)
+Il costruttore chiama `initialize()` che per ogni tab:
+
+1. **Normalizza il filesystem** tramite `normalizeFilesystem()` (vedi sotto)
+2. Registra il tab in `tabsMap: Map<string, TabConfig>` per accesso O(1)
+3. Costruisce `commandsCache: Map<string, Map<string, CommandDefinition>>`:
+   - Prima aggiunge i `globalCommands` (se presenti), risolvendo i constraint con `resolveCommand()`
    - Poi aggiunge i comandi specifici del tab (sovrascrivono i globali con lo stesso nome)
+   - Per ogni comando, se `name` non e' specificato, lo deriva dalla chiave
    - Per ogni comando, registra anche tutti gli alias nella stessa mappa
+
+### Normalizzazione Filesystem
+
+`normalizeFilesystem(fs)` esegue una pipeline di 3 step:
+
+**Step 1: Flatten tree** — Se `fs.tree` e' presente, `flattenTree()` lo attraversa ricorsivamente costruendo path assoluti:
+- `typeof value === 'string'` → aggiunge a `files[fullPath]`
+- `typeof value === 'object'` → aggiunge a `directories[fullPath] = []` e ricorre
+- Dopo la flattening, `delete fs.tree`
+
+**Step 2: Expand file shorthand** — Per ogni file, se il valore e' una stringa (shorthand), lo espande in un `FileNode` completo applicando `fileDefaults.permissions` e `fileDefaults.owner`.
+
+**Step 3: Compute entries** — Per ogni directory, calcola le entries (figli diretti) scansionando le chiavi di `directories` e `files` tramite `computeDirectoryEntries()`.
+
+### Merge Constraints
+
+`mergeConstraints(defaults, command)` — Merge shallow dei constraint di default del tab con quelli del comando. Il campo a livello comando ha precedenza.
+
+`resolveCommand(command, defaults)` — Applica `mergeConstraints()` e ritorna una copia del comando con constraint risolti. Se non ci sono default, ritorna il comando originale.
 
 ### API Principali
 
@@ -932,6 +1066,20 @@ Le condizioni supportano:
 | `state` | variable, value | Controlla variabile di stato |
 | `custom` | check (function name) | Invoca funzione custom |
 
+### Generazione Output Lookup
+
+`generateLookupOutput()` confronta l'argomento indicato da `argIndex` con le chiavi della `table`:
+
+```
+Per ogni chiave nella table:
+  Se matchType === 'equals' e arg === chiave → ritorna table[chiave]
+  Se matchType === 'contains' e arg contiene chiave → ritorna table[chiave]
+  Se matchType === 'regex' e arg matcha regex(chiave) → ritorna table[chiave]
+Se nessuna chiave matcha → genera output.default (puo' essere dynamic/static/etc.)
+```
+
+Questo tipo di output e' particolarmente utile per comandi come `file` e `strings` che hanno risposte note per file specifici ma necessitano di un fallback dinamico per file generici.
+
 ### Generazione Output Template
 
 `generateTemplateOutput()` interpolazione `{{key}}` nel template:
@@ -996,12 +1144,12 @@ resolvePath('.', '/etc') → '/etc'
 ```typescript
 computeDirectoryEntries(path, filesystem): string[]
 ```
-Calcola automaticamente i figli diretti di una directory scansionando le chiavi di `directories` e `files`. Ritorna i nomi ordinati alfabeticamente. Questa funzione elimina la necessita' di specificare manualmente le entries per ogni directory.
+Calcola automaticamente i figli diretti di una directory scansionando le chiavi di `directories` e `files`. Ritorna i nomi ordinati alfabeticamente. Questa funzione elimina la necessita' di specificare manualmente le entries per ogni directory. Viene invocata dal config loader durante la normalizzazione.
 
 ```typescript
 getDirectoryEntries(path, filesystem): string[]
 ```
-Ritorna l'unione di entries stored (incluse le extra/virtuali) e auto-calcolate, deduplicate e ordinate. Verifica l'esistenza della directory prima di procedere.
+Ritorna l'unione di entries stored (dall'array `directories[path]`) e auto-calcolate, deduplicate e ordinate. In pratica, dopo la normalizzazione del config loader le entries stored sono gia' complete, quindi `getDirectoryEntries` serve come safety net per garantire che eventuali figli non elencati appaiano comunque.
 
 ```typescript
 listDirectory(path, filesystem, options): string[]
@@ -1077,7 +1225,6 @@ Registra tutti gli handler. Chiamata durante l'inizializzazione del Terminal.
 | `handleCd` | `cd` | Cambia directory. Ritorna array vuoto su successo, errore se path non esiste o non e' directory. Il cambio effettivo del path e' gestito dal componente Terminal. |
 | `handlePwd` | `pwd` | Ritorna `[context.currentPath]` |
 | `handleCat` | `cat` | Mostra contenuto file. Supporta argomenti multipli. Gestisce errori: file non trovato, directory, permission denied. |
-| `handleFile` | `file` | Determina tipo file. Usa `FILE_TYPES` predefiniti, poi fallback a detection da contenuto (shebang detection). |
 
 #### Search Operations
 
@@ -1086,46 +1233,34 @@ Registra tutti gli handler. Chiamata durante l'inizializzazione del Terminal.
 | `handleGrep` | `grep` | Richiede minimo 2 argomenti (pattern + file). Usa `grepFiles()`. |
 | `handleFind` | `find` | Path opzionale (default: cwd). Supporta `-name` e `-type f/d`. Usa `findFiles()`. |
 
-#### System Info
-
-| Handler | Comando | Descrizione |
-|---------|---------|-------------|
-| `handleMount` | `mount` | Output statico da `terminalData.MOUNT_OUTPUT` |
-| `handlePs` | `ps` | Output statico da `terminalData.PS_OUTPUT` |
-
-#### U-Boot Commands
-
-| Handler | Comando | Descrizione |
-|---------|---------|-------------|
-| `handleHelp` | `?`/`help` | Output statico da `terminalData.UBOOT_HELP` |
-| `handlePrintenv` | `printenv` | Output statico da `terminalData.UBOOT_PRINTENV` |
-| `handleVersion` | `version` | Output statico da `terminalData.UBOOT_VERSION` |
-| `handleMd` | `md` | Output statico da `terminalData.UBOOT_MD` |
-
 #### Special
 
 | Handler | Comando | Descrizione |
 |---------|---------|-------------|
 | `handleClear` | `clear` | Ritorna `['__CLEAR__']`. Il componente Terminal intercetta questo marker speciale e svuota la history. |
 
+Nota: I comandi `mount`, `ps`, `?`/`help`, `printenv`, `version`, `md`, `file`, `strings` **non hanno handler builtin**. Sono definiti nella configurazione con `handler: 'custom'` e output statico/lookup. Questo consente di personalizzarli interamente dalla Settings UI senza modificare codice.
+
 ### Custom Functions Esportate
 
-Queste funzioni sono registrate come custom functions nel CommandExecutor e usate come generatori per output dinamico/condizionale.
+Queste funzioni sono registrate come custom functions nel CommandExecutor e usate come generatori di fallback per output di tipo `LookupOutput` con `default: { type: 'dynamic' }`.
 
 ```typescript
 getFileType(context: CommandContext): string[]
 ```
-- Controlla prima `FILE_TYPES` predefiniti
-- Se non trovato: verifica esistenza path, distingue directory da file
+- Fallback per il comando `file` quando nessuna entry nella lookup table matcha
+- Verifica esistenza path, distingue directory da file
 - Per file con contenuto: detecta shebang (`#!/bin/sh`, `#!/bin/bash`)
 - Default: `'data'`
 
 ```typescript
 getStringsOutput(context: CommandContext): string[]
 ```
-- Controlla prima `STRINGS_OUTPUT` predefiniti
-- Se non trovato: prende il contenuto del file, filtra righe non vuote, limita a 20 righe
+- Fallback per il comando `strings` quando nessuna entry nella lookup table matcha
+- Prende il contenuto del file dal filesystem, filtra righe non vuote, limita a 20 righe
 - Default: errore `'No such file'`
+
+Entrambe le funzioni operano esclusivamente sul `context.filesystem` — non importano dati da `terminalData.ts`.
 
 ---
 
@@ -1337,13 +1472,16 @@ Store Zustand con middleware `persist` per la gestione dell'editing della config
 
 Lo store usa tipi "draft" semplificati per l'editing UI:
 
-- `DraftTab`: `{ id, name, initialPath, environment }`
-- `DraftCommand`: `{ id, tabId, name, description, aliases, handler, builtinType, constraints, output, flagUnlocks, stateChanges }`
-- `DraftConditionalRule`: `{ argIndex, matchType, matchValue, output }`
-- `DraftFlagUnlock`: `{ flagId, conditional, argIndex, matchType, matchValue }`
+- `DraftTab`: `{ id, name, initialPath, environment, defaultBootStage }`
+- `DraftCommand`: `{ id, tabId, name, description, aliases, handler, builtinType, bootStages, minArgs, maxArgs, outputType, staticLines, conditionalRules, defaultOutputLines, lookupMatchType, lookupArgIndex, lookupEntries, flagUnlocks, stateChanges }`
+- `DraftLookupEntry`: `{ id, matchValue, outputLines }`
+- `DraftConditionalRule`: `{ id, argIndex, matchType, matchValue, outputLines, flagUnlockId }`
+- `DraftFlagUnlock`: `{ id, flagId, conditional, argIndex, matchType, matchValue }`
 - `DraftFlagPart`: `{ id, part, description, hint }`
 - `DraftBootStage`: `{ id, tabId, name, lines, duration, nextStage, prompt }`
-- `DraftFilesystemEntry`: `{ id, tabId, type, path, content, extraEntries }` (`extraEntries`: voci virtuali per le directory, visibili in `ls` ma senza record file)
+- `DraftFilesystemEntry`: `{ id, tabId, type, path, content }`
+
+**Output type nel DraftCommand**: Il campo `outputType` gestisce 4 tipi: `none`, `static`, `conditional`, `lookup`. Per il tipo `lookup`, i campi `lookupMatchType`, `lookupArgIndex` e `lookupEntries` definiscono la tabella di matching.
 
 ### State
 
@@ -1380,6 +1518,24 @@ Ogni entita' ha operazioni add/update/delete:
 | Boot Stage | `addBootStage(tabId)` | `updateBootStage(id, data)` | `deleteBootStage(id)` | `reorderBootStage(id, dir)` |
 | Filesystem | `addFilesystemEntry(tabId, type)` | `updateFilesystemEntry(id, data)` | `deleteFilesystemEntry(id)` | - |
 
+### Tree Helpers
+
+Due funzioni utility al top del file gestiscono la conversione tra formato draft (flat entries) e formato tree:
+
+```typescript
+buildTree(entries: DraftFilesystemEntry[]): FilesystemTree
+```
+- Ordina le entries per profondita' path (genitori prima dei figli)
+- Naviga/crea il percorso nidificato per ogni entry
+- Directory → `{}`, File → stringa contenuto
+- Skip per path `/` (root = albero stesso)
+
+```typescript
+flattenTreeToEntries(tree: FilesystemTree, tabId: string, basePath?: string): DraftFilesystemEntry[]
+```
+- Ricorsiva, crea un `DraftFilesystemEntry` per ogni nodo nell'albero
+- Usata in `loadFromTerminalConfig()` per importare config con formato tree
+
 ### Conversione Config ↔ Draft
 
 ```typescript
@@ -1390,12 +1546,26 @@ loadFromTerminalConfig(config: TerminalConfig): void
 exportAsTerminalConfig(): TerminalConfig
 ```
 
+**Import (`loadFromTerminalConfig`)**: Per ogni tab, se `tab.filesystem.tree` esiste, usa `flattenTreeToEntries()` per creare le entries draft. Altrimenti usa la logica flat esistente (backward compat).
+
+**Export (`exportAsTerminalConfig`)**: Costruisce il filesystem in formato tree usando `buildTree()`:
+```typescript
+filesystem: {
+  tree: buildTree(tabFilesystemEntries),
+  directories: {},
+  files: {},
+  fileDefaults: { permissions: '-rw-r--r--', owner: 'root' }
+}
+```
+Il config loader poi si occupa di appiattire il tree durante il caricamento.
+
 `commandDefToDraft()` converte una `CommandDefinition` nel formato draft estraendo:
 - Flag unlock conditions da `sideEffects.unlockFlags`
 - State changes da `sideEffects.setState`
 - Conditional rules da output di tipo `'conditional'`
+- Lookup entries da output di tipo `'lookup'`
 
-`draftToCommandDef()` ricostruisce la `CommandDefinition` completa dal formato draft.
+`draftToCommandDef()` ricostruisce la `CommandDefinition` completa dal formato draft, incluso il tipo `LookupOutput` con tabella e default.
 
 ### Persistenza
 
@@ -1599,7 +1769,7 @@ Nella UI Settings (tab Terminal > sezione Comandi), oppure direttamente nel file
 
 ```typescript
 mycommand: {
-  name: 'mycommand',
+  // name derivato dalla chiave ('mycommand')
   aliases: ['mc'],
   description: 'Il mio comando custom',
   handler: 'custom',  // Usa output dalla configurazione
@@ -1626,6 +1796,28 @@ mycommand: {
 },
 ```
 
+#### Via Lookup Output
+
+Per comandi che matchano un argomento contro una tabella di valori noti con fallback dinamico:
+
+```typescript
+mytool: {
+  description: 'Analizza file',
+  handler: 'custom',
+  constraints: { arguments: { min: 1 } },
+  output: {
+    type: 'lookup',
+    argIndex: 0,
+    matchType: 'contains',
+    table: {
+      'config.txt': ['Tipo: testo di configurazione', 'Formato: INI'],
+      'binary.bin': ['Tipo: dati binari', 'Formato: ELF 32-bit'],
+    },
+    default: { type: 'dynamic', generator: 'myAnalyzer' },
+  },
+},
+```
+
 #### Via Codice (per handler complessi)
 
 1. Creare il handler in `terminal-builtin-handlers.ts`:
@@ -1645,27 +1837,42 @@ executor.registerBuiltinHandler('mycommand', handleMyCommand);
 
 ### Aggiungere un Nuovo File al Filesystem
 
-Nella config del tab appropriato:
+#### Formato tree (consigliato)
+
+```typescript
+filesystem: {
+  tree: {
+    bin: { busybox: '' },
+    etc: { config: 'key=value' },
+    newdir: {
+      'file.txt': 'Contenuto del file',
+      subdir: {}   // directory vuota
+    }
+  },
+  directories: {},
+  files: {},
+  fileDefaults: { permissions: '-rw-r--r--', owner: 'root' },
+}
+```
+
+Il tree e' intuitivo: oggetti = directory, stringhe = file (il valore e' il contenuto). Il config loader si occupa di appiattire tutto nel formato flat interno.
+
+#### Formato flat (legacy)
 
 ```typescript
 filesystem: {
   directories: {
-    '/': ['bin', 'etc', 'newdir'],
-    '/newdir': ['file.txt'],
+    '/': [],
+    '/newdir': [],
   },
   files: {
-    '/newdir/file.txt': {
-      name: 'file.txt',
-      type: 'file',
-      content: 'Contenuto del file',
-      permissions: '-rw-r--r--',
-      owner: 'root',
-    },
+    '/newdir/file.txt': 'Contenuto del file',  // shorthand
   },
+  fileDefaults: { permissions: '-rw-r--r--', owner: 'root' },
 }
 ```
 
-Nota: la directory padre deve avere il nome della entry nel suo array, E la directory figlia deve essere registrata in `directories`.
+Nota: le entries delle directory sono auto-calcolate dal loader. Non serve specificarle manualmente.
 
 ### Aggiungere un Nuovo Boot Stage
 
@@ -1709,9 +1916,17 @@ tabs: [
     id: 'custom_tab',
     name: 'My Custom Tab',
     initialPath: '/home/user',
-    filesystem: { directories: { '/': ['home'], '/home': ['user'], '/home/user': [] }, files: {} },
+    filesystem: {
+      tree: {
+        home: { user: { '.bashrc': 'export PS1="$ "' } }
+      },
+      directories: {},
+      files: {},
+      fileDefaults: { permissions: '-rw-r--r--', owner: 'user' },
+    },
     commands: { /* ... */ },
     environment: { USER: 'user', HOME: '/home/user', SHELL: '/bin/bash' },
+    defaultConstraints: { state: { bootStage: 'shell' } },
     // bootSequence e' opzionale
   },
 ]
