@@ -8,10 +8,15 @@ import type {
   TerminalConfig,
   TabConfig,
   CommandDefinition,
+  CommandConstraints,
   BootSequence,
   BootStage,
   FlagSystem,
+  FileNode,
+  FilesystemStructure,
+  FilesystemTree,
 } from '@/types/terminal-config';
+import { computeDirectoryEntries } from './terminal-filesystem';
 
 export class TerminalConfigLoader {
   private config: TerminalConfig;
@@ -24,12 +29,123 @@ export class TerminalConfigLoader {
   }
 
   /**
+   * Merge tab-level defaultConstraints with command-level constraints.
+   * Command-level fields take precedence (shallow per constraint key).
+   */
+  private mergeConstraints(
+    defaults: CommandConstraints | undefined,
+    command: CommandConstraints | undefined
+  ): CommandConstraints | undefined {
+    if (!defaults) return command;
+    if (!command) return { ...defaults };
+    return { ...defaults, ...command };
+  }
+
+  /**
+   * Apply tab defaultConstraints to a command, returning a resolved copy.
+   */
+  private resolveCommand(
+    command: CommandDefinition,
+    defaults: CommandConstraints | undefined
+  ): CommandDefinition {
+    if (!defaults) return command;
+    const merged = this.mergeConstraints(defaults, command.constraints);
+    if (merged === command.constraints) return command;
+    return { ...command, constraints: merged };
+  }
+
+  /**
+   * Flatten a nested FilesystemTree into flat directories/files records.
+   * Traverses the tree recursively building absolute paths.
+   *   string value → file,  object value → directory
+   */
+  private flattenTree(
+    tree: FilesystemTree,
+    basePath: string = '/',
+    directories: Record<string, string[]>,
+    files: Record<string, string>
+  ): void {
+    if (!directories[basePath]) {
+      directories[basePath] = [];
+    }
+
+    for (const [name, value] of Object.entries(tree)) {
+      if (!name || name.includes('/')) continue;
+
+      const fullPath = basePath === '/' ? `/${name}` : `${basePath}/${name}`;
+
+      if (typeof value === 'string') {
+        // File
+        files[fullPath] = value;
+      } else if (value && typeof value === 'object') {
+        // Directory — recurse
+        directories[fullPath] = [];
+        this.flattenTree(value, fullPath, directories, files);
+      }
+    }
+  }
+
+  /**
+   * Normalize filesystem:
+   *  1. Flatten tree format (if present) into directories/files
+   *  2. Expand file string shorthands to FileNode objects + apply fileDefaults
+   *  3. Compute directory entries from keys
+   */
+  private normalizeFilesystem(fs: FilesystemStructure): void {
+    // Step 1: Flatten tree if present
+    if (fs.tree) {
+      if (!fs.directories) (fs as any).directories = {};
+      if (!fs.files) (fs as any).files = {};
+      this.flattenTree(fs.tree, '/', fs.directories, fs.files as Record<string, string>);
+      delete fs.tree;
+    }
+
+    // Ensure root directory exists
+    if (!fs.directories['/']) {
+      fs.directories['/'] = [];
+    }
+
+    // Step 2: Normalize file entries
+    const defaultPermissions = fs.fileDefaults?.permissions || '-rw-r--r--';
+    const defaultOwner = fs.fileDefaults?.owner || 'root';
+
+    for (const [path, value] of Object.entries(fs.files)) {
+      if (typeof value === 'string') {
+        (fs.files as Record<string, FileNode>)[path] = {
+          name: path.split('/').pop() || '',
+          type: 'file',
+          content: value,
+          permissions: defaultPermissions,
+          owner: defaultOwner,
+        };
+      } else {
+        if (!value.permissions) value.permissions = defaultPermissions;
+        if (!value.owner) value.owner = defaultOwner;
+        if (!value.name) value.name = path.split('/').pop() || '';
+        if (!value.type) value.type = 'file';
+      }
+    }
+
+    // Step 3: Compute directory entries from keys
+    for (const dirPath of Object.keys(fs.directories)) {
+      fs.directories[dirPath] = computeDirectoryEntries(dirPath, fs);
+    }
+  }
+
+  /**
    * Initialize internal caches and maps
    */
   private initialize(): void {
     // Build tabs map
     for (const tab of this.config.tabs) {
+      // Normalize filesystem shorthand and defaults
+      if (tab.filesystem) {
+        this.normalizeFilesystem(tab.filesystem);
+      }
+
       this.tabsMap.set(tab.id, tab);
+
+      const defaults = tab.defaultConstraints;
 
       // Build commands map for this tab (including global commands)
       const commandsMap = new Map<string, CommandDefinition>();
@@ -37,11 +153,13 @@ export class TerminalConfigLoader {
       // Add global commands first
       if (this.config.globalCommands) {
         for (const [name, command] of Object.entries(this.config.globalCommands)) {
-          commandsMap.set(name, command);
-          // Add aliases
+          // Derive name from key if not explicitly set
+          if (!command.name) command.name = name;
+          const resolved = this.resolveCommand(command, defaults);
+          commandsMap.set(name, resolved);
           if (command.aliases) {
             for (const alias of command.aliases) {
-              commandsMap.set(alias, command);
+              commandsMap.set(alias, resolved);
             }
           }
         }
@@ -50,11 +168,13 @@ export class TerminalConfigLoader {
       // Add tab-specific commands (override global if same name)
       if (tab.commands) {
         for (const [name, command] of Object.entries(tab.commands)) {
-          commandsMap.set(name, command);
-          // Add aliases
+          // Derive name from key if not explicitly set
+          if (!command.name) command.name = name;
+          const resolved = this.resolveCommand(command, defaults);
+          commandsMap.set(name, resolved);
           if (command.aliases) {
             for (const alias of command.aliases) {
-              commandsMap.set(alias, command);
+              commandsMap.set(alias, resolved);
             }
           }
         }
@@ -315,13 +435,10 @@ export class TerminalConfigLoader {
       // Validate commands
       if (tab.commands) {
         for (const [name, command] of Object.entries(tab.commands)) {
-          if (!command.name) {
-            errors.push(`Tab ${tab.id} command "${name}" must have a name`);
-          }
           if (!command.handler) {
             errors.push(`Tab ${tab.id} command "${name}" must have a handler`);
           }
-          if (command.handler === 'builtin' && !command.builtinType && !command.name) {
+          if (command.handler === 'builtin' && !command.builtinType && !command.name && !name) {
             errors.push(
               `Tab ${tab.id} builtin command "${name}" must have builtinType or name`
             );

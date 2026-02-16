@@ -135,10 +135,21 @@ export function getDirectoryEntries(
 }
 
 /**
+ * Resolve a file entry to a FileNode (handles string shorthand).
+ */
+function resolveFileEntry(entry: FileNode | string | undefined, path: string): FileNode | null {
+  if (entry === undefined) return null;
+  if (typeof entry === 'string') {
+    return { name: path.split('/').pop() || '', type: 'file', content: entry, permissions: '-rw-r--r--', owner: 'root' };
+  }
+  return entry;
+}
+
+/**
  * Get file content
  */
 export function getFileContent(path: string, filesystem: FilesystemStructure): string | null {
-  const file = filesystem.files[path];
+  const file = resolveFileEntry(filesystem.files[path], path);
   return file ? file.content || '' : null;
 }
 
@@ -146,7 +157,7 @@ export function getFileContent(path: string, filesystem: FilesystemStructure): s
  * Get file node with metadata
  */
 export function getFileNode(path: string, filesystem: FilesystemStructure): FileNode | null {
-  return filesystem.files[path] || null;
+  return resolveFileEntry(filesystem.files[path], path);
 }
 
 /**

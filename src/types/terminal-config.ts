@@ -89,12 +89,25 @@ export interface ScriptOutput {
   script: string; // Function name or inline script
 }
 
+export interface LookupOutput {
+  type: 'lookup';
+  /** Which argument to match against (0-based index) */
+  argIndex: number;
+  /** Match strategy: 'contains' checks substring, 'equals' checks exact match */
+  matchType: 'contains' | 'equals' | 'regex';
+  /** Map of match values to their output lines */
+  table: Record<string, string[]>;
+  /** Fallback output if no match found */
+  default?: CommandOutput;
+}
+
 export type CommandOutput =
   | StaticOutput
   | DynamicOutput
   | ConditionalOutput
   | TemplateOutput
-  | ScriptOutput;
+  | ScriptOutput
+  | LookupOutput;
 
 // ============================================
 // CONDITION TYPES
@@ -142,7 +155,8 @@ export interface CommandSideEffects {
 // ============================================
 
 export interface CommandDefinition {
-  name: string;
+  /** Command name (optional — derived from the key in the commands record if omitted) */
+  name?: string;
   aliases?: string[];
   description: string;
   usage?: string;
@@ -169,9 +183,22 @@ export interface FileNode {
   metadata?: Record<string, any>;
 }
 
+export interface FileDefaults {
+  permissions?: string;
+  owner?: string;
+}
+
+/** Nested tree: string = file content, object = directory (including {} for empty dirs) */
+export interface FilesystemTree {
+  [name: string]: string | FilesystemTree;
+}
+
 export interface FilesystemStructure {
+  /** Nested tree format (input only — flattened by config loader at load time) */
+  tree?: FilesystemTree;
   directories: Record<string, string[]>; // path -> array of entries
-  files: Record<string, FileNode>; // full path -> file data
+  files: Record<string, FileNode | string>; // full path -> file data or content string (shorthand)
+  fileDefaults?: FileDefaults; // defaults for owner/permissions
 }
 
 // ============================================
@@ -222,6 +249,8 @@ export interface TabConfig {
   bootSequence?: BootSequence;
   initialPath?: string;
   environment?: Record<string, string>;
+  /** Default constraints applied to all commands in this tab (command-level overrides take precedence) */
+  defaultConstraints?: CommandConstraints;
 }
 
 // ============================================

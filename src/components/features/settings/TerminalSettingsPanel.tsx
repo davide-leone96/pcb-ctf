@@ -512,15 +512,13 @@ const DirectoryItem = ({
     return children.sort();
   }, [entry.id, entry.path, allEntries]);
 
-  const totalEntries = computedChildren.length + (entry.extraEntries?.length || 0);
-
   return (
     <div className="rounded border border-gray-700 bg-gray-800/50">
       <div className="flex items-center gap-1.5 px-2 py-1.5 cursor-pointer group" onClick={() => setExpanded(!expanded)}>
         {expanded ? <ChevronDown className="h-3 w-3 text-gray-400" /> : <ChevronRight className="h-3 w-3 text-gray-400" />}
         <Folder className="h-3 w-3 text-blue-400 flex-shrink-0" />
         <span className="text-xs font-mono text-blue-300 truncate flex-1">{entry.path}</span>
-        <span className="text-[10px] text-gray-500">{totalEntries} voci</span>
+        <span className="text-[10px] text-gray-500">{computedChildren.length} voci</span>
         <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-400 p-0.5">
           <Trash2 className="h-3 w-3" />
         </button>
@@ -530,7 +528,7 @@ const DirectoryItem = ({
           <FieldInput label="Path" value={entry.path} onChange={(v) => onUpdate({ path: v })} mono />
           {computedChildren.length > 0 && (
             <div>
-              <label className="text-[10px] text-gray-500 block mb-0.5">Voci reali (auto-calcolate da dir/file)</label>
+              <label className="text-[10px] text-gray-500 block mb-0.5">Contenuto (auto-calcolato da dir/file)</label>
               <div className="flex flex-wrap gap-1">
                 {computedChildren.map(name => (
                   <span key={name} className="px-1.5 py-0.5 rounded bg-green-700/30 text-[10px] font-mono text-green-400">
@@ -540,18 +538,6 @@ const DirectoryItem = ({
               </div>
             </div>
           )}
-          <div>
-            <label className="text-[10px] text-gray-500 block mb-0.5">
-              Voci extra (visibili in ls, senza contenuto file)
-            </label>
-            <textarea
-              value={(entry.extraEntries || []).join('\n')}
-              onChange={(e) => onUpdate({ extraEntries: e.target.value.split('\n').filter(Boolean) })}
-              rows={3}
-              className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1 text-[10px] text-gray-300 font-mono placeholder-gray-500 focus:outline-none focus:border-green-500 resize-none"
-              placeholder="busybox&#10;sh&#10;cat"
-            />
-          </div>
         </div>
       )}
     </div>

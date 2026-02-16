@@ -32,6 +32,43 @@ export const terminalConfig: TerminalConfig = {
     author: 'ARTIC CTF Platform',
   },
 
+  // ========================================
+  // GLOBAL COMMANDS (available in all tabs)
+  // ========================================
+  globalCommands: {
+    ls: {
+      description: 'List directory contents',
+      handler: 'builtin',
+      builtinType: 'ls',
+    },
+    cd: {
+      description: 'Change directory',
+      handler: 'builtin',
+      builtinType: 'cd',
+      constraints: {
+        arguments: { max: 1 },
+      },
+    },
+    pwd: {
+      description: 'Print working directory',
+      handler: 'builtin',
+      builtinType: 'pwd',
+    },
+    cat: {
+      description: 'Concatenate and display file contents',
+      handler: 'builtin',
+      builtinType: 'cat',
+      constraints: {
+        arguments: { min: 1 },
+      },
+    },
+    clear: {
+      description: 'Clear terminal screen',
+      handler: 'builtin',
+      builtinType: 'clear',
+    },
+  },
+
   flags: {
     parts: FLAG_PARTS,
     completeFlag: COMPLETE_FLAG,
@@ -47,19 +84,14 @@ export const terminalConfig: TerminalConfig = {
       id: 'uart',
       name: 'UART Console',
       initialPath: '/',
+      defaultConstraints: {
+        state: { bootStage: 'shell' },
+      },
 
       filesystem: {
         directories: FS_DIRS,
-        files: Object.entries(FILE_CONTENTS).reduce((acc, [path, content]) => {
-          acc[path] = {
-            name: path.split('/').pop() || '',
-            type: 'file',
-            content,
-            permissions: '-rw-r--r--',
-            owner: 'root',
-          };
-          return acc;
-        }, {} as Record<string, any>),
+        files: FILE_CONTENTS,
+        fileDefaults: { permissions: '-rw-r--r--', owner: 'root' },
       },
 
       bootSequence: {
@@ -131,11 +163,9 @@ export const terminalConfig: TerminalConfig = {
         // U-BOOT COMMANDS
         // ========================================
         '?': {
-          name: '?',
           aliases: ['help'],
           description: 'Print online help',
-          handler: 'builtin',
-          builtinType: 'help',
+          handler: 'custom',
           constraints: {
             state: {
               bootStage: 'uboot_shell',
@@ -148,10 +178,8 @@ export const terminalConfig: TerminalConfig = {
         },
 
         printenv: {
-          name: 'printenv',
           description: 'Print environment variables',
-          handler: 'builtin',
-          builtinType: 'printenv',
+          handler: 'custom',
           constraints: {
             state: {
               bootStage: 'uboot_shell',
@@ -167,10 +195,8 @@ export const terminalConfig: TerminalConfig = {
         },
 
         version: {
-          name: 'version',
           description: 'Print monitor version',
-          handler: 'builtin',
-          builtinType: 'version',
+          handler: 'custom',
           constraints: {
             state: {
               bootStage: 'uboot_shell',
@@ -183,10 +209,8 @@ export const terminalConfig: TerminalConfig = {
         },
 
         md: {
-          name: 'md',
           description: 'Memory display',
-          handler: 'builtin',
-          builtinType: 'md',
+          handler: 'custom',
           constraints: {
             state: {
               bootStage: 'uboot_shell',
@@ -199,7 +223,6 @@ export const terminalConfig: TerminalConfig = {
         },
 
         boot: {
-          name: 'boot',
           description: 'Boot default, i.e., run bootcmd',
           handler: 'custom',
           constraints: {
@@ -220,88 +243,21 @@ export const terminalConfig: TerminalConfig = {
 
         // ========================================
         // SHELL COMMANDS - File Operations
+        // (ls, cd, pwd, cat, clear are in globalCommands)
         // ========================================
-        ls: {
-          name: 'ls',
-          description: 'List directory contents',
-          handler: 'builtin',
-          builtinType: 'ls',
-          constraints: {
-            state: {
-              bootStage: 'shell',
-            },
-          },
-        },
-
-        cd: {
-          name: 'cd',
-          description: 'Change directory',
-          handler: 'builtin',
-          builtinType: 'cd',
-          constraints: {
-            state: {
-              bootStage: 'shell',
-            },
-            arguments: {
-              max: 1,
-            },
-          },
-        },
-
-        pwd: {
-          name: 'pwd',
-          description: 'Print working directory',
-          handler: 'builtin',
-          builtinType: 'pwd',
-          constraints: {
-            state: {
-              bootStage: 'shell',
-            },
-          },
-        },
-
-        cat: {
-          name: 'cat',
-          description: 'Concatenate and display file contents',
-          handler: 'builtin',
-          builtinType: 'cat',
-          constraints: {
-            state: {
-              bootStage: 'shell',
-            },
-            arguments: {
-              min: 1,
-            },
-          },
-        },
-
         file: {
-          name: 'file',
           description: 'Determine file type',
           handler: 'custom',
           constraints: {
-            state: {
-              bootStage: 'shell',
-            },
-            arguments: {
-              min: 1,
-            },
+            arguments: { min: 1 },
           },
           output: {
-            type: 'conditional',
-            conditions: [
-              {
-                if: {
-                  type: 'argument',
-                  index: 0,
-                  equals: '/usr/bin/backdoorTest',
-                },
-                then: {
-                  type: 'static',
-                  lines: [FILE_TYPES['/usr/bin/backdoorTest'] || 'file: not found'],
-                },
-              },
-            ],
+            type: 'lookup',
+            argIndex: 0,
+            matchType: 'equals',
+            table: {
+              '/usr/bin/backdoorTest': [FILE_TYPES['/usr/bin/backdoorTest'] || 'file: not found'],
+            },
             default: {
               type: 'dynamic',
               generator: 'getFileType',
@@ -322,54 +278,20 @@ export const terminalConfig: TerminalConfig = {
         },
 
         strings: {
-          name: 'strings',
           description: 'Print printable characters in files',
           handler: 'custom',
           constraints: {
-            state: {
-              bootStage: 'shell',
-            },
-            arguments: {
-              min: 1,
-            },
+            arguments: { min: 1 },
           },
           output: {
-            type: 'conditional',
-            conditions: [
-              {
-                if: {
-                  type: 'argument',
-                  index: 0,
-                  contains: 'mtdblock3',
-                },
-                then: {
-                  type: 'static',
-                  lines: (STRINGS_OUTPUT['/dev/mtdblock3'] || '').split('\n'),
-                },
-              },
-              {
-                if: {
-                  type: 'argument',
-                  index: 0,
-                  contains: 'httpd',
-                },
-                then: {
-                  type: 'static',
-                  lines: (STRINGS_OUTPUT['/usr/sbin/httpd'] || '').split('\n'),
-                },
-              },
-              {
-                if: {
-                  type: 'argument',
-                  index: 0,
-                  contains: 'backdoorTest',
-                },
-                then: {
-                  type: 'static',
-                  lines: (STRINGS_OUTPUT['/usr/bin/backdoorTest'] || '').split('\n'),
-                },
-              },
-            ],
+            type: 'lookup',
+            argIndex: 0,
+            matchType: 'contains',
+            table: {
+              'mtdblock3': (STRINGS_OUTPUT['/dev/mtdblock3'] || '').split('\n'),
+              'httpd': (STRINGS_OUTPUT['/usr/sbin/httpd'] || '').split('\n'),
+              'backdoorTest': (STRINGS_OUTPUT['/usr/bin/backdoorTest'] || '').split('\n'),
+            },
             default: {
               type: 'dynamic',
               generator: 'getStringsOutput',
@@ -409,15 +331,8 @@ export const terminalConfig: TerminalConfig = {
         // SHELL COMMANDS - System Info
         // ========================================
         mount: {
-          name: 'mount',
           description: 'Mount filesystems',
-          handler: 'builtin',
-          builtinType: 'mount',
-          constraints: {
-            state: {
-              bootStage: 'shell',
-            },
-          },
+          handler: 'custom',
           output: {
             type: 'static',
             lines: MOUNT_OUTPUT.split('\n'),
@@ -425,15 +340,8 @@ export const terminalConfig: TerminalConfig = {
         },
 
         ps: {
-          name: 'ps',
           description: 'Display process status',
-          handler: 'builtin',
-          builtinType: 'ps',
-          constraints: {
-            state: {
-              bootStage: 'shell',
-            },
-          },
+          handler: 'custom',
           output: {
             type: 'static',
             lines: PS_OUTPUT.split('\n'),
@@ -444,14 +352,10 @@ export const terminalConfig: TerminalConfig = {
         // SHELL COMMANDS - Search
         // ========================================
         grep: {
-          name: 'grep',
           description: 'Search for patterns in files',
           handler: 'builtin',
           builtinType: 'grep',
           constraints: {
-            state: {
-              bootStage: 'shell',
-            },
             arguments: {
               min: 1,
             },
@@ -459,22 +363,15 @@ export const terminalConfig: TerminalConfig = {
         },
 
         find: {
-          name: 'find',
           description: 'Search for files',
           handler: 'builtin',
           builtinType: 'find',
-          constraints: {
-            state: {
-              bootStage: 'shell',
-            },
-          },
         },
 
         // ========================================
         // LOGIN SEQUENCE
         // ========================================
         root: {
-          name: 'root',
           description: 'Login as root',
           handler: 'custom',
           constraints: {
@@ -495,7 +392,6 @@ export const terminalConfig: TerminalConfig = {
         },
 
         sohoadmin: {
-          name: 'sohoadmin',
           description: 'Enter password',
           handler: 'custom',
           constraints: {
@@ -540,62 +436,17 @@ export const terminalConfig: TerminalConfig = {
 
       filesystem: {
         directories: LOCAL_FS_DIRS,
-        files: Object.entries(LOCAL_FILE_CONTENTS).reduce((acc, [path, content]) => {
-          acc[path] = {
-            name: path.split('/').pop() || '',
-            type: 'file',
-            content,
-            permissions: '-rw-r--r--',
-            owner: 'kali',
-          };
-          return acc;
-        }, {} as Record<string, any>),
+        files: LOCAL_FILE_CONTENTS,
+        fileDefaults: { permissions: '-rw-r--r--', owner: 'kali' },
       },
 
       commands: {
-        ls: {
-          name: 'ls',
-          description: 'List directory contents',
-          handler: 'builtin',
-          builtinType: 'ls',
-        },
-
-        cd: {
-          name: 'cd',
-          description: 'Change directory',
-          handler: 'builtin',
-          builtinType: 'cd',
-          constraints: {
-            arguments: {
-              max: 1,
-            },
-          },
-        },
-
-        pwd: {
-          name: 'pwd',
-          description: 'Print working directory',
-          handler: 'builtin',
-          builtinType: 'pwd',
-        },
-
-        cat: {
-          name: 'cat',
-          description: 'Concatenate and display file contents',
-          handler: 'builtin',
-          builtinType: 'cat',
-          constraints: {
-            arguments: {
-              min: 1,
-            },
-          },
-        },
+        // ls, cd, pwd, cat, clear are in globalCommands
 
         // ========================================
         // CRACKING TOOLS
         // ========================================
         hashcat: {
-          name: 'hashcat',
           description: 'Advanced password recovery utility',
           handler: 'custom',
           usage: 'hashcat [options] <hash|hashfile> [dictionary|mask]',
@@ -660,7 +511,6 @@ export const terminalConfig: TerminalConfig = {
         },
 
         john: {
-          name: 'john',
           description: 'John the Ripper password cracker',
           handler: 'custom',
           usage: 'john [options] <hashfile>',
@@ -710,12 +560,6 @@ export const terminalConfig: TerminalConfig = {
           },
         },
 
-        clear: {
-          name: 'clear',
-          description: 'Clear terminal screen',
-          handler: 'builtin',
-          builtinType: 'clear',
-        },
       },
 
       environment: {
