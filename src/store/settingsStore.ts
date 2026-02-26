@@ -151,6 +151,7 @@ interface SettingsActions {
   cancelPinEdit: () => void;
   savePin: (data: Omit<DraftPin, 'id' | 'coords'>) => void;
   updatePin: (id: string, data: Partial<Omit<DraftPin, 'id' | 'coords'>>) => void;
+  liveUpdatePin: (id: string, data: Partial<Omit<DraftPin, 'id' | 'coords'>>) => void;
   updatePinCoords: (id: string, coords: [number, number]) => void;
   deletePin: (id: string) => void;
   editPin: (id: string) => void;
@@ -909,6 +910,11 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       activePinId: null,
       pendingPinCoords: null,
     });
+  },
+
+  // Like updatePin but keeps the popup open — used for live-preview fields (e.g. size slider).
+  liveUpdatePin: (id, data) => {
+    set({ pins: get().pins.map(p => p.id === id ? { ...p, ...data } : p) });
   },
 
   updatePinCoords: (id: string, coords: [number, number]) => {

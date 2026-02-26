@@ -138,7 +138,7 @@ const PCBViewer = () => {
     if (!pcbImageRef.current || !exerciseData) return null;
 
     let closestPin: string | null = null;
-    let minDistance = SNAP_RADIUS;
+    let minDistance = Infinity;
     const pinsToCheck = filterType === 'uart-only'
       ? getAllPins(exerciseData).filter(pin => pin.isUart)
       : getAllPins(exerciseData); // 'all': cerca tra TUTTI i pin (measurement + UART)
@@ -150,8 +150,11 @@ const PCBViewer = () => {
       const [left, top, width, height] = pin.coords;
       const pinX = (left + width / 2) * imgRect.width / 100;
       const pinY = (top + height / 2) * imgRect.height / 100;
+      // Snap radius = max of the fixed minimum and half the pin's rendered diameter.
+      // This ensures larger pins are proportionally easier to interact with.
+      const pinRadiusPx = Math.max(SNAP_RADIUS, (width / 100) * imgRect.width / 2);
       const distance = Math.sqrt(Math.pow(mouseX - pinX, 2) + Math.pow(mouseY - pinY, 2));
-      if (distance < minDistance) {
+      if (distance < pinRadiusPx && distance < minDistance) {
         minDistance = distance;
         closestPin = pin.id;
       }

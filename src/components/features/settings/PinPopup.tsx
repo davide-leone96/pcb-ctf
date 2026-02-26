@@ -28,7 +28,7 @@ const UART_DEFAULTS: Record<string, { voltage: number; resistance: number; label
 };
 
 const PinPopup = ({ pin, containerDims }: PinPopupProps) => {
-  const { savePin, updatePin, cancelPinEdit } = useSettingsStore();
+  const { savePin, updatePin, liveUpdatePin, cancelPinEdit } = useSettingsStore();
 
   const isNew = pin.label === '';
 
@@ -223,7 +223,11 @@ const PinPopup = ({ pin, containerDims }: PinPopupProps) => {
           max="5"
           step="0.1"
           value={size}
-          onChange={(e) => setSize(parseFloat(e.target.value))}
+          onChange={(e) => {
+            const v = parseFloat(e.target.value);
+            setSize(v);
+            liveUpdatePin(pin.id, { size: v });
+          }}
           className="w-full accent-blue-500"
         />
       </div>

@@ -19,6 +19,19 @@ const PIN_TYPE_COLORS: Record<string, string> = {
   vcc: '#EF4444',    // red
 };
 
+type ResizeHandle = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w';
+
+const RESIZE_HANDLES: Array<{ handle: ResizeHandle; cursor: string; style: React.CSSProperties }> = [
+  { handle: 'nw', cursor: 'cursor-nw-resize', style: { top: -4, left: -4 } },
+  { handle: 'n',  cursor: 'cursor-n-resize',  style: { top: -4, left: '50%', transform: 'translateX(-50%)' } },
+  { handle: 'ne', cursor: 'cursor-ne-resize', style: { top: -4, right: -4 } },
+  { handle: 'e',  cursor: 'cursor-e-resize',  style: { top: '50%', right: -4, transform: 'translateY(-50%)' } },
+  { handle: 'se', cursor: 'cursor-se-resize', style: { bottom: -4, right: -4 } },
+  { handle: 's',  cursor: 'cursor-s-resize',  style: { bottom: -4, left: '50%', transform: 'translateX(-50%)' } },
+  { handle: 'sw', cursor: 'cursor-sw-resize', style: { bottom: -4, left: -4 } },
+  { handle: 'w',  cursor: 'cursor-w-resize',  style: { top: '50%', left: -4, transform: 'translateY(-50%)' } },
+];
+
 const SettingsCanvas = () => {
   const {
     activeTool, components, activeComponentId,
@@ -39,7 +52,14 @@ const SettingsCanvas = () => {
   const [isDragOverImage, setIsDragOverImage] = useState(false);
 
   // Dragging state for components/pins
-  const [draggingItem, setDraggingItem] = useState<{ type: 'component' | 'pin'; id: string; startX: number; startY: number; initialCoords: number[] } | null>(null);
+  const [draggingItem, setDraggingItem] = useState<{
+    type: 'component' | 'pin' | 'resize';
+    id: string;
+    startX: number;
+    startY: number;
+    initialCoords: number[];
+    handle?: ResizeHandle;
+  } | null>(null);
 
   // All component-type objectives across all steps (with step reference)
   const allComponentObjectives = useMemo(() =>
@@ -49,6 +69,22 @@ const SettingsCanvas = () => {
         .map(o => ({ ...o, stepId: step.id }))
     ),
     [steps],
+  );
+
+  // All pin-type objectives: one entry per (objective, pinCondition) pair so each pin
+  // is clickable and routes to the right objective/step.
+  const allPinObjectives = useMemo(() =>
+    steps.flatMap(step =>
+      step.objectives
+        .filter(o => o.type === 'pin' && (o.pinConditions?.length ?? 0) > 0)
+        .flatMap(o =>
+          (o.pinConditions ?? []).flatMap(cond => {
+            const pin = pins.find(p => p.id === cond.pinId);
+            return pin ? [{ objective: { ...o, stepId: step.id }, pin }] : [];
+          })
+        )
+    ),
+    [steps, pins],
   );
 
   // Active objective for popup
@@ -143,6 +179,28 @@ const SettingsCanvas = () => {
         const newLeft = Math.max(0, Math.min(100 - width, left + dx));
         const newTop = Math.max(0, Math.min(100 - height, top + dy));
         updateComponentCoords(draggingItem.id, [newLeft, newTop, width, height]);
+      } else if (draggingItem.type === 'resize') {
+        const [l, t, w, h] = draggingItem.initialCoords as [number, number, number, number];
+        const handle = draggingItem.handle!;
+        const MIN = 2;
+        let newL = l, newT = t, newW = w, newH = h;
+
+        if (handle.includes('w')) { newL = l + dx; newW = w - dx; }
+        if (handle.includes('e')) { newW = w + dx; }
+        if (handle.includes('n')) { newT = t + dy; newH = h - dy; }
+        if (handle.includes('s')) { newH = h + dy; }
+
+        // Enforce minimum size
+        if (newW < MIN) { if (handle.includes('w')) newL = l + w - MIN; newW = MIN; }
+        if (newH < MIN) { if (handle.includes('n')) newT = t + h - MIN; newH = MIN; }
+
+        // Clamp to canvas bounds
+        if (newL < 0) { newW += newL; newL = 0; }
+        if (newT < 0) { newH += newT; newT = 0; }
+        if (newL + newW > 100) newW = 100 - newL;
+        if (newT + newH > 100) newH = 100 - newT;
+
+        updateComponentCoords(draggingItem.id, [newL, newT, newW, newH]);
       } else if (draggingItem.type === 'pin') {
         const [px, py] = draggingItem.initialCoords as [number, number];
         const newX = Math.max(0, Math.min(100, px + dx));
@@ -405,19 +463,20 @@ const SettingsCanvas = () => {
             const [left, top, width, height] = comp.coords;
             const isActive = comp.id === activeComponentId;
             const isDragging = draggingItem?.type === 'component' && draggingItem?.id === comp.id;
+            const isResizing = draggingItem?.type === 'resize' && draggingItem?.id === comp.id;
             return (
               <div
                 key={comp.id}
                 className={cn(
-                  'absolute border-2 rounded-sm transition-colors pointer-events-auto',
-                  isDragging ? 'cursor-grabbing' : 'cursor-move',
+                  'absolute border-2 rounded-sm transition-colors pointer-events-auto group',
+                  isDragging ? 'cursor-grabbing' : isResizing ? 'cursor-crosshair' : 'cursor-move',
                   isActive
                     ? 'border-green-400 bg-green-500/30 ring-1 ring-green-400/50'
                     : 'border-green-400/60 bg-green-500/15 hover:bg-green-500/25',
                 )}
                 style={{ left: `${left}%`, top: `${top}%`, width: `${width}%`, height: `${height}%` }}
                 onClick={(e) => {
-                  if (!isDragging) {
+                  if (!isDragging && !isResizing) {
                     e.stopPropagation();
                     editComponent(comp.id);
                   }
@@ -436,13 +495,35 @@ const SettingsCanvas = () => {
                     initialCoords: [left, top, width, height],
                   });
                 }}
-                title="Trascina per spostare"
+                title="Trascina per spostare · handle per ridimensionare"
               >
                 {comp.name && (
                   <span className="absolute -top-5 left-0 text-xs text-green-300 whitespace-nowrap bg-black/70 px-1 rounded select-none pointer-events-none">
                     {comp.name}
                   </span>
                 )}
+                {/* Resize handles — visible on hover or while active/resizing */}
+                {RESIZE_HANDLES.map(({ handle, cursor, style }) => (
+                  <div
+                    key={handle}
+                    className={cn(
+                      'absolute w-2 h-2 rounded-sm border border-green-300 bg-green-400 z-10',
+                      'opacity-0 group-hover:opacity-100 transition-opacity',
+                      (isActive || isResizing) && 'opacity-100',
+                      cursor,
+                    )}
+                    style={{ position: 'absolute', ...style }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      if (!imageRef.current) return;
+                      const rect = imageRef.current.getBoundingClientRect();
+                      const x = ((e.clientX - rect.left) / rect.width) * 100;
+                      const y = ((e.clientY - rect.top) / rect.height) * 100;
+                      setDraggingItem({ type: 'resize', id: comp.id, startX: x, startY: y, initialCoords: [left, top, width, height], handle });
+                    }}
+                  />
+                ))}
               </div>
             );
           })}
@@ -483,6 +564,51 @@ const SettingsCanvas = () => {
                     )}
                   >
                     {obj.name}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+          </div>
+        )}
+
+        {/* Overlay: pin-type objectives from ALL steps (circle/square) - only in Challenge tab */}
+        {!isInitTab && !isTerminalTab && (
+          <div className="absolute inset-0 pointer-events-none">
+          {allPinObjectives.map(({ objective: obj, pin }, idx) => {
+            const isActiveStep = obj.stepId === activeStepId;
+            const isActiveObj = obj.id === activeObjectiveId;
+            const sizePx = (pin.size / 100) * containerDims.width;
+            const leftPx = (pin.coords[0] / 100) * containerDims.width - sizePx / 2;
+            const topPx = (pin.coords[1] / 100) * containerDims.height - sizePx / 2;
+            return (
+              <div
+                key={`${obj.id}-${pin.id}-${idx}`}
+                className={cn(
+                  'absolute border-2 transition-colors pointer-events-auto cursor-pointer',
+                  pin.shape === 'circle' ? 'rounded-full' : 'rounded-sm',
+                  isActiveObj
+                    ? 'border-blue-400 bg-blue-500/30 ring-2 ring-blue-400/50'
+                    : isActiveStep
+                      ? 'border-blue-400/60 bg-blue-500/15 hover:bg-blue-500/25'
+                      : 'border-gray-500/40 bg-gray-500/10 hover:bg-gray-500/20',
+                )}
+                style={{ left: leftPx, top: topPx, width: sizePx, height: sizePx }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!isActiveStep) selectStep(obj.stepId);
+                  editObjective(obj.id);
+                }}
+                onMouseDown={(e) => e.stopPropagation()}
+              >
+                {pin.label && (
+                  <span
+                    className={cn(
+                      'absolute -top-5 left-1/2 -translate-x-1/2 text-xs whitespace-nowrap px-1 rounded select-none pointer-events-none',
+                      isActiveStep ? 'text-blue-300 bg-black/70' : 'text-gray-400 bg-black/50',
+                    )}
+                  >
+                    {pin.label}
                   </span>
                 )}
               </div>

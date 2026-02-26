@@ -4,7 +4,7 @@
     "name": "t",
     "description": "",
     "createdAt": "2026-02-26T22:16:28.663Z",
-    "updatedAt": "2026-02-26T22:16:28.663Z"
+    "updatedAt": "2026-02-26T22:56:05.801Z"
   },
   "exerciseConfig": {
     "pcbImage": "/images/preset-t-mm40w7avqt9a.jpg",
@@ -13,7 +13,7 @@
         "id": "step-mm40vunlva7cg",
         "title": "Step 1",
         "description": "",
-        "expectedFlag": "flag{TEST}",
+        "expectedFlag": "flag{TESTPIN-M-1,_PIN-M-2,_PIN-M-3}",
         "availableTools": [
           "pointer",
           "magnifier",
@@ -31,11 +31,40 @@
             "hint": "",
             "flagPart": "TEST",
             "coords": [
-              43.028844788935075,
-              54.227024382651045,
-              8.762019102213657,
-              12.349403690149366
+              64.87980600680122,
+              55.11975236025221,
+              8.76201910221365,
+              22.169411443762108
             ]
+          },
+          {
+            "id": "obj-mm42abqkfmxl7",
+            "name": "pin-m-1, pin-m-2, pin-m-3",
+            "type": "pin",
+            "instruction": "",
+            "hint": "",
+            "flagPart": "PIN-M-1,_PIN-M-2,_PIN-M-3",
+            "coords": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "pinConditions": [
+              {
+                "pinId": "pin-m-1",
+                "terminal": ""
+              },
+              {
+                "pinId": "pin-m-2",
+                "terminal": ""
+              },
+              {
+                "pinId": "pin-m-3",
+                "terminal": ""
+              }
+            ],
+            "pinLogic": "AND"
           }
         ]
       }
@@ -48,10 +77,10 @@
         "hint": "",
         "flagPart": "TEST",
         "coords": [
-          43.028844788935075,
-          54.227024382651045,
-          8.762019102213657,
-          12.349403690149366
+          64.87980600680122,
+          55.11975236025221,
+          8.76201910221365,
+          22.169411443762108
         ]
       },
       {
@@ -61,28 +90,50 @@
         "hint": "",
         "flagPart": "TEST",
         "coords": [
-          43.028844788935075,
-          54.227024382651045,
-          8.762019102213657,
-          12.349403690149366
+          64.87980600680122,
+          55.11975236025221,
+          8.76201910221365,
+          22.169411443762108
         ]
       }
     ],
     "pins": [
       {
-        "id": "pin-mm40vf2xaga1w",
+        "id": "pin-m-1",
         "valueV": 0,
         "valueOhm": 0,
         "coords": [
-          19.420672043717133,
-          48.31702050584468,
+          19.870672043717132,
+          48.767020505844684,
+          1.1,
+          1.1
+        ]
+      },
+      {
+        "id": "pin-m-2",
+        "valueV": 0,
+        "valueOhm": 0,
+        "coords": [
+          26.84278731723511,
+          61.789388416313244,
+          2.3,
+          2.3
+        ]
+      },
+      {
+        "id": "pin-m-3",
+        "valueV": 0,
+        "valueOhm": 0,
+        "coords": [
+          25.802883488539425,
+          49.589984726163884,
           2,
           2
         ]
       }
     ],
     "uartPins": [],
-    "initialFlag": "flag{????}"
+    "initialFlag": "flag{?????????????????????????????}"
   },
   "terminalConfig": {
     "metadata": {
