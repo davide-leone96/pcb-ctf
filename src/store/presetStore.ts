@@ -158,6 +158,11 @@ export const usePresetStore = create<PresetState>((set, get) => {
         const result = await res.json();
 
         if (result.success) {
+          // If the server copied the image to a preset-owned path, sync the store
+          // so subsequent operations (exportAsJson, uploadImage cleanup) use the right path.
+          if (result.pcbImage) {
+            useSettingsStore.getState().setPcbImagePath(result.pcbImage);
+          }
           await get().fetchPresets();
           localStorage.setItem(ACTIVE_PRESET_STORAGE_KEY, result.id);
           set({ activePresetId: result.id, isDirty: false });
@@ -202,6 +207,10 @@ export const usePresetStore = create<PresetState>((set, get) => {
         const result = await res.json();
 
         if (result.success) {
+          // If the server copied a new image to the preset-owned path, sync the store.
+          if (result.pcbImage) {
+            useSettingsStore.getState().setPcbImagePath(result.pcbImage);
+          }
           await get().fetchPresets();
           set({ isDirty: false });
           return { success: true };

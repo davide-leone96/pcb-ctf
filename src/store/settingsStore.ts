@@ -294,8 +294,12 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       if (result.success) {
         set({ pcbImagePath: result.path });
 
-        // Elimina la vecchia immagine se presente e non è quella di default
-        if (oldImagePath && oldImagePath !== '/images/pcb_v2.jpg') {
+        // Elimina la vecchia immagine solo se è un'immagine di lavoro temporanea.
+        // Le immagini preset-owned (preset-*.ext) sono gestite dall'API dei preset
+        // e non devono essere eliminate qui per non rompere altri preset.
+        const isDefault = oldImagePath === '/images/pcb_v2.jpg';
+        const isPresetOwned = /\/images\/preset-[^/]+\.[^/]+$/.test(oldImagePath ?? '');
+        if (oldImagePath && !isDefault && !isPresetOwned) {
           try {
             await fetch('/api/images/delete', {
               method: 'POST',

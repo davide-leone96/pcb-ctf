@@ -3,7 +3,10 @@
 import { readFile, writeFile, unlink } from 'fs/promises';
 import { NextRequest, NextResponse } from 'next/server';
 import type { Preset } from '@/types/preset';
-import { readIndex, writeIndex, getPresetPath } from '../_helpers';
+import {
+  readIndex, writeIndex, getPresetPath,
+  copyImageForPreset, deletePresetImage,
+} from '../_helpers';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -34,6 +37,26 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     preset.metadata.id = id;
     preset.metadata.updatedAt = new Date().toISOString();
 
+    // Read existing preset to know the current preset-owned image path.
+    let oldPresetImage: string | null = null;
+    try {
+      const existing: Preset = JSON.parse(await readFile(getPresetPath(id), 'utf-8'));
+      oldPresetImage = existing.exerciseConfig?.pcbImage ?? null;
+    } catch { /* preset might not exist yet */ }
+
+    // Copy the working image to a preset-owned file if it changed.
+    const srcImage = preset.exerciseConfig?.pcbImage;
+    if (srcImage) {
+      const newImagePath = await copyImageForPreset(srcImage, id);
+      if (newImagePath) {
+        // Delete the OLD preset image only if it differs (e.g. extension changed).
+        if (oldPresetImage && oldPresetImage !== newImagePath) {
+          await deletePresetImage(oldPresetImage);
+        }
+        preset.exerciseConfig.pcbImage = newImagePath;
+      }
+    }
+
     // Overwrite preset file
     const filePath = getPresetPath(id);
     await writeFile(filePath, JSON.stringify(preset, null, 2), 'utf-8');
@@ -52,7 +75,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
     await writeIndex(items);
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+      success: true,
+      pcbImage: preset.exerciseConfig?.pcbImage ?? null,
+    });
   } catch (error: any) {
     console.error('Error updating preset:', error);
     return NextResponse.json(
@@ -62,13 +88,19 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   }
 }
 
-/** DELETE /api/presets/[id] — Delete a preset */
+/** DELETE /api/presets/[id] — Delete a preset and its dedicated image */
 export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
+    const filePath = getPresetPath(id);
+
+    // Read the preset before deleting it so we can clean up its image.
+    try {
+      const existing: Preset = JSON.parse(await readFile(filePath, 'utf-8'));
+      await deletePresetImage(existing.exerciseConfig?.pcbImage ?? '');
+    } catch { /* ignore if file is already gone */ }
 
     // Delete preset file
-    const filePath = getPresetPath(id);
     try {
       await unlink(filePath);
     } catch (e: any) {

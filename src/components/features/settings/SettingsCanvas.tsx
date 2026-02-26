@@ -64,14 +64,17 @@ const SettingsCanvas = () => {
   const activeComponent = activeComponentId ? components.find(c => c.id === activeComponentId) : null;
   const activePin = activePinId ? pins.find(p => p.id === activePinId) : null;
 
-  // Use getBoundingClientRect for accurate post-transform dimensions
+  // Use offsetWidth/offsetHeight (pre-transform layout dimensions) so that pin overlays
+  // and popups, which are positioned in the container's LOCAL coordinate space, convert
+  // percentage coords to pixels correctly regardless of canvasZoom/Rotation.
+  // getBoundingClientRect() would return post-transform (zoomed/rotated) dimensions and
+  // cause double-scaling: once via CSS transform and once in the pixel calculation.
   useLayoutEffect(() => {
     const updateDimensions = () => {
       if (imageRef.current) {
-        const rect = imageRef.current.getBoundingClientRect();
         setContainerDims({
-          width: rect.width,
-          height: rect.height,
+          width: imageRef.current.offsetWidth,
+          height: imageRef.current.offsetHeight,
         });
       }
     };
