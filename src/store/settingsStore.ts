@@ -801,6 +801,8 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       dragState: { startX: x, startY: y, currentX: x, currentY: y },
       activeComponentId: null,
       activeObjectiveId: null,
+      activePinId: null,
+      pendingPinCoords: null,
     });
   },
 

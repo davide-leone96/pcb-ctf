@@ -7,7 +7,7 @@ import { useTerminalSettingsStore } from '@/store/terminalSettingsStore';
 import { ALL_TOOLS, type Tool } from '@/data/exercise';
 import { cn } from '@/lib/utils';
 import {
-  BoxSelect, MapPin, Pencil, Trash2, Download, Copy, Check, Save, FolderOpen,
+  BoxSelect, MapPin, Pencil, Trash2, Check, Save,
   Plus, ChevronDown, ChevronRight, ArrowUp, ArrowDown,
   Hand, Search, Wrench, Cable, TerminalSquare, RotateCcw, type LucideIcon,
 } from 'lucide-react';
@@ -65,32 +65,10 @@ const SettingsSidebar = () => {
     addStep, deleteStep, reorderStep, updateStep, toggleStepTool,
     addObjective, addPinObjective, deleteObjective, reorderObjective, editObjective,
     pins, editPin, deletePin,
-    exportAsJson, exportAsTypeScript,
-    saveToFile, loadFromFile, resetAllConfig, resetInitComponents,
+    saveToFile, resetAllConfig, resetInitComponents,
   } = useSettingsStore();
 
-  const [copied, setCopied] = useState(false);
   const [applied, setApplied] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [loaded, setLoaded] = useState(false);
-
-  const handleDownloadJson = () => {
-    const json = exportAsJson();
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'exercise-config.json';
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const handleCopyTypeScript = async () => {
-    const ts = exportAsTypeScript();
-    await navigator.clipboard.writeText(ts);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
   const handleApply = async () => {
     // Write exercise config to file (needed by the simulator, which reads via /api/config/load)
@@ -102,26 +80,6 @@ const SettingsSidebar = () => {
       setTimeout(() => setApplied(false), 2000);
     } else {
       alert(`Errore salvataggio configurazione: ${result.error}`);
-    }
-  };
-
-  const handleSaveToFile = async () => {
-    const result = await saveToFile();
-    if (result.success) {
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    } else {
-      alert(`Errore: ${result.error}`);
-    }
-  };
-
-  const handleLoadFromFile = async () => {
-    const result = await loadFromFile();
-    if (result.success) {
-      setLoaded(true);
-      setTimeout(() => setLoaded(false), 2000);
-    } else {
-      alert(`Errore: ${result.error}`);
     }
   };
 
@@ -244,41 +202,41 @@ const SettingsSidebar = () => {
               </AlertDialog>
             )}
 
-            {/* Init: Components section */}
-            <div>
-              <h3 className="text-xs text-gray-400 uppercase tracking-wider mb-2">
-                Componenti ({components.length})
-              </h3>
-              {activeTool === 'component' && (
+            {/* Init: Components section — visible only on Componente sub-tool */}
+            {activeTool === 'component' && (
+              <div>
+                <h3 className="text-xs text-gray-400 uppercase tracking-wider mb-2">
+                  Componenti ({components.length})
+                </h3>
                 <p className="text-xs text-gray-500 mb-2">Trascina sull&apos;immagine per disegnare un componente.</p>
-              )}
-              {components.length === 0 && (
-                <p className="text-xs text-gray-500 italic">Nessun componente.</p>
-              )}
-              <div className="space-y-1">
-                {components.map(comp => (
-                  <ComponentItem key={comp.id} component={comp} onEdit={editComponent} onDelete={deleteComponent} />
-                ))}
+                {components.length === 0 && (
+                  <p className="text-xs text-gray-500 italic">Nessun componente.</p>
+                )}
+                <div className="space-y-1">
+                  {components.map(comp => (
+                    <ComponentItem key={comp.id} component={comp} onEdit={editComponent} onDelete={deleteComponent} />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Init: Pins section */}
-            <div className="pt-2 border-t border-gray-700">
-              <h3 className="text-xs text-gray-400 uppercase tracking-wider mb-2">
-                Pin ({pins.length})
-              </h3>
-              {activeTool === 'pin' && (
+            {/* Init: Pins section — visible only on Pin sub-tool */}
+            {activeTool === 'pin' && (
+              <div>
+                <h3 className="text-xs text-gray-400 uppercase tracking-wider mb-2">
+                  Pin ({pins.length})
+                </h3>
                 <p className="text-xs text-gray-500 mb-2">Clicca sull&apos;immagine per posizionare un pin.</p>
-              )}
-              {pins.length === 0 && (
-                <p className="text-xs text-gray-500 italic">Nessun pin posizionato.</p>
-              )}
-              <div className="space-y-1">
-                {pins.map(pin => (
-                  <PinItem key={pin.id} pin={pin} onEdit={editPin} onDelete={deletePin} />
-                ))}
+                {pins.length === 0 && (
+                  <p className="text-xs text-gray-500 italic">Nessun pin posizionato.</p>
+                )}
+                <div className="space-y-1">
+                  {pins.map(pin => (
+                    <PinItem key={pin.id} pin={pin} onEdit={editPin} onDelete={deletePin} />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </>
         ) : (
           <>
@@ -344,27 +302,6 @@ const SettingsSidebar = () => {
           {applied ? <Check className="h-4 w-4 mr-2" /> : <Save className="h-4 w-4 mr-2" />}
           {applied ? 'Configurazione applicata!' : 'Applica al simulatore'}
         </Button>
-
-        <div className="grid grid-cols-2 gap-2">
-          <Button onClick={handleSaveToFile} size="sm" className="w-full bg-blue-600 hover:bg-blue-700 text-white" disabled={!hasContent}>
-            {saved ? <Check className="h-4 w-4 mr-1" /> : <Save className="h-4 w-4 mr-1" />}
-            {saved ? 'Salvato!' : 'Salva'}
-          </Button>
-          <Button onClick={handleLoadFromFile} variant="outline" size="sm" className="w-full border-gray-600 text-gray-300 hover:text-white hover:bg-gray-700">
-            {loaded ? <Check className="h-4 w-4 mr-1" /> : <FolderOpen className="h-4 w-4 mr-1" />}
-            {loaded ? 'Caricato!' : 'Carica'}
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2">
-          <Button onClick={handleDownloadJson} variant="outline" size="sm" className="w-full border-gray-600 text-gray-300 hover:text-white hover:bg-gray-700" disabled={!hasContent}>
-            <Download className="h-4 w-4 mr-1" /> JSON
-          </Button>
-          <Button onClick={handleCopyTypeScript} variant="outline" size="sm" className="w-full border-gray-600 text-gray-300 hover:text-white hover:bg-gray-700" disabled={!hasContent}>
-            {copied ? <Check className="h-4 w-4 mr-1" /> : <Copy className="h-4 w-4 mr-1" />}
-            {copied ? 'Copiato!' : 'TS'}
-          </Button>
-        </div>
 
         <AlertDialog>
           <AlertDialogTrigger asChild>

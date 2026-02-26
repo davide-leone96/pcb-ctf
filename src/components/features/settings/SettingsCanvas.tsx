@@ -38,7 +38,7 @@ const SettingsCanvas = () => {
     steps, pins, dragState, activeStepId, activeObjectiveId, activePinId, pendingPinCoords,
     pcbImagePath,
     startDrag, updateDrag, endDrag,
-    placePin, movePinCoords,
+    placePin, movePinCoords, cancelPinEdit, cancelObjectiveEdit, cancelComponentEdit,
     editComponent, editObjective, editPin, selectStep,
     canvasZoom, canvasRotation, canvasPanX, canvasPanY, canvasPanMode,
     setPan, setCanvasZoom, uploadImage,
@@ -50,6 +50,8 @@ const SettingsCanvas = () => {
   const imageRef = useRef<HTMLImageElement>(null);
   const [containerDims, setContainerDims] = useState({ width: 0, height: 0 });
   const [isDragOverImage, setIsDragOverImage] = useState(false);
+  // Suppress the click event that follows a mouseDown which already closed a popup.
+  const suppressNextClick = useRef(false);
 
   // Dragging state for components/pins
   const [draggingItem, setDraggingItem] = useState<{
@@ -292,6 +294,17 @@ const SettingsCanvas = () => {
     if (!imageRef.current) return;
     if ((e.target as HTMLElement).closest('[data-popup]')) return;
 
+    // Close any open popup regardless of active tool.
+    // Suppress the following click so it doesn't place a new element.
+    let closedPopup = false;
+    if (activeComponentId) { cancelComponentEdit(); closedPopup = true; }
+    if (activeObjectiveId) { cancelObjectiveEdit(); closedPopup = true; }
+    if (activePinId) {
+      const pin = pins.find(p => p.id === activePinId);
+      if (pin && pin.label !== '') { cancelPinEdit(); closedPopup = true; }
+    }
+    if (closedPopup) suppressNextClick.current = true;
+
     const rect = imageRef.current.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
@@ -308,14 +321,22 @@ const SettingsCanvas = () => {
     if (!imageRef.current) return;
     if ((e.target as HTMLElement).closest('[data-popup]')) return;
 
+    // A popup was closed on mouseDown — don't process this click further.
+    if (suppressNextClick.current) {
+      suppressNextClick.current = false;
+      return;
+    }
+
     const rect = imageRef.current.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
 
     if (activeTool === 'pin') {
       if (activePinId && pendingPinCoords) {
+        // New pin being positioned: move it
         movePinCoords(x, y);
-      } else {
+      } else if (!activePinId) {
+        // No popup open: place new pin
         placePin(x, y);
       }
     }
