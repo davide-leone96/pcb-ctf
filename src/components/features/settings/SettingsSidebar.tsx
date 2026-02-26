@@ -12,6 +12,8 @@ import {
   Hand, Search, Wrench, Cable, TerminalSquare, RotateCcw, type LucideIcon,
 } from 'lucide-react';
 import TerminalSettingsPanel from './TerminalSettingsPanel';
+import PresetSelector from './PresetSelector';
+import { usePresetStore } from '@/store/presetStore';
 import {
   AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader,
   AlertDialogFooter, AlertDialogTitle, AlertDialogDescription,
@@ -63,7 +65,7 @@ const SettingsSidebar = () => {
     addStep, deleteStep, reorderStep, updateStep, toggleStepTool,
     addObjective, addPinObjective, deleteObjective, reorderObjective, editObjective,
     pins, editPin, deletePin,
-    exportAsJson, exportAsTypeScript, applyConfig,
+    exportAsJson, exportAsTypeScript,
     saveToFile, loadFromFile, resetAllConfig, resetInitComponents,
   } = useSettingsStore();
 
@@ -90,6 +92,19 @@ const SettingsSidebar = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleApply = async () => {
+    // Write exercise config to file (needed by the simulator, which reads via /api/config/load)
+    // and to localStorage. Also flush terminal config to localStorage.
+    terminalStore.applyTerminalConfig();
+    const result = await saveToFile();
+    if (result.success) {
+      setApplied(true);
+      setTimeout(() => setApplied(false), 2000);
+    } else {
+      alert(`Errore salvataggio configurazione: ${result.error}`);
+    }
+  };
+
   const handleSaveToFile = async () => {
     const result = await saveToFile();
     if (result.success) {
@@ -114,6 +129,7 @@ const SettingsSidebar = () => {
   const isTerminalTab = activeTool === 'terminal-config';
 
   const terminalStore = useTerminalSettingsStore();
+  const presetStore = usePresetStore();
 
   const hasContent = steps.length > 0 || components.length > 0 || pins.length > 0;
   const hasAnyContent = hasContent || terminalStore.initialized;
@@ -312,10 +328,15 @@ const SettingsSidebar = () => {
         )}
       </div>
 
+      {/* Preset selector */}
+      <div className="pt-2 pb-1 border-t border-gray-700">
+        <PresetSelector />
+      </div>
+
       {/* Action buttons */}
       <div className="pt-3 border-t border-gray-700 space-y-2">
         <Button
-          onClick={() => { applyConfig(); terminalStore.applyTerminalConfig(); setApplied(true); setTimeout(() => setApplied(false), 2000); }}
+          onClick={handleApply}
           size="sm"
           className="w-full bg-green-600 hover:bg-green-700 text-white"
           disabled={!hasAnyContent}
@@ -351,7 +372,7 @@ const SettingsSidebar = () => {
               variant="outline"
               size="sm"
               className="w-full border-red-600/50 text-red-400 hover:text-white hover:bg-red-600 hover:border-red-600"
-              disabled={!hasContent}
+              disabled={!hasAnyContent}
             >
               <RotateCcw className="h-4 w-4 mr-2" />
               Reset configurazione
@@ -361,7 +382,7 @@ const SettingsSidebar = () => {
             <AlertDialogHeader>
               <AlertDialogTitle>Ripulire tutte le configurazioni?</AlertDialogTitle>
               <AlertDialogDescription className="text-gray-400">
-                Questa azione cancellerà tutti i componenti, pin, step e obiettivi configurati.
+                Questa azione cancellerà tutti i componenti, pin, step, obiettivi e la configurazione del terminale (comandi, filesystem, boot, flag).
                 Anche l&apos;immagine PCB personalizzata verrà rimossa.
                 <br /><br />
                 <strong className="text-red-400">Questa azione non può essere annullata.</strong>
@@ -372,7 +393,7 @@ const SettingsSidebar = () => {
                 Annulla
               </AlertDialogCancel>
               <AlertDialogAction
-                onClick={resetAllConfig}
+                onClick={() => { resetAllConfig(); terminalStore.resetAll(); presetStore.clearActivePreset(); }}
                 className="bg-red-600 hover:bg-red-700 text-white"
               >
                 Reset completo

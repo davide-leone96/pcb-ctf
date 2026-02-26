@@ -3,17 +3,20 @@
 
 import { useEffect } from 'react';
 import { useSettingsStore } from '@/store/settingsStore';
+import { usePresetStore } from '@/store/presetStore';
 import SettingsSidebar from '@/components/features/settings/SettingsSidebar';
 import SettingsCanvas from '@/components/features/settings/SettingsCanvas';
 import CanvasToolbar from '@/components/features/settings/CanvasToolbar';
 
 export default function SettingsPage() {
   const loadFromStorage = useSettingsStore(s => s.loadFromStorage);
+  const fetchPresets = usePresetStore(s => s.fetchPresets);
 
-  // Carica sempre la configurazione salvata all'avvio
+  // Carica sempre la configurazione salvata all'avvio + lista preset
   useEffect(() => {
     loadFromStorage();
-  }, [loadFromStorage]);
+    fetchPresets();
+  }, [loadFromStorage, fetchPresets]);
 
   return (
     <main className="flex min-h-screen flex-col items-center bg-gray-900 p-6 lg:p-12">

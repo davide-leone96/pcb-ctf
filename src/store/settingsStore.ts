@@ -6,7 +6,7 @@ import type {
   HardwareComponent, MeasurementPin, UartPin, UartRole, Exercise,
   ObjectiveType, PinCondition, PinLogic,
 } from '@/data/exercise';
-import { SETTINGS_STORAGE_KEY, ALL_TOOLS, defaultExerciseData, mergeWithDefaultSteps, type Tool } from '@/data/exercise';
+import { SETTINGS_STORAGE_KEY, ALL_TOOLS, type Tool } from '@/data/exercise';
 
 export type { PinCondition, PinLogic };
 
@@ -1035,8 +1035,33 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   loadFromStorage: () => {
     try {
       const saved = localStorage.getItem(SETTINGS_STORAGE_KEY);
-      const raw: Exercise = saved ? JSON.parse(saved) : defaultExerciseData;
-      const exercise = mergeWithDefaultSteps(raw);
+      if (!saved) {
+        // No saved config — reset to empty state (do not load hardcoded defaults).
+        set({
+          components: [],
+          activeComponentId: null,
+          steps: [],
+          activeStepId: null,
+          activeObjectiveId: null,
+          pins: [],
+          activePinId: null,
+          pendingPinCoords: null,
+          dragState: null,
+          pcbImagePath: '',
+          canvasZoom: 1,
+          canvasRotation: 0,
+          canvasPanX: 0,
+          canvasPanY: 0,
+          canvasPanMode: false,
+        });
+        return;
+      }
+      const raw: Exercise = JSON.parse(saved);
+      // Use raw data as-is: the editor must reflect exactly what was saved.
+      // mergeWithDefaultSteps is intentionally NOT called here — it is only
+      // used by the simulator (loadExerciseData in exercise.ts) to guarantee
+      // the fixed UART/terminal steps are present at runtime.
+      const exercise = raw;
 
       // Converti steps → DraftStep[] con DraftObjective[]
       let draftSteps: DraftStep[] = [];
@@ -1163,6 +1188,11 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         pendingPinCoords: null,
         dragState: null,
         pcbImagePath: exercise.pcbImage || '',
+        canvasZoom: 1,
+        canvasRotation: 0,
+        canvasPanX: 0,
+        canvasPanY: 0,
+        canvasPanMode: false,
       });
     } catch { /* ignore invalid data */ }
   },

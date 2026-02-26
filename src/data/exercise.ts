@@ -290,14 +290,13 @@ function loadExerciseData(): Exercise {
         const hasValidComponents = parsed.components && Array.isArray(parsed.components) && parsed.components.length > 0;
 
         if (hasValidSteps || hasValidComponents) {
-          const merged = mergeWithDefaultSteps(parsed);
           console.log('✅ [Exercise] Configurazione caricata da localStorage:', {
-            steps: merged.steps?.length || 0,
-            components: merged.components?.length || 0,
-            pins: merged.pins?.length || 0,
-            uartPins: merged.uartPins?.length || 0
+            steps: parsed.steps?.length || 0,
+            components: parsed.components?.length || 0,
+            pins: parsed.pins?.length || 0,
+            uartPins: parsed.uartPins?.length || 0
           });
-          return merged;
+          return parsed;
         }
       }
     } catch (error) {
