@@ -7,10 +7,9 @@ import { Button } from '@/components/ui/button';
 
 interface InstructionsPanelProps {
   stepMode: 'education' | 'active' | 'completed';
-  stepNumber: number;
   stepTitle: string;
   stepDescription: string;
-  objectiveNumber: number;
+  objectiveName: string;
   objectiveInstruction: string;
   hintText: string;
   onStartStep: () => void;
@@ -19,10 +18,9 @@ interface InstructionsPanelProps {
 
 const InstructionsPanel = ({
   stepMode,
-  stepNumber,
   stepTitle,
   stepDescription,
-  objectiveNumber,
+  objectiveName,
   objectiveInstruction,
   hintText,
   onStartStep,
@@ -50,7 +48,7 @@ const InstructionsPanel = ({
       <>
         <div className="rounded-lg bg-gray-800 p-4 text-white h-full flex flex-col relative">
           <h3 className="text-lg font-bold text-yellow-400 mb-3">
-            Step {stepNumber}: {stepTitle}
+            {stepTitle}
           </h3>
           <div
             ref={contentRef}
@@ -85,7 +83,7 @@ const InstructionsPanel = ({
           <DialogContent className="bg-gray-800 text-white border-gray-700 max-w-2xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-yellow-400 text-xl">
-                Step {stepNumber}: {stepTitle}
+                {stepTitle}
               </DialogTitle>
             </DialogHeader>
             <div className="text-gray-300 leading-relaxed mt-4">
@@ -101,7 +99,7 @@ const InstructionsPanel = ({
     return (
       <div className="rounded-lg bg-gray-800 p-4 text-white h-full flex flex-col">
         <h3 className="text-lg font-bold text-green-400 mb-3">
-          Step {stepNumber} Completato!
+          {stepTitle} — Completato!
         </h3>
         <div className="text-gray-300 flex-grow">
           <p className="leading-relaxed mb-4">
@@ -127,7 +125,7 @@ const InstructionsPanel = ({
     <div className="rounded-lg bg-gray-800 p-4 text-white h-full flex flex-col">
       <div className="flex justify-between items-center mb-2">
         <h3 className="text-lg font-bold text-yellow-400">
-          Obiettivo {objectiveNumber}
+          {objectiveName}
         </h3>
         {hintText && <HintButton hintText={hintText} />}
       </div>

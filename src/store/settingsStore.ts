@@ -596,7 +596,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     const id = generateId('step');
     const newStep: DraftStep = {
       id,
-      title: `Step ${steps.length + 1}`,
+      title: '',
       description: '',
       availableTools: [...ALL_TOOLS],
       objectives: [],

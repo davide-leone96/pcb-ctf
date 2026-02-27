@@ -4,15 +4,15 @@
     "name": "g4",
     "description": "",
     "createdAt": "2026-02-26T22:17:01.016Z",
-    "updatedAt": "2026-02-26T22:17:01.016Z"
+    "updatedAt": "2026-02-27T23:11:21.061Z"
   },
   "exerciseConfig": {
     "pcbImage": "/images/preset-g4-mm40ww9kgk4r.png",
     "steps": [
       {
         "id": "step-mm40vunlva7cg",
-        "title": "Step 1",
-        "description": "",
+        "title": "Hardware Analysis",
+        "description": "test di prova",
         "expectedFlag": "flag{TEST}",
         "availableTools": [
           "pointer",
@@ -27,8 +27,38 @@
             "name": "test",
             "type": "component",
             "componentId": "comp-mm40v2tlnrehj",
-            "instruction": "",
-            "hint": "",
+            "instruction": "tste 2",
+            "hint": "pezzo piu grande",
+            "flagPart": "TEST",
+            "coords": [
+              32.5480746704446,
+              50.78578454519926,
+              13.143028653320485,
+              18.524105535224052
+            ]
+          }
+        ]
+      },
+      {
+        "id": "step-mm5hzst08lpuk",
+        "title": "Step 2",
+        "description": "test 2",
+        "expectedFlag": "flag{TEST}",
+        "availableTools": [
+          "pointer",
+          "magnifier",
+          "multimeter",
+          "probes",
+          "terminal"
+        ],
+        "objectives": [
+          {
+            "id": "obj-mm5hzzvszu9cf",
+            "name": "test",
+            "type": "component",
+            "componentId": "comp-mm40v2tlnrehj",
+            "instruction": "ciccio",
+            "hint": "ciao",
             "flagPart": "TEST",
             "coords": [
               32.5480746704446,
@@ -57,8 +87,21 @@
       {
         "id": "obj-mm40vzji9qq7s",
         "name": "test",
-        "instruction": "",
-        "hint": "",
+        "instruction": "tste 2",
+        "hint": "pezzo piu grande",
+        "flagPart": "TEST",
+        "coords": [
+          32.5480746704446,
+          50.78578454519926,
+          13.143028653320485,
+          18.524105535224052
+        ]
+      },
+      {
+        "id": "obj-mm5hzzvszu9cf",
+        "name": "test",
+        "instruction": "ciccio",
+        "hint": "ciao",
         "flagPart": "TEST",
         "coords": [
           32.5480746704446,
@@ -70,7 +113,7 @@
     ],
     "pins": [
       {
-        "id": "pin-mm40vf2xaga1w",
+        "id": "pin-m-1",
         "valueV": 0,
         "valueOhm": 0,
         "coords": [

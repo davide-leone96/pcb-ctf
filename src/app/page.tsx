@@ -101,10 +101,9 @@ export default function Home() {
             <div className={stepMode === 'education' ? 'md:col-span-3' : 'md:col-span-2'}>
               <InstructionsPanel
                 stepMode={stepMode}
-                stepNumber={currentStepIndex + 1}
                 stepTitle={currentStep?.title || ''}
                 stepDescription={currentStep?.description || ''}
-                objectiveNumber={currentObjectiveIndex + 1}
+                objectiveName={currentObjective?.name || ''}
                 objectiveInstruction={currentObjective?.instruction || ''}
                 hintText={currentObjective?.hint || ''}
                 onStartStep={startStep}
