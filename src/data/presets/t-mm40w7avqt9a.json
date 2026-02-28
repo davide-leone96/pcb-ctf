@@ -4,7 +4,7 @@
     "name": "t",
     "description": "",
     "createdAt": "2026-02-26T22:16:28.663Z",
-    "updatedAt": "2026-02-26T23:10:12.137Z"
+    "updatedAt": "2026-02-28T19:43:36.304Z"
   },
   "exerciseConfig": {
     "pcbImage": "/images/preset-t-mm40w7avqt9a.jpg",
@@ -13,7 +13,7 @@
         "id": "step-mm40vunlva7cg",
         "title": "Step 1",
         "description": "",
-        "expectedFlag": "flag{TESTPIN-M-1}",
+        "expectedFlag": "flag{TESTTX_(3.3V),_RX_(3.3V),_GND_(0V)flag{b00t_r00t_h4sh_l34k_1nj3ct_sh3ll}}",
         "availableTools": [
           "pointer",
           "magnifier",
@@ -38,12 +38,12 @@
             ]
           },
           {
-            "id": "obj-mm41xidpz1dvr",
-            "name": "pin-m-1",
+            "id": "obj-mm6qasz802vf2",
+            "name": "TX (3.3V), RX (3.3V), GND (0V)",
             "type": "pin",
             "instruction": "",
             "hint": "",
-            "flagPart": "PIN-M-1",
+            "flagPart": "TX_(3.3V),_RX_(3.3V),_GND_(0V)",
             "coords": [
               0,
               0,
@@ -52,29 +52,38 @@
             ],
             "pinConditions": [
               {
-                "pinId": "pin-m-1",
-                "terminal": "probe1"
+                "pinId": "pin-mm6q9ap2hkraw",
+                "terminal": "adapter-rx"
+              },
+              {
+                "pinId": "pin-mm6q9gqpj1sn0",
+                "terminal": "adapter-tx"
+              },
+              {
+                "pinId": "pin-mm6q9qq4yli9l",
+                "terminal": "adapter-gnd"
               }
             ],
             "pinLogic": "AND"
+          },
+          {
+            "id": "obj-mm6qb4rkz8lz3",
+            "name": "Terminale",
+            "type": "terminal",
+            "instruction": "tes",
+            "hint": "",
+            "flagPart": "flag{b00t_r00t_h4sh_l34k_1nj3ct_sh3ll}",
+            "coords": [
+              0,
+              0,
+              0,
+              0
+            ]
           }
         ]
       }
     ],
     "components": [
-      {
-        "id": "comp-mm40v2tlnrehj",
-        "name": "test",
-        "instruction": "",
-        "hint": "",
-        "flagPart": "TEST",
-        "coords": [
-          42.81249863826312,
-          53.92944839011733,
-          8.76201910221365,
-          13.24213166775052
-        ]
-      },
       {
         "id": "obj-mm40vzji9qq7s",
         "name": "test",
@@ -89,43 +98,43 @@
         ]
       }
     ],
-    "pins": [
+    "pins": [],
+    "uartPins": [
       {
-        "id": "pin-m-1",
-        "valueV": 0,
-        "valueOhm": 0,
+        "id": "pin-mm6q9ap2hkraw",
+        "role": "tx",
+        "label": "TX (3.3V)",
         "coords": [
-          19.870672043717132,
-          48.767020505844684,
-          1.1,
-          1.1
+          19.29043794459596,
+          48.1710302095602,
+          2,
+          2
         ]
       },
       {
-        "id": "pin-m-2",
-        "valueV": 0,
-        "valueOhm": 0,
+        "id": "pin-mm6q9gqpj1sn0",
+        "role": "rx",
+        "label": "RX (3.3V)",
         "coords": [
-          19.720672043717133,
-          54.50241261043652,
-          1.4,
-          1.4
+          19.048309178743963,
+          51.32693954888779,
+          2,
+          2
         ]
       },
       {
-        "id": "pin-m-3",
-        "valueV": 0,
-        "valueOhm": 0,
+        "id": "pin-mm6q9qq4yli9l",
+        "role": "gnd",
+        "label": "GND (0V)",
         "coords": [
-          19.870672043717132,
-          51.379076692565626,
-          1.1,
-          1.1
+          19.270270568822184,
+          53.93413558974205,
+          2,
+          2
         ]
       }
     ],
-    "uartPins": [],
-    "initialFlag": "flag{???????????}"
+    "initialFlag": "flag{????????????????????????????????????????????????????????????????????????}"
   },
   "terminalConfig": {
     "metadata": {

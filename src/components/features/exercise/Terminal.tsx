@@ -522,7 +522,7 @@ export default function Terminal() {
   // ============================================
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 h-2/5 bg-black/95 backdrop-blur-sm z-40 text-white font-mono text-xs flex flex-col animate-in slide-in-from-bottom-10 duration-300 border-t border-green-900/50">
+    <div className="relative h-[500px] bg-black/95 rounded-lg overflow-hidden text-white font-mono text-xs flex flex-col animate-in fade-in duration-300 border border-green-900/50">
       {/* Header with tabs */}
       <div className="flex items-center bg-gray-900/80 px-1 select-none flex-shrink-0 border-b border-gray-700/50">
         {/* Tabs */}

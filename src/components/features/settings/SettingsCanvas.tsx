@@ -11,6 +11,7 @@ import ComponentPopup from './ComponentPopup';
 import ObjectivePopup from './ObjectivePopup';
 import TerminalObjectivePopup from './TerminalObjectivePopup';
 import PinPopup from './PinPopup';
+import TerminalPreviewPanel from './TerminalPreviewPanel';
 
 const PIN_TYPE_COLORS: Record<string, string> = {
   custom: '#22D3EE', // cyan
@@ -46,6 +47,7 @@ const SettingsCanvas = () => {
   } = useSettingsStore();
   const updateComponentCoords = useSettingsStore(s => s.updateComponentCoords);
   const updatePinCoords = useSettingsStore(s => s.updatePinCoords);
+  const previewOpen = useTerminalSettingsStore(s => s.previewOpen);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
@@ -379,8 +381,9 @@ const SettingsCanvas = () => {
   const isInitTab = activeTool === 'component' || activeTool === 'pin';
   const isTerminalTab = activeTool === 'terminal-config';
 
-  // Terminal tab: show config preview
+  // Terminal tab: show config preview or live terminal preview in the same canvas area
   if (isTerminalTab) {
+    if (previewOpen) return <TerminalPreviewPanel />;
     return <TerminalConfigPreview />;
   }
 

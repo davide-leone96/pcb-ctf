@@ -4,18 +4,14 @@
 import { useEffect } from 'react';
 import { useSettingsStore } from '@/store/settingsStore';
 import { usePresetStore } from '@/store/presetStore';
-import { useTerminalSettingsStore } from '@/store/terminalSettingsStore';
 import SettingsSidebar from '@/components/features/settings/SettingsSidebar';
 import SettingsCanvas from '@/components/features/settings/SettingsCanvas';
 import CanvasToolbar from '@/components/features/settings/CanvasToolbar';
-import TerminalPreviewPanel from '@/components/features/settings/TerminalPreviewPanel';
 
 export default function SettingsPage() {
   const loadFromStorage = useSettingsStore(s => s.loadFromStorage);
   const activeTool = useSettingsStore(s => s.activeTool);
   const fetchPresets = usePresetStore(s => s.fetchPresets);
-  const previewOpen = useTerminalSettingsStore(s => s.previewOpen);
-
   // Carica sempre la configurazione salvata all'avvio + lista preset
   useEffect(() => {
     loadFromStorage();
@@ -39,8 +35,6 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Terminal preview — fixed bottom overlay, only mounted when open (resets on close/reopen) */}
-      {previewOpen && <TerminalPreviewPanel />}
     </main>
   );
 }

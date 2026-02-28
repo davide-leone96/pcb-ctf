@@ -444,7 +444,7 @@ export default function TerminalPreviewPanel() {
   const [config] = useState<TerminalConfig>(() => store.exportAsTerminalConfig());
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 h-2/5 bg-black/95 backdrop-blur-sm z-40 flex flex-col border-t border-green-900/50 animate-in slide-in-from-bottom-4 duration-200">
+    <div className="relative h-[500px] flex flex-col bg-black/95 rounded-lg overflow-hidden border border-green-900/50 animate-in fade-in duration-200">
       {/* Header */}
       <div className="flex items-center gap-3 bg-gray-900/80 px-3 py-1.5 border-b border-gray-700/50 flex-shrink-0 select-none">
         <span className="text-xs text-green-400 font-mono font-medium">Preview Config</span>

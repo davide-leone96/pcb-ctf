@@ -129,23 +129,23 @@ export default function Home() {
                 <p className="text-gray-400 text-lg">Clicca su "Start" per iniziare</p>
               </div>
             )}
-            <PCBViewer />
+            {activeTool === 'terminal' ? (
+              uartConnected ? (
+                <Terminal />
+              ) : (
+                <div className="h-[500px] bg-black/95 rounded-lg text-white font-mono text-sm flex items-center justify-center border border-red-900/50">
+                  <div className="text-center">
+                    <p className="text-yellow-400 font-bold text-base">Nessuna connessione UART</p>
+                    <p className="text-gray-400 mt-2">Collega le sonde dall&apos;adattatore USB-to-Serial ai pin UART prima di aprire il terminale.</p>
+                  </div>
+                </div>
+              )
+            ) : (
+              <PCBViewer />
+            )}
           </div>
         </div>
       </div>
-
-      {activeTool === 'terminal' && (
-        <div className="fixed inset-x-0 top-0 bottom-[40%] z-35 bg-black/10" />
-      )}
-      {activeTool === 'terminal' && uartConnected && <Terminal />}
-      {activeTool === 'terminal' && !uartConnected && (
-        <div className="fixed bottom-0 left-0 right-0 h-2/5 bg-black/95 backdrop-blur-sm z-40 text-white font-mono text-sm flex items-center justify-center border-t border-red-900/50">
-          <div className="text-center">
-            <p className="text-yellow-400 font-bold text-base">Nessuna connessione UART</p>
-            <p className="text-gray-400 mt-2">Collega le sonde dall&apos;adattatore USB-to-Serial ai pin UART prima di aprire il terminale.</p>
-          </div>
-        </div>
-      )}
     </main>
   );
 }
