@@ -6,6 +6,12 @@ import { type Tool, ALL_TOOLS } from '@/data/exercise';
 
 export type { Tool };
 export type MultimeterMode = 'V' | 'Ohm';
+
+/** Derives a blank flag placeholder whose length matches the concatenated flagParts of the step's objectives. */
+function computeBlankFlag(step?: { objectives?: Array<{ flagPart?: string }> }): string {
+  const total = step?.objectives?.reduce((acc, o) => acc + (o.flagPart?.length ?? 0), 0) ?? 0;
+  return total > 0 ? `flag{${'?'.repeat(total)}}` : 'flag{????}';
+}
 export type AdapterPin = 'adapter-tx' | 'adapter-rx' | 'adapter-gnd';
 export type StepMode = 'education' | 'active' | 'completed';
 
@@ -116,7 +122,7 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   // Stato iniziale (legacy)
   currentStep: 0,
   foundComponents: [],
-  flag: 'flag{????????????????????}',
+  flag: 'flag{????}',
   uartFlag: '',
   isFinished: false,
   activeTool: 'pointer',
@@ -164,7 +170,7 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
       isSimulatorEnabled: false,
       currentStep: 0,
       foundComponents: [],
-      flag: data?.initialFlag || 'flag{????????????????????}',
+      flag: computeBlankFlag(data?.steps?.[0]),
       isFinished: false,
       activeTool: 'pointer',
       mousePosition: null,
@@ -596,7 +602,7 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
       set({
         multimeterUnlocked: true,
         uartUnlocked: true,
-        flag: data?.initialFlag || 'flag{????????????????????}'  // Resetta dopo sblocco
+        flag: computeBlankFlag(data?.steps?.[get().currentStepIndex])
       });
       return true;
     }
@@ -628,6 +634,8 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
       currentObjectiveIndex: 0,
       stepMode: 'education',
       isSimulatorEnabled: false,
+      foundComponents: [],
+      flag: computeBlankFlag(data?.steps?.[0]),
     });
   },
 
@@ -641,7 +649,7 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
       stepMode: 'active',
       isSimulatorEnabled: true,
       foundComponents: [],
-      flag: data?.initialFlag || 'flag{????????????????????}',
+      flag: computeBlankFlag(currentStep),
     };
 
     if (availableTools?.length && !availableTools.includes(activeTool)) {
@@ -682,7 +690,7 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
         stepMode: 'education',
         isSimulatorEnabled: false,
         foundComponents: [],
-        flag: data.initialFlag,
+        flag: computeBlankFlag(data.steps[currentStepIndex + 1]),
         lensVisible: false,
         lensIsAnchored: false,
         lensAnchorPosition: null,

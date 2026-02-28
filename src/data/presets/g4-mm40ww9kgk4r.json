@@ -4,7 +4,7 @@
     "name": "g4",
     "description": "",
     "createdAt": "2026-02-26T22:17:01.016Z",
-    "updatedAt": "2026-02-28T19:30:06.775Z"
+    "updatedAt": "2026-02-28T21:06:33.394Z"
   },
   "exerciseConfig": {
     "pcbImage": "/images/preset-g4-mm40ww9kgk4r.png",
@@ -13,7 +13,7 @@
         "id": "step-mm40vunlva7cg",
         "title": "Hardware Analysis",
         "description": "test di prova",
-        "expectedFlag": "flag{TEST}",
+        "expectedFlag": "flag{RX_(3.3V),_TX_(3.3V),_GND_(0V)}",
         "availableTools": [
           "pointer",
           "magnifier",
@@ -23,19 +23,33 @@
         ],
         "objectives": [
           {
-            "id": "obj-mm40vzji9qq7s",
-            "name": "test",
-            "type": "component",
-            "componentId": "comp-mm40v2tlnrehj",
-            "instruction": "tste 2",
-            "hint": "pezzo piu grande",
-            "flagPart": "TEST",
+            "id": "obj-mm6t8jgl6fqvm",
+            "name": "RX (3.3V), TX (3.3V), GND (0V)",
+            "type": "pin",
+            "instruction": "",
+            "hint": "",
+            "flagPart": "RX_(3.3V),_TX_(3.3V),_GND_(0V)",
             "coords": [
-              32.5480746704446,
-              50.78578454519926,
-              13.143028653320485,
-              18.524105535224052
-            ]
+              0,
+              0,
+              0,
+              0
+            ],
+            "pinConditions": [
+              {
+                "pinId": "pin-u-1",
+                "terminal": "adapter-tx"
+              },
+              {
+                "pinId": "pin-u-2",
+                "terminal": "adapter-rx"
+              },
+              {
+                "pinId": "pin-mm6t83dkp2pqk",
+                "terminal": "adapter-gnd"
+              }
+            ],
+            "pinLogic": "AND"
           }
         ]
       },
@@ -43,7 +57,7 @@
         "id": "step-mm5hzst08lpuk",
         "title": "Step 2",
         "description": "test 2",
-        "expectedFlag": "flag{TEST}",
+        "expectedFlag": "flag{flag{b00t_r00t_h4sh_l34k_1nj3ct_sh3ll}}",
         "availableTools": [
           "pointer",
           "magnifier",
@@ -53,18 +67,17 @@
         ],
         "objectives": [
           {
-            "id": "obj-mm5hzzvszu9cf",
-            "name": "test",
-            "type": "component",
-            "componentId": "comp-mm40v2tlnrehj",
-            "instruction": "ciccio",
-            "hint": "ciao",
-            "flagPart": "TEST",
+            "id": "obj-mm6t9w8utis5c",
+            "name": "Terminale",
+            "type": "terminal",
+            "instruction": "",
+            "hint": "",
+            "flagPart": "flag{b00t_r00t_h4sh_l34k_1nj3ct_sh3ll}",
             "coords": [
-              32.5480746704446,
-              50.78578454519926,
-              13.143028653320485,
-              18.524105535224052
+              0,
+              0,
+              0,
+              0
             ]
           }
         ]
@@ -72,60 +85,56 @@
     ],
     "components": [
       {
-        "id": "comp-mm40v2tlnrehj",
-        "name": "test",
+        "id": "comp-mm6rjig4m25tf",
+        "name": "Componente",
         "instruction": "",
         "hint": "",
-        "flagPart": "TEST",
+        "flagPart": "COMPONENTE",
         "coords": [
-          32.5480746704446,
-          50.78578454519926,
-          13.143028653320485,
-          18.524105535224052
-        ]
-      },
-      {
-        "id": "obj-mm40vzji9qq7s",
-        "name": "test",
-        "instruction": "tste 2",
-        "hint": "pezzo piu grande",
-        "flagPart": "TEST",
-        "coords": [
-          32.5480746704446,
-          50.78578454519926,
-          13.143028653320485,
-          18.524105535224052
-        ]
-      },
-      {
-        "id": "obj-mm5hzzvszu9cf",
-        "name": "test",
-        "instruction": "ciccio",
-        "hint": "ciao",
-        "flagPart": "TEST",
-        "coords": [
-          32.5480746704446,
-          50.78578454519926,
-          13.143028653320485,
-          18.524105535224052
+          31.947426825471364,
+          50.880874719071635,
+          14.243561998562758,
+          17.266983739848932
         ]
       }
     ],
-    "pins": [
+    "pins": [],
+    "uartPins": [
       {
-        "id": "pin-m-1",
-        "valueV": 0,
-        "valueOhm": 0,
+        "id": "pin-u-1",
+        "role": "rx",
+        "label": "RX (3.3V)",
         "coords": [
-          -2.3641844473823133,
-          42.42077872998973,
+          65.24195088657574,
+          55.193792792871314,
+          2,
+          2
+        ]
+      },
+      {
+        "id": "pin-u-2",
+        "role": "tx",
+        "label": "TX (3.3V)",
+        "coords": [
+          65.36265903910594,
+          66.64977238950185,
+          2,
+          2
+        ]
+      },
+      {
+        "id": "pin-mm6t83dkp2pqk",
+        "role": "gnd",
+        "label": "GND (0V)",
+        "coords": [
+          65.83208290669711,
+          76.55615172573974,
           2,
           2
         ]
       }
     ],
-    "uartPins": [],
-    "initialFlag": "flag{????}"
+    "initialFlag": "flag{??????????????????????????????}"
   },
   "terminalConfig": {
     "metadata": {

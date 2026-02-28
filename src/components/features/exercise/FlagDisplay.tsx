@@ -28,14 +28,14 @@ const FlagDisplay = ({ flag }: FlagDisplayProps) => {
   return (
     <div
       onClick={handleCopy}
-      className={`flex items-center justify-between rounded-lg bg-black p-4 font-mono text-sm text-green-400 h-full transition-colors group relative ${
+      className={`flex items-center justify-between rounded-lg bg-black p-4 font-mono text-sm text-green-400 h-full overflow-hidden transition-colors group relative ${
         isFlagComplete
           ? 'cursor-pointer hover:bg-gray-950'
           : 'cursor-not-allowed opacity-75'
       }`}
       title={isFlagComplete ? "Click per copiare la flag" : "Completa la flag per copiarla"}
     >
-      <p className={`break-all flex-1 ${!isFlagComplete ? 'select-none' : ''}`}>
+      <p className={`break-all flex-1 min-w-0 ${!isFlagComplete ? 'select-none' : ''}`}>
         <span className="text-gray-500">{'> '}</span>
         {flag}
       </p>

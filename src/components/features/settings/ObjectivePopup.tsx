@@ -28,6 +28,7 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
   const { saveObjective, updateObjective, cancelObjectiveEdit, pins } = useSettingsStore();
 
   const isNew = objective.instruction === '' && objective.hint === '' && objective.flagPart === '';
+  const [name, setName] = useState(objective.name);
   const [instruction, setInstruction] = useState(objective.instruction);
   const [hint, setHint] = useState(objective.hint);
   const [flagPart, setFlagPart] = useState(objective.flagPart);
@@ -35,6 +36,7 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
   const [pinLogic, setPinLogic] = useState<'AND' | 'OR'>(objective.pinLogic);
 
   useEffect(() => {
+    setName(objective.name);
     setInstruction(objective.instruction);
     setHint(objective.hint);
     setFlagPart(objective.flagPart);
@@ -48,12 +50,12 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
 
   const handleConfirm = () => {
     const data = {
-      name: objective.name,
+      name,
       pinConditions: conditions,
       pinLogic,
       instruction,
       hint,
-      flagPart: flagPart || objective.name.toUpperCase().replace(/\s+/g, '_'),
+      flagPart: flagPart || name.toUpperCase().replace(/\s+/g, '_'),
     };
     if (isNew) {
       saveObjective(data);
@@ -101,10 +103,10 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
     >
-      {/* Component name + Coordinates */}
+      {/* Type badge + Coordinates */}
       <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-700">
-        <span className={`text-xs px-1.5 py-0.5 rounded border ${TYPE_COLORS[objective.type] || TYPE_COLORS.component}`}>
-          {objective.name || 'Componente'}
+        <span className={`text-xs px-1.5 py-0.5 rounded border flex-shrink-0 ${TYPE_COLORS[objective.type] || TYPE_COLORS.component}`}>
+          {objective.type === 'pin' ? 'PIN' : 'COM'}
         </span>
         {hasCoords && (
           <span className="text-xs font-mono text-gray-400">
@@ -166,6 +168,19 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
         </div>
       )}
 
+      {/* Title */}
+      <div className="mb-3">
+        <label className="block text-xs text-gray-400 mb-1">Titolo</label>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Nome dell'obiettivo..."
+          className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+          autoFocus
+        />
+      </div>
+
       {/* Instruction */}
       <div className="mb-3">
         <label className="block text-xs text-gray-400 mb-1">Descrizione didattica</label>
@@ -175,7 +190,6 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
           placeholder="Istruzione per lo studente..."
           rows={3}
           className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors resize-none"
-          autoFocus
         />
       </div>
 
@@ -198,7 +212,7 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
           type="text"
           value={flagPart}
           onChange={(e) => setFlagPart(e.target.value)}
-          placeholder={objective.name ? objective.name.toUpperCase().replace(/\s+/g, '_') : 'auto da nome'}
+          placeholder={name ? name.toUpperCase().replace(/\s+/g, '_') : 'auto da nome'}
           className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors font-mono"
         />
       </div>

@@ -18,11 +18,13 @@ const TerminalObjectivePopup = ({ objective, containerDims }: TerminalObjectiveP
 
   const isNew = objective.instruction === '' && objective.hint === '' && objective.flagPart === '';
 
+  const [name, setName] = useState(objective.name);
   const [instruction, setInstruction] = useState(objective.instruction);
   const [hint, setHint] = useState(objective.hint);
   const [conditions, setConditions] = useState<BootStageCondition[]>(objective.bootStageConditions);
 
   useEffect(() => {
+    setName(objective.name);
     setInstruction(objective.instruction);
     setHint(objective.hint);
     setConditions(objective.bootStageConditions);
@@ -56,7 +58,7 @@ const TerminalObjectivePopup = ({ objective, containerDims }: TerminalObjectiveP
 
   const handleConfirm = () => {
     const data = {
-      name: objective.name,
+      name,
       pinConditions: [],
       pinLogic: 'AND' as const,
       instruction,
@@ -88,9 +90,19 @@ const TerminalObjectivePopup = ({ objective, containerDims }: TerminalObjectiveP
       <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-700">
         <TerminalSquare className="h-4 w-4 text-green-400 flex-shrink-0" />
         <span className="text-sm font-medium text-green-300">Obiettivo Terminale</span>
-        <span className="ml-auto text-xs px-1.5 py-0.5 rounded border bg-green-600/30 text-green-300 border-green-500/50">
-          {objective.name}
-        </span>
+      </div>
+
+      {/* Title */}
+      <div className="mb-3">
+        <label className="block text-xs text-gray-400 mb-1">Titolo</label>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Nome dell'obiettivo..."
+          className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition-colors"
+          autoFocus
+        />
       </div>
 
       {/* Instruction */}
@@ -102,7 +114,6 @@ const TerminalObjectivePopup = ({ objective, containerDims }: TerminalObjectiveP
           placeholder="Istruzione per lo studente..."
           rows={3}
           className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition-colors resize-none"
-          autoFocus
         />
       </div>
 
