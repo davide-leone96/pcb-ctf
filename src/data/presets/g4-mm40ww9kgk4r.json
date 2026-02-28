@@ -4,7 +4,7 @@
     "name": "g4",
     "description": "",
     "createdAt": "2026-02-26T22:17:01.016Z",
-    "updatedAt": "2026-02-27T23:11:21.061Z"
+    "updatedAt": "2026-02-28T00:46:10.497Z"
   },
   "exerciseConfig": {
     "pcbImage": "/images/preset-g4-mm40ww9kgk4r.png",
@@ -140,7 +140,11 @@
         "initialPath": "/",
         "filesystem": {
           "tree": {
-            "bin": {},
+            "bin": {
+              "test": {
+                "test1.txt": "ciao"
+              }
+            },
             "dev": {},
             "etc": {
               "ath": {
@@ -209,7 +213,10 @@
               },
               "userRpm": {}
             },
-            "linuxrc": "#!/bin/sh\nexec /sbin/init"
+            "linuxrc": "#!/bin/sh\nexec /sbin/init",
+            "test": {
+              "new-file.tcixt": ""
+            }
           },
           "directories": {},
           "files": {},

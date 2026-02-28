@@ -8,8 +8,6 @@ import {
   X, Plus, Trash2, ChevronDown, ChevronRight, Zap, Flag, Code, FileText, Settings2,
 } from 'lucide-react';
 
-const BUILTIN_TYPES = ['ls', 'cat', 'cd', 'pwd', 'grep', 'find', 'file', 'mount', 'ps', 'help', 'printenv', 'version', 'md', 'clear', 'strings'];
-
 interface CommandEditorPopupProps {
   command: DraftCommand;
   onUpdate: (data: Partial<DraftCommand>) => void;
@@ -117,42 +115,6 @@ const GeneralTab = ({ command, onUpdate }: { command: DraftCommand; onUpdate: (d
     <div className="space-y-3">
       <EditorField label="Nome comando" value={command.name} onChange={(v) => onUpdate({ name: v })} mono placeholder="es: cat, help, scan" />
       <EditorField label="Descrizione" value={command.description} onChange={(v) => onUpdate({ description: v })} placeholder="Descrizione del comando" />
-
-      {/* Handler type */}
-      <div>
-        <label className="text-[10px] text-gray-500 block mb-0.5">Tipo handler</label>
-        <div className="flex gap-2">
-          <button
-            onClick={() => onUpdate({ handler: 'builtin' })}
-            className={cn('flex-1 px-2 py-1.5 rounded text-xs transition-colors', command.handler === 'builtin' ? 'bg-yellow-600/50 text-white' : 'bg-gray-700/40 text-gray-400 hover:text-gray-300')}
-          >
-            Builtin
-          </button>
-          <button
-            onClick={() => onUpdate({ handler: 'custom' })}
-            className={cn('flex-1 px-2 py-1.5 rounded text-xs transition-colors', command.handler === 'custom' ? 'bg-green-600/50 text-white' : 'bg-gray-700/40 text-gray-400 hover:text-gray-300')}
-          >
-            Custom
-          </button>
-        </div>
-      </div>
-
-      {/* Builtin type selector */}
-      {command.handler === 'builtin' && (
-        <div>
-          <label className="text-[10px] text-gray-500 block mb-0.5">Tipo builtin</label>
-          <select
-            value={command.builtinType}
-            onChange={(e) => onUpdate({ builtinType: e.target.value })}
-            className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-green-500"
-          >
-            <option value="">-- Seleziona --</option>
-            {BUILTIN_TYPES.map(bt => (
-              <option key={bt} value={bt}>{bt}</option>
-            ))}
-          </select>
-        </div>
-      )}
 
       {/* Aliases */}
       <div>

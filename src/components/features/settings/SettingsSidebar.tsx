@@ -63,7 +63,7 @@ const SettingsSidebar = () => {
     components, editComponent, deleteComponent,
     steps, activeStepId, selectStep,
     addStep, deleteStep, reorderStep, updateStep, toggleStepTool,
-    addObjective, addPinObjective, deleteObjective, reorderObjective, editObjective,
+    addObjective, addPinObjective, addTerminalObjective, deleteObjective, reorderObjective, editObjective,
     pins, editPin, deletePin,
     saveToFile, resetAllConfig, resetInitComponents,
   } = useSettingsStore();
@@ -93,7 +93,7 @@ const SettingsSidebar = () => {
   const hasAnyContent = hasContent || terminalStore.initialized;
 
   return (
-    <aside className="flex flex-col gap-y-3 rounded-lg bg-gray-800 p-4 w-72 text-white max-h-[calc(100vh-8rem)] overflow-hidden">
+    <aside className="flex flex-col gap-y-3 rounded-lg bg-gray-800 p-4 w-96 text-white max-h-[calc(100vh-8rem)] overflow-hidden">
       {/* Tab selector: Init / Challenge / Terminal */}
       <div>
         <div className="flex gap-1">
@@ -273,6 +273,7 @@ const SettingsSidebar = () => {
                     onToggleTool={(tool) => toggleStepTool(step.id, tool)}
                     onAddObjective={(componentId) => addObjective(step.id, componentId)}
                     onAddPinObjective={(pinIds, logic) => addPinObjective(step.id, pinIds, logic)}
+                    onAddTerminalObjective={() => addTerminalObjective(step.id)}
                     availableComponents={components}
                     availablePins={pins}
                     onDeleteObjective={(objId) => deleteObjective(step.id, objId)}
@@ -282,6 +283,7 @@ const SettingsSidebar = () => {
                 ))}
               </div>
             </div>
+
           </>
         )}
       </div>
@@ -348,7 +350,7 @@ const SettingsSidebar = () => {
 const StepItem = ({
   step, index, isExpanded, isFirst, isLast,
   onToggle, onDelete, onReorder, onUpdateStep, onToggleTool,
-  onAddObjective, onAddPinObjective, onDeleteObjective, onReorderObjective, onEditObjective,
+  onAddObjective, onAddPinObjective, onAddTerminalObjective, onDeleteObjective, onReorderObjective, onEditObjective,
   availableComponents, availablePins,
 }: {
   step: DraftStep;
@@ -363,6 +365,7 @@ const StepItem = ({
   onToggleTool: (tool: Tool) => void;
   onAddObjective: (componentId: string) => void;
   onAddPinObjective: (pinIds: string[], logic: PinLogic) => void;
+  onAddTerminalObjective: () => void;
   onDeleteObjective: (objId: string) => void;
   onReorderObjective: (objId: string, dir: 'up' | 'down') => void;
   onEditObjective: (objId: string) => void;
@@ -490,6 +493,13 @@ const StepItem = ({
                           <MapPin className="h-3 w-3 text-cyan-400" />
                           <span className="text-white">Pin</span>
                           <ChevronRight className="h-3 w-3 text-gray-400 ml-auto" />
+                        </button>
+                        <button
+                          onClick={() => { onAddTerminalObjective(); setShowAddMenu(null); }}
+                          className="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-600 transition-colors flex items-center gap-2"
+                        >
+                          <TerminalSquare className="h-3 w-3 text-green-400" />
+                          <span className="text-white">Terminale</span>
                         </button>
                       </>
                     )}
@@ -645,8 +655,13 @@ const ObjectiveItem = ({
   onReorder: (dir: 'up' | 'down') => void;
 }) => (
   <div className="flex items-center gap-1.5 px-1.5 py-1 rounded hover:bg-gray-700/50 group">
-    <span className={cn('text-[10px] font-mono flex-shrink-0', objective.type === 'pin' ? 'text-cyan-400' : 'text-blue-400')}>
-      {objective.type === 'pin' ? `PIN\u00B7${objective.pinLogic}` : 'COM'}
+    <span className={cn(
+      'text-[10px] font-mono flex-shrink-0',
+      objective.type === 'pin' ? 'text-cyan-400' :
+      objective.type === 'terminal' ? 'text-green-400' : 'text-blue-400'
+    )}>
+      {objective.type === 'pin' ? `PIN\u00B7${objective.pinLogic}` :
+       objective.type === 'terminal' ? 'TRM' : 'COM'}
     </span>
     <span className="text-xs truncate flex-1">{objective.name || 'Senza nome'}</span>
     <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">

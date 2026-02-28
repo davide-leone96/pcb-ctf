@@ -14,6 +14,12 @@ export interface PinCondition {
 
 export type PinLogic = 'AND' | 'OR';
 
+export interface BootStageCondition {
+  bootStageId: string;
+  unlockedFlags: string[];  // flag part IDs from terminalSettingsStore.flagParts
+  hint: string;
+}
+
 export interface Objective {
   id: string;
   name: string;
@@ -25,6 +31,7 @@ export interface Objective {
   coords: [number, number, number, number];
   pinConditions?: PinCondition[];
   pinLogic?: PinLogic;
+  bootStageConditions?: BootStageCondition[];
 }
 
 export interface Step {

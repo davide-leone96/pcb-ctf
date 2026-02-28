@@ -4,7 +4,7 @@
 import { create } from 'zustand';
 import type {
   HardwareComponent, MeasurementPin, UartPin, UartRole, Exercise,
-  ObjectiveType, PinCondition, PinLogic,
+  ObjectiveType, PinCondition, PinLogic, BootStageCondition,
 } from '@/data/exercise';
 import { SETTINGS_STORAGE_KEY, ALL_TOOLS, type Tool } from '@/data/exercise';
 
@@ -23,7 +23,10 @@ export interface DraftObjective {
   hint: string;
   flagPart: string;
   coords: [number, number, number, number]; // solo per type='component'
+  bootStageConditions: BootStageCondition[];
 }
+
+export type { BootStageCondition };
 
 export interface DraftStep {
   id: string;
@@ -133,6 +136,7 @@ interface SettingsActions {
   // Objective actions
   addObjective: (stepId: string, componentId: string) => void;
   addPinObjective: (stepId: string, pinIds: string[], logic: PinLogic) => void;
+  addTerminalObjective: (stepId: string) => void;
   deleteObjective: (stepId: string, objectiveId: string) => void;
   reorderObjective: (stepId: string, objectiveId: string, direction: 'up' | 'down') => void;
   editObjective: (objectiveId: string) => void;
@@ -668,6 +672,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       hint: '',
       flagPart: '',
       coords: comp.coords,
+      bootStageConditions: [],
     };
     set({
       steps: updateStepObjectives(get().steps, stepId, objs => [...objs, newObj]),
@@ -694,6 +699,29 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       hint: '',
       flagPart: '',
       coords: [0, 0, 0, 0],
+      bootStageConditions: [],
+    };
+    set({
+      steps: updateStepObjectives(get().steps, stepId, objs => [...objs, newObj]),
+      activeObjectiveId: id,
+      activeStepId: stepId,
+    });
+  },
+
+  addTerminalObjective: (stepId) => {
+    const id = generateId('obj');
+    const newObj: DraftObjective = {
+      id,
+      name: 'Terminale',
+      type: 'terminal',
+      componentId: '',
+      pinConditions: [],
+      pinLogic: 'AND',
+      instruction: '',
+      hint: '',
+      flagPart: '',
+      coords: [0, 0, 0, 0],
+      bootStageConditions: [],
     };
     set({
       steps: updateStepObjectives(get().steps, stepId, objs => [...objs, newObj]),
@@ -963,6 +991,9 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         ...(o.type === 'pin' && o.pinConditions.length > 0
           ? { pinConditions: o.pinConditions, pinLogic: o.pinLogic }
           : {}),
+        ...(o.type === 'terminal' && o.bootStageConditions.length > 0
+          ? { bootStageConditions: o.bootStageConditions }
+          : {}),
       }));
       const flagParts = objectives.map(o => o.flagPart).join('');
       return {
@@ -1104,6 +1135,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
                 hint: o.hint || '',
                 flagPart: o.flagPart || '',
                 coords: o.coords || [0, 0, 0, 0],
+                bootStageConditions: (o as any).bootStageConditions || [],
               };
             }),
           };
@@ -1154,6 +1186,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
             hint: c.hint,
             flagPart: c.flagPart,
             coords: c.coords,
+            bootStageConditions: [],
           })),
         }];
       }

@@ -228,6 +228,7 @@ interface TerminalSettingsState {
   activeBootStageId: string | null;
   activeFilesystemEntryId: string | null;
   initialized: boolean;
+  previewOpen: boolean;
 
   // Tab CRUD
   addTab: () => void;
@@ -253,15 +254,19 @@ interface TerminalSettingsState {
   reorderBootStage: (id: string, direction: 'up' | 'down') => void;
 
   // Filesystem CRUD
-  addFilesystemEntry: (tabId: string, type: 'file' | 'directory') => void;
+  addFilesystemEntry: (tabId: string, type: 'file' | 'directory', defaultPath?: string) => void;
   updateFilesystemEntry: (id: string, data: Partial<DraftFilesystemEntry>) => void;
   deleteFilesystemEntry: (id: string) => void;
+
+  // Migration
+  normalizeBuiltinCommands: () => void;
 
   // UI actions
   setActiveSection: (section: TerminalSection) => void;
   setActiveTabId: (tabId: string) => void;
   setActiveCommandId: (id: string | null) => void;
   setEditingCommandId: (id: string | null) => void;
+  setPreviewOpen: (open: boolean) => void;
 
   // Export / Import
   exportAsTerminalConfig: () => TerminalConfig;
@@ -367,7 +372,7 @@ function commandDefToDraft(name: string, cmd: CommandDefinition, tabId: string):
     name,
     description: cmd.description || '',
     aliases: cmd.aliases || [],
-    handler: cmd.handler === 'builtin' ? 'builtin' : 'custom',
+    handler: 'custom',
     builtinType: cmd.builtinType || '',
     bootStages,
     minArgs: cmd.constraints?.arguments?.min ?? 0,
@@ -457,9 +462,9 @@ function draftToCommandDef(draft: DraftCommand): CommandDefinition {
   const def: CommandDefinition = {
     name: draft.name,
     description: draft.description,
-    handler: draft.handler,
+    handler: draft.builtinType ? 'builtin' : 'custom',
     ...(draft.aliases.length > 0 ? { aliases: draft.aliases } : {}),
-    ...(draft.handler === 'builtin' && draft.builtinType ? { builtinType: draft.builtinType } : {}),
+    ...(draft.builtinType ? { builtinType: draft.builtinType } : {}),
     ...(Object.keys(constraints).length > 0 ? { constraints } : {}),
     ...(output ? { output } : {}),
     ...(Object.keys(sideEffects).length > 0 ? { sideEffects } : {}),
@@ -492,6 +497,7 @@ export const useTerminalSettingsStore = create<TerminalSettingsState>()(
   activeBootStageId: null,
   activeFilesystemEntryId: null,
   initialized: false,
+  previewOpen: false,
 
   // ============================================
   // TAB CRUD
@@ -521,6 +527,18 @@ export const useTerminalSettingsStore = create<TerminalSettingsState>()(
       bootStages: bootStages.filter(b => b.tabId !== id),
       filesystemEntries: filesystemEntries.filter(f => f.tabId !== id),
       activeTabId: activeTabId === id ? (tabs[0]?.id || '') : activeTabId,
+    });
+  },
+
+  // ============================================
+  // MIGRATION
+  // ============================================
+
+  normalizeBuiltinCommands: () => {
+    set({
+      commands: get().commands.map(c =>
+        c.handler === 'builtin' ? { ...c, handler: 'custom' } : c
+      ),
     });
   },
 
@@ -649,12 +667,10 @@ export const useTerminalSettingsStore = create<TerminalSettingsState>()(
   // FILESYSTEM CRUD
   // ============================================
 
-  addFilesystemEntry: (tabId, type) => {
+  addFilesystemEntry: (tabId, type, defaultPath) => {
     const id = generateId('fs');
-    const newEntry: DraftFilesystemEntry = {
-      id, tabId, path: type === 'directory' ? '/new-dir' : '/new-file.txt',
-      type, content: '',
-    };
+    const path = defaultPath ?? (type === 'directory' ? '/new-dir' : '/new-file.txt');
+    const newEntry: DraftFilesystemEntry = { id, tabId, path, type, content: '' };
     set({ filesystemEntries: [...get().filesystemEntries, newEntry], activeFilesystemEntryId: id });
   },
 
@@ -677,6 +693,7 @@ export const useTerminalSettingsStore = create<TerminalSettingsState>()(
   setActiveTabId: (tabId) => set({ activeTabId: tabId }),
   setActiveCommandId: (id) => set({ activeCommandId: id }),
   setEditingCommandId: (id) => set({ editingCommandId: id }),
+  setPreviewOpen: (open) => set({ previewOpen: open }),
 
   // ============================================
   // EXPORT: Draft State → TerminalConfig

@@ -5,10 +5,11 @@ import { useRef, useState, useLayoutEffect, useEffect, useMemo, useCallback, typ
 import { useSettingsStore } from '@/store/settingsStore';
 import { useTerminalSettingsStore } from '@/store/terminalSettingsStore';
 import { cn } from '@/lib/utils';
-import { Upload, Terminal, TerminalSquare, Braces, Flag, Cpu, FolderTree, Layers, FileCode, Check, AlertTriangle, Pencil, RotateCcw } from 'lucide-react';
+import { Upload, Terminal, TerminalSquare, Flag, Cpu, FolderTree, Layers, FileCode, Check, AlertTriangle, Pencil, RotateCcw } from 'lucide-react';
 import yaml from 'js-yaml';
 import ComponentPopup from './ComponentPopup';
 import ObjectivePopup from './ObjectivePopup';
+import TerminalObjectivePopup from './TerminalObjectivePopup';
 import PinPopup from './PinPopup';
 
 const PIN_TYPE_COLORS: Record<string, string> = {
@@ -738,7 +739,9 @@ const SettingsCanvas = () => {
         )}
 
         {activeObjective && containerDims.width > 0 && (
-          <ObjectivePopup objective={activeObjective} containerDims={containerDims} />
+          activeObjective.type === 'terminal'
+            ? <TerminalObjectivePopup objective={activeObjective} containerDims={containerDims} />
+            : <ObjectivePopup objective={activeObjective} containerDims={containerDims} />
         )}
 
         {activePin && containerDims.width > 0 && (
@@ -755,18 +758,15 @@ const SettingsCanvas = () => {
 
 const TerminalConfigPreview = () => {
   const { tabs, commands, bootStages, filesystemEntries, flagParts, completeFlag, exportAsTerminalConfig, loadFromTerminalConfig, initialized } = useTerminalSettingsStore();
-  const [viewMode, setViewMode] = useState<'summary' | 'json' | 'yaml'>('summary');
+  const [viewMode, setViewMode] = useState<'summary' | 'yaml'>('summary');
   const [editorContent, setEditorContent] = useState('');
   const [parseError, setParseError] = useState<string | null>(null);
   const [importSuccess, setImportSuccess] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
 
-  // Serialize current config to the given format
-  const serializeConfig = useCallback((format: 'json' | 'yaml') => {
+  // Serialize current config to YAML
+  const serializeConfig = useCallback(() => {
     const config = exportAsTerminalConfig();
-    if (format === 'json') {
-      return JSON.stringify(config, null, 2);
-    }
     return yaml.dump(config, { indent: 2, lineWidth: 120, noRefs: true, sortKeys: false });
   }, [exportAsTerminalConfig]);
 
@@ -776,8 +776,8 @@ const TerminalConfigPreview = () => {
     const modeChanged = prevViewModeRef.current !== viewMode;
     prevViewModeRef.current = viewMode;
 
-    if (modeChanged && (viewMode === 'json' || viewMode === 'yaml')) {
-      setEditorContent(serializeConfig(viewMode));
+    if (modeChanged && viewMode === 'yaml') {
+      setEditorContent(serializeConfig());
       setParseError(null);
       setImportSuccess(false);
       setIsDirty(false);
@@ -795,14 +795,7 @@ const TerminalConfigPreview = () => {
   // Parse and import the edited config
   const handleImport = useCallback(() => {
     try {
-      let parsed: any;
-      if (viewMode === 'json') {
-        parsed = JSON.parse(editorContent);
-      } else if (viewMode === 'yaml') {
-        parsed = yaml.load(editorContent);
-      } else {
-        return;
-      }
+      const parsed: any = yaml.load(editorContent);
 
       if (!parsed || typeof parsed !== 'object' || !parsed.tabs) {
         setParseError('Configurazione non valida: manca la proprietà "tabs"');
@@ -817,12 +810,12 @@ const TerminalConfigPreview = () => {
     } catch (err: any) {
       setParseError(err.message || 'Errore di parsing');
     }
-  }, [editorContent, viewMode, loadFromTerminalConfig]);
+  }, [editorContent, loadFromTerminalConfig]);
 
   // Reset editor content to current store state
   const handleReset = useCallback(() => {
-    if (viewMode === 'json' || viewMode === 'yaml') {
-      setEditorContent(serializeConfig(viewMode));
+    if (viewMode === 'yaml') {
+      setEditorContent(serializeConfig());
       setParseError(null);
       setImportSuccess(false);
       setIsDirty(false);
@@ -847,7 +840,7 @@ const TerminalConfigPreview = () => {
 
   const dirs = filesystemEntries.filter(e => e.type === 'directory');
   const files = filesystemEntries.filter(e => e.type === 'file');
-  const isCodeView = viewMode === 'json' || viewMode === 'yaml';
+  const isCodeView = viewMode === 'yaml';
 
   return (
     <div className="relative min-h-[500px] flex flex-col rounded-lg bg-gray-900/80 border border-gray-700 overflow-hidden">
@@ -858,16 +851,6 @@ const TerminalConfigPreview = () => {
           <span className="text-sm font-medium text-white">Terminal Config Preview</span>
         </div>
         <div className="flex items-center gap-1">
-          <button
-            onClick={() => setViewMode(viewMode === 'json' ? 'summary' : 'json')}
-            className={cn(
-              'flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors',
-              viewMode === 'json' ? 'bg-green-600/50 text-white' : 'bg-gray-700 text-gray-400 hover:text-white'
-            )}
-          >
-            <Braces className="h-3 w-3" />
-            JSON
-          </button>
           <button
             onClick={() => setViewMode(viewMode === 'yaml' ? 'summary' : 'yaml')}
             className={cn(
@@ -922,18 +905,7 @@ const TerminalConfigPreview = () => {
         </div>
       )}
 
-      {viewMode === 'json' ? (
-        /* JSON Editor */
-        <div className="flex-1 overflow-auto">
-          <textarea
-            value={editorContent}
-            onChange={handleEditorChange}
-            spellCheck={false}
-            className="w-full h-full min-h-[400px] bg-transparent text-[10px] font-mono text-gray-300 resize-none outline-none p-4 focus:bg-gray-900/50"
-            placeholder="Incolla qui la configurazione JSON..."
-          />
-        </div>
-      ) : viewMode === 'yaml' ? (
+      {viewMode === 'yaml' ? (
         /* YAML Editor */
         <div className="flex-1 overflow-auto">
           <textarea

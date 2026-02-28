@@ -6,9 +6,9 @@ import { useTerminalSettingsStore, type TerminalSection, type DraftCommand, type
 import { cn } from '@/lib/utils';
 import terminalConfig from '@/config/terminal.config';
 import {
-  Plus, Trash2, Pencil, ChevronDown, ChevronRight,
+  Plus, Trash2, Pencil, ChevronDown, ChevronRight, Check,
   ArrowUp, ArrowDown, Copy, Terminal, Flag, Cpu, FolderTree, Layers,
-  FileText, Folder, Code, Zap,
+  FileText, Folder, Code, Zap, Play, Square,
 } from 'lucide-react';
 import {
   AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader,
@@ -23,13 +23,11 @@ import CommandEditorPopup from './CommandEditorPopup';
 
 const SECTIONS: { id: TerminalSection; label: string; icon: typeof Terminal }[] = [
   { id: 'commands', label: 'Comandi', icon: Terminal },
-  { id: 'flags', label: 'Flag', icon: Flag },
   { id: 'boot', label: 'Boot', icon: Cpu },
   { id: 'filesystem', label: 'Filesystem', icon: FolderTree },
   { id: 'tabs', label: 'Tab', icon: Layers },
+  { id: 'flags', label: 'Flag', icon: Flag },
 ];
-
-const BUILTIN_TYPES = ['ls', 'cat', 'cd', 'pwd', 'grep', 'find', 'file', 'mount', 'ps', 'help', 'printenv', 'version', 'md', 'clear', 'strings'];
 
 // ============================================
 // MAIN PANEL
@@ -44,35 +42,52 @@ const TerminalSettingsPanel = () => {
     if (!store.initialized) {
       store.loadFromTerminalConfig(terminalConfig);
     }
+    // Migrate persisted builtin commands → custom (localStorage rehydration)
+    store.normalizeBuiltinCommands();
   }, [store.initialized]);
 
   return (
     <div className="space-y-3">
       {/* Section navigation */}
-      <div className="flex flex-wrap gap-1">
-        {SECTIONS.map(({ id, label, icon: Icon }) => (
-          <button
-            key={id}
-            onClick={() => store.setActiveSection(id)}
-            className={cn(
-              'flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors',
-              store.activeSection === id
-                ? 'bg-green-600/60 text-white'
-                : 'bg-gray-700/50 text-gray-400 hover:text-gray-300'
-            )}
-          >
-            <Icon className="h-3 w-3" />
-            {label}
-          </button>
-        ))}
+      <div className="flex items-center gap-1">
+        <div className="flex flex-wrap gap-1 flex-1">
+          {SECTIONS.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => store.setActiveSection(id)}
+              className={cn(
+                'flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors',
+                store.activeSection === id
+                  ? 'bg-green-600/60 text-white'
+                  : 'bg-gray-700/50 text-gray-400 hover:text-gray-300'
+              )}
+            >
+              <Icon className="h-3 w-3" />
+              {label}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={() => store.setPreviewOpen(!store.previewOpen)}
+          className={cn(
+            'flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors flex-shrink-0',
+            store.previewOpen
+              ? 'bg-green-700/60 text-green-300 ring-1 ring-green-600/50'
+              : 'bg-gray-700/50 text-gray-400 hover:text-gray-300'
+          )}
+          title={store.previewOpen ? 'Chiudi preview terminale' : 'Apri preview terminale'}
+        >
+          {store.previewOpen ? <Square className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+          Preview
+        </button>
       </div>
 
       {/* Section content */}
       {store.activeSection === 'commands' && <CommandsSection />}
-      {store.activeSection === 'flags' && <FlagsSection />}
       {store.activeSection === 'boot' && <BootSection />}
       {store.activeSection === 'filesystem' && <FilesystemSection />}
       {store.activeSection === 'tabs' && <TabsSection />}
+      {store.activeSection === 'flags' && <FlagsSection />}
     </div>
   );
 };
@@ -170,12 +185,6 @@ const CommandItem = ({
   onDuplicate: () => void;
 }) => (
   <div className="flex items-center gap-1.5 px-2 py-1.5 rounded hover:bg-gray-700/50 group">
-    <span className={cn(
-      'text-[10px] font-mono flex-shrink-0 px-1 rounded',
-      command.handler === 'builtin' ? 'text-yellow-400 bg-yellow-400/10' : 'text-green-400 bg-green-400/10'
-    )}>
-      {command.handler === 'builtin' ? 'BLT' : 'CST'}
-    </span>
     <span className="text-xs font-mono truncate flex-1 text-green-300">{command.name || '<vuoto>'}</span>
     {command.flagUnlocks.length > 0 && (
       <Flag className="h-2.5 w-2.5 text-amber-400 flex-shrink-0" />
@@ -198,7 +207,7 @@ const CommandItem = ({
 // FLAGS SECTION
 // ============================================
 
-const FlagsSection = () => {
+export const FlagsSection = () => {
   const { flagParts, completeFlag, addFlagPart, updateFlagPart, deleteFlagPart, updateCompleteFlag } = useTerminalSettingsStore();
 
   return (
@@ -260,7 +269,7 @@ const FlagsSection = () => {
   );
 };
 
-const FlagPartItem = ({
+export const FlagPartItem = ({
   flagPart, index, onUpdate, onDelete,
 }: {
   flagPart: DraftFlagPart;
@@ -406,179 +415,212 @@ const BootStageItem = ({
 };
 
 // ============================================
-// FILESYSTEM SECTION
+// FILESYSTEM SECTION (tree view)
 // ============================================
 
+type FsTreeNode = {
+  entry: DraftFilesystemEntry;
+  name: string;
+  children: FsTreeNode[];
+};
+
+function buildFsTree(entries: DraftFilesystemEntry[]): FsTreeNode | null {
+  const root = entries.find(e => e.path === '/');
+  if (!root) return null;
+
+  const buildChildren = (parentPath: string): FsTreeNode[] =>
+    entries
+      .filter(e => {
+        if (e.path === '/') return false;
+        const lastSlash = e.path.lastIndexOf('/');
+        const parent = lastSlash === 0 ? '/' : e.path.substring(0, lastSlash);
+        return parent === parentPath;
+      })
+      .sort((a, b) => {
+        if (a.type !== b.type) return a.type === 'directory' ? -1 : 1;
+        return a.path.localeCompare(b.path);
+      })
+      .map(e => ({
+        entry: e,
+        name: e.path.substring(e.path.lastIndexOf('/') + 1),
+        children: e.type === 'directory' ? buildChildren(e.path) : [],
+      }));
+
+  return { entry: root, name: '/', children: buildChildren('/') };
+}
+
 const FilesystemSection = () => {
-  const { filesystemEntries, activeTabId, setActiveTabId, addFilesystemEntry, updateFilesystemEntry, deleteFilesystemEntry } = useTerminalSettingsStore();
+  const { filesystemEntries, activeTabId, setActiveTabId, addFilesystemEntry } = useTerminalSettingsStore();
   const tabEntries = filesystemEntries.filter(f => f.tabId === activeTabId);
-  const dirs = tabEntries.filter(e => e.type === 'directory');
-  const files = tabEntries.filter(e => e.type === 'file');
+  const tree = useMemo(() => buildFsTree(tabEntries), [tabEntries]);
 
   return (
     <div>
       <TabSelector activeTabId={activeTabId} onSelect={setActiveTabId} />
-
-      {/* Directories */}
-      <div className="mb-3">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-xs text-gray-400 uppercase tracking-wider">
-            Directory ({dirs.length})
-          </h3>
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-xs text-gray-400 uppercase tracking-wider">
+          Filesystem ({tabEntries.length})
+        </h3>
+        {!tree && (
           <button
-            onClick={() => addFilesystemEntry(activeTabId, 'directory')}
-            className="text-gray-400 hover:text-white transition-colors p-0.5"
-            title="Aggiungi directory"
+            onClick={() => addFilesystemEntry(activeTabId, 'directory', '/')}
+            className="text-gray-400 hover:text-white transition-colors text-xs flex items-center gap-1"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-3.5 w-3.5" />
+            Crea root
           </button>
-        </div>
-
-        {dirs.length === 0 && (
-          <p className="text-xs text-gray-500 italic">Nessuna directory.</p>
         )}
-
-        <div className="space-y-1.5">
-          {dirs.map(dir => (
-            <DirectoryItem
-              key={dir.id}
-              entry={dir}
-              allEntries={tabEntries}
-              onUpdate={(data) => updateFilesystemEntry(dir.id, data)}
-              onDelete={() => deleteFilesystemEntry(dir.id)}
-            />
-          ))}
-        </div>
       </div>
 
-      {/* Files */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-xs text-gray-400 uppercase tracking-wider">
-            File ({files.length})
-          </h3>
-          <button
-            onClick={() => addFilesystemEntry(activeTabId, 'file')}
-            className="text-gray-400 hover:text-white transition-colors p-0.5"
-            title="Aggiungi file"
-          >
-            <Plus className="h-4 w-4" />
-          </button>
+      {tabEntries.length === 0 ? (
+        <p className="text-xs text-gray-500 italic">Filesystem vuoto. Crea prima la directory root.</p>
+      ) : tree ? (
+        <div className="border border-gray-700 rounded overflow-hidden">
+          <FsTreeRow node={tree} depth={0} />
         </div>
-
-        {files.length === 0 && (
-          <p className="text-xs text-gray-500 italic">Nessun file.</p>
-        )}
-
-        <div className="space-y-1.5">
-          {files.map(file => (
-            <FileItem
-              key={file.id}
-              entry={file}
-              onUpdate={(data) => updateFilesystemEntry(file.id, data)}
-              onDelete={() => deleteFilesystemEntry(file.id)}
-            />
-          ))}
-        </div>
-      </div>
+      ) : (
+        <p className="text-xs text-gray-500 italic">Nessuna directory root "/". Aggiungila con il pulsante.</p>
+      )}
     </div>
   );
 };
 
-const DirectoryItem = ({
-  entry, allEntries, onUpdate, onDelete,
-}: {
-  entry: DraftFilesystemEntry;
-  allEntries: DraftFilesystemEntry[];
-  onUpdate: (data: Partial<DraftFilesystemEntry>) => void;
-  onDelete: () => void;
-}) => {
-  const [expanded, setExpanded] = useState(false);
+const FsTreeRow = ({ node, depth }: { node: FsTreeNode; depth: number }) => {
+  const {
+    activeTabId, activeFilesystemEntryId,
+    addFilesystemEntry, updateFilesystemEntry, deleteFilesystemEntry,
+  } = useTerminalSettingsStore();
 
-  // Auto-compute children from sibling entries (real dir/file records)
-  const computedChildren = useMemo(() => {
-    const normalizedPath = entry.path === '/' ? '' : entry.path;
-    const children: string[] = [];
-    for (const other of allEntries) {
-      if (other.id === entry.id) continue;
-      const parent = other.path.substring(0, other.path.lastIndexOf('/')) || '/';
-      if (parent === entry.path || (entry.path === '/' && parent === '')) {
-        const childName = other.path.substring(normalizedPath.length + 1);
-        if (childName && !childName.includes('/')) {
-          children.push(childName);
-        }
-      }
-    }
-    return children.sort();
-  }, [entry.id, entry.path, allEntries]);
+  const isRoot = node.entry.path === '/';
+  const isDir = node.entry.type === 'directory';
+
+  const [expanded, setExpanded] = useState(depth === 0);
+  const [editing, setEditing] = useState(() => activeFilesystemEntryId === node.entry.id);
+
+  const indent = 8 + depth * 14;
+
+  const addChild = (type: 'file' | 'directory') => {
+    const base = node.entry.path === '/' ? '' : node.entry.path;
+    addFilesystemEntry(activeTabId, type, `${base}/${type === 'directory' ? 'new-dir' : 'new-file.txt'}`);
+    setExpanded(true);
+  };
 
   return (
-    <div className="rounded border border-gray-700 bg-gray-800/50">
-      <div className="flex items-center gap-1.5 px-2 py-1.5 cursor-pointer group" onClick={() => setExpanded(!expanded)}>
-        {expanded ? <ChevronDown className="h-3 w-3 text-gray-400" /> : <ChevronRight className="h-3 w-3 text-gray-400" />}
-        <Folder className="h-3 w-3 text-blue-400 flex-shrink-0" />
-        <span className="text-xs font-mono text-blue-300 truncate flex-1">{entry.path}</span>
-        <span className="text-[10px] text-gray-500">{computedChildren.length} voci</span>
-        <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-400 p-0.5">
-          <Trash2 className="h-3 w-3" />
-        </button>
+    <div>
+      {/* Row */}
+      <div
+        className={cn(
+          'flex items-center gap-1 py-1 pr-1 hover:bg-gray-700/40 group',
+          editing && 'bg-gray-700/30',
+        )}
+        style={{ paddingLeft: `${indent}px` }}
+      >
+        {/* Expand toggle */}
+        {isDir ? (
+          <button
+            onClick={() => setExpanded(v => !v)}
+            className="text-gray-400 hover:text-gray-200 flex-shrink-0"
+          >
+            {expanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+          </button>
+        ) : (
+          <span className="w-3 flex-shrink-0" />
+        )}
+
+        {/* Icon */}
+        {isDir
+          ? <Folder className="h-3 w-3 text-blue-400 flex-shrink-0" />
+          : <FileText className="h-3 w-3 text-green-400 flex-shrink-0" />
+        }
+
+        {/* Name */}
+        <span
+          className={cn(
+            'text-xs font-mono truncate flex-1 cursor-pointer select-none',
+            isDir ? 'text-blue-300' : 'text-green-300',
+          )}
+          onClick={() => setEditing(v => !v)}
+        >
+          {node.name}{isDir && !isRoot && '/'}
+        </span>
+
+        {/* Badge */}
+        <span className="text-[10px] text-gray-500 flex-shrink-0 mr-0.5">
+          {isDir ? `${node.children.length}` : `${node.entry.content.length}c`}
+        </span>
+
+        {/* Add child — two inline buttons, no dropdown */}
+        {isDir && (
+          <>
+            <button
+              onClick={(e) => { e.stopPropagation(); addChild('directory'); }}
+              className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-blue-400 p-0.5 transition-opacity flex-shrink-0"
+              title="Nuova cartella"
+            >
+              <Folder className="h-3 w-3" />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); addChild('file'); }}
+              className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-green-400 p-0.5 transition-opacity flex-shrink-0"
+              title="Nuovo file"
+            >
+              <FileText className="h-3 w-3" />
+            </button>
+          </>
+        )}
+
+        {/* Delete (not root) */}
+        {!isRoot && (
+          <button
+            onClick={(e) => { e.stopPropagation(); deleteFilesystemEntry(node.entry.id); }}
+            className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-400 p-0.5 flex-shrink-0 transition-opacity"
+          >
+            <Trash2 className="h-3 w-3" />
+          </button>
+        )}
       </div>
-      {expanded && (
-        <div className="px-2 pb-2 space-y-1.5">
-          <FieldInput label="Path" value={entry.path} onChange={(v) => onUpdate({ path: v })} mono />
-          {computedChildren.length > 0 && (
+
+      {/* Inline editor */}
+      {editing && (
+        <div
+          className="bg-gray-800/60 border-t border-b border-gray-700/50 py-2 space-y-1.5 pr-2"
+          style={{ paddingLeft: `${indent + 20}px` }}
+        >
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[10px] text-gray-500 uppercase tracking-wider">Modifica</span>
+            <button
+              onClick={() => setEditing(false)}
+              className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] bg-green-700/40 hover:bg-green-700/70 text-green-300 transition-colors"
+            >
+              <Check className="h-3 w-3" />
+              Fatto
+            </button>
+          </div>
+          <FieldInput
+            label="Path"
+            value={node.entry.path}
+            onChange={(v) => updateFilesystemEntry(node.entry.id, { path: v })}
+            mono
+          />
+          {!isDir && (
             <div>
-              <label className="text-[10px] text-gray-500 block mb-0.5">Contenuto (auto-calcolato da dir/file)</label>
-              <div className="flex flex-wrap gap-1">
-                {computedChildren.map(name => (
-                  <span key={name} className="px-1.5 py-0.5 rounded bg-green-700/30 text-[10px] font-mono text-green-400">
-                    {name}
-                  </span>
-                ))}
-              </div>
+              <label className="text-[10px] text-gray-500 block mb-0.5">Contenuto</label>
+              <textarea
+                value={node.entry.content}
+                onChange={(e) => updateFilesystemEntry(node.entry.id, { content: e.target.value })}
+                rows={5}
+                className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1 text-[10px] text-gray-300 font-mono placeholder-gray-500 focus:outline-none focus:border-green-500 resize-none"
+                placeholder="Contenuto del file..."
+              />
             </div>
           )}
         </div>
       )}
-    </div>
-  );
-};
 
-const FileItem = ({
-  entry, onUpdate, onDelete,
-}: {
-  entry: DraftFilesystemEntry;
-  onUpdate: (data: Partial<DraftFilesystemEntry>) => void;
-  onDelete: () => void;
-}) => {
-  const [expanded, setExpanded] = useState(false);
-
-  return (
-    <div className="rounded border border-gray-700 bg-gray-800/50">
-      <div className="flex items-center gap-1.5 px-2 py-1.5 cursor-pointer group" onClick={() => setExpanded(!expanded)}>
-        {expanded ? <ChevronDown className="h-3 w-3 text-gray-400" /> : <ChevronRight className="h-3 w-3 text-gray-400" />}
-        <FileText className="h-3 w-3 text-green-400 flex-shrink-0" />
-        <span className="text-xs font-mono text-green-300 truncate flex-1">{entry.path}</span>
-        <span className="text-[10px] text-gray-500">{entry.content.length} chr</span>
-        <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-400 p-0.5">
-          <Trash2 className="h-3 w-3" />
-        </button>
-      </div>
-      {expanded && (
-        <div className="px-2 pb-2 space-y-1.5">
-          <FieldInput label="Path" value={entry.path} onChange={(v) => onUpdate({ path: v })} mono />
-          <div>
-            <label className="text-[10px] text-gray-500 block mb-0.5">Contenuto</label>
-            <textarea
-              value={entry.content}
-              onChange={(e) => onUpdate({ content: e.target.value })}
-              rows={6}
-              className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1 text-[10px] text-gray-300 font-mono placeholder-gray-500 focus:outline-none focus:border-green-500 resize-none"
-              placeholder="Contenuto del file..."
-            />
-          </div>
-        </div>
-      )}
+      {/* Children */}
+      {isDir && expanded && node.children.map(child => (
+        <FsTreeRow key={child.entry.id} node={child} depth={depth + 1} />
+      ))}
     </div>
   );
 };
@@ -717,7 +759,7 @@ const TabItem = ({
 // SHARED: Field Input
 // ============================================
 
-const FieldInput = ({
+export const FieldInput = ({
   label, value, onChange, mono, placeholder,
 }: {
   label: string;
