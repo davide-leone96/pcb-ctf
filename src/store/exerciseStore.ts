@@ -279,12 +279,21 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
 
       set({ terminalDiscoveries: newDiscoveries });
 
-      // Se la discovery corrisponde all'obiettivo corrente di tipo 'terminal', completalo
+      // Completa l'obiettivo terminale corrente quando tutti i flag configurati sono stati scoperti
       const { stepMode, exerciseData: storeData, currentStepIndex, currentObjectiveIndex } = get();
       const currentStep = storeData?.steps?.[currentStepIndex];
       const currentObj = currentStep?.objectives?.[currentObjectiveIndex];
-      if (stepMode === 'active' && currentObj?.type === 'terminal' && currentObj.id === id) {
-        get()._completeCurrentObjective();
+
+      if (stepMode === 'active' && currentObj?.type === 'terminal') {
+        const requiredFlags = (currentObj.bootStageConditions ?? [])
+          .flatMap(c => c.unlockedFlags);
+
+        if (
+          requiredFlags.length > 0 &&
+          requiredFlags.every(f => newDiscoveries.includes(f))
+        ) {
+          get()._completeCurrentObjective();
+        }
       }
     }
   },

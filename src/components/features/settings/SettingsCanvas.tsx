@@ -5,7 +5,7 @@ import { useRef, useState, useLayoutEffect, useEffect, useMemo, useCallback, typ
 import { useSettingsStore } from '@/store/settingsStore';
 import { useTerminalSettingsStore } from '@/store/terminalSettingsStore';
 import { cn } from '@/lib/utils';
-import { Upload, Terminal, TerminalSquare, Flag, Cpu, FolderTree, Layers, FileCode, Check, AlertTriangle, Pencil, RotateCcw } from 'lucide-react';
+import { Upload, Terminal, TerminalSquare, Flag, Cpu, FolderTree, Layers, FileCode, Check, AlertTriangle, Pencil, RotateCcw, Play, Square } from 'lucide-react';
 import yaml from 'js-yaml';
 import ComponentPopup from './ComponentPopup';
 import ObjectivePopup from './ObjectivePopup';
@@ -757,7 +757,7 @@ const SettingsCanvas = () => {
 // ============================================
 
 const TerminalConfigPreview = () => {
-  const { tabs, commands, bootStages, filesystemEntries, flagParts, completeFlag, exportAsTerminalConfig, loadFromTerminalConfig, initialized } = useTerminalSettingsStore();
+  const { tabs, commands, bootStages, filesystemEntries, flagParts, completeFlag, exportAsTerminalConfig, loadFromTerminalConfig, initialized, previewOpen, setPreviewOpen } = useTerminalSettingsStore();
   const [viewMode, setViewMode] = useState<'summary' | 'yaml'>('summary');
   const [editorContent, setEditorContent] = useState('');
   const [parseError, setParseError] = useState<string | null>(null);
@@ -851,6 +851,16 @@ const TerminalConfigPreview = () => {
           <span className="text-sm font-medium text-white">Terminal Config Preview</span>
         </div>
         <div className="flex items-center gap-1">
+          <button
+            onClick={() => setPreviewOpen(!previewOpen)}
+            className={cn(
+              'flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors',
+              previewOpen ? 'bg-green-600/50 text-white' : 'bg-gray-700 text-gray-400 hover:text-white'
+            )}
+          >
+            {previewOpen ? <Square className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+            Preview
+          </button>
           <button
             onClick={() => setViewMode(viewMode === 'yaml' ? 'summary' : 'yaml')}
             className={cn(

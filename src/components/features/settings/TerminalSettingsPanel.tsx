@@ -8,7 +8,7 @@ import terminalConfig from '@/config/terminal.config';
 import {
   Plus, Trash2, Pencil, ChevronDown, ChevronRight, Check,
   ArrowUp, ArrowDown, Copy, Terminal, Flag, Cpu, FolderTree, Layers,
-  FileText, Folder, Code, Zap, Play, Square,
+  FileText, Folder, Code, Zap, Shield,
 } from 'lucide-react';
 import {
   AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader,
@@ -49,37 +49,22 @@ const TerminalSettingsPanel = () => {
   return (
     <div className="space-y-3">
       {/* Section navigation */}
-      <div className="flex items-center gap-1">
-        <div className="flex flex-wrap gap-1 flex-1">
-          {SECTIONS.map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              onClick={() => store.setActiveSection(id)}
-              className={cn(
-                'flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors',
-                store.activeSection === id
-                  ? 'bg-green-600/60 text-white'
-                  : 'bg-gray-700/50 text-gray-400 hover:text-gray-300'
-              )}
-            >
-              <Icon className="h-3 w-3" />
-              {label}
-            </button>
-          ))}
-        </div>
-        <button
-          onClick={() => store.setPreviewOpen(!store.previewOpen)}
-          className={cn(
-            'flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors flex-shrink-0',
-            store.previewOpen
-              ? 'bg-green-700/60 text-green-300 ring-1 ring-green-600/50'
-              : 'bg-gray-700/50 text-gray-400 hover:text-gray-300'
-          )}
-          title={store.previewOpen ? 'Chiudi preview terminale' : 'Apri preview terminale'}
-        >
-          {store.previewOpen ? <Square className="h-3 w-3" /> : <Play className="h-3 w-3" />}
-          Preview
-        </button>
+      <div className="flex flex-wrap gap-1">
+        {SECTIONS.map(({ id, label, icon: Icon }) => (
+          <button
+            key={id}
+            onClick={() => store.setActiveSection(id)}
+            className={cn(
+              'flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors',
+              store.activeSection === id
+                ? 'bg-green-600/60 text-white'
+                : 'bg-gray-700/50 text-gray-400 hover:text-gray-300'
+            )}
+          >
+            <Icon className="h-3 w-3" />
+            {label}
+          </button>
+        ))}
       </div>
 
       {/* Section content */}
@@ -183,25 +168,47 @@ const CommandItem = ({
   onEdit: () => void;
   onDelete: () => void;
   onDuplicate: () => void;
-}) => (
-  <div className="flex items-center gap-1.5 px-2 py-1.5 rounded hover:bg-gray-700/50 group">
-    <span className="text-xs font-mono truncate flex-1 text-green-300">{command.name || '<vuoto>'}</span>
-    {command.flagUnlocks.length > 0 && (
-      <Flag className="h-2.5 w-2.5 text-amber-400 flex-shrink-0" />
-    )}
-    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-      <button onClick={onEdit} className="text-gray-400 hover:text-white p-0.5" title="Modifica">
-        <Pencil className="h-3 w-3" />
-      </button>
-      <button onClick={onDuplicate} className="text-gray-400 hover:text-blue-400 p-0.5" title="Duplica">
-        <Copy className="h-3 w-3" />
-      </button>
-      <button onClick={onDelete} className="text-gray-400 hover:text-red-400 p-0.5" title="Elimina">
-        <Trash2 className="h-3 w-3" />
-      </button>
+}) => {
+  const isBuiltin = !!command.builtinType;
+
+  const constraintParts: string[] = [];
+  if (command.bootStages.length > 0) constraintParts.push(`boot: ${command.bootStages.join(', ')}`);
+  if (command.minArgs > 0) constraintParts.push(`min args: ${command.minArgs}`);
+  if (command.maxArgs > 0) constraintParts.push(`max args: ${command.maxArgs}`);
+  const hasConstraints = constraintParts.length > 0;
+
+  return (
+    <div className="flex items-center gap-1.5 px-2 py-1.5 rounded hover:bg-gray-700/50 group">
+      {isBuiltin
+        ? <Cpu  className="h-2.5 w-2.5 text-blue-400 flex-shrink-0" title={`Built-in: ${command.builtinType}`} />
+        : <Code className="h-2.5 w-2.5 text-gray-500 flex-shrink-0" title="Comando custom" />
+      }
+      <span className={cn(
+        'text-xs font-mono truncate flex-1',
+        isBuiltin ? 'text-blue-300' : 'text-green-300',
+      )}>
+        {command.name || '<vuoto>'}
+      </span>
+      {hasConstraints && (
+        <Shield className="h-2.5 w-2.5 text-orange-400 flex-shrink-0" title={`Vincoli: ${constraintParts.join(' · ')}`} />
+      )}
+      {command.flagUnlocks.length > 0 && (
+        <Flag className="h-2.5 w-2.5 text-amber-400 flex-shrink-0" title="Sblocca flag" />
+      )}
+      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+        <button onClick={onEdit} className="text-gray-400 hover:text-white p-0.5" title="Modifica">
+          <Pencil className="h-3 w-3" />
+        </button>
+        <button onClick={onDuplicate} className="text-gray-400 hover:text-blue-400 p-0.5" title="Duplica">
+          <Copy className="h-3 w-3" />
+        </button>
+        <button onClick={onDelete} className="text-gray-400 hover:text-red-400 p-0.5" title="Elimina">
+          <Trash2 className="h-3 w-3" />
+        </button>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // ============================================
 // FLAGS SECTION

@@ -14,19 +14,17 @@ interface TerminalObjectivePopupProps {
 
 const TerminalObjectivePopup = ({ objective, containerDims }: TerminalObjectivePopupProps) => {
   const { saveObjective, updateObjective, cancelObjectiveEdit } = useSettingsStore();
-  const { bootStages, flagParts } = useTerminalSettingsStore();
+  const { bootStages, flagParts, completeFlag } = useTerminalSettingsStore();
 
   const isNew = objective.instruction === '' && objective.hint === '' && objective.flagPart === '';
 
   const [instruction, setInstruction] = useState(objective.instruction);
   const [hint, setHint] = useState(objective.hint);
-  const [flagPart, setFlagPart] = useState(objective.flagPart);
   const [conditions, setConditions] = useState<BootStageCondition[]>(objective.bootStageConditions);
 
   useEffect(() => {
     setInstruction(objective.instruction);
     setHint(objective.hint);
-    setFlagPart(objective.flagPart);
     setConditions(objective.bootStageConditions);
   }, [objective]);
 
@@ -63,7 +61,7 @@ const TerminalObjectivePopup = ({ objective, containerDims }: TerminalObjectiveP
       pinLogic: 'AND' as const,
       instruction,
       hint,
-      flagPart: flagPart || 'TERMINAL',
+      flagPart: completeFlag || flagParts.map(fp => fp.part).join('') || 'TERMINAL',
       bootStageConditions: conditions,
     };
     if (isNew) {
@@ -120,16 +118,18 @@ const TerminalObjectivePopup = ({ objective, containerDims }: TerminalObjectiveP
         />
       </div>
 
-      {/* Flag Part */}
+      {/* Flag (read-only — derivata dalla config terminale) */}
       <div className="mb-3">
-        <label className="block text-xs text-gray-400 mb-1">Flag Part</label>
-        <input
-          type="text"
-          value={flagPart}
-          onChange={(e) => setFlagPart(e.target.value)}
-          placeholder="TERMINAL"
-          className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition-colors font-mono"
-        />
+        <label className="block text-xs text-gray-400 mb-1">Flag terminale</label>
+        {completeFlag || flagParts.length > 0 ? (
+          <div className="w-full bg-gray-800/60 border border-gray-700 rounded px-2 py-1.5 text-sm font-mono text-green-300 break-all">
+            {completeFlag || flagParts.map(fp => fp.part).join('')}
+          </div>
+        ) : (
+          <p className="text-xs text-gray-500 italic">
+            Nessuna flag configurata nella tab Terminale
+          </p>
+        )}
       </div>
 
       {/* Boot Stage Conditions */}
