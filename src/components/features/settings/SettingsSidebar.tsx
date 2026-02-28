@@ -12,6 +12,7 @@ import {
   Hand, Search, Wrench, Cable, TerminalSquare, RotateCcw, type LucideIcon,
 } from 'lucide-react';
 import TerminalSettingsPanel from './TerminalSettingsPanel';
+import CustomToolsPanel from './CustomToolsPanel';
 import PresetSelector from './PresetSelector';
 import { usePresetStore } from '@/store/presetStore';
 import {
@@ -85,16 +86,18 @@ const SettingsSidebar = () => {
 
   const isInitTab = activeTool === 'component' || activeTool === 'pin';
   const isTerminalTab = activeTool === 'terminal-config';
+  const isToolsTab = activeTool === 'tools-config';
 
   const terminalStore = useTerminalSettingsStore();
   const presetStore = usePresetStore();
 
-  const hasContent = steps.length > 0 || components.length > 0 || pins.length > 0;
+  const { customTools } = useSettingsStore();
+  const hasContent = steps.length > 0 || components.length > 0 || pins.length > 0 || customTools.length > 0;
   const hasAnyContent = hasContent || terminalStore.initialized;
 
   return (
     <aside className="flex flex-col gap-y-3 rounded-lg bg-gray-800 p-4 w-96 text-white max-h-[calc(100vh-8rem)] overflow-hidden">
-      {/* Tab selector: Init / Challenge / Terminal */}
+      {/* Tab selector: Init / Challenge / Terminal / Strumenti */}
       <div>
         <div className="flex gap-1">
           <button
@@ -111,7 +114,7 @@ const SettingsSidebar = () => {
             onClick={() => setActiveTool('objective')}
             className={cn(
               'flex items-center gap-1 px-2 py-2 rounded-lg text-xs transition-colors flex-1',
-              !isInitTab && !isTerminalTab ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-400 hover:bg-gray-600 hover:text-white'
+              !isInitTab && !isTerminalTab && !isToolsTab ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-400 hover:bg-gray-600 hover:text-white'
             )}
           >
             <BoxSelect className="h-3.5 w-3.5" />
@@ -127,12 +130,24 @@ const SettingsSidebar = () => {
             <TerminalSquare className="h-3.5 w-3.5" />
             Terminal
           </button>
+          <button
+            onClick={() => setActiveTool('tools-config')}
+            className={cn(
+              'flex items-center gap-1 px-2 py-2 rounded-lg text-xs transition-colors flex-1',
+              isToolsTab ? 'bg-purple-600 text-white' : 'bg-gray-700 text-gray-400 hover:bg-gray-600 hover:text-white'
+            )}
+          >
+            <Wrench className="h-3.5 w-3.5" />
+            Tools
+          </button>
         </div>
       </div>
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto min-h-0 space-y-3">
-        {isTerminalTab ? (
+        {isToolsTab ? (
+          <CustomToolsPanel />
+        ) : isTerminalTab ? (
           <TerminalSettingsPanel />
         ) : isInitTab ? (
           <>

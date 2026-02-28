@@ -1,10 +1,15 @@
 // src/data/exercise.ts
+import type { CustomTool } from '@/types/custom-tool';
 
 /**
  * Definisce la struttura di un singolo componente hardware cliccabile sul PCB.
  */
 export type ObjectiveType = 'component' | 'uart' | 'terminal' | 'pin';
-export type Tool = 'pointer' | 'magnifier' | 'multimeter' | 'probes' | 'terminal';
+/**
+ * Tool hardcoded del simulatore + 'custom' per i tool definiti dall'autore.
+ * 'custom' NON è incluso in ALL_TOOLS per evitare che appaia nei toggle degli step.
+ */
+export type Tool = 'pointer' | 'magnifier' | 'multimeter' | 'probes' | 'terminal' | 'custom';
 export const ALL_TOOLS: Tool[] = ['pointer', 'magnifier', 'multimeter', 'probes', 'terminal'];
 
 export interface PinCondition {
@@ -78,6 +83,8 @@ export interface Exercise {
   pins: MeasurementPin[];
   uartPins: UartPin[];
   initialFlag: string;
+  /** Tool personalizzati definiti dall'autore tramite la tab "Strumenti" in /settings. */
+  customTools?: CustomTool[];
 }
 
 // ===================================================================================
@@ -261,6 +268,7 @@ export const defaultExerciseData: Exercise = {
     { id: 'uart-rx',  role: 'rx',  label: 'RX (3.3V)', coords: [60, 79.5, 1.5, 2.5] },
     { id: 'uart-gnd', role: 'gnd', label: 'GND (0V)',  coords: [70, 84.5, 2, 2.5] },
   ],
+  customTools: [],
 };
 
 /**

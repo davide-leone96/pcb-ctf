@@ -9,6 +9,7 @@ import { XCircle } from 'lucide-react';
 import Multimeter from './Multimeter';
 import UartProbesAdapter, { WIRE_COLORS } from './UartProbesAdapter';
 import LensContentLayer from './LensContentLayer';
+import CustomToolRenderer from './CustomToolRenderer';
 import type { AdapterPin } from '@/store/exerciseStore';
 
 const SNAP_RADIUS = 15;
@@ -29,6 +30,8 @@ const PCBViewer = () => {
     lensRadius, lensZoomLevel, lensVisible, lensIsAnchored, lensAnchorPosition,
     toggleLensAnchor, setLensAnchorPosition,
     isSimulatorEnabled,
+    activeCustomToolId, activeCustomProbeId, customSnapTarget, customToolConnections, customToolPositions,
+    setActiveCustomProbe, setCustomSnapTarget, hookCustomProbe, setCustomToolPosition,
   } = useExerciseStore();
 
   const pcbContainerRef = useRef<HTMLDivElement>(null);
@@ -119,6 +122,9 @@ const PCBViewer = () => {
   const handleContainerClick = (e: React.MouseEvent) => {
     if (activeTool === 'multimeter' && snapTarget) hookProbe();
     if (activeTool === 'probes' && uartSnapTarget) hookUartProbe();
+    if (activeTool === 'custom' && activeCustomToolId && activeCustomProbeId && customSnapTarget) {
+      hookCustomProbe(activeCustomToolId, activeCustomProbeId, customSnapTarget.pinId);
+    }
 
     // Permetti ancoraggio lente se:
     // - activeTool è pointer (sempre)
@@ -189,6 +195,23 @@ const PCBViewer = () => {
       if (uartSnapTarget !== closest) setUartSnapTarget(closest);
     } else if (activeTool === 'probes' && uartSnapTarget) {
       setUartSnapTarget(null);
+    }
+
+    if (activeTool === 'custom' && activeCustomToolId && activeCustomProbeId && exerciseData) {
+      // Determina la connettività della sonda attiva
+      const activeCt = exerciseData.customTools?.find(t => t.id === activeCustomToolId);
+      const activeProbeObj = activeCt?.probes.find(p => p.id === activeCustomProbeId);
+      const connectivity = activeProbeObj?.connectivity ?? 'all';
+      const filterType: 'all' | 'uart-only' =
+        connectivity === 'uart' ? 'uart-only' : 'all';
+      const closest = findClosestPin(mouseX, mouseY, filterType);
+      const newTarget = closest ? { probeId: activeCustomProbeId, pinId: closest } : null;
+      const currentTarget = customSnapTarget;
+      if (newTarget?.pinId !== currentTarget?.pinId || newTarget?.probeId !== currentTarget?.probeId) {
+        setCustomSnapTarget(newTarget);
+      }
+    } else if (activeTool === 'custom' && customSnapTarget) {
+      setCustomSnapTarget(null);
     }
   };
 
@@ -329,6 +352,31 @@ const PCBViewer = () => {
         <img ref={pcbImageRef} src={exerciseData.pcbImage} alt="Vista PCB" className="h-auto w-full block rounded-lg" style={{ imageRendering: 'high-quality' }} draggable={false} />
         {isSimulatorEnabled && activeTool === 'multimeter' && <Multimeter onPositionChange={setMultimeterPosition} bounds={bounds} />}
         {isSimulatorEnabled && showUartOverlay && <UartProbesAdapter onPositionChange={setAdapterPosition} bounds={bounds} readOnly={activeTool !== 'probes'} />}
+        {isSimulatorEnabled && activeTool === 'custom' && activeCustomToolId && (() => {
+          const ct = exerciseData.customTools?.find(t => t.id === activeCustomToolId);
+          if (!ct || containerDims.width === 0) return null;
+          const pos = customToolPositions[activeCustomToolId] ?? { x: 60, y: 60 };
+          const conns = customToolConnections[activeCustomToolId] ?? ct.probes.map(p => ({ probeId: p.id, pinId: null }));
+          return (
+            <CustomToolRenderer
+              tool={ct}
+              position={pos}
+              connections={conns}
+              snapTarget={customSnapTarget}
+              activeProbeId={activeCustomProbeId}
+              onDrag={(x, y) => setCustomToolPosition(activeCustomToolId, x, y)}
+              onProbeClick={(probeId) => {
+                if (activeCustomProbeId === probeId) {
+                  setActiveCustomProbe(activeCustomToolId, null);
+                } else {
+                  setActiveCustomProbe(activeCustomToolId, probeId);
+                }
+              }}
+              containerDims={containerDims}
+              exerciseData={exerciseData}
+            />
+          );
+        })()}
 
       <div className="absolute inset-0 pointer-events-none z-10">
         {isSimulatorEnabled && activeTool === 'multimeter' && (

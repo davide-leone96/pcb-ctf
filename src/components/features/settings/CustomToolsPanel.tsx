@@ -1,0 +1,485 @@
+// src/components/features/settings/CustomToolsPanel.tsx
+'use client';
+
+import { useRef, useState, type ChangeEvent } from 'react';
+import { useSettingsStore, type DraftCustomTool, type DraftToolProbe, type DraftToolMode } from '@/store/settingsStore';
+import { cn } from '@/lib/utils';
+import {
+  Plus, Trash2, Pencil, ChevronDown, ChevronRight, Wrench,
+  Upload, CircleDot, Settings,
+} from 'lucide-react';
+import {
+  AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader,
+  AlertDialogFooter, AlertDialogTitle, AlertDialogDescription,
+  AlertDialogAction, AlertDialogCancel,
+} from '@/components/ui/alert-dialog';
+
+type ToolSection = 'general' | 'probes';
+
+const CONNECTIVITY_LABELS: Record<string, string> = {
+  measurement: 'Solo misura (V/Ω)',
+  uart: 'Solo UART',
+  all: 'Tutti i pin',
+};
+
+const OUTPUT_TYPE_LABELS: Record<string, string> = {
+  none: 'Nessuno',
+  numeric: 'Numerico',
+  leds: 'LED',
+  'connection-status': 'Stato connessione',
+};
+
+// ============================================
+// MAIN PANEL
+// ============================================
+
+const CustomToolsPanel = () => {
+  const {
+    customTools,
+    activeCustomToolId,
+    addCustomTool,
+    selectCustomTool,
+  } = useSettingsStore();
+
+  return (
+    <div className="space-y-3">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-xs text-gray-400 uppercase tracking-wider">
+          Tool personalizzati ({customTools.length})
+        </h3>
+        <button
+          onClick={addCustomTool}
+          className="text-gray-400 hover:text-white transition-colors p-0.5"
+          title="Aggiungi tool"
+        >
+          <Plus className="h-4 w-4" />
+        </button>
+      </div>
+
+      {customTools.length === 0 && (
+        <p className="text-xs text-gray-500 italic">
+          Nessun tool. Clicca + per crearne uno.
+        </p>
+      )}
+
+      <div className="space-y-1">
+        {customTools.map(tool => (
+          <ToolItem
+            key={tool.id}
+            tool={tool}
+            isExpanded={tool.id === activeCustomToolId}
+            onToggle={() => selectCustomTool(tool.id === activeCustomToolId ? null : tool.id)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ============================================
+// TOOL ITEM (accordion)
+// ============================================
+
+const ToolItem = ({
+  tool, isExpanded, onToggle,
+}: {
+  tool: DraftCustomTool;
+  isExpanded: boolean;
+  onToggle: () => void;
+}) => {
+  const { updateCustomTool, deleteCustomTool, uploadToolImage } = useSettingsStore();
+  const [section, setSection] = useState<ToolSection>('general');
+  const [editingName, setEditingName] = useState(false);
+  const [nameValue, setNameValue] = useState(tool.name);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleNameSave = () => {
+    updateCustomTool(tool.id, { name: nameValue });
+    setEditingName(false);
+  };
+
+  const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const result = await uploadToolImage(tool.id, file);
+    setUploading(false);
+    if (!result.success) alert(`Errore upload: ${result.error}`);
+    // reset input so same file can be re-selected
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  return (
+    <div className={cn(
+      'rounded-lg border transition-colors',
+      isExpanded ? 'border-purple-500/50 bg-gray-750' : 'border-gray-700 bg-gray-800/50'
+    )}>
+      {/* Header */}
+      <div className="flex items-center gap-1 px-2 py-1.5 cursor-pointer group" onClick={onToggle}>
+        {isExpanded
+          ? <ChevronDown className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+          : <ChevronRight className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+        }
+        <Wrench className="h-3 w-3 text-purple-400 flex-shrink-0" />
+
+        {editingName ? (
+          <input
+            value={nameValue}
+            onChange={e => setNameValue(e.target.value)}
+            onBlur={handleNameSave}
+            onKeyDown={e => { if (e.key === 'Enter') handleNameSave(); }}
+            onClick={e => e.stopPropagation()}
+            className="flex-1 bg-gray-700 border border-gray-500 rounded px-1 py-0.5 text-xs text-white focus:outline-none focus:border-purple-500 min-w-0"
+            autoFocus
+          />
+        ) : (
+          <span className="text-sm truncate flex-1">{tool.name || 'Senza nome'}</span>
+        )}
+
+        <div
+          className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+          onClick={e => e.stopPropagation()}
+        >
+          <button
+            onClick={() => { setEditingName(true); setNameValue(tool.name); }}
+            className="text-gray-400 hover:text-white p-0.5"
+            title="Rinomina"
+          >
+            <Pencil className="h-3 w-3" />
+          </button>
+          <DeleteToolButton name={tool.name || 'questo tool'} onConfirm={() => deleteCustomTool(tool.id)} />
+        </div>
+      </div>
+
+      {/* Expanded content */}
+      {isExpanded && (
+        <div className="px-2 pb-2 space-y-2">
+          {/* Sub-tab selector */}
+          <div className="flex gap-1">
+            <button
+              onClick={() => setSection('general')}
+              className={cn(
+                'flex-1 px-2 py-1 rounded text-xs transition-colors flex items-center justify-center gap-1',
+                section === 'general'
+                  ? 'bg-purple-600/50 text-white'
+                  : 'bg-gray-700/50 text-gray-400 hover:text-gray-300'
+              )}
+            >
+              <Settings className="h-3 w-3" />
+              Generale
+            </button>
+            <button
+              onClick={() => setSection('probes')}
+              className={cn(
+                'flex-1 px-2 py-1 rounded text-xs transition-colors flex items-center justify-center gap-1',
+                section === 'probes'
+                  ? 'bg-purple-600/50 text-white'
+                  : 'bg-gray-700/50 text-gray-400 hover:text-gray-300'
+              )}
+            >
+              <CircleDot className="h-3 w-3" />
+              Sonde ({tool.probes.length})
+            </button>
+          </div>
+
+          {section === 'general' && (
+            <GeneralSection tool={tool} uploading={uploading} fileInputRef={fileInputRef} onImageUpload={handleImageUpload} />
+          )}
+          {section === 'probes' && (
+            <ProbesSection tool={tool} />
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ============================================
+// GENERAL SECTION
+// ============================================
+
+const GeneralSection = ({
+  tool, uploading, fileInputRef, onImageUpload,
+}: {
+  tool: DraftCustomTool;
+  uploading: boolean;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
+  onImageUpload: (e: ChangeEvent<HTMLInputElement>) => void;
+}) => {
+  const { updateCustomTool, addModeToTool, updateMode, deleteMode } = useSettingsStore();
+
+  return (
+    <div className="space-y-2">
+      {/* Description */}
+      <div>
+        <label className="text-[10px] text-gray-500 uppercase block mb-0.5">Descrizione</label>
+        <textarea
+          value={tool.description}
+          onChange={e => updateCustomTool(tool.id, { description: e.target.value })}
+          placeholder="Descrizione del tool..."
+          rows={2}
+          className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 resize-none"
+        />
+      </div>
+
+      {/* Image upload */}
+      <div>
+        <label className="text-[10px] text-gray-500 uppercase block mb-1">Grafica tool</label>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="flex items-center gap-1 px-2 py-1 rounded text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white transition-colors disabled:opacity-50"
+          >
+            <Upload className="h-3 w-3" />
+            {uploading ? 'Caricamento...' : 'Importa grafica'}
+          </button>
+          {tool.imagePath && (
+            <button
+              onClick={() => updateCustomTool(tool.id, { imagePath: '' })}
+              className="text-[10px] text-red-400 hover:text-red-300 transition-colors"
+              title="Rimuovi immagine"
+            >
+              Rimuovi
+            </button>
+          )}
+        </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={onImageUpload}
+        />
+        {tool.imagePath && (
+          <div className="mt-1.5 rounded border border-gray-600 overflow-hidden bg-gray-900 flex items-center justify-center" style={{ height: 80 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={tool.imagePath}
+              alt={tool.name}
+              className="max-h-full max-w-full object-contain"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Output type */}
+      <div>
+        <label className="text-[10px] text-gray-500 uppercase block mb-0.5">Tipo output</label>
+        <div className="flex gap-1.5">
+          <select
+            value={tool.outputType}
+            onChange={e => updateCustomTool(tool.id, { outputType: e.target.value as DraftCustomTool['outputType'] })}
+            className="flex-1 bg-gray-700/50 border border-gray-600 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-purple-500"
+          >
+            {Object.entries(OUTPUT_TYPE_LABELS).map(([val, label]) => (
+              <option key={val} value={val}>{label}</option>
+            ))}
+          </select>
+          {tool.outputType === 'numeric' && (
+            <input
+              value={tool.outputUnit}
+              onChange={e => updateCustomTool(tool.id, { outputUnit: e.target.value })}
+              placeholder="Unità"
+              className="w-16 bg-gray-700/50 border border-gray-600 rounded px-2 py-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Modes (only for numeric output) */}
+      {tool.outputType === 'numeric' && (
+        <div>
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] text-gray-500 uppercase">Modi di misura</span>
+            <button
+              onClick={() => addModeToTool(tool.id)}
+              className="text-gray-400 hover:text-white transition-colors p-0.5"
+              title="Aggiungi modo"
+            >
+              <Plus className="h-3.5 w-3.5" />
+            </button>
+          </div>
+          {tool.modes.length === 0 && (
+            <p className="text-[10px] text-gray-500 italic">Nessun modo. Clicca + per aggiungerne uno.</p>
+          )}
+          <div className="space-y-1">
+            {tool.modes.map(mode => (
+              <ModeRow key={mode.id} toolId={tool.id} mode={mode} onUpdate={updateMode} onDelete={deleteMode} />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ============================================
+// MODE ROW
+// ============================================
+
+const ModeRow = ({
+  toolId, mode, onUpdate, onDelete,
+}: {
+  toolId: string;
+  mode: DraftToolMode;
+  onUpdate: (toolId: string, modeId: string, updates: Partial<Omit<DraftToolMode, 'id'>>) => void;
+  onDelete: (toolId: string, modeId: string) => void;
+}) => (
+  <div className="flex items-center gap-1 group">
+    <input
+      value={mode.name}
+      onChange={e => onUpdate(toolId, mode.id, { name: e.target.value })}
+      placeholder="Nome"
+      className="flex-1 bg-gray-700/50 border border-gray-600 rounded px-1.5 py-0.5 text-[11px] text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 min-w-0"
+    />
+    <input
+      value={mode.shortName}
+      onChange={e => onUpdate(toolId, mode.id, { shortName: e.target.value })}
+      placeholder="Short"
+      className="w-12 bg-gray-700/50 border border-gray-600 rounded px-1.5 py-0.5 text-[11px] text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+    />
+    <input
+      value={mode.unit}
+      onChange={e => onUpdate(toolId, mode.id, { unit: e.target.value })}
+      placeholder="Unità"
+      className="w-12 bg-gray-700/50 border border-gray-600 rounded px-1.5 py-0.5 text-[11px] text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+    />
+    <button
+      onClick={() => onDelete(toolId, mode.id)}
+      className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-400 p-0.5 flex-shrink-0"
+    >
+      <Trash2 className="h-3 w-3" />
+    </button>
+  </div>
+);
+
+// ============================================
+// PROBES SECTION
+// ============================================
+
+const ProbesSection = ({ tool }: { tool: DraftCustomTool }) => {
+  const { addProbeToTool } = useSettingsStore();
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] text-gray-500 uppercase">Sonde ({tool.probes.length})</span>
+        <button
+          onClick={() => addProbeToTool(tool.id)}
+          className="text-gray-400 hover:text-white transition-colors p-0.5"
+          title="Aggiungi sonda"
+        >
+          <Plus className="h-3.5 w-3.5" />
+        </button>
+      </div>
+      {tool.probes.length === 0 && (
+        <p className="text-[10px] text-gray-500 italic">Nessuna sonda. Clicca + per aggiungerne una.</p>
+      )}
+      <div className="space-y-1.5">
+        {tool.probes.map(probe => (
+          <ProbeRow key={probe.id} toolId={tool.id} probe={probe} />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ============================================
+// PROBE ROW
+// ============================================
+
+const ProbeRow = ({ toolId, probe }: { toolId: string; probe: DraftToolProbe }) => {
+  const { updateProbe, deleteProbe } = useSettingsStore();
+
+  return (
+    <div className="rounded border border-gray-700 bg-gray-800/60 p-1.5 space-y-1.5 group relative">
+      {/* Delete button */}
+      <button
+        onClick={() => deleteProbe(toolId, probe.id)}
+        className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-400 p-0.5"
+        title="Elimina sonda"
+      >
+        <Trash2 className="h-3 w-3" />
+      </button>
+
+      {/* Label + Role row */}
+      <div className="flex items-center gap-1.5 pr-5">
+        {/* Color picker */}
+        <div className="relative flex-shrink-0">
+          <input
+            type="color"
+            value={probe.color}
+            onChange={e => updateProbe(toolId, probe.id, { color: e.target.value })}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            title="Colore sonda"
+          />
+          <div
+            className="w-5 h-5 rounded-full border-2 border-gray-600 flex-shrink-0"
+            style={{ backgroundColor: probe.color }}
+          />
+        </div>
+
+        <input
+          value={probe.label}
+          onChange={e => updateProbe(toolId, probe.id, { label: e.target.value })}
+          placeholder="Etichetta (es. CH1+)"
+          className="flex-1 bg-gray-700/50 border border-gray-600 rounded px-1.5 py-0.5 text-[11px] text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 min-w-0"
+        />
+      </div>
+
+      {/* Role + Connectivity row */}
+      <div className="flex items-center gap-1.5">
+        <input
+          value={probe.role}
+          onChange={e => updateProbe(toolId, probe.id, { role: e.target.value })}
+          placeholder="Ruolo (es. positivo)"
+          className="flex-1 bg-gray-700/50 border border-gray-600 rounded px-1.5 py-0.5 text-[11px] text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 min-w-0"
+        />
+        <select
+          value={probe.connectivity}
+          onChange={e => updateProbe(toolId, probe.id, { connectivity: e.target.value as DraftToolProbe['connectivity'] })}
+          className="bg-gray-700/50 border border-gray-600 rounded px-1.5 py-0.5 text-[11px] text-white focus:outline-none focus:border-purple-500 max-w-[110px]"
+        >
+          {Object.entries(CONNECTIVITY_LABELS).map(([val, label]) => (
+            <option key={val} value={val}>{label}</option>
+          ))}
+        </select>
+      </div>
+    </div>
+  );
+};
+
+// ============================================
+// DELETE TOOL BUTTON
+// ============================================
+
+const DeleteToolButton = ({ name, onConfirm }: { name: string; onConfirm: () => void }) => (
+  <AlertDialog>
+    <AlertDialogTrigger asChild>
+      <button className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-400 p-0.5">
+        <Trash2 className="h-3 w-3" />
+      </button>
+    </AlertDialogTrigger>
+    <AlertDialogContent className="bg-gray-800 border-gray-600 text-white">
+      <AlertDialogHeader>
+        <AlertDialogTitle>Eliminare &quot;{name}&quot;?</AlertDialogTitle>
+        <AlertDialogDescription className="text-gray-400">
+          Questa azione non può essere annullata.
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel className="bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600 hover:text-white">
+          Annulla
+        </AlertDialogCancel>
+        <AlertDialogAction onClick={onConfirm} className="bg-red-600 hover:bg-red-700 text-white">
+          Elimina
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+);
+
+export default CustomToolsPanel;

@@ -19,6 +19,7 @@ const Sidebar = () => {
     activeTool, setActiveTool,
     lensVisible, toggleLensVisible,
     exerciseData, currentStepIndex,
+    activeCustomToolId, setActiveCustomTool,
   } = useExerciseStore();
 
   const currentStep = exerciseData?.steps?.[currentStepIndex];
@@ -26,6 +27,8 @@ const Sidebar = () => {
   const visibleTools = availableTools?.length
     ? tools.filter(t => availableTools.includes(t.id))
     : tools;
+
+  const customTools = exerciseData?.customTools ?? [];
 
   return (
     <aside className="flex flex-col items-center gap-y-4 rounded-lg bg-gray-800 p-4">
@@ -37,15 +40,14 @@ const Sidebar = () => {
 
         const handleClick = () => {
           if (isMagnifier) {
-            toggleLensVisible();  // Mantiene comportamento esistente
+            toggleLensVisible();
           } else if (tool.id === 'pointer') {
-            setActiveTool('pointer');  // Pointer non togglabile
+            setActiveTool('pointer');
           } else {
-            // Toggle per multimeter, probes, terminal
             if (isActive) {
-              setActiveTool('pointer');  // Disattiva tornando a pointer
+              setActiveTool('pointer');
             } else {
-              setActiveTool(tool.id);    // Attiva normalmente
+              setActiveTool(tool.id);
             }
           }
         };
@@ -60,6 +62,29 @@ const Sidebar = () => {
           />
         );
       })}
+
+      {/* Custom tools — shown after hardcoded tools when defined */}
+      {customTools.length > 0 && (
+        <>
+          {/* Divider */}
+          <div className="w-8 border-t border-gray-600" />
+          {customTools.map(ct => (
+            <ToolButton
+              key={ct.id}
+              label={ct.name}
+              icon={Wrench}
+              isActive={activeTool === 'custom' && activeCustomToolId === ct.id}
+              onClick={() => {
+                if (activeTool === 'custom' && activeCustomToolId === ct.id) {
+                  setActiveTool('pointer');
+                } else {
+                  setActiveCustomTool(ct.id);
+                }
+              }}
+            />
+          ))}
+        </>
+      )}
     </aside>
   );
 };
