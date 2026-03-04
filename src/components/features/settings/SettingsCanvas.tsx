@@ -5,7 +5,7 @@ import { useRef, useState, useLayoutEffect, useEffect, useMemo, useCallback, typ
 import { useSettingsStore } from '@/store/settingsStore';
 import { useTerminalSettingsStore } from '@/store/terminalSettingsStore';
 import { cn } from '@/lib/utils';
-import { Upload, Terminal, TerminalSquare, Flag, Cpu, FolderTree, Layers, FileCode, Check, AlertTriangle, Pencil, RotateCcw, Play, Square } from 'lucide-react';
+import { Upload, Terminal, TerminalSquare, Flag, Cpu, FolderTree, Layers, FileCode, Check, AlertTriangle, Pencil, RotateCcw, Play, Square, Wrench } from 'lucide-react';
 import yaml from 'js-yaml';
 import ComponentPopup from './ComponentPopup';
 import ObjectivePopup from './ObjectivePopup';
@@ -380,12 +380,16 @@ const SettingsCanvas = () => {
   // Determine which tab is active
   const isInitTab = activeTool === 'component' || activeTool === 'pin';
   const isTerminalTab = activeTool === 'terminal-config';
+  const isToolsTab = activeTool === 'tools-config';
 
   // Terminal tab: show config preview or live terminal preview in the same canvas area
   if (isTerminalTab) {
     if (previewOpen) return <TerminalPreviewPanel />;
     return <TerminalConfigPreview />;
   }
+
+  // Tools tab: show tool preview panel
+  if (isToolsTab) return <CustomToolPreviewPanel />;
 
   // Empty state with upload area
   if (!hasImage) {
@@ -1023,6 +1027,170 @@ const StatCard = ({ icon: Icon, label, count, color }: { icon: typeof Terminal; 
       <div>
         <div className="text-lg font-semibold text-white leading-tight">{count}</div>
         <div className="text-[10px] text-gray-400">{label}</div>
+      </div>
+    </div>
+  );
+};
+
+// ============================================
+// CUSTOM TOOL PREVIEW PANEL
+// ============================================
+
+const PREVIEW_BODY_WIDTH = 200;
+const PREVIEW_PROBE_SIZE = 16;
+const PREVIEW_PROBE_SPACING = 36;
+
+const CustomToolPreviewPanel = () => {
+  const customTools = useSettingsStore(s => s.customTools);
+  const activeCustomToolId = useSettingsStore(s => s.activeCustomToolId);
+  const [activeProbeId, setActiveProbeId] = useState<string | null>(null);
+
+  const tool = customTools.find(t => t.id === activeCustomToolId);
+
+  if (!tool) {
+    return (
+      <div className="relative min-h-[500px] flex items-center justify-center rounded-lg bg-gray-800/50 border-2 border-gray-600 border-dashed">
+        <div className="text-center px-6 py-12">
+          <div className="mx-auto w-20 h-20 rounded-full flex items-center justify-center mb-5 bg-gray-700/50">
+            <Wrench className="w-10 h-10 text-gray-500" />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-300 mb-2">Nessun tool selezionato</h3>
+          <p className="text-gray-500 text-sm">Seleziona un tool dalla tab Tools per visualizzarne la preview</p>
+        </div>
+      </div>
+    );
+  }
+
+  const bodyHeight = Math.max(90, tool.probes.length * PREVIEW_PROBE_SPACING + 28);
+  const activeProbe = tool.probes.find(p => p.id === activeProbeId);
+
+  return (
+    <div className="relative min-h-[500px] flex flex-col rounded-lg bg-gray-900/80 border border-gray-700 overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center gap-2 px-4 py-3 bg-gray-800/80 border-b border-gray-700">
+        <Wrench className="h-4 w-4 text-purple-400 flex-shrink-0" />
+        <span className="text-sm font-medium text-white truncate">{tool.name}</span>
+        <span className="ml-auto text-[10px] font-mono text-gray-500 flex-shrink-0">{tool.outputType}</span>
+      </div>
+
+      {/* Preview area */}
+      <div className="flex-1 flex items-center justify-center p-10">
+        <div className="relative flex items-center">
+
+          {/* Probe column */}
+          <div className="flex flex-col" style={{ marginTop: 28, gap: PREVIEW_PROBE_SPACING - PREVIEW_PROBE_SIZE }}>
+            {tool.probes.map(probe => {
+              const isActive = activeProbeId === probe.id;
+              return (
+                <div
+                  key={probe.id}
+                  className="flex items-center gap-2 cursor-pointer select-none"
+                  onClick={() => setActiveProbeId(isActive ? null : probe.id)}
+                  title={`${probe.label || probe.role} · ${probe.connectivity}`}
+                >
+                  <span
+                    className="text-[9px] font-mono text-right w-16 truncate"
+                    style={{ color: probe.color, opacity: isActive ? 1 : 0.7 }}
+                  >
+                    {probe.label || probe.role}
+                  </span>
+                  <div
+                    className={cn(
+                      'rounded-full flex items-center justify-center text-[8px] font-bold transition-all',
+                      isActive && 'ring-2 ring-white scale-125',
+                    )}
+                    style={{
+                      width: PREVIEW_PROBE_SIZE,
+                      height: PREVIEW_PROBE_SIZE,
+                      backgroundColor: probe.color,
+                      boxShadow: isActive ? `0 0 8px ${probe.color}` : undefined,
+                    }}
+                  >
+                    {probe.label?.[0] ?? '•'}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Connector line between probes and body */}
+          <div className="w-6 border-t border-gray-600 self-start" style={{ marginTop: 28 + (tool.probes.length * PREVIEW_PROBE_SPACING) / 2 }} />
+
+          {/* Tool body */}
+          <div
+            className="rounded-lg border border-gray-500 bg-gray-800 shadow-2xl overflow-hidden"
+            style={{ width: PREVIEW_BODY_WIDTH, minHeight: bodyHeight }}
+          >
+            {/* Header */}
+            <div className="px-2 py-1.5 bg-gray-700/80 border-b border-gray-600 flex items-center justify-between">
+              <span className="text-xs font-mono text-gray-300 truncate">{tool.name}</span>
+              {tool.outputType === 'numeric' && (
+                <span className="text-[10px] font-mono text-green-400 tabular-nums">
+                  — {tool.outputUnit ?? tool.modes?.[0]?.unit ?? ''}
+                </span>
+              )}
+            </div>
+            {/* Image or placeholder */}
+            <div className="flex items-center justify-center" style={{ minHeight: bodyHeight - 32 }}>
+              {tool.imagePath ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={tool.imagePath}
+                  alt={tool.name}
+                  className="max-w-full object-contain pointer-events-none"
+                  style={{ maxHeight: Math.max(70, bodyHeight - 48) }}
+                  draggable={false}
+                />
+              ) : (
+                <span className="text-xs text-gray-600 italic">nessuna grafica</span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Info footer */}
+      <div className="p-4 border-t border-gray-700 space-y-3">
+        {/* Stats row */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="rounded bg-gray-800/60 border border-gray-700 p-2 text-center">
+            <div className="text-base font-semibold text-white">{tool.probes.length}</div>
+            <div className="text-[10px] text-gray-500">Probe</div>
+          </div>
+          <div className="rounded bg-gray-800/60 border border-gray-700 p-2 text-center">
+            <div className="text-base font-semibold text-white">{tool.modes?.length ?? 0}</div>
+            <div className="text-[10px] text-gray-500">Modalità</div>
+          </div>
+          <div className="rounded bg-gray-800/60 border border-gray-700 p-2 text-center">
+            <div className="text-base font-semibold text-white truncate">{tool.outputUnit || '—'}</div>
+            <div className="text-[10px] text-gray-500">Unità</div>
+          </div>
+        </div>
+
+        {/* Active probe details */}
+        {activeProbe && (
+          <div className="rounded border border-purple-700/50 bg-purple-900/20 p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: activeProbe.color }} />
+              <span className="text-xs font-medium text-purple-200">{activeProbe.label || activeProbe.role}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[10px]">
+              <div><span className="text-gray-500">Role: </span><span className="text-gray-300">{activeProbe.role || '—'}</span></div>
+              <div><span className="text-gray-500">Connettività: </span><span className="text-gray-300">{activeProbe.connectivity}</span></div>
+            </div>
+          </div>
+        )}
+
+        {/* Mode pills */}
+        {tool.modes && tool.modes.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {tool.modes.map(mode => (
+              <span key={mode.id} className="px-2 py-0.5 rounded bg-purple-700/20 text-[10px] font-mono text-purple-300">
+                {mode.name} · {mode.shortName} ({mode.unit})
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

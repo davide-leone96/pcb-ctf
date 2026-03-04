@@ -63,8 +63,8 @@ const Sidebar = () => {
         );
       })}
 
-      {/* Custom tools — shown after hardcoded tools when defined */}
-      {customTools.length > 0 && (
+      {/* Custom tools — shown only when step allows 'custom' (or no tool restriction) */}
+      {customTools.length > 0 && (!availableTools?.length || availableTools.includes('custom')) && (
         <>
           {/* Divider */}
           <div className="w-8 border-t border-gray-600" />

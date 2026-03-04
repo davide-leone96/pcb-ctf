@@ -4,7 +4,7 @@
     "name": "g4",
     "description": "",
     "createdAt": "2026-02-26T22:17:01.016Z",
-    "updatedAt": "2026-02-28T21:06:33.394Z"
+    "updatedAt": "2026-03-04T21:41:10.890Z"
   },
   "exerciseConfig": {
     "pcbImage": "/images/preset-g4-mm40ww9kgk4r.png",
@@ -19,7 +19,8 @@
           "magnifier",
           "multimeter",
           "probes",
-          "terminal"
+          "terminal",
+          "custom"
         ],
         "objectives": [
           {
@@ -123,7 +124,7 @@
         ]
       },
       {
-        "id": "pin-mm6t83dkp2pqk",
+        "id": "pin-u-3",
         "role": "gnd",
         "label": "GND (0V)",
         "coords": [
@@ -134,7 +135,40 @@
         ]
       }
     ],
-    "initialFlag": "flag{??????????????????????????????}"
+    "initialFlag": "flag{??????????????????????????????}",
+    "customTools": [
+      {
+        "id": "ct-mmck3pxrcw0nt",
+        "name": "tool1",
+        "description": "dsd",
+        "probes": [
+          {
+            "id": "probe-mmck44hoznx74",
+            "label": "c",
+            "role": "",
+            "color": "#6B7280",
+            "connectivity": "all"
+          },
+          {
+            "id": "probe-mmck49uxgjgrm",
+            "label": "ee",
+            "role": "",
+            "color": "#6B7280",
+            "connectivity": "all"
+          }
+        ],
+        "outputType": "numeric",
+        "outputUnit": "volt",
+        "modes": [
+          {
+            "id": "mode-mmck56ivzd4dv",
+            "name": "dciao",
+            "shortName": "",
+            "unit": ""
+          }
+        ]
+      }
+    ]
   },
   "terminalConfig": {
     "metadata": {

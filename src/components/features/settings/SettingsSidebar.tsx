@@ -84,7 +84,8 @@ const SettingsSidebar = () => {
     }
   };
 
-  const isInitTab = activeTool === 'component' || activeTool === 'pin';
+  const isInitMain = activeTool !== 'objective';
+  const isImageSubTab = activeTool === 'component' || activeTool === 'pin';
   const isTerminalTab = activeTool === 'terminal-config';
   const isToolsTab = activeTool === 'tools-config';
 
@@ -97,14 +98,14 @@ const SettingsSidebar = () => {
 
   return (
     <aside className="flex flex-col gap-y-3 rounded-lg bg-gray-800 p-4 w-96 text-white max-h-[calc(100vh-8rem)] overflow-hidden">
-      {/* Tab selector: Init / Challenge / Terminal / Strumenti */}
-      <div>
+      {/* Main tab selector: Init / Challenge */}
+      <div className="space-y-1">
         <div className="flex gap-1">
           <button
-            onClick={() => setActiveTool('component')}
+            onClick={() => { if (!isInitMain) setActiveTool('component'); }}
             className={cn(
               'flex items-center gap-1 px-2 py-2 rounded-lg text-xs transition-colors flex-1',
-              isInitTab ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-400 hover:bg-gray-600 hover:text-white'
+              isInitMain ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-400 hover:bg-gray-600 hover:text-white'
             )}
           >
             <MapPin className="h-3.5 w-3.5" />
@@ -114,33 +115,49 @@ const SettingsSidebar = () => {
             onClick={() => setActiveTool('objective')}
             className={cn(
               'flex items-center gap-1 px-2 py-2 rounded-lg text-xs transition-colors flex-1',
-              !isInitTab && !isTerminalTab && !isToolsTab ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-400 hover:bg-gray-600 hover:text-white'
+              !isInitMain ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-400 hover:bg-gray-600 hover:text-white'
             )}
           >
             <BoxSelect className="h-3.5 w-3.5" />
             Challenge
           </button>
-          <button
-            onClick={() => setActiveTool('terminal-config')}
-            className={cn(
-              'flex items-center gap-1 px-2 py-2 rounded-lg text-xs transition-colors flex-1',
-              isTerminalTab ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-400 hover:bg-gray-600 hover:text-white'
-            )}
-          >
-            <TerminalSquare className="h-3.5 w-3.5" />
-            Terminal
-          </button>
-          <button
-            onClick={() => setActiveTool('tools-config')}
-            className={cn(
-              'flex items-center gap-1 px-2 py-2 rounded-lg text-xs transition-colors flex-1',
-              isToolsTab ? 'bg-purple-600 text-white' : 'bg-gray-700 text-gray-400 hover:bg-gray-600 hover:text-white'
-            )}
-          >
-            <Wrench className="h-3.5 w-3.5" />
-            Tools
-          </button>
         </div>
+
+        {/* Init sub-tabs: Image / Terminal / Tools */}
+        {isInitMain && (
+          <div className="flex gap-1">
+            <button
+              onClick={() => setActiveTool('component')}
+              className={cn(
+                'flex items-center gap-1 px-2 py-1.5 rounded text-xs transition-colors flex-1',
+                isImageSubTab ? 'bg-blue-500/40 text-blue-200' : 'bg-gray-700/50 text-gray-400 hover:bg-gray-600/50 hover:text-white'
+              )}
+            >
+              <MapPin className="h-3 w-3" />
+              Image
+            </button>
+            <button
+              onClick={() => setActiveTool('terminal-config')}
+              className={cn(
+                'flex items-center gap-1 px-2 py-1.5 rounded text-xs transition-colors flex-1',
+                isTerminalTab ? 'bg-green-500/40 text-green-200' : 'bg-gray-700/50 text-gray-400 hover:bg-gray-600/50 hover:text-white'
+              )}
+            >
+              <TerminalSquare className="h-3 w-3" />
+              Terminal
+            </button>
+            <button
+              onClick={() => setActiveTool('tools-config')}
+              className={cn(
+                'flex items-center gap-1 px-2 py-1.5 rounded text-xs transition-colors flex-1',
+                isToolsTab ? 'bg-purple-500/40 text-purple-200' : 'bg-gray-700/50 text-gray-400 hover:bg-gray-600/50 hover:text-white'
+              )}
+            >
+              <Wrench className="h-3 w-3" />
+              Tools
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Scrollable content */}
@@ -149,7 +166,7 @@ const SettingsSidebar = () => {
           <CustomToolsPanel />
         ) : isTerminalTab ? (
           <TerminalSettingsPanel />
-        ) : isInitTab ? (
+        ) : isImageSubTab ? (
           <>
             {/* Sub-tool selector: Componente / Pin */}
             <div className="flex gap-1">
@@ -360,6 +377,36 @@ const SettingsSidebar = () => {
   );
 };
 
+// --- Custom Tools Toggle (inline in step tool section) ---
+
+const CustomToolsToggle = ({
+  stepAvailableTools,
+  onToggle,
+}: {
+  stepAvailableTools: string[];
+  onToggle: (tool: string) => void;
+}) => {
+  const customTools = useSettingsStore(s => s.customTools);
+  if (customTools.length === 0) return null;
+
+  const isActive = stepAvailableTools.includes('custom');
+  return (
+    <>
+      <div className="w-px h-4 bg-gray-600 self-center mx-0.5" />
+      <button
+        onClick={() => onToggle('custom')}
+        className={cn(
+          'p-1 rounded transition-colors',
+          isActive ? 'bg-purple-600/60 text-white' : 'bg-gray-700/50 text-gray-500 hover:text-gray-300'
+        )}
+        title={`Custom tools (${customTools.length}): ${customTools.map(t => t.name).join(', ')}`}
+      >
+        <Wrench className="h-3.5 w-3.5" />
+      </button>
+    </>
+  );
+};
+
 // --- Step Item (accordion) ---
 
 const StepItem = ({
@@ -456,7 +503,7 @@ const StepItem = ({
           {/* Tool toggles */}
           <div>
             <span className="text-[10px] text-gray-500 uppercase">Tool disponibili</span>
-            <div className="flex gap-1 mt-1">
+            <div className="flex gap-1 mt-1 flex-wrap">
               {ALL_TOOLS.map(tool => {
                 const Icon = TOOL_ICONS[tool];
                 const isActive = step.availableTools.includes(tool);
@@ -474,6 +521,8 @@ const StepItem = ({
                   </button>
                 );
               })}
+              {/* Custom tools toggle */}
+              <CustomToolsToggle stepAvailableTools={step.availableTools} onToggle={onToggleTool} />
             </div>
           </div>
 
