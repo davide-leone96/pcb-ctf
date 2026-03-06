@@ -231,7 +231,6 @@ const CustomToolRenderer = ({
                   width: PROBE_SIZE,
                   height: PROBE_SIZE,
                   backgroundColor: probe.color,
-                  ringColor: probe.color,
                   boxShadow: isConnected ? `0 0 6px ${probe.color}` : undefined,
                 }}
               >

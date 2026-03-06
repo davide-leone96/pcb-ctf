@@ -349,7 +349,7 @@ const PCBViewer = () => {
     >
       {/* Wrapper relativo che si adatta esattamente alle dimensioni dell'immagine */}
       <div className="relative inline-block w-full">
-        <img ref={pcbImageRef} src={exerciseData.pcbImage} alt="Vista PCB" className="h-auto w-full block rounded-lg" style={{ imageRendering: 'high-quality' }} draggable={false} />
+        <img ref={pcbImageRef} src={exerciseData.pcbImage} alt="Vista PCB" className="h-auto w-full block rounded-lg" style={{ imageRendering: 'crisp-edges' }} draggable={false} />
         {isSimulatorEnabled && activeTool === 'multimeter' && <Multimeter onPositionChange={setMultimeterPosition} bounds={bounds} />}
         {isSimulatorEnabled && showUartOverlay && <UartProbesAdapter onPositionChange={setAdapterPosition} bounds={bounds} readOnly={activeTool !== 'probes'} />}
         {isSimulatorEnabled && activeTool === 'custom' && activeCustomToolId && (() => {

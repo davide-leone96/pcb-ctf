@@ -2,6 +2,8 @@
 'use client';
 
 import { useEffect } from 'react';
+import { notFound } from 'next/navigation';
+import { isDev } from '@/config/env';
 import { useSettingsStore } from '@/store/settingsStore';
 import { usePresetStore } from '@/store/presetStore';
 import SettingsSidebar from '@/components/features/settings/SettingsSidebar';
@@ -9,6 +11,10 @@ import SettingsCanvas from '@/components/features/settings/SettingsCanvas';
 import CanvasToolbar from '@/components/features/settings/CanvasToolbar';
 
 export default function SettingsPage() {
+  // In PROD questa rotta non esiste (404)
+  if (!isDev) {
+    notFound();
+  }
   const loadFromStorage = useSettingsStore(s => s.loadFromStorage);
   const activeTool = useSettingsStore(s => s.activeTool);
   const fetchPresets = usePresetStore(s => s.fetchPresets);
