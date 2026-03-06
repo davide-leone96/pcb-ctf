@@ -64,7 +64,7 @@ const SettingsSidebar = () => {
     components, editComponent, deleteComponent,
     steps, activeStepId, selectStep,
     addStep, deleteStep, reorderStep, updateStep, toggleStepTool,
-    addObjective, addPinObjective, addTerminalObjective, deleteObjective, reorderObjective, editObjective,
+    addObjective, addPinObjective, addTerminalObjective, addFirmwareDumpObjective, deleteObjective, reorderObjective, editObjective,
     pins, editPin, deletePin,
     saveToFile, resetAllConfig, resetInitComponents,
   } = useSettingsStore();
@@ -306,6 +306,7 @@ const SettingsSidebar = () => {
                     onAddObjective={(componentId) => addObjective(step.id, componentId)}
                     onAddPinObjective={(pinIds, logic) => addPinObjective(step.id, pinIds, logic)}
                     onAddTerminalObjective={() => addTerminalObjective(step.id)}
+                    onAddFirmwareDumpObjective={() => addFirmwareDumpObjective(step.id)}
                     availableComponents={components}
                     availablePins={pins}
                     onDeleteObjective={(objId) => deleteObjective(step.id, objId)}
@@ -412,7 +413,7 @@ const CustomToolsToggle = ({
 const StepItem = ({
   step, index, isExpanded, isFirst, isLast,
   onToggle, onDelete, onReorder, onUpdateStep, onToggleTool,
-  onAddObjective, onAddPinObjective, onAddTerminalObjective, onDeleteObjective, onReorderObjective, onEditObjective,
+  onAddObjective, onAddPinObjective, onAddTerminalObjective, onAddFirmwareDumpObjective, onDeleteObjective, onReorderObjective, onEditObjective,
   availableComponents, availablePins,
 }: {
   step: DraftStep;
@@ -428,6 +429,7 @@ const StepItem = ({
   onAddObjective: (componentId: string) => void;
   onAddPinObjective: (pinIds: string[], logic: PinLogic) => void;
   onAddTerminalObjective: () => void;
+  onAddFirmwareDumpObjective: () => void;
   onDeleteObjective: (objId: string) => void;
   onReorderObjective: (objId: string, dir: 'up' | 'down') => void;
   onEditObjective: (objId: string) => void;
@@ -564,6 +566,13 @@ const StepItem = ({
                         >
                           <TerminalSquare className="h-3 w-3 text-green-400" />
                           <span className="text-white">Terminale</span>
+                        </button>
+                        <button
+                          onClick={() => { onAddFirmwareDumpObjective(); setShowAddMenu(null); }}
+                          className="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-600 transition-colors flex items-center gap-2"
+                        >
+                          <Wrench className="h-3 w-3 text-orange-400" />
+                          <span className="text-white">Firmware Dump</span>
                         </button>
                       </>
                     )}
@@ -722,10 +731,12 @@ const ObjectiveItem = ({
     <span className={cn(
       'text-[10px] font-mono flex-shrink-0',
       objective.type === 'pin' ? 'text-cyan-400' :
-      objective.type === 'terminal' ? 'text-green-400' : 'text-blue-400'
+      objective.type === 'terminal' ? 'text-green-400' :
+      objective.type === 'firmware-dump' ? 'text-orange-400' : 'text-blue-400'
     )}>
       {objective.type === 'pin' ? `PIN\u00B7${objective.pinLogic}` :
-       objective.type === 'terminal' ? 'TRM' : 'COM'}
+       objective.type === 'terminal' ? 'TRM' :
+       objective.type === 'firmware-dump' ? 'FWD' : 'COM'}
     </span>
     <span className="text-xs truncate flex-1">{objective.name || 'Senza nome'}</span>
     <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">

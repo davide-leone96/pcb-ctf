@@ -31,7 +31,7 @@ const PCBViewer = () => {
     toggleLensAnchor, setLensAnchorPosition,
     isSimulatorEnabled,
     activeCustomToolId, activeCustomProbeId, customSnapTarget, customToolConnections, customToolPositions,
-    setActiveCustomProbe, setCustomSnapTarget, hookCustomProbe, setCustomToolPosition,
+    setActiveCustomProbe, setCustomSnapTarget, hookCustomProbe, setCustomToolPosition, completeFirmwareDump,
   } = useExerciseStore();
 
   const pcbContainerRef = useRef<HTMLDivElement>(null);
@@ -374,6 +374,7 @@ const PCBViewer = () => {
               }}
               containerDims={containerDims}
               exerciseData={exerciseData}
+              onDumpComplete={(toolId) => completeFirmwareDump(toolId)}
             />
           );
         })()}

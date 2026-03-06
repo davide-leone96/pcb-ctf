@@ -107,6 +107,7 @@ interface ExerciseActions {
   hookCustomProbe: (toolId: string, probeId: string, pinId: string) => void;
   unhookCustomProbe: (toolId: string, probeId: string) => void;
   setCustomToolPosition: (toolId: string, x: number, y: number) => void;
+  completeFirmwareDump: (toolId: string) => void;
 }
 
 type ExerciseStore = ExerciseState & ExerciseActions;
@@ -745,5 +746,14 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
     set(state => ({
       customToolPositions: { ...state.customToolPositions, [toolId]: { x, y } },
     }));
+  },
+
+  completeFirmwareDump: (toolId) => {
+    const { stepMode, exerciseData: storeData, currentStepIndex, currentObjectiveIndex } = get();
+    const currentStep = storeData?.steps?.[currentStepIndex];
+    const currentObj = currentStep?.objectives?.[currentObjectiveIndex];
+    if (stepMode === 'active' && currentObj?.type === 'firmware-dump' && currentObj.customToolId === toolId) {
+      get()._completeCurrentObjective();
+    }
   },
 }));

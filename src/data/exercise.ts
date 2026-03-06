@@ -4,7 +4,7 @@ import type { CustomTool } from '@/types/custom-tool';
 /**
  * Definisce la struttura di un singolo componente hardware cliccabile sul PCB.
  */
-export type ObjectiveType = 'component' | 'uart' | 'terminal' | 'pin';
+export type ObjectiveType = 'component' | 'uart' | 'terminal' | 'pin' | 'firmware-dump';
 /**
  * Tool hardcoded del simulatore + 'custom' per i tool definiti dall'autore.
  * 'custom' NON è incluso in ALL_TOOLS per evitare che appaia nei toggle degli step.
@@ -37,6 +37,8 @@ export interface Objective {
   pinConditions?: PinCondition[];
   pinLogic?: PinLogic;
   bootStageConditions?: BootStageCondition[];
+  /** Per type='firmware-dump': ID del custom tool collegato */
+  customToolId?: string;
 }
 
 export interface Step {

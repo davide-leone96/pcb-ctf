@@ -4,7 +4,25 @@
 export type ProbeConnectivity = 'measurement' | 'uart' | 'all';
 
 /** Tipo di output visualizzato dal tool nel simulatore. */
-export type ToolOutputType = 'none' | 'numeric' | 'leds' | 'connection-status';
+export type ToolOutputType = 'none' | 'numeric' | 'leds' | 'connection-status' | 'firmware-dump';
+
+/** Mappatura sonda → pin richiesta per triggerare il dump firmware. */
+export interface FirmwareDumpPinMapping {
+  probeId: string;
+  pinId: string;
+}
+
+/** Configurazione del firmware dumper: quali pin collegare e quale file scaricare. */
+export interface FirmwareDumpConfig {
+  /** Connessioni richieste per avviare il dump (probe → pin) */
+  requiredConnections: FirmwareDumpPinMapping[];
+  /** Path del file firmware sul server (es. /uploads/firmware-xxx.bin) */
+  filePath?: string;
+  /** Nome file mostrato all'utente nel download */
+  fileName?: string;
+  /** Durata della progress bar in secondi (default: 3) */
+  dumpDurationSec?: number;
+}
 
 /**
  * Una singola sonda del tool custom.
@@ -43,11 +61,11 @@ export interface CustomTool {
   id: string;
   name: string;
   description?: string;
-  /** Percorso immagine del corpo del tool nel simulatore, es. "/images/oscilloscope.png" */
-  imagePath?: string;
   probes: ToolProbe[];
   outputType: ToolOutputType;
   /** Unità di default per outputType='numeric' senza modi attivi */
   outputUnit?: string;
   modes?: ToolMode[];
+  /** Configurazione specifica per outputType='firmware-dump' */
+  firmwareDumpConfig?: FirmwareDumpConfig;
 }

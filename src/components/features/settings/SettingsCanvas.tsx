@@ -10,6 +10,7 @@ import yaml from 'js-yaml';
 import ComponentPopup from './ComponentPopup';
 import ObjectivePopup from './ObjectivePopup';
 import TerminalObjectivePopup from './TerminalObjectivePopup';
+import FirmwareDumpObjectivePopup from './FirmwareDumpObjectivePopup';
 import PinPopup from './PinPopup';
 import TerminalPreviewPanel from './TerminalPreviewPanel';
 
@@ -748,6 +749,8 @@ const SettingsCanvas = () => {
         {activeObjective && containerDims.width > 0 && (
           activeObjective.type === 'terminal'
             ? <TerminalObjectivePopup objective={activeObjective} containerDims={containerDims} />
+            : activeObjective.type === 'firmware-dump'
+            ? <FirmwareDumpObjectivePopup objective={activeObjective} containerDims={containerDims} />
             : <ObjectivePopup objective={activeObjective} containerDims={containerDims} />
         )}
 
@@ -1118,32 +1121,50 @@ const CustomToolPreviewPanel = () => {
 
           {/* Tool body */}
           <div
-            className="rounded-lg border border-gray-500 bg-gray-800 shadow-2xl overflow-hidden"
+            className="rounded-lg border border-gray-600 bg-gradient-to-br from-gray-800 to-gray-900 shadow-2xl overflow-hidden ring-1 ring-white/10"
             style={{ width: PREVIEW_BODY_WIDTH, minHeight: bodyHeight }}
           >
             {/* Header */}
-            <div className="px-2 py-1.5 bg-gray-700/80 border-b border-gray-600 flex items-center justify-between">
+            <div className="px-2 py-1.5 bg-gray-700/80 border-b border-gray-600">
               <span className="text-xs font-mono text-gray-300 truncate">{tool.name}</span>
-              {tool.outputType === 'numeric' && (
-                <span className="text-[10px] font-mono text-green-400 tabular-nums">
-                  — {tool.outputUnit ?? tool.modes?.[0]?.unit ?? ''}
-                </span>
-              )}
             </div>
-            {/* Image or placeholder */}
-            <div className="flex items-center justify-center" style={{ minHeight: bodyHeight - 32 }}>
-              {tool.imagePath ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={tool.imagePath}
-                  alt={tool.name}
-                  className="max-w-full object-contain pointer-events-none"
-                  style={{ maxHeight: Math.max(70, bodyHeight - 48) }}
-                  draggable={false}
-                />
-              ) : (
-                <span className="text-xs text-gray-600 italic">nessuna grafica</span>
+            {/* Body content based on outputType */}
+            <div className="px-2 py-2 flex flex-col gap-2" style={{ minHeight: bodyHeight - 32 }}>
+              {tool.outputType === 'numeric' && (
+                <div className="bg-cyan-900/50 backdrop-blur-sm border border-cyan-700 text-right px-2 py-1.5 rounded-md shadow-inner">
+                  <span className="text-2xl font-mono text-cyan-300 tabular-nums">—</span>
+                  {(tool.outputUnit || tool.modes?.[0]?.unit) && (
+                    <span className="text-sm ml-1 text-cyan-300/80">{tool.outputUnit ?? tool.modes?.[0]?.unit}</span>
+                  )}
+                </div>
               )}
+              {tool.outputType === 'connection-status' && (
+                <div className="flex flex-col gap-1">
+                  {tool.probes.map(probe => (
+                    <div key={probe.id} className="flex items-center gap-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full opacity-30 flex-shrink-0" style={{ backgroundColor: probe.color }} />
+                      <span className="text-[9px] font-mono text-gray-400 truncate">{probe.label || probe.role}</span>
+                      <span className="text-[9px] font-mono text-gray-600 ml-auto">OFF</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {tool.outputType === 'leds' && (
+                <div className="flex flex-wrap gap-1.5 justify-center py-1">
+                  {tool.probes.map(probe => (
+                    <div key={probe.id} className="flex flex-col items-center gap-0.5">
+                      <div className="w-4 h-4 rounded-full border border-gray-600 opacity-30" style={{ backgroundColor: 'transparent' }} />
+                      <span className="text-[8px] font-mono text-gray-500">{probe.label?.[0] ?? '•'}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {/* Decorative grill */}
+              <div className="mt-auto flex flex-col gap-0.5 opacity-10">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="h-px bg-gray-400 rounded" />
+                ))}
+              </div>
             </div>
           </div>
         </div>

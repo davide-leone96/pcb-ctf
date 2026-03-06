@@ -7,7 +7,7 @@ import type {
   ObjectiveType, PinCondition, PinLogic, BootStageCondition,
 } from '@/data/exercise';
 import { SETTINGS_STORAGE_KEY, ALL_TOOLS, type Tool } from '@/data/exercise';
-import type { CustomTool, ProbeConnectivity, ToolOutputType } from '@/types/custom-tool';
+import type { CustomTool, ProbeConnectivity, ToolOutputType, FirmwareDumpConfig } from '@/types/custom-tool';
 
 export type { ProbeConnectivity, ToolOutputType };
 
@@ -20,6 +20,7 @@ export interface DraftObjective {
   name: string;
   type: ObjectiveType;
   componentId: string;
+  customToolId: string; // per type='firmware-dump': ID del tool collegato
   pinConditions: PinCondition[];
   pinLogic: PinLogic;
   instruction: string;
@@ -27,6 +28,13 @@ export interface DraftObjective {
   flagPart: string;
   coords: [number, number, number, number]; // solo per type='component'
   bootStageConditions: BootStageCondition[];
+}
+
+export interface DraftFirmwareDumpConfig {
+  requiredConnections: Array<{ probeId: string; pinId: string }>;
+  filePath: string;
+  fileName: string;
+  dumpDurationSec: number;
 }
 
 export type { BootStageCondition };
@@ -94,11 +102,11 @@ export interface DraftCustomTool {
   id: string;
   name: string;
   description: string;
-  imagePath: string;
   probes: DraftToolProbe[];
   outputType: ToolOutputType;
   outputUnit: string;
   modes: DraftToolMode[];
+  firmwareDumpConfig: DraftFirmwareDumpConfig;
 }
 
 export interface DragState {
@@ -171,6 +179,7 @@ interface SettingsActions {
   addObjective: (stepId: string, componentId: string) => void;
   addPinObjective: (stepId: string, pinIds: string[], logic: PinLogic) => void;
   addTerminalObjective: (stepId: string) => void;
+  addFirmwareDumpObjective: (stepId: string) => void;
   deleteObjective: (stepId: string, objectiveId: string) => void;
   reorderObjective: (stepId: string, objectiveId: string, direction: 'up' | 'down') => void;
   editObjective: (objectiveId: string) => void;
@@ -215,7 +224,8 @@ interface SettingsActions {
   addModeToTool: (toolId: string) => void;
   updateMode: (toolId: string, modeId: string, updates: Partial<Omit<DraftToolMode, 'id'>>) => void;
   deleteMode: (toolId: string, modeId: string) => void;
-  uploadToolImage: (toolId: string, file: File) => Promise<{ success: boolean; path?: string; error?: string }>;
+  updateFirmwareDumpConfig: (toolId: string, updates: Partial<DraftFirmwareDumpConfig>) => void;
+  uploadFirmwareFile: (toolId: string, file: File) => Promise<{ success: boolean; path?: string; fileName?: string; error?: string }>;
 }
 
 type SettingsStore = SettingsState & SettingsActions;
@@ -715,6 +725,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       name: comp.name,
       type: 'component',
       componentId,
+      customToolId: '',
       pinConditions: [],
       pinLogic: 'AND',
       instruction: '',
@@ -742,6 +753,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       name,
       type: 'pin',
       componentId: '',
+      customToolId: '',
       pinConditions,
       pinLogic: logic,
       instruction: '',
@@ -764,6 +776,30 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       name: 'Terminale',
       type: 'terminal',
       componentId: '',
+      customToolId: '',
+      pinConditions: [],
+      pinLogic: 'AND',
+      instruction: '',
+      hint: '',
+      flagPart: '',
+      coords: [0, 0, 0, 0],
+      bootStageConditions: [],
+    };
+    set({
+      steps: updateStepObjectives(get().steps, stepId, objs => [...objs, newObj]),
+      activeObjectiveId: id,
+      activeStepId: stepId,
+    });
+  },
+
+  addFirmwareDumpObjective: (stepId) => {
+    const id = generateId('obj');
+    const newObj: DraftObjective = {
+      id,
+      name: 'Firmware Dump',
+      type: 'firmware-dump',
+      componentId: '',
+      customToolId: '',
       pinConditions: [],
       pinLogic: 'AND',
       instruction: '',
@@ -1043,6 +1079,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         ...(o.type === 'terminal' && o.bootStageConditions.length > 0
           ? { bootStageConditions: o.bootStageConditions }
           : {}),
+        ...(o.type === 'firmware-dump' && o.customToolId ? { customToolId: o.customToolId } : {}),
       }));
       const flagParts = objectives.map(o => o.flagPart).join('');
       return {
@@ -1108,11 +1145,16 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         id: t.id,
         name: t.name,
         ...(t.description ? { description: t.description } : {}),
-        ...(t.imagePath ? { imagePath: t.imagePath } : {}),
         probes: t.probes,
         outputType: t.outputType,
         ...(t.outputUnit ? { outputUnit: t.outputUnit } : {}),
         ...(t.modes.length > 0 ? { modes: t.modes } : {}),
+        ...(t.outputType === 'firmware-dump' ? { firmwareDumpConfig: {
+          requiredConnections: t.firmwareDumpConfig.requiredConnections,
+          ...(t.firmwareDumpConfig.filePath ? { filePath: t.firmwareDumpConfig.filePath } : {}),
+          ...(t.firmwareDumpConfig.fileName ? { fileName: t.firmwareDumpConfig.fileName } : {}),
+          dumpDurationSec: t.firmwareDumpConfig.dumpDurationSec,
+        } } : {}),
       }));
 
     const exercise: Exercise = {
@@ -1201,6 +1243,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
                 flagPart: o.flagPart || '',
                 coords: o.coords || [0, 0, 0, 0],
                 bootStageConditions: (o as any).bootStageConditions || [],
+                customToolId: (o as any).customToolId || '',
               };
             }),
           };
@@ -1245,6 +1288,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
             name: c.name,
             type: 'component' as const,
             componentId: c.id || '',
+            customToolId: '',
             pinConditions: [],
             pinLogic: 'AND' as PinLogic,
             instruction: c.instruction,
@@ -1292,7 +1336,14 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         id: t.id,
         name: t.name,
         description: t.description ?? '',
-        imagePath: t.imagePath ?? '',
+        firmwareDumpConfig: t.outputType === 'firmware-dump' && (t as any).firmwareDumpConfig
+          ? {
+              requiredConnections: (t as any).firmwareDumpConfig.requiredConnections ?? [],
+              filePath: (t as any).firmwareDumpConfig.filePath ?? '',
+              fileName: (t as any).firmwareDumpConfig.fileName ?? '',
+              dumpDurationSec: (t as any).firmwareDumpConfig.dumpDurationSec ?? 3,
+            }
+          : { requiredConnections: [], filePath: '', fileName: '', dumpDurationSec: 3 },
         probes: (t.probes ?? []).map(p => ({
           id: p.id,
           label: p.label,
@@ -1412,11 +1463,11 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       id,
       name: '',
       description: '',
-      imagePath: '',
       probes: [],
       outputType: 'none',
       outputUnit: '',
       modes: [],
+      firmwareDumpConfig: { requiredConnections: [], filePath: '', fileName: '', dumpDurationSec: 3 },
     };
     set({ customTools: [...get().customTools, newTool], activeCustomToolId: id });
   },
@@ -1502,16 +1553,26 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     });
   },
 
-  uploadToolImage: async (toolId, file) => {
+  updateFirmwareDumpConfig: (toolId, updates) => {
+    set({
+      customTools: get().customTools.map(t =>
+        t.id === toolId ? { ...t, firmwareDumpConfig: { ...t.firmwareDumpConfig, ...updates } } : t
+      ),
+    });
+  },
+
+  uploadFirmwareFile: async (toolId, file) => {
     try {
       const formData = new FormData();
-      formData.append('image', file);
-      const response = await fetch('/api/images/upload', { method: 'POST', body: formData });
+      formData.append('file', file);
+      const response = await fetch('/api/firmware/upload', { method: 'POST', body: formData });
       const result = await response.json();
       if (result.success) {
         set({
           customTools: get().customTools.map(t =>
-            t.id === toolId ? { ...t, imagePath: result.path } : t
+            t.id === toolId
+              ? { ...t, firmwareDumpConfig: { ...t.firmwareDumpConfig, filePath: result.path, fileName: result.fileName } }
+              : t
           ),
         });
       }

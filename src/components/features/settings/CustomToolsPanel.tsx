@@ -1,12 +1,12 @@
 // src/components/features/settings/CustomToolsPanel.tsx
 'use client';
 
-import { useRef, useState, type ChangeEvent } from 'react';
+import { useState, useRef, type ChangeEvent } from 'react';
 import { useSettingsStore, type DraftCustomTool, type DraftToolProbe, type DraftToolMode } from '@/store/settingsStore';
 import { cn } from '@/lib/utils';
 import {
   Plus, Trash2, Pencil, ChevronDown, ChevronRight, Wrench,
-  Upload, CircleDot, Settings,
+  CircleDot, Settings, Upload, HardDrive,
 } from 'lucide-react';
 import {
   AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader,
@@ -27,6 +27,7 @@ const OUTPUT_TYPE_LABELS: Record<string, string> = {
   numeric: 'Numerico',
   leds: 'LED',
   'connection-status': 'Stato connessione',
+  'firmware-dump': 'Firmware Dump',
 };
 
 // ============================================
@@ -88,27 +89,14 @@ const ToolItem = ({
   isExpanded: boolean;
   onToggle: () => void;
 }) => {
-  const { updateCustomTool, deleteCustomTool, uploadToolImage } = useSettingsStore();
+  const { updateCustomTool, deleteCustomTool } = useSettingsStore();
   const [section, setSection] = useState<ToolSection>('general');
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState(tool.name);
-  const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleNameSave = () => {
     updateCustomTool(tool.id, { name: nameValue });
     setEditingName(false);
-  };
-
-  const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    const result = await uploadToolImage(tool.id, file);
-    setUploading(false);
-    if (!result.success) alert(`Errore upload: ${result.error}`);
-    // reset input so same file can be re-selected
-    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   return (
@@ -185,7 +173,7 @@ const ToolItem = ({
           </div>
 
           {section === 'general' && (
-            <GeneralSection tool={tool} uploading={uploading} fileInputRef={fileInputRef} onImageUpload={handleImageUpload} />
+            <GeneralSection tool={tool} />
           )}
           {section === 'probes' && (
             <ProbesSection tool={tool} />
@@ -200,14 +188,7 @@ const ToolItem = ({
 // GENERAL SECTION
 // ============================================
 
-const GeneralSection = ({
-  tool, uploading, fileInputRef, onImageUpload,
-}: {
-  tool: DraftCustomTool;
-  uploading: boolean;
-  fileInputRef: React.RefObject<HTMLInputElement | null>;
-  onImageUpload: (e: ChangeEvent<HTMLInputElement>) => void;
-}) => {
+const GeneralSection = ({ tool }: { tool: DraftCustomTool }) => {
   const { updateCustomTool, addModeToTool, updateMode, deleteMode } = useSettingsStore();
 
   return (
@@ -222,47 +203,6 @@ const GeneralSection = ({
           rows={2}
           className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 resize-none"
         />
-      </div>
-
-      {/* Image upload */}
-      <div>
-        <label className="text-[10px] text-gray-500 uppercase block mb-1">Grafica tool</label>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="flex items-center gap-1 px-2 py-1 rounded text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white transition-colors disabled:opacity-50"
-          >
-            <Upload className="h-3 w-3" />
-            {uploading ? 'Caricamento...' : 'Importa grafica'}
-          </button>
-          {tool.imagePath && (
-            <button
-              onClick={() => updateCustomTool(tool.id, { imagePath: '' })}
-              className="text-[10px] text-red-400 hover:text-red-300 transition-colors"
-              title="Rimuovi immagine"
-            >
-              Rimuovi
-            </button>
-          )}
-        </div>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={onImageUpload}
-        />
-        {tool.imagePath && (
-          <div className="mt-1.5 rounded border border-gray-600 overflow-hidden bg-gray-900 flex items-center justify-center" style={{ height: 80 }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={tool.imagePath}
-              alt={tool.name}
-              className="max-h-full max-w-full object-contain"
-            />
-          </div>
-        )}
       </div>
 
       {/* Output type */}
@@ -289,6 +229,11 @@ const GeneralSection = ({
         </div>
       </div>
 
+      {/* Firmware Dump config */}
+      {tool.outputType === 'firmware-dump' && (
+        <FirmwareDumpSection tool={tool} />
+      )}
+
       {/* Modes (only for numeric output) */}
       {tool.outputType === 'numeric' && (
         <div>
@@ -312,6 +257,112 @@ const GeneralSection = ({
           </div>
         </div>
       )}
+    </div>
+  );
+};
+
+// ============================================
+// FIRMWARE DUMP SECTION
+// ============================================
+
+const FirmwareDumpSection = ({ tool }: { tool: DraftCustomTool }) => {
+  const { pins, updateFirmwareDumpConfig, uploadFirmwareFile } = useSettingsStore();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const cfg = tool.firmwareDumpConfig;
+
+  const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const result = await uploadFirmwareFile(tool.id, file);
+    setUploading(false);
+    if (!result.success) alert(`Errore upload: ${result.error}`);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const setConnection = (probeId: string, pinId: string) => {
+    const existing = cfg.requiredConnections.filter(c => c.probeId !== probeId);
+    updateFirmwareDumpConfig(tool.id, {
+      requiredConnections: pinId ? [...existing, { probeId, pinId }] : existing,
+    });
+  };
+
+  return (
+    <div className="space-y-2.5">
+      {/* Pin mapping */}
+      <div>
+        <label className="text-[10px] text-gray-500 uppercase block mb-1">Connessioni richieste</label>
+        {tool.probes.length === 0 ? (
+          <p className="text-[10px] text-gray-500 italic">Aggiungi sonde nella tab &quot;Sonde&quot; prima</p>
+        ) : (
+          <div className="space-y-1">
+            {tool.probes.map(probe => {
+              const conn = cfg.requiredConnections.find(c => c.probeId === probe.id);
+              return (
+                <div key={probe.id} className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: probe.color }} />
+                  <span className="text-[10px] font-mono text-gray-300 w-14 truncate flex-shrink-0">{probe.label || probe.role}</span>
+                  <select
+                    value={conn?.pinId ?? ''}
+                    onChange={e => setConnection(probe.id, e.target.value)}
+                    className="flex-1 bg-gray-700/50 border border-gray-600 rounded px-1.5 py-0.5 text-[10px] text-white focus:outline-none focus:border-orange-500 min-w-0"
+                  >
+                    <option value="">— qualsiasi —</option>
+                    {pins.map(pin => (
+                      <option key={pin.id} value={pin.id}>
+                        {pin.label || pin.pinType.toUpperCase()} ({pin.pinType})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Duration */}
+      <div>
+        <label className="text-[10px] text-gray-500 uppercase block mb-0.5">Durata dump (sec)</label>
+        <input
+          type="number"
+          min={1}
+          max={30}
+          value={cfg.dumpDurationSec}
+          onChange={e => updateFirmwareDumpConfig(tool.id, { dumpDurationSec: Math.max(1, Math.min(30, Number(e.target.value))) })}
+          className="w-20 bg-gray-700/50 border border-gray-600 rounded px-2 py-0.5 text-xs text-white focus:outline-none focus:border-orange-500"
+        />
+      </div>
+
+      {/* File upload */}
+      <div>
+        <label className="text-[10px] text-gray-500 uppercase block mb-1">File firmware</label>
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="flex items-center gap-1 px-2 py-1 rounded text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white transition-colors disabled:opacity-50"
+          >
+            <Upload className="h-3 w-3" />
+            {uploading ? 'Caricamento...' : 'Carica file'}
+          </button>
+          {cfg.fileName && (
+            <div className="flex items-center gap-1 text-[10px] text-orange-300">
+              <HardDrive className="h-3 w-3 flex-shrink-0" />
+              <span className="truncate max-w-[100px]">{cfg.fileName}</span>
+              <button
+                onClick={() => updateFirmwareDumpConfig(tool.id, { filePath: '', fileName: '' })}
+                className="text-red-400 hover:text-red-300 ml-0.5"
+                title="Rimuovi"
+              >
+                ×
+              </button>
+            </div>
+          )}
+        </div>
+        <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} />
+      </div>
     </div>
   );
 };
