@@ -3,7 +3,7 @@
 
 import { useSettingsStore } from '@/store/settingsStore';
 import { useTerminalSettingsStore } from '@/store/terminalSettingsStore';
-import { Search, TerminalSquare, Plus, Trash2, ChevronDown, ChevronRight, Layers } from 'lucide-react';
+import { Search, TerminalSquare, Plus, Trash2, ChevronDown, ChevronRight, Layers, PartyPopper } from 'lucide-react';
 import { ALL_TOOLS, type Tool } from '@/data/exercise';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -13,6 +13,7 @@ const ToolConfigPanel = () => {
     toolConfig, steps,
     updateMagnifierConfig, updateTerminalToolConfig,
     toolGroups, addToolGroup, updateToolGroup, deleteToolGroup, toggleToolInGroup,
+    completionDialog, updateCompletionDialog,
   } = useSettingsStore();
 
   const { flagParts, bootStages, tabs } = useTerminalSettingsStore();
@@ -205,6 +206,118 @@ const ToolConfigPanel = () => {
               />
             ))}
           </div>
+        </div>
+      </SectionAccordion>
+
+      {/* === COMPLETION DIALOG === */}
+      <SectionAccordion
+        icon={<PartyPopper className="h-3.5 w-3.5 text-yellow-400" />}
+        title="Completion Dialog"
+        expanded={expandedSection === 'completion'}
+        onToggle={() => toggleSection('completion')}
+        color="yellow"
+      >
+        <div className="space-y-3">
+          <p className="text-[10px] text-gray-500">
+            Configure the popup shown when the exercise is completed.
+          </p>
+
+          {/* Title */}
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Title</label>
+            <input
+              type="text"
+              value={completionDialog.title}
+              onChange={(e) => updateCompletionDialog({ title: e.target.value })}
+              placeholder="Exercise Completed!"
+              className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500"
+            />
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Description</label>
+            <textarea
+              value={completionDialog.description}
+              onChange={(e) => updateCompletionDialog({ description: e.target.value })}
+              placeholder="Congratulations..."
+              rows={2}
+              className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 resize-none"
+            />
+          </div>
+
+          {/* Show Copy Flag */}
+          <ToggleRow
+            label="Show copy flag button"
+            description="Allow the user to copy the flag to clipboard"
+            checked={completionDialog.showCopyFlag}
+            onChange={() => updateCompletionDialog({ showCopyFlag: !completionDialog.showCopyFlag })}
+          />
+
+          {/* Redirect URL */}
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Redirect URL</label>
+            <input
+              type="text"
+              value={completionDialog.redirectUrl}
+              onChange={(e) => updateCompletionDialog({ redirectUrl: e.target.value })}
+              placeholder="https://example.com/next (leave empty to hide button)"
+              className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500"
+            />
+          </div>
+
+          {/* Redirect Label (only shown if URL is set) */}
+          {completionDialog.redirectUrl && (
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Redirect button label</label>
+              <input
+                type="text"
+                value={completionDialog.redirectLabel}
+                onChange={(e) => updateCompletionDialog({ redirectLabel: e.target.value })}
+                placeholder="Next Exercise"
+                className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500"
+              />
+            </div>
+          )}
+
+          {/* Download File Path */}
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Download file path</label>
+            <input
+              type="text"
+              value={completionDialog.downloadFilePath}
+              onChange={(e) => updateCompletionDialog({ downloadFilePath: e.target.value })}
+              placeholder="/downloads/report.pdf (leave empty to hide button)"
+              className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500"
+            />
+            <p className="text-[10px] text-gray-500 mt-0.5">Path relative to the public folder</p>
+          </div>
+
+          {/* Download Label & Filename (only shown if path is set) */}
+          {completionDialog.downloadFilePath && (
+            <>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Download button label</label>
+                <input
+                  type="text"
+                  value={completionDialog.downloadLabel}
+                  onChange={(e) => updateCompletionDialog({ downloadLabel: e.target.value })}
+                  placeholder="Download File"
+                  className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Downloaded file name</label>
+                <input
+                  type="text"
+                  value={completionDialog.downloadFileName}
+                  onChange={(e) => updateCompletionDialog({ downloadFileName: e.target.value })}
+                  placeholder="report.pdf (name the user receives)"
+                  className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500"
+                />
+              </div>
+            </>
+          )}
         </div>
       </SectionAccordion>
     </div>

@@ -82,7 +82,7 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center bg-gray-900 p-6 lg:p-12">
-      <CompletionDialog isOpen={isFinished} flag={flag} onReset={resetExercise} />
+      <CompletionDialog isOpen={isFinished} flag={flag} onReset={resetExercise} config={exerciseData.completionDialog} />
 
       <StepCompletionDialog
         isOpen={showStepCompletionDialog}

@@ -4,7 +4,7 @@
     "name": "CTF-1",
     "description": "TP-LINK",
     "createdAt": "2026-03-06T22:10:23.396Z",
-    "updatedAt": "2026-03-07T14:18:25.485Z"
+    "updatedAt": "2026-03-07T14:38:02.270Z"
   },
   "exerciseConfig": {
     "pcbImage": "/images/preset-ctf-1-mmfg76ska98m.png",
@@ -239,8 +239,8 @@
     ],
     "toolConfig": {
       "magnifier": {
-        "defaultRadius": 95,
-        "defaultZoomLevel": 2.3
+        "defaultRadius": 90,
+        "defaultZoomLevel": 2.4
       },
       "uartConnector": {
         "persistAfterConnection": true,
@@ -254,6 +254,16 @@
         "persistent": true,
         "bootStageConditions": []
       }
+    },
+    "completionDialog": {
+      "title": "Exercise Completed!",
+      "description": "Congratulations, you have successfully completed all objectives.",
+      "redirectUrl": "",
+      "redirectLabel": "Next Exercise",
+      "downloadFilePath": "/uploads/firmware-1772839791936-fw_test.bin",
+      "downloadLabel": "Download File",
+      "downloadFileName": "",
+      "showCopyFlag": true
     }
   },
   "terminalConfig": {

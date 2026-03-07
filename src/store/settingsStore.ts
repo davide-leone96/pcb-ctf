@@ -6,13 +6,14 @@ import type {
   HardwareComponent, MeasurementPin, UartPin, UartRole, Exercise,
   ObjectiveType, PinCondition, PinLogic, BootStageCondition, ToolGroup,
   ToolConfig, MagnifierConfig, UartConnectorConfig, TerminalToolConfig,
+  CompletionDialogConfig,
 } from '@/data/exercise';
 import { SETTINGS_STORAGE_KEY, ALL_TOOLS, type Tool } from '@/data/exercise';
 import type { CustomTool, ProbeConnectivity, ToolOutputType, FirmwareDumpConfig } from '@/types/custom-tool';
 
 export type { ProbeConnectivity, ToolOutputType };
 
-export type { PinCondition, PinLogic, ToolConfig, MagnifierConfig, UartConnectorConfig, TerminalToolConfig };
+export type { PinCondition, PinLogic, ToolConfig, MagnifierConfig, UartConnectorConfig, TerminalToolConfig, CompletionDialogConfig };
 
 // --- Draft types ---
 
@@ -148,6 +149,8 @@ interface SettingsState {
   toolGroups: ToolGroup[];
   // Tool config (built-in tool configuration)
   toolConfig: ToolConfig;
+  // Completion dialog config
+  completionDialog: CompletionDialogConfig;
 }
 
 interface SettingsActions {
@@ -252,6 +255,7 @@ interface SettingsActions {
   updateUartConnectorConfig: (updates: Partial<UartConnectorConfig>) => void;
   updateTerminalToolConfig: (updates: Partial<TerminalToolConfig>) => void;
   toggleUartVisibleStep: (stepId: string) => void;
+  updateCompletionDialog: (updates: Partial<CompletionDialogConfig>) => void;
 }
 
 type SettingsStore = SettingsState & SettingsActions;
@@ -326,6 +330,16 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     magnifier: { defaultRadius: 120, defaultZoomLevel: 2.5 },
     uartConnector: { persistAfterConnection: false, visibleInSteps: [] },
     terminal: { requiresUart: true, persistent: false, bootStageConditions: [] },
+  },
+  completionDialog: {
+    title: 'Exercise Completed!',
+    description: 'Congratulations, you have successfully completed all objectives.',
+    redirectUrl: '',
+    redirectLabel: 'Next Exercise',
+    downloadFilePath: '',
+    downloadLabel: 'Download File',
+    downloadFileName: '',
+    showCopyFlag: true,
   },
 
   // --- Tool ---
@@ -1262,6 +1276,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       ...(firmwarePath ? { firmwarePath } : {}),
       ...(get().toolGroups.length > 0 ? { toolGroups: get().toolGroups } : {}),
       toolConfig: get().toolConfig,
+      completionDialog: get().completionDialog,
     };
 
     return JSON.stringify(exercise, null, 2);
@@ -1506,6 +1521,16 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
             bootStageConditions: exercise.toolConfig?.terminal?.bootStageConditions ?? [],
           },
         },
+        completionDialog: {
+          title: exercise.completionDialog?.title ?? 'Exercise Completed!',
+          description: exercise.completionDialog?.description ?? 'Congratulations, you have successfully completed all objectives.',
+          redirectUrl: exercise.completionDialog?.redirectUrl ?? '',
+          redirectLabel: exercise.completionDialog?.redirectLabel ?? 'Next Exercise',
+          downloadFilePath: exercise.completionDialog?.downloadFilePath ?? '',
+          downloadLabel: exercise.completionDialog?.downloadLabel ?? 'Download File',
+          downloadFileName: exercise.completionDialog?.downloadFileName ?? '',
+          showCopyFlag: exercise.completionDialog?.showCopyFlag ?? true,
+        },
       });
     } catch { /* ignore invalid data */ }
   },
@@ -1574,6 +1599,16 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         magnifier: { defaultRadius: 120, defaultZoomLevel: 2.5 },
         uartConnector: { persistAfterConnection: false, visibleInSteps: [] },
         terminal: { requiresUart: true, persistent: false, bootStageConditions: [] },
+      },
+      completionDialog: {
+        title: 'Exercise Completed!',
+        description: 'Congratulations, you have successfully completed all objectives.',
+        redirectUrl: '',
+        redirectLabel: 'Next Exercise',
+        downloadFilePath: '',
+        downloadLabel: 'Download File',
+        downloadFileName: '',
+        showCopyFlag: true,
       },
     });
   },
@@ -1809,6 +1844,12 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
           visibleInSteps: has ? current.filter(s => s !== stepId) : [...current, stepId],
         },
       },
+    });
+  },
+
+  updateCompletionDialog: (updates) => {
+    set({
+      completionDialog: { ...get().completionDialog, ...updates },
     });
   },
 }));

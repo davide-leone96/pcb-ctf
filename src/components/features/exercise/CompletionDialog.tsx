@@ -11,98 +11,110 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Download, PartyPopper, RotateCcw, Copy, Check } from 'lucide-react';
+import { Download, PartyPopper, ArrowRight, Copy, Check } from 'lucide-react';
+import type { CompletionDialogConfig } from '@/data/exercise';
 
 interface CompletionDialogProps {
   isOpen: boolean;
   flag: string;
   onReset: () => void;
+  config?: CompletionDialogConfig;
 }
 
-const CompletionDialog = ({ isOpen, flag, onReset }: CompletionDialogProps) => {
-  // --- NUOVO: Stato per il feedback del pulsante "Copia" ---
+const defaultConfig: CompletionDialogConfig = {
+  title: 'Exercise Completed!',
+  description: 'Congratulations, you have successfully completed all objectives.',
+  redirectUrl: '',
+  redirectLabel: 'Next Exercise',
+  downloadFilePath: '',
+  downloadLabel: 'Download File',
+  downloadFileName: '',
+  showCopyFlag: true,
+};
+
+const CompletionDialog = ({ isOpen, flag, onReset, config }: CompletionDialogProps) => {
   const [isCopied, setIsCopied] = useState(false);
+  const c = { ...defaultConfig, ...config };
 
   const handleDownload = () => {
-    // 1. Specifica il percorso del tuo file custom nella cartella `public`.
-    const customFilePath = '/downloads/custom-file.txt'; // <-- MODIFICA QUI IL NOME DEL FILE
-
-    // 2. Crea un elemento link <a> invisibile.
+    if (!c.downloadFilePath) return;
     const a = document.createElement('a');
-    a.href = customFilePath;
-    a.download = 'challenge-completed.txt'; // <-- MODIFICA QUI IL NOME DEL FILE SCARICATO
-    
-    // 3. Aggiungi il link, cliccalo, e rimuovilo.
+    a.href = c.downloadFilePath;
+    a.download = c.downloadFileName || c.downloadFilePath.split('/').pop() || 'download';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
   };
 
-  const handleRestart = () => {
-    // --- Funzione per il redirect ---
-    // Prima resetta lo stato dell'esercizio per non tornare alla dialog
+  const handleRedirect = () => {
     onReset();
-    // Poi reindirizza l'utente.
-    // MODIFICA QUESTO URL con la tua destinazione.
-    window.location.href = 'https://www.google.com'; // <-- MODIFICA QUI L'URL DI REDIRECT
+    if (c.redirectUrl) {
+      window.location.href = c.redirectUrl;
+    }
   };
 
   const handleCopy = () => {
-    // --- Funzione per copiare la flag ---
     navigator.clipboard.writeText(flag).then(() => {
       setIsCopied(true);
-      // Resetta l'icona dopo 2 secondi
-      setTimeout(() => {
-        setIsCopied(false);
-      }, 2000);
+      setTimeout(() => setIsCopied(false), 2000);
     });
   };
 
+  const hasRedirect = !!c.redirectUrl;
+  const hasDownload = !!c.downloadFilePath;
+
   return (
-    // Quando la dialog viene chiusa, resetta anche lo stato 'isCopied'
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) { onReset(); setIsCopied(false); } }}>
       <DialogContent className="sm:max-w-md bg-gray-800 border-green-500 text-white">
         <DialogHeader>
           <DialogTitle className="flex items-center text-2xl">
             <PartyPopper className="mr-3 h-8 w-8 text-yellow-400" />
-            Esercizio Completato!
+            {c.title}
           </DialogTitle>
           <DialogDescription className="pt-2 text-gray-400">
-            Congratulazioni, hai identificato e analizzato con successo tutti i componenti.
+            {c.description}
           </DialogDescription>
         </DialogHeader>
         <div className="my-4">
-          <p className="text-sm text-gray-300 mb-2">La tua flag sbloccata è:</p>
+          <p className="text-sm text-gray-300 mb-2">Flag:</p>
           <div className="flex items-center gap-2 bg-black p-3 rounded-md">
             <code className="font-mono text-green-400 text-sm break-all flex-grow">
               {flag}
             </code>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={handleCopy}
-              className="h-8 w-8 flex-shrink-0"
-              aria-label="Copia flag"
-            >
-              {isCopied ? (
-                <Check className="h-4 w-4 text-green-500" />
-              ) : (
-                <Copy className="h-4 w-4" />
-              )}
-            </Button>
+            {c.showCopyFlag && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={handleCopy}
+                className="h-8 w-8 flex-shrink-0"
+                aria-label="Copy flag"
+              >
+                {isCopied ? (
+                  <Check className="h-4 w-4 text-green-500" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </Button>
+            )}
           </div>
         </div>
-        <DialogFooter className="sm:justify-between gap-2">
-          <Button type="button" variant="secondary" onClick={handleRestart}>
-            <RotateCcw className="mr-2 h-4 w-4" />
-            Prossimo Esercizio
-          </Button>
-          <Button type="button" onClick={handleDownload} className="bg-green-600 hover:bg-green-500">
-            <Download className="mr-2 h-4 w-4" />
-            Scarica File
-          </Button>
-        </DialogFooter>
+        {(hasRedirect || hasDownload) && (
+          <DialogFooter className="sm:justify-between gap-2">
+            {hasRedirect && (
+              <Button type="button" variant="secondary" onClick={handleRedirect}>
+                <ArrowRight className="mr-2 h-4 w-4" />
+                {c.redirectLabel}
+              </Button>
+            )}
+            {hasDownload && (
+              <Button type="button" onClick={handleDownload} className="bg-green-600 hover:bg-green-500">
+                <Download className="mr-2 h-4 w-4" />
+                {c.downloadLabel}
+              </Button>
+            )}
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );

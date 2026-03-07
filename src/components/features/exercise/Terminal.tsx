@@ -43,7 +43,7 @@ let persistedLocalCmdHistory: string[] = [];
 // ============================================
 
 export default function Terminal() {
-  const { terminalDiscoveries, addTerminalDiscovery } = useExerciseStore();
+  const { terminalDiscoveries, addTerminalDiscovery, exerciseData } = useExerciseStore();
 
   // Load terminal config dynamically (localStorage → static fallback)
   const { config: terminalConfigDynamic } = useTerminalConfig();
@@ -619,6 +619,7 @@ export default function Terminal() {
         isOpen={showCompleteDialog}
         onClose={() => setShowCompleteDialog(false)}
         flag={configLoader.getCompleteFlag()}
+        config={exerciseData?.completionDialog}
       />
     </div>
   );

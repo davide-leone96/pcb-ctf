@@ -109,6 +109,25 @@ export interface TerminalToolConfig {
   bootStageConditions: BootStageCondition[];
 }
 
+export interface CompletionDialogConfig {
+  /** Dialog title */
+  title: string;
+  /** Dialog description/message */
+  description: string;
+  /** If set, show redirect button */
+  redirectUrl: string;
+  /** Redirect button label */
+  redirectLabel: string;
+  /** If set, show download button. Path relative to /public */
+  downloadFilePath: string;
+  /** Label for download button */
+  downloadLabel: string;
+  /** Filename the user receives when downloading */
+  downloadFileName: string;
+  /** Show copy-flag button */
+  showCopyFlag: boolean;
+}
+
 export interface ToolConfig {
   magnifier?: MagnifierConfig;
   uartConnector?: UartConnectorConfig;
@@ -130,6 +149,8 @@ export interface Exercise {
   toolGroups?: ToolGroup[];
   /** Configurazione dei tool built-in (lente, UART, terminale). */
   toolConfig?: ToolConfig;
+  /** Configurazione del popup di completamento esercizio. */
+  completionDialog?: CompletionDialogConfig;
 }
 
 // ===================================================================================
