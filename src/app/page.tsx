@@ -62,11 +62,10 @@ export default function Home() {
   const currentStep = exerciseData.steps[currentStepIndex];
   const currentObjective = currentStep?.objectives?.[currentObjectiveIndex];
 
-  // Il terminale è bloccato solo se esiste un obiettivo terminal con requiresUart
-  // e l'UART non è ancora stato connesso
-  const terminalRequiresUart = exerciseData.steps.some(s =>
-    s.objectives.some(o => o.type === 'terminal' && o.requiresUart)
-  );
+  // Il terminale è bloccato se toolConfig.terminal.requiresUart oppure
+  // se esistono obiettivi terminal con requiresUart (retrocompatibilità)
+  const terminalRequiresUart = exerciseData.toolConfig?.terminal?.requiresUart ??
+    exerciseData.steps.some(s => s.objectives.some(o => o.type === 'terminal' && o.requiresUart));
   const canAccessTerminal = !terminalRequiresUart || uartEverConnected;
 
   const handleNextStep = () => {
@@ -96,22 +95,37 @@ export default function Home() {
         ARTIC Web Platform
       </h1>
 
-      <div className="grid w-full max-w-7xl gap-x-8 gap-y-6" style={{ gridTemplateColumns: 'auto 1fr' }}>
-        {/* Row 1, Col 2: istruzioni + flag allineati al dashed box */}
-        <div className="col-start-2 row-start-1 grid grid-cols-1 gap-6 md:grid-cols-3">
-          <div className={stepMode === 'education' ? 'md:col-span-3' : 'md:col-span-2'}>
-            <InstructionsPanel
-              stepMode={stepMode}
-              stepTitle={currentStep?.title || ''}
-              stepDescription={currentStep?.description || ''}
-              objectiveName={currentObjective?.name || ''}
-              objectiveInstruction={currentObjective?.instruction || ''}
-              hintText={currentObjective?.hint || ''}
-              onStartStep={startStep}
-              onNextStep={handleNextStep}
-            />
-          </div>
-          {stepMode !== 'education' && (
+      {stepMode === 'education' ? (
+        /* Education mode: centered description + start button only */
+        <div className="w-full max-w-2xl">
+          <InstructionsPanel
+            stepMode={stepMode}
+            stepTitle={currentStep?.title || ''}
+            stepDescription={currentStep?.description || ''}
+            objectiveName=""
+            objectiveInstruction=""
+            hintText=""
+            onStartStep={startStep}
+            onNextStep={handleNextStep}
+          />
+        </div>
+      ) : (
+        /* Active / Completed mode: full grid layout */
+        <div className="grid w-full max-w-7xl gap-x-8 gap-y-6" style={{ gridTemplateColumns: 'auto 1fr' }}>
+          {/* Row 1, Col 2: istruzioni + flag */}
+          <div className="col-start-2 row-start-1 grid grid-cols-1 gap-6 md:grid-cols-3">
+            <div className={stepMode === 'completed' ? 'md:col-span-2' : 'md:col-span-2'}>
+              <InstructionsPanel
+                stepMode={stepMode}
+                stepTitle={currentStep?.title || ''}
+                stepDescription={currentStep?.description || ''}
+                objectiveName={currentObjective?.name || ''}
+                objectiveInstruction={currentObjective?.instruction || ''}
+                hintText={currentObjective?.hint || ''}
+                onStartStep={startStep}
+                onNextStep={handleNextStep}
+              />
+            </div>
             <div className="md:col-span-1">
               <FlagDisplay
                 flag={
@@ -121,40 +135,32 @@ export default function Home() {
                 }
               />
             </div>
-          )}
-        </div>
+          </div>
 
-        {/* Row 2, Col 1: sidebar centrata rispetto al dashed box */}
-        <div className="col-start-1 row-start-2 self-center relative flex-shrink-0">
-          {!isSimulatorEnabled && (
-            <div className="absolute inset-0 bg-gray-900/80 backdrop-blur-sm rounded-lg z-10" />
-          )}
-          <Sidebar />
-        </div>
+          {/* Row 2, Col 1: sidebar */}
+          <div className="col-start-1 row-start-2 self-center relative flex-shrink-0">
+            <Sidebar />
+          </div>
 
-        {/* Row 2, Col 2: contenuto principale */}
-        <div className="col-start-2 row-start-2 border-2 border-dashed border-gray-500 rounded-lg p-4 relative">
-          {!isSimulatorEnabled && (
-            <div className={`absolute inset-0 bg-gray-900/80 backdrop-blur-sm rounded-lg z-10 flex items-center justify-center ${lensVisible ? 'pointer-events-none' : ''}`}>
-              <p className="text-gray-400 text-lg">Clicca su "Start" per iniziare</p>
-            </div>
-          )}
-          {activeTools.includes('terminal') ? (
-            canAccessTerminal ? (
-              <Terminal />
-            ) : (
-              <div className="h-[500px] bg-black/95 rounded-lg text-white font-mono text-sm flex items-center justify-center border border-red-900/50">
-                <div className="text-center">
-                  <p className="text-yellow-400 font-bold text-base">Nessuna connessione UART</p>
-                  <p className="text-gray-400 mt-2">Collega le sonde dall&apos;adattatore USB-to-Serial ai pin UART prima di aprire il terminale.</p>
+          {/* Row 2, Col 2: contenuto principale */}
+          <div className="col-start-2 row-start-2 border-2 border-dashed border-gray-500 rounded-lg p-4 relative">
+            {activeTools.includes('terminal') ? (
+              canAccessTerminal ? (
+                <Terminal />
+              ) : (
+                <div className="h-[500px] bg-black/95 rounded-lg text-white font-mono text-sm flex items-center justify-center border border-red-900/50">
+                  <div className="text-center">
+                    <p className="text-yellow-400 font-bold text-base">Nessuna connessione UART</p>
+                    <p className="text-gray-400 mt-2">Collega le sonde dall&apos;adattatore USB-to-Serial ai pin UART prima di aprire il terminale.</p>
+                  </div>
                 </div>
-              </div>
-            )
-          ) : (
-            <PCBViewer />
-          )}
+              )
+            ) : (
+              <PCBViewer />
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </main>
   );
 }

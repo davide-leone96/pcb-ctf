@@ -19,7 +19,6 @@ const Sidebar = () => {
     activeTool, activeTools, setActiveTool,
     lensVisible, toggleLensVisible,
     exerciseData, currentStepIndex,
-    activeCustomToolId, setActiveCustomTool,
   } = useExerciseStore();
 
   const currentStep = exerciseData?.steps?.[currentStepIndex];
@@ -28,12 +27,12 @@ const Sidebar = () => {
     ? tools.filter(t => availableTools.includes(t.id))
     : tools;
 
-  // Il terminale non può essere disattivato se un obiettivo terminal ha terminalPersistent
-  const terminalPersistent = exerciseData?.steps.some(s =>
-    s.objectives.some(o => o.type === 'terminal' && o.terminalPersistent)
-  ) ?? false;
-
-  const customTools = exerciseData?.customTools ?? [];
+  // Il terminale non può essere disattivato se toolConfig.terminal.persistent oppure
+  // se un obiettivo terminal ha terminalPersistent (retrocompatibilità)
+  const terminalPersistent = exerciseData?.toolConfig?.terminal?.persistent ??
+    (exerciseData?.steps.some(s =>
+      s.objectives.some(o => o.type === 'terminal' && o.terminalPersistent)
+    ) ?? false);
 
   return (
     <aside className="flex flex-col items-center gap-y-4 rounded-lg bg-gray-800 p-4">
@@ -66,30 +65,6 @@ const Sidebar = () => {
           />
         );
       })}
-
-      {/* Custom tools — shown only when step allows 'custom' (or no tool restriction) */}
-      {customTools.length > 0 && (!availableTools?.length || availableTools.includes('custom')) && (
-        <>
-          {/* Divider */}
-          <div className="w-8 border-t border-gray-600" />
-          {customTools.map(ct => (
-            <ToolButton
-              key={ct.id}
-              label={ct.name}
-              icon={Wrench}
-              isActive={activeTools.includes('custom') && activeCustomToolId === ct.id}
-              onClick={() => {
-                if (terminalPersistent && activeTools.includes('terminal')) return;
-                if (activeTool === 'custom' && activeCustomToolId === ct.id) {
-                  setActiveTool('pointer');
-                } else {
-                  setActiveCustomTool(ct.id);
-                }
-              }}
-            />
-          ))}
-        </>
-      )}
     </aside>
   );
 };

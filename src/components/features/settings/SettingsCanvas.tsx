@@ -5,12 +5,11 @@ import { useRef, useState, useLayoutEffect, useEffect, useMemo, useCallback, typ
 import { useSettingsStore } from '@/store/settingsStore';
 import { useTerminalSettingsStore } from '@/store/terminalSettingsStore';
 import { cn } from '@/lib/utils';
-import { Upload, Terminal, TerminalSquare, Flag, Cpu, FolderTree, Layers, FileCode, Check, AlertTriangle, Pencil, RotateCcw, Play, Square, Wrench, HardDrive, FileCheck, Trash2 } from 'lucide-react';
+import { Upload, Terminal, TerminalSquare, Flag, Cpu, FolderTree, Layers, FileCode, Check, AlertTriangle, Pencil, RotateCcw, Play, Square, Wrench, HardDrive, FileCheck, Trash2, Search } from 'lucide-react';
 import yaml from 'js-yaml';
 import ComponentPopup from './ComponentPopup';
 import ObjectivePopup from './ObjectivePopup';
 import TerminalObjectivePopup from './TerminalObjectivePopup';
-import FirmwareDumpObjectivePopup from './FirmwareDumpObjectivePopup';
 import PinPopup from './PinPopup';
 import TerminalPreviewPanel from './TerminalPreviewPanel';
 
@@ -390,8 +389,8 @@ const SettingsCanvas = () => {
     return <TerminalConfigPreview />;
   }
 
-  // Tools tab: show tool preview panel
-  if (isToolsTab) return <CustomToolPreviewPanel />;
+  // Tools tab: show magnifier live preview on PCB
+  if (isToolsTab) return <MagnifierPreviewPanel pcbImagePath={pcbImagePath} />;
 
   // Firmware tab: show firmware upload panel
   if (isFirmwareTab) return <FirmwareUploadPanel />;
@@ -753,8 +752,6 @@ const SettingsCanvas = () => {
         {activeObjective && containerDims.width > 0 && (
           activeObjective.type === 'terminal'
             ? <TerminalObjectivePopup objective={activeObjective} containerDims={containerDims} />
-            : activeObjective.type === 'firmware-dump'
-            ? <FirmwareDumpObjectivePopup objective={activeObjective} containerDims={containerDims} />
             : <ObjectivePopup objective={activeObjective} containerDims={containerDims} />
         )}
 
@@ -1040,182 +1037,128 @@ const StatCard = ({ icon: Icon, label, count, color }: { icon: typeof Terminal; 
 };
 
 // ============================================
-// CUSTOM TOOL PREVIEW PANEL
+// MAGNIFIER PREVIEW PANEL
 // ============================================
 
-const PREVIEW_BODY_WIDTH = 200;
-const PREVIEW_PROBE_SIZE = 16;
-const PREVIEW_PROBE_SPACING = 36;
+/** Magnifier live preview: shows the lens directly on the PCB image, updating in real-time. */
+const MagnifierPreviewPanel = ({ pcbImagePath }: { pcbImagePath: string }) => {
+  const toolConfig = useSettingsStore(s => s.toolConfig);
+  const magnifier = toolConfig.magnifier!;
 
-const CustomToolPreviewPanel = () => {
-  const customTools = useSettingsStore(s => s.customTools);
-  const activeCustomToolId = useSettingsStore(s => s.activeCustomToolId);
-  const [activeProbeId, setActiveProbeId] = useState<string | null>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [imgDims, setImgDims] = useState({ width: 0, height: 0 });
+  const [imageUrl, setImageUrl] = useState('');
+  const [lensPos, setLensPos] = useState<{ x: number; y: number } | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
-  const tool = customTools.find(t => t.id === activeCustomToolId);
+  // Build full URL for background-image
+  useLayoutEffect(() => {
+    if (pcbImagePath && typeof window !== 'undefined') {
+      setImageUrl(window.location.origin + pcbImagePath);
+    }
+  }, [pcbImagePath]);
 
-  if (!tool) {
+  useLayoutEffect(() => {
+    const update = () => {
+      if (imgRef.current) {
+        setImgDims({ width: imgRef.current.offsetWidth, height: imgRef.current.offsetHeight });
+      }
+    };
+    const img = imgRef.current;
+    if (img) {
+      if (img.complete) update();
+      else img.addEventListener('load', update);
+    }
+    window.addEventListener('resize', update);
+    return () => {
+      window.removeEventListener('resize', update);
+      if (img) img.removeEventListener('load', update);
+    };
+  }, [pcbImagePath]);
+
+  // Default lens position: center of image
+  const pos = lensPos ?? (imgDims.width > 0 ? { x: imgDims.width / 2, y: imgDims.height / 2 } : null);
+
+  // Drag handling
+  useEffect(() => {
+    if (!isDragging) return;
+    const handleMove = (e: MouseEvent) => {
+      if (!imgRef.current) return;
+      const rect = imgRef.current.getBoundingClientRect();
+      setLensPos({
+        x: Math.max(0, Math.min(imgDims.width, e.clientX - rect.left)),
+        y: Math.max(0, Math.min(imgDims.height, e.clientY - rect.top)),
+      });
+    };
+    const handleUp = () => setIsDragging(false);
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('mouseup', handleUp);
+    };
+  }, [isDragging, imgDims]);
+
+  if (!pcbImagePath) {
     return (
       <div className="relative min-h-[500px] flex items-center justify-center rounded-lg bg-gray-800/50 border-2 border-gray-600 border-dashed">
         <div className="text-center px-6 py-12">
-          <div className="mx-auto w-20 h-20 rounded-full flex items-center justify-center mb-5 bg-gray-700/50">
-            <Wrench className="w-10 h-10 text-gray-500" />
-          </div>
-          <h3 className="text-lg font-semibold text-gray-300 mb-2">Nessun tool selezionato</h3>
-          <p className="text-gray-500 text-sm">Seleziona un tool dalla tab Tools per visualizzarne la preview</p>
+          <Search className="mx-auto w-10 h-10 text-gray-500 mb-4" />
+          <h3 className="text-lg font-semibold text-gray-300 mb-2">No PCB image</h3>
+          <p className="text-gray-500 text-sm">Upload an image in the Image tab to preview the magnifier</p>
         </div>
       </div>
     );
   }
 
-  const bodyHeight = Math.max(90, tool.probes.length * PREVIEW_PROBE_SPACING + 28);
-  const activeProbe = tool.probes.find(p => p.id === activeProbeId);
-
   return (
-    <div className="relative min-h-[500px] flex flex-col rounded-lg bg-gray-900/80 border border-gray-700 overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center gap-2 px-4 py-3 bg-gray-800/80 border-b border-gray-700">
-        <Wrench className="h-4 w-4 text-purple-400 flex-shrink-0" />
-        <span className="text-sm font-medium text-white truncate">{tool.name}</span>
-        <span className="ml-auto text-[10px] font-mono text-gray-500 flex-shrink-0">{tool.outputType}</span>
+    <div ref={containerRef} className="relative rounded-lg overflow-hidden">
+      <img
+        ref={imgRef}
+        src={pcbImagePath}
+        alt="PCB Preview"
+        className="h-auto w-full block rounded-lg"
+        draggable={false}
+      />
+
+      {/* Magnifier lens overlay */}
+      {pos && imageUrl && imgDims.width > 0 && (
+        <div
+          className="absolute rounded-full overflow-hidden cursor-move"
+          style={{
+            left: pos.x,
+            top: pos.y,
+            transform: 'translate(-50%, -50%)',
+            width: magnifier.defaultRadius * 2,
+            height: magnifier.defaultRadius * 2,
+            backgroundImage: `url(${imageUrl})`,
+            backgroundSize: `${imgDims.width * magnifier.defaultZoomLevel}px ${imgDims.height * magnifier.defaultZoomLevel}px`,
+            backgroundPosition: `-${pos.x * magnifier.defaultZoomLevel - magnifier.defaultRadius}px -${pos.y * magnifier.defaultZoomLevel - magnifier.defaultRadius}px`,
+            backgroundRepeat: 'no-repeat',
+            boxShadow: '0 0 0 4px rgb(59 130 246), 0 10px 15px -3px rgb(0 0 0 / 0.3)',
+            pointerEvents: 'auto',
+          }}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            setIsDragging(true);
+          }}
+        />
+      )}
+
+      {/* Info badge */}
+      <div className="absolute bottom-3 left-3 flex gap-2">
+        <span className="px-2 py-1 rounded bg-black/70 text-[10px] font-mono text-blue-300">
+          r: {magnifier.defaultRadius}px
+        </span>
+        <span className="px-2 py-1 rounded bg-black/70 text-[10px] font-mono text-blue-300">
+          zoom: {magnifier.defaultZoomLevel.toFixed(1)}x
+        </span>
       </div>
 
-      {/* Preview area */}
-      <div className="flex-1 flex items-center justify-center p-10">
-        <div className="relative flex items-center">
-
-          {/* Probe column */}
-          <div className="flex flex-col" style={{ marginTop: 28, gap: PREVIEW_PROBE_SPACING - PREVIEW_PROBE_SIZE }}>
-            {tool.probes.map(probe => {
-              const isActive = activeProbeId === probe.id;
-              return (
-                <div
-                  key={probe.id}
-                  className="flex items-center gap-2 cursor-pointer select-none"
-                  onClick={() => setActiveProbeId(isActive ? null : probe.id)}
-                  title={`${probe.label || probe.role} · ${probe.connectivity}`}
-                >
-                  <span
-                    className="text-[9px] font-mono text-right w-16 truncate"
-                    style={{ color: probe.color, opacity: isActive ? 1 : 0.7 }}
-                  >
-                    {probe.label || probe.role}
-                  </span>
-                  <div
-                    className={cn(
-                      'rounded-full flex items-center justify-center text-[8px] font-bold transition-all',
-                      isActive && 'ring-2 ring-white scale-125',
-                    )}
-                    style={{
-                      width: PREVIEW_PROBE_SIZE,
-                      height: PREVIEW_PROBE_SIZE,
-                      backgroundColor: probe.color,
-                      boxShadow: isActive ? `0 0 8px ${probe.color}` : undefined,
-                    }}
-                  >
-                    {probe.label?.[0] ?? '•'}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Connector line between probes and body */}
-          <div className="w-6 border-t border-gray-600 self-start" style={{ marginTop: 28 + (tool.probes.length * PREVIEW_PROBE_SPACING) / 2 }} />
-
-          {/* Tool body */}
-          <div
-            className="rounded-lg border border-gray-600 bg-gradient-to-br from-gray-800 to-gray-900 shadow-2xl overflow-hidden ring-1 ring-white/10"
-            style={{ width: PREVIEW_BODY_WIDTH, minHeight: bodyHeight }}
-          >
-            {/* Header */}
-            <div className="px-2 py-1.5 bg-gray-700/80 border-b border-gray-600">
-              <span className="text-xs font-mono text-gray-300 truncate">{tool.name}</span>
-            </div>
-            {/* Body content based on outputType */}
-            <div className="px-2 py-2 flex flex-col gap-2" style={{ minHeight: bodyHeight - 32 }}>
-              {tool.outputType === 'numeric' && (
-                <div className="bg-cyan-900/50 backdrop-blur-sm border border-cyan-700 text-right px-2 py-1.5 rounded-md shadow-inner">
-                  <span className="text-2xl font-mono text-cyan-300 tabular-nums">—</span>
-                  {(tool.outputUnit || tool.modes?.[0]?.unit) && (
-                    <span className="text-sm ml-1 text-cyan-300/80">{tool.outputUnit ?? tool.modes?.[0]?.unit}</span>
-                  )}
-                </div>
-              )}
-              {tool.outputType === 'connection-status' && (
-                <div className="flex flex-col gap-1">
-                  {tool.probes.map(probe => (
-                    <div key={probe.id} className="flex items-center gap-1.5">
-                      <div className="w-2.5 h-2.5 rounded-full opacity-30 flex-shrink-0" style={{ backgroundColor: probe.color }} />
-                      <span className="text-[9px] font-mono text-gray-400 truncate">{probe.label || probe.role}</span>
-                      <span className="text-[9px] font-mono text-gray-600 ml-auto">OFF</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {tool.outputType === 'leds' && (
-                <div className="flex flex-wrap gap-1.5 justify-center py-1">
-                  {tool.probes.map(probe => (
-                    <div key={probe.id} className="flex flex-col items-center gap-0.5">
-                      <div className="w-4 h-4 rounded-full border border-gray-600 opacity-30" style={{ backgroundColor: 'transparent' }} />
-                      <span className="text-[8px] font-mono text-gray-500">{probe.label?.[0] ?? '•'}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {/* Decorative grill */}
-              <div className="mt-auto flex flex-col gap-0.5 opacity-10">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="h-px bg-gray-400 rounded" />
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Info footer */}
-      <div className="p-4 border-t border-gray-700 space-y-3">
-        {/* Stats row */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="rounded bg-gray-800/60 border border-gray-700 p-2 text-center">
-            <div className="text-base font-semibold text-white">{tool.probes.length}</div>
-            <div className="text-[10px] text-gray-500">Probe</div>
-          </div>
-          <div className="rounded bg-gray-800/60 border border-gray-700 p-2 text-center">
-            <div className="text-base font-semibold text-white">{tool.modes?.length ?? 0}</div>
-            <div className="text-[10px] text-gray-500">Modalità</div>
-          </div>
-          <div className="rounded bg-gray-800/60 border border-gray-700 p-2 text-center">
-            <div className="text-base font-semibold text-white truncate">{tool.outputUnit || '—'}</div>
-            <div className="text-[10px] text-gray-500">Unità</div>
-          </div>
-        </div>
-
-        {/* Active probe details */}
-        {activeProbe && (
-          <div className="rounded border border-purple-700/50 bg-purple-900/20 p-3">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: activeProbe.color }} />
-              <span className="text-xs font-medium text-purple-200">{activeProbe.label || activeProbe.role}</span>
-            </div>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[10px]">
-              <div><span className="text-gray-500">Role: </span><span className="text-gray-300">{activeProbe.role || '—'}</span></div>
-              <div><span className="text-gray-500">Connettività: </span><span className="text-gray-300">{activeProbe.connectivity}</span></div>
-            </div>
-          </div>
-        )}
-
-        {/* Mode pills */}
-        {tool.modes && tool.modes.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {tool.modes.map(mode => (
-              <span key={mode.id} className="px-2 py-0.5 rounded bg-purple-700/20 text-[10px] font-mono text-purple-300">
-                {mode.name} · {mode.shortName} ({mode.unit})
-              </span>
-            ))}
-          </div>
-        )}
+      {/* Hint */}
+      <div className="absolute top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded bg-black/60 text-[10px] text-gray-300">
+        Drag the lens to preview
       </div>
     </div>
   );

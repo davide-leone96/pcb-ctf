@@ -59,12 +59,6 @@ interface ExerciseState {
   multimeterPosition: MousePosition | null;
   uartAdapterPosition: MousePosition | null;
 
-  // Custom tools
-  activeCustomToolId: string | null;
-  activeCustomProbeId: string | null;
-  customSnapTarget: { probeId: string; pinId: string } | null;
-  customToolConnections: Record<string, Array<{ probeId: string; pinId: string | null }>>;
-  customToolPositions: Record<string, { x: number; y: number }>;
 }
 
 interface ExerciseActions {
@@ -102,14 +96,6 @@ interface ExerciseActions {
   validateFlag: (inputFlag: string, toolId: 'multimeter' | 'probes' | 'terminal') => boolean;
   unlockTool: (toolId: 'multimeter' | 'probes' | 'terminal') => void;
 
-  // Custom tool actions
-  setActiveCustomTool: (toolId: string) => void;
-  setActiveCustomProbe: (toolId: string, probeId: string | null) => void;
-  setCustomSnapTarget: (target: { probeId: string; pinId: string } | null) => void;
-  hookCustomProbe: (toolId: string, probeId: string, pinId: string) => void;
-  unhookCustomProbe: (toolId: string, probeId: string) => void;
-  setCustomToolPosition: (toolId: string, x: number, y: number) => void;
-  completeFirmwareDump: (toolId: string) => void;
 }
 
 type ExerciseStore = ExerciseState & ExerciseActions;
@@ -157,13 +143,6 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   lensAnchorPosition: null,
   multimeterPosition: null,
   uartAdapterPosition: null,
-
-  // Custom tools
-  activeCustomToolId: null,
-  activeCustomProbeId: null,
-  customSnapTarget: null,
-  customToolConnections: {},
-  customToolPositions: {},
 
   // Azioni
   resetExercise: () => {
@@ -249,9 +228,6 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
     if (!newActiveTools.includes('probes')) {
       set({ activeAdapterPin: null, uartSnapTarget: null });
     }
-    if (!newActiveTools.includes('custom')) {
-      set({ activeCustomToolId: null, activeCustomProbeId: null, customSnapTarget: null });
-    }
   },
   // =========================================================================
   
@@ -336,8 +312,10 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
       const currentObj = currentStep?.objectives?.[currentObjectiveIndex];
 
       if (stepMode === 'active' && currentObj?.type === 'terminal') {
-        const requiredFlags = (currentObj.bootStageConditions ?? [])
-          .flatMap(c => c.unlockedFlags);
+        // Cerca flag richiesti: prima dall'obiettivo, poi dal toolConfig globale
+        const objFlags = (currentObj.bootStageConditions ?? []).flatMap(c => c.unlockedFlags);
+        const globalFlags = (storeData?.toolConfig?.terminal?.bootStageConditions ?? []).flatMap(c => c.unlockedFlags);
+        const requiredFlags = objFlags.length > 0 ? objFlags : globalFlags;
 
         if (
           requiredFlags.length > 0 &&
@@ -614,6 +592,7 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
 
   // Step management actions
   setExerciseData: (data) => {
+    const magnifierConfig = data?.toolConfig?.magnifier;
     set({
       exerciseData: data,
       currentStepIndex: 0,
@@ -622,6 +601,11 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
       isSimulatorEnabled: false,
       foundComponents: [],
       flag: computeBlankFlag(data?.steps?.[0]),
+      // Applica configurazione lente dal toolConfig
+      ...(magnifierConfig ? {
+        lensRadius: magnifierConfig.defaultRadius,
+        lensZoomLevel: magnifierConfig.defaultZoomLevel,
+      } : {}),
     });
   },
 
@@ -686,59 +670,4 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
     return true;
   },
 
-  // --- Custom tool actions ---
-
-  setActiveCustomTool: (toolId) => {
-    const { customToolConnections, exerciseData } = get();
-    // Inizializza le connessioni per questo tool se non esistono ancora
-    const tool = exerciseData?.customTools?.find(t => t.id === toolId);
-    const existingConns = customToolConnections[toolId];
-    const connections = existingConns ?? (tool?.probes.map(p => ({ probeId: p.id, pinId: null })) ?? []);
-    set({
-      activeTool: 'custom',
-      activeCustomToolId: toolId,
-      activeCustomProbeId: null,
-      customSnapTarget: null,
-      customToolConnections: { ...customToolConnections, [toolId]: connections },
-    });
-  },
-
-  setActiveCustomProbe: (toolId, probeId) => {
-    set({ activeCustomProbeId: probeId, customSnapTarget: null });
-  },
-
-  setCustomSnapTarget: (target) => set({ customSnapTarget: target }),
-
-  hookCustomProbe: (toolId, probeId, pinId) => {
-    const { customToolConnections } = get();
-    const existing = customToolConnections[toolId] ?? [];
-    const updated = existing.map(c => c.probeId === probeId ? { ...c, pinId } : c);
-    set({
-      customToolConnections: { ...customToolConnections, [toolId]: updated },
-      activeCustomProbeId: null,
-      customSnapTarget: null,
-    });
-  },
-
-  unhookCustomProbe: (toolId, probeId) => {
-    const { customToolConnections } = get();
-    const existing = customToolConnections[toolId] ?? [];
-    const updated = existing.map(c => c.probeId === probeId ? { ...c, pinId: null } : c);
-    set({ customToolConnections: { ...customToolConnections, [toolId]: updated } });
-  },
-
-  setCustomToolPosition: (toolId, x, y) => {
-    set(state => ({
-      customToolPositions: { ...state.customToolPositions, [toolId]: { x, y } },
-    }));
-  },
-
-  completeFirmwareDump: (toolId) => {
-    const { stepMode, exerciseData: storeData, currentStepIndex, currentObjectiveIndex } = get();
-    const currentStep = storeData?.steps?.[currentStepIndex];
-    const currentObj = currentStep?.objectives?.[currentObjectiveIndex];
-    if (stepMode === 'active' && currentObj?.type === 'firmware-dump' && currentObj.customToolId === toolId) {
-      get()._completeCurrentObjective();
-    }
-  },
 }));

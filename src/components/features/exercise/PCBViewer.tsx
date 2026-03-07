@@ -9,7 +9,6 @@ import { XCircle } from 'lucide-react';
 import Multimeter from './Multimeter';
 import UartProbesAdapter, { WIRE_COLORS } from './UartProbesAdapter';
 import LensContentLayer from './LensContentLayer';
-import CustomToolRenderer from './CustomToolRenderer';
 import type { AdapterPin } from '@/store/exerciseStore';
 
 const SNAP_RADIUS = 15;
@@ -30,8 +29,6 @@ const PCBViewer = () => {
     lensRadius, lensZoomLevel, lensVisible, lensIsAnchored, lensAnchorPosition,
     toggleLensAnchor, setLensAnchorPosition,
     isSimulatorEnabled,
-    activeCustomToolId, activeCustomProbeId, customSnapTarget, customToolConnections, customToolPositions,
-    setActiveCustomProbe, setCustomSnapTarget, hookCustomProbe, setCustomToolPosition, completeFirmwareDump,
   } = useExerciseStore();
 
   const pcbContainerRef = useRef<HTMLDivElement>(null);
@@ -122,9 +119,6 @@ const PCBViewer = () => {
   const handleContainerClick = (e: React.MouseEvent) => {
     if (activeTool === 'multimeter' && snapTarget) hookProbe();
     if (activeTool === 'probes' && uartSnapTarget) hookUartProbe();
-    if (activeTool === 'custom' && activeCustomToolId && activeCustomProbeId && customSnapTarget) {
-      hookCustomProbe(activeCustomToolId, activeCustomProbeId, customSnapTarget.pinId);
-    }
 
     // Permetti ancoraggio lente se:
     // - pointer è attivo (sempre)
@@ -197,22 +191,6 @@ const PCBViewer = () => {
       setUartSnapTarget(null);
     }
 
-    if (activeTool === 'custom' && activeCustomToolId && activeCustomProbeId && exerciseData) {
-      // Determina la connettività della sonda attiva
-      const activeCt = exerciseData.customTools?.find(t => t.id === activeCustomToolId);
-      const activeProbeObj = activeCt?.probes.find(p => p.id === activeCustomProbeId);
-      const connectivity = activeProbeObj?.connectivity ?? 'all';
-      const filterType: 'all' | 'uart-only' =
-        connectivity === 'uart' ? 'uart-only' : 'all';
-      const closest = findClosestPin(mouseX, mouseY, filterType);
-      const newTarget = closest ? { probeId: activeCustomProbeId, pinId: closest } : null;
-      const currentTarget = customSnapTarget;
-      if (newTarget?.pinId !== currentTarget?.pinId || newTarget?.probeId !== currentTarget?.probeId) {
-        setCustomSnapTarget(newTarget);
-      }
-    } else if (activeTool === 'custom' && customSnapTarget) {
-      setCustomSnapTarget(null);
-    }
   };
 
   const handleMouseLeave = () => {
@@ -313,8 +291,17 @@ const PCBViewer = () => {
     activeUartProbePos = { x: adapterPosition.x + o.x, y: adapterPosition.y + o.y };
   }
 
-  // L'overlay UART (adapter, cavi, pallini) è visibile sia in modalità probes che terminal
-  const showUartOverlay = activeTools.includes('probes') || (activeTools.includes('terminal') && uartConnected);
+  // L'overlay UART è visibile:
+  // 1. Quando il tool probes è attivo (presente nella sidebar dello step corrente)
+  // 2. Quando la configurazione di persistenza lo richiede per lo step corrente
+  const uartConfig = exerciseData?.toolConfig?.uartConnector;
+  const currentStepForUart = exerciseData?.steps?.[currentStepIndex];
+  const currentStepTools = currentStepForUart?.availableTools;
+  const probesAvailableInStep = !currentStepTools?.length || currentStepTools.includes('probes');
+  const uartPersistVisible = uartConfig?.persistAfterConnection && uartConnected &&
+    currentStepForUart && uartConfig.visibleInSteps.includes(currentStepForUart.id);
+  const showUartOverlay = (activeTools.includes('probes') && probesAvailableInStep) ||
+    !!uartPersistVisible;
 
   // Posizioni pixel per snap targets (necessarie per LensContentLayer)
   const snapTargetPos = snapTarget ? getPinPosition(snapTarget) : null;
@@ -345,39 +332,17 @@ const PCBViewer = () => {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onClick={handleContainerClick}
-      className={cn( 'relative', activeTool === 'multimeter' && activeProbe ? 'cursor-none' : '', activeTool === 'probes' && activeAdapterPin ? 'cursor-none' : '' )}
+      className={cn(
+        'relative',
+        (activeTool === 'multimeter' && activeProbe) ? 'cursor-none' : '',
+        (activeTool === 'probes' && activeAdapterPin) ? 'cursor-none' : '',
+      )}
     >
       {/* Wrapper relativo che si adatta esattamente alle dimensioni dell'immagine */}
       <div className="relative inline-block w-full">
         <img ref={pcbImageRef} src={exerciseData.pcbImage} alt="Vista PCB" className="h-auto w-full block rounded-lg" style={{ imageRendering: 'crisp-edges' }} draggable={false} />
         {isSimulatorEnabled && activeTools.includes('multimeter') && <Multimeter onPositionChange={setMultimeterPosition} bounds={bounds} />}
         {isSimulatorEnabled && showUartOverlay && <UartProbesAdapter onPositionChange={setAdapterPosition} bounds={bounds} readOnly={activeTool !== 'probes'} />}
-        {isSimulatorEnabled && activeTools.includes('custom') && activeCustomToolId && (() => {
-          const ct = exerciseData.customTools?.find(t => t.id === activeCustomToolId);
-          if (!ct || containerDims.width === 0) return null;
-          const pos = customToolPositions[activeCustomToolId] ?? { x: 60, y: 60 };
-          const conns = customToolConnections[activeCustomToolId] ?? ct.probes.map(p => ({ probeId: p.id, pinId: null }));
-          return (
-            <CustomToolRenderer
-              tool={ct}
-              position={pos}
-              connections={conns}
-              snapTarget={customSnapTarget}
-              activeProbeId={activeCustomProbeId}
-              onDrag={(x, y) => setCustomToolPosition(activeCustomToolId, x, y)}
-              onProbeClick={(probeId) => {
-                if (activeCustomProbeId === probeId) {
-                  setActiveCustomProbe(activeCustomToolId, null);
-                } else {
-                  setActiveCustomProbe(activeCustomToolId, probeId);
-                }
-              }}
-              containerDims={containerDims}
-              exerciseData={exerciseData}
-              onDumpComplete={(toolId) => completeFirmwareDump(toolId)}
-            />
-          );
-        })()}
 
       <div className="absolute inset-0 pointer-events-none z-10">
         {isSimulatorEnabled && activeTools.includes('multimeter') && (
@@ -432,12 +397,9 @@ const PCBViewer = () => {
           const lensPosition = lensIsAnchored && lensAnchorPosition ? lensAnchorPosition : mousePosition;
           if (!lensPosition) return null;
 
-          // La lente può essere spostata se:
-          // - activeTool è pointer (sempre)
-          // - activeTool è multimeter senza puntale attivo (nessun cavo in movimento)
-          // - activeTool è probes senza pin dell'adattatore attivo (nessun cavo in movimento)
-          // La lente è sempre manipolabile quando visibile e ancorata (è un overlay indipendente dal tool attivo)
-          const isLensInteractive = true;
+          // La lente NON è interattiva quando una sonda è attiva (per evitare conflitti di cursore)
+          const isProbeActive = !!(activeProbe || activeAdapterPin);
+          const isLensInteractive = !isProbeActive;
 
           return (
             <div
@@ -497,40 +459,14 @@ const PCBViewer = () => {
       </div>
 
       <div className="absolute inset-0">
-        {/* Overlay componenti trovati: sempre visibili con bordo verde */}
-        {currentStepObjectives.map((objective, index) => {
+        {/* Overlay componenti trovati: animazione fade-out dopo il ritrovamento */}
+        {currentStepObjectives.map((objective) => {
           if (!foundComponents.includes(objective.id)) return null;
-          const [left, top, width, height] = objective.coords;
-
-          // Log solo una volta per sessione
-          if (index === 0 && containerDims.width > 0) {
-            console.log('🎯 [PCBViewer] Rendering obiettivi:', {
-              totalObjectives: currentStepObjectives.length,
-              foundComponents: foundComponents.length,
-              esempio: {
-                id: objective.id,
-                coords: `[${left}%, ${top}%, ${width}%, ${height}%]`,
-                pixelCalc: {
-                  left: `${(left * containerDims.width / 100).toFixed(0)}px`,
-                  top: `${(top * containerDims.height / 100).toFixed(0)}px`,
-                  width: `${(width * containerDims.width / 100).toFixed(0)}px`,
-                  height: `${(height * containerDims.height / 100).toFixed(0)}px`
-                }
-              },
-              containerDims
-            });
-          }
-
           return (
-            <div
+            <FoundComponentOverlay
               key={`found-${objective.id}`}
-              className="absolute border-2 border-green-500 bg-green-500/20 rounded-md pointer-events-none"
-              style={{
-                left: `${left}%`,
-                top: `${top}%`,
-                width: `${width}%`,
-                height: `${height}%`,
-              }}
+              objectiveId={objective.id}
+              coords={objective.coords}
             />
           );
         })}
@@ -591,6 +527,45 @@ const PCBViewer = () => {
       {/* Chiusura wrapper relativo all'immagine */}
       </div>
     </div>
+  );
+};
+
+/** Overlay that flashes green then fades out when a component is found. */
+const FADE_DURATION_MS = 2000;
+
+const FoundComponentOverlay = ({
+  objectiveId,
+  coords,
+}: {
+  objectiveId: string;
+  coords: [number, number, number, number];
+}) => {
+  const [visible, setVisible] = useState(true);
+  const [fading, setFading] = useState(false);
+
+  useEffect(() => {
+    // Start fading after a brief flash
+    const fadeTimer = setTimeout(() => setFading(true), 400);
+    // Remove from DOM after transition
+    const removeTimer = setTimeout(() => setVisible(false), 400 + FADE_DURATION_MS);
+    return () => { clearTimeout(fadeTimer); clearTimeout(removeTimer); };
+  }, []);
+
+  if (!visible) return null;
+
+  const [left, top, width, height] = coords;
+  return (
+    <div
+      className="absolute border-2 border-green-500 bg-green-500/20 rounded-md pointer-events-none"
+      style={{
+        left: `${left}%`,
+        top: `${top}%`,
+        width: `${width}%`,
+        height: `${height}%`,
+        transition: `opacity ${FADE_DURATION_MS}ms ease-out`,
+        opacity: fading ? 0 : 1,
+      }}
+    />
   );
 };
 

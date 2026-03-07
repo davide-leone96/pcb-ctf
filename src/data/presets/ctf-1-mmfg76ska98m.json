@@ -4,42 +4,11 @@
     "name": "CTF-1",
     "description": "TP-LINK",
     "createdAt": "2026-03-06T22:10:23.396Z",
-    "updatedAt": "2026-03-07T00:56:57.616Z"
+    "updatedAt": "2026-03-07T14:18:25.485Z"
   },
   "exerciseConfig": {
     "pcbImage": "/images/preset-ctf-1-mmfg76ska98m.png",
     "steps": [
-      {
-        "id": "step-mmflbbz9i7ayr",
-        "title": "test tool",
-        "description": "",
-        "expectedFlag": "flag{TERMINAL}",
-        "availableTools": [
-          "pointer",
-          "magnifier",
-          "multimeter",
-          "probes",
-          "terminal"
-        ],
-        "objectives": [
-          {
-            "id": "obj-mmflv66nqxtfv",
-            "name": "Terminale",
-            "type": "terminal",
-            "instruction": "",
-            "hint": "",
-            "flagPart": "TERMINAL",
-            "coords": [
-              0,
-              0,
-              0,
-              0
-            ],
-            "requiresUart": false,
-            "terminalPersistent": true
-          }
-        ]
-      },
       {
         "id": "step-mm40vunlva7cg",
         "title": "Hardware Analysis",
@@ -47,7 +16,9 @@
         "expectedFlag": "flag{CPU-123EPROM}",
         "availableTools": [
           "pointer",
-          "custom"
+          "custom",
+          "multimeter",
+          "magnifier"
         ],
         "objectives": [
           {
@@ -147,7 +118,7 @@
               0
             ],
             "requiresUart": false,
-            "terminalPersistent": false
+            "terminalPersistent": true
           }
         ]
       }
@@ -242,7 +213,7 @@
       }
     ],
     "uartPins": [],
-    "initialFlag": "flag{????????}",
+    "initialFlag": "flag{????????????}",
     "firmwarePath": "/uploads/firmware-1772839791936-fw_test.bin",
     "toolGroups": [
       {
@@ -251,7 +222,8 @@
         "toolIds": [
           "pointer",
           "magnifier",
-          "multimeter"
+          "multimeter",
+          "ct-mmgdk9xiqa7yu"
         ]
       },
       {
@@ -264,7 +236,25 @@
           "pointer"
         ]
       }
-    ]
+    ],
+    "toolConfig": {
+      "magnifier": {
+        "defaultRadius": 95,
+        "defaultZoomLevel": 2.3
+      },
+      "uartConnector": {
+        "persistAfterConnection": true,
+        "visibleInSteps": [
+          "step-mm5hzst08lpuk",
+          "step-mmfg4aupwth6w"
+        ]
+      },
+      "terminal": {
+        "requiresUart": false,
+        "persistent": true,
+        "bootStageConditions": []
+      }
+    }
   },
   "terminalConfig": {
     "metadata": {

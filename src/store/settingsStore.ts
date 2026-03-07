@@ -5,13 +5,14 @@ import { create } from 'zustand';
 import type {
   HardwareComponent, MeasurementPin, UartPin, UartRole, Exercise,
   ObjectiveType, PinCondition, PinLogic, BootStageCondition, ToolGroup,
+  ToolConfig, MagnifierConfig, UartConnectorConfig, TerminalToolConfig,
 } from '@/data/exercise';
 import { SETTINGS_STORAGE_KEY, ALL_TOOLS, type Tool } from '@/data/exercise';
 import type { CustomTool, ProbeConnectivity, ToolOutputType, FirmwareDumpConfig } from '@/types/custom-tool';
 
 export type { ProbeConnectivity, ToolOutputType };
 
-export type { PinCondition, PinLogic };
+export type { PinCondition, PinLogic, ToolConfig, MagnifierConfig, UartConnectorConfig, TerminalToolConfig };
 
 // --- Draft types ---
 
@@ -81,7 +82,7 @@ export interface DraftPin {
   hint: string;
 }
 
-export type SettingsTool = 'component' | 'pin' | 'objective' | 'terminal-config' | 'tools-config' | 'firmware';
+export type SettingsTool = 'component' | 'pin' | 'objective' | 'terminal-config' | 'tools-config' | 'firmware' | 'tool-config';
 
 // --- Custom Tool draft types ---
 
@@ -145,6 +146,8 @@ interface SettingsState {
   firmwareFileName: string;
   // Tool groups
   toolGroups: ToolGroup[];
+  // Tool config (built-in tool configuration)
+  toolConfig: ToolConfig;
 }
 
 interface SettingsActions {
@@ -243,6 +246,12 @@ interface SettingsActions {
   updateToolGroup: (id: string, updates: Partial<Omit<ToolGroup, 'id'>>) => void;
   deleteToolGroup: (id: string) => void;
   toggleToolInGroup: (groupId: string, toolId: string) => void;
+
+  // Tool config (built-in tool configuration)
+  updateMagnifierConfig: (updates: Partial<MagnifierConfig>) => void;
+  updateUartConnectorConfig: (updates: Partial<UartConnectorConfig>) => void;
+  updateTerminalToolConfig: (updates: Partial<TerminalToolConfig>) => void;
+  toggleUartVisibleStep: (stepId: string) => void;
 }
 
 type SettingsStore = SettingsState & SettingsActions;
@@ -313,6 +322,11 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   firmwarePath: '',
   firmwareFileName: '',
   toolGroups: [],
+  toolConfig: {
+    magnifier: { defaultRadius: 120, defaultZoomLevel: 2.5 },
+    uartConnector: { persistAfterConnection: false, visibleInSteps: [] },
+    terminal: { requiresUart: true, persistent: false, bootStageConditions: [] },
+  },
 
   // --- Tool ---
 
@@ -1247,6 +1261,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       ...(exportedCustomTools.length > 0 ? { customTools: exportedCustomTools } : {}),
       ...(firmwarePath ? { firmwarePath } : {}),
       ...(get().toolGroups.length > 0 ? { toolGroups: get().toolGroups } : {}),
+      toolConfig: get().toolConfig,
     };
 
     return JSON.stringify(exercise, null, 2);
@@ -1288,6 +1303,11 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
           firmwarePath: '',
           firmwareFileName: '',
           toolGroups: [],
+          toolConfig: {
+            magnifier: { defaultRadius: 120, defaultZoomLevel: 2.5 },
+            uartConnector: { persistAfterConnection: false, visibleInSteps: [] },
+            terminal: { requiresUart: true, persistent: false, bootStageConditions: [] },
+          },
         });
         return;
       }
@@ -1471,6 +1491,21 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         firmwarePath: exercise.firmwarePath || '',
         firmwareFileName: exercise.firmwarePath ? exercise.firmwarePath.split('/').pop() || '' : '',
         toolGroups: exercise.toolGroups ?? [],
+        toolConfig: {
+          magnifier: {
+            defaultRadius: exercise.toolConfig?.magnifier?.defaultRadius ?? 120,
+            defaultZoomLevel: exercise.toolConfig?.magnifier?.defaultZoomLevel ?? 2.5,
+          },
+          uartConnector: {
+            persistAfterConnection: exercise.toolConfig?.uartConnector?.persistAfterConnection ?? false,
+            visibleInSteps: exercise.toolConfig?.uartConnector?.visibleInSteps ?? [],
+          },
+          terminal: {
+            requiresUart: exercise.toolConfig?.terminal?.requiresUart ?? true,
+            persistent: exercise.toolConfig?.terminal?.persistent ?? false,
+            bootStageConditions: exercise.toolConfig?.terminal?.bootStageConditions ?? [],
+          },
+        },
       });
     } catch { /* ignore invalid data */ }
   },
@@ -1535,6 +1570,11 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       firmwarePath: '',
       firmwareFileName: '',
       toolGroups: [],
+      toolConfig: {
+        magnifier: { defaultRadius: 120, defaultZoomLevel: 2.5 },
+        uartConnector: { persistAfterConnection: false, visibleInSteps: [] },
+        terminal: { requiresUart: true, persistent: false, bootStageConditions: [] },
+      },
     });
   },
 
@@ -1722,6 +1762,53 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         const has = g.toolIds.includes(toolId);
         return { ...g, toolIds: has ? g.toolIds.filter(t => t !== toolId) : [...g.toolIds, toolId] };
       }),
+    });
+  },
+
+  // --- Tool config (built-in tool configuration) ---
+
+  updateMagnifierConfig: (updates) => {
+    const { toolConfig } = get();
+    set({
+      toolConfig: {
+        ...toolConfig,
+        magnifier: { ...toolConfig.magnifier!, ...updates },
+      },
+    });
+  },
+
+  updateUartConnectorConfig: (updates) => {
+    const { toolConfig } = get();
+    set({
+      toolConfig: {
+        ...toolConfig,
+        uartConnector: { ...toolConfig.uartConnector!, ...updates },
+      },
+    });
+  },
+
+  updateTerminalToolConfig: (updates) => {
+    const { toolConfig } = get();
+    set({
+      toolConfig: {
+        ...toolConfig,
+        terminal: { ...toolConfig.terminal!, ...updates },
+      },
+    });
+  },
+
+  toggleUartVisibleStep: (stepId) => {
+    const { toolConfig } = get();
+    const current = toolConfig.uartConnector?.visibleInSteps ?? [];
+    const has = current.includes(stepId);
+    set({
+      toolConfig: {
+        ...toolConfig,
+        uartConnector: {
+          ...toolConfig.uartConnector!,
+          visibleInSteps: has ? current.filter(s => s !== stepId) : [...current, stepId],
+        },
+      },
     });
   },
 }));

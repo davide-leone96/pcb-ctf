@@ -88,6 +88,33 @@ export interface ToolGroup {
   toolIds: string[];
 }
 
+export interface MagnifierConfig {
+  defaultRadius: number;
+  defaultZoomLevel: number;
+}
+
+export interface UartConnectorConfig {
+  /** Se true, il connettore UART resta visibile dopo una connessione corretta */
+  persistAfterConnection: boolean;
+  /** ID degli step in cui il connettore resta visibile (con stato connesso) dopo la prima connessione */
+  visibleInSteps: string[];
+}
+
+export interface TerminalToolConfig {
+  /** Se true, il terminale richiede collegamento UART per avviarsi */
+  requiresUart: boolean;
+  /** Se true, il terminale non puo' essere disattivato dalla toolbar */
+  persistent: boolean;
+  /** Condizioni boot stage con flag da sbloccare */
+  bootStageConditions: BootStageCondition[];
+}
+
+export interface ToolConfig {
+  magnifier?: MagnifierConfig;
+  uartConnector?: UartConnectorConfig;
+  terminal?: TerminalToolConfig;
+}
+
 export interface Exercise {
   pcbImage: string;
   steps: Step[];
@@ -101,6 +128,8 @@ export interface Exercise {
   firmwarePath?: string;
   /** Gruppi di tool attivabili contemporaneamente. */
   toolGroups?: ToolGroup[];
+  /** Configurazione dei tool built-in (lente, UART, terminale). */
+  toolConfig?: ToolConfig;
 }
 
 // ===================================================================================

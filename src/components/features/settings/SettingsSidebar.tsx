@@ -12,8 +12,8 @@ import {
   Hand, Search, Wrench, Cable, TerminalSquare, RotateCcw, HardDrive, type LucideIcon,
 } from 'lucide-react';
 import TerminalSettingsPanel from './TerminalSettingsPanel';
-import CustomToolsPanel from './CustomToolsPanel';
 import FirmwarePanel from './FirmwarePanel';
+import ToolConfigPanel from './ToolConfigPanel';
 import PresetSelector from './PresetSelector';
 import { usePresetStore } from '@/store/presetStore';
 import {
@@ -31,6 +31,7 @@ const TOOL_ICONS: Record<Tool, LucideIcon> = {
   multimeter: Wrench,
   probes: Cable,
   terminal: TerminalSquare,
+  custom: Wrench,
 };
 
 const TOOL_LABELS: Record<Tool, string> = {
@@ -39,6 +40,7 @@ const TOOL_LABELS: Record<Tool, string> = {
   multimeter: 'Multimetro',
   probes: 'UART',
   terminal: 'Terminale',
+  custom: 'Custom',
 };
 
 const PIN_TYPE_COLORS: Record<string, string> = {
@@ -65,7 +67,7 @@ const SettingsSidebar = () => {
     components, editComponent, deleteComponent,
     steps, activeStepId, selectStep,
     addStep, deleteStep, reorderStep, updateStep, toggleStepTool,
-    addObjective, addPinObjective, addTerminalObjective, addFirmwareDumpObjective, deleteObjective, reorderObjective, editObjective,
+    addObjective, addPinObjective, addTerminalObjective, deleteObjective, reorderObjective, editObjective,
     pins, editPin, deletePin,
     saveToFile, resetAllConfig, resetInitComponents,
   } = useSettingsStore();
@@ -85,7 +87,8 @@ const SettingsSidebar = () => {
     }
   };
 
-  const isInitMain = activeTool !== 'objective';
+  const isChallengeSection = activeTool === 'objective';
+  const isInitMain = !isChallengeSection;
   const isImageSubTab = activeTool === 'component' || activeTool === 'pin';
   const isTerminalTab = activeTool === 'terminal-config';
   const isToolsTab = activeTool === 'tools-config';
@@ -94,8 +97,7 @@ const SettingsSidebar = () => {
   const terminalStore = useTerminalSettingsStore();
   const presetStore = usePresetStore();
 
-  const { customTools } = useSettingsStore();
-  const hasContent = steps.length > 0 || components.length > 0 || pins.length > 0 || customTools.length > 0;
+  const hasContent = steps.length > 0 || components.length > 0 || pins.length > 0;
   const hasAnyContent = hasContent || terminalStore.initialized;
 
   return (
@@ -114,16 +116,18 @@ const SettingsSidebar = () => {
             Init
           </button>
           <button
-            onClick={() => setActiveTool('objective')}
+            onClick={() => { if (!isChallengeSection) setActiveTool('objective'); }}
             className={cn(
               'flex items-center gap-1 px-2 py-2 rounded-lg text-xs transition-colors flex-1',
-              !isInitMain ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-400 hover:bg-gray-600 hover:text-white'
+              isChallengeSection ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-400 hover:bg-gray-600 hover:text-white'
             )}
           >
             <BoxSelect className="h-3.5 w-3.5" />
             Challenge
           </button>
         </div>
+
+        {/* Challenge: no sub-tabs needed — only Steps */}
 
         {/* Init sub-tabs: Image / Terminal / Tools */}
         {isInitMain && (
@@ -174,10 +178,10 @@ const SettingsSidebar = () => {
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto min-h-0 space-y-3">
-        {isFirmwareTab ? (
+        {isToolsTab ? (
+          <ToolConfigPanel />
+        ) : isFirmwareTab ? (
           <FirmwarePanel />
-        ) : isToolsTab ? (
-          <CustomToolsPanel />
         ) : isTerminalTab ? (
           <TerminalSettingsPanel />
         ) : isImageSubTab ? (
@@ -320,7 +324,6 @@ const SettingsSidebar = () => {
                     onAddObjective={(componentId) => addObjective(step.id, componentId)}
                     onAddPinObjective={(pinIds, logic) => addPinObjective(step.id, pinIds, logic)}
                     onAddTerminalObjective={() => addTerminalObjective(step.id)}
-                    onAddFirmwareDumpObjective={() => addFirmwareDumpObjective(step.id)}
                     availableComponents={components}
                     availablePins={pins}
                     onDeleteObjective={(objId) => deleteObjective(step.id, objId)}
@@ -392,42 +395,12 @@ const SettingsSidebar = () => {
   );
 };
 
-// --- Custom Tools Toggle (inline in step tool section) ---
-
-const CustomToolsToggle = ({
-  stepAvailableTools,
-  onToggle,
-}: {
-  stepAvailableTools: string[];
-  onToggle: (tool: string) => void;
-}) => {
-  const customTools = useSettingsStore(s => s.customTools);
-  if (customTools.length === 0) return null;
-
-  const isActive = stepAvailableTools.includes('custom');
-  return (
-    <>
-      <div className="w-px h-4 bg-gray-600 self-center mx-0.5" />
-      <button
-        onClick={() => onToggle('custom')}
-        className={cn(
-          'p-1 rounded transition-colors',
-          isActive ? 'bg-purple-600/60 text-white' : 'bg-gray-700/50 text-gray-500 hover:text-gray-300'
-        )}
-        title={`Custom tools (${customTools.length}): ${customTools.map(t => t.name).join(', ')}`}
-      >
-        <Wrench className="h-3.5 w-3.5" />
-      </button>
-    </>
-  );
-};
-
 // --- Step Item (accordion) ---
 
 const StepItem = ({
   step, index, isExpanded, isFirst, isLast,
   onToggle, onDelete, onReorder, onUpdateStep, onToggleTool,
-  onAddObjective, onAddPinObjective, onAddTerminalObjective, onAddFirmwareDumpObjective, onDeleteObjective, onReorderObjective, onEditObjective,
+  onAddObjective, onAddPinObjective, onAddTerminalObjective, onDeleteObjective, onReorderObjective, onEditObjective,
   availableComponents, availablePins,
 }: {
   step: DraftStep;
@@ -443,7 +416,6 @@ const StepItem = ({
   onAddObjective: (componentId: string) => void;
   onAddPinObjective: (pinIds: string[], logic: PinLogic) => void;
   onAddTerminalObjective: () => void;
-  onAddFirmwareDumpObjective: () => void;
   onDeleteObjective: (objId: string) => void;
   onReorderObjective: (objId: string, dir: 'up' | 'down') => void;
   onEditObjective: (objId: string) => void;
@@ -536,8 +508,6 @@ const StepItem = ({
                   </button>
                 );
               })}
-              {/* Custom tools toggle */}
-              <CustomToolsToggle stepAvailableTools={step.availableTools} onToggle={onToggleTool} />
             </div>
           </div>
 
@@ -579,13 +549,6 @@ const StepItem = ({
                         >
                           <TerminalSquare className="h-3 w-3 text-green-400" />
                           <span className="text-white">Terminale</span>
-                        </button>
-                        <button
-                          onClick={() => { onAddFirmwareDumpObjective(); setShowAddMenu(null); }}
-                          className="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-600 transition-colors flex items-center gap-2"
-                        >
-                          <Wrench className="h-3 w-3 text-orange-400" />
-                          <span className="text-white">Firmware Dump</span>
                         </button>
                       </>
                     )}
@@ -727,12 +690,10 @@ const ObjectiveItem = ({
     <span className={cn(
       'text-[10px] font-mono flex-shrink-0',
       objective.type === 'pin' ? 'text-cyan-400' :
-      objective.type === 'terminal' ? 'text-green-400' :
-      objective.type === 'firmware-dump' ? 'text-orange-400' : 'text-blue-400'
+      objective.type === 'terminal' ? 'text-green-400' : 'text-blue-400'
     )}>
       {objective.type === 'pin' ? `PIN\u00B7${objective.pinLogic}` :
-       objective.type === 'terminal' ? 'TRM' :
-       objective.type === 'firmware-dump' ? 'FWD' : 'COM'}
+       objective.type === 'terminal' ? 'TRM' : 'COM'}
     </span>
     <span className="text-xs truncate flex-1">{objective.name || 'Senza nome'}</span>
     <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
