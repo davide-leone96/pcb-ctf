@@ -42,6 +42,8 @@ const FirmwareDumpObjectivePopup = ({ objective, containerDims }: FirmwareDumpOb
       pinConditions: [],
       pinLogic: 'AND' as const,
       bootStageConditions: [],
+      requiresUart: false,
+      terminalPersistent: false,
     };
     if (isNew) {
       saveObjective(data);

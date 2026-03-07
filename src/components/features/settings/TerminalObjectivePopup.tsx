@@ -3,9 +3,8 @@
 
 import { useState, useEffect } from 'react';
 import { useSettingsStore, type DraftObjective } from '@/store/settingsStore';
-import { useTerminalSettingsStore } from '@/store/terminalSettingsStore';
 import { Button } from '@/components/ui/button';
-import { TerminalSquare } from 'lucide-react';
+import { TerminalSquare, Cable, Lock } from 'lucide-react';
 
 interface TerminalObjectivePopupProps {
   objective: DraftObjective;
@@ -14,30 +13,22 @@ interface TerminalObjectivePopupProps {
 
 const TerminalObjectivePopup = ({ objective, containerDims }: TerminalObjectivePopupProps) => {
   const { saveObjective, updateObjective, cancelObjectiveEdit } = useSettingsStore();
-  const { flagParts, completeFlag } = useTerminalSettingsStore();
 
   const isNew = objective.instruction === '' && objective.hint === '' && objective.flagPart === '';
 
   const [name, setName] = useState(objective.name);
   const [instruction, setInstruction] = useState(objective.instruction);
   const [hint, setHint] = useState(objective.hint);
-  // Flatten existing bootStageConditions into a simple list of required flag IDs
-  const [requiredFlags, setRequiredFlags] = useState<string[]>(
-    objective.bootStageConditions.flatMap(c => c.unlockedFlags)
-  );
+  const [requiresUart, setRequiresUart] = useState(objective.requiresUart);
+  const [terminalPersistent, setTerminalPersistent] = useState(objective.terminalPersistent);
 
   useEffect(() => {
     setName(objective.name);
     setInstruction(objective.instruction);
     setHint(objective.hint);
-    setRequiredFlags(objective.bootStageConditions.flatMap(c => c.unlockedFlags));
+    setRequiresUart(objective.requiresUart);
+    setTerminalPersistent(objective.terminalPersistent);
   }, [objective]);
-
-  const toggleFlag = (flagId: string) => {
-    setRequiredFlags(prev =>
-      prev.includes(flagId) ? prev.filter(f => f !== flagId) : [...prev, flagId]
-    );
-  };
 
   const handleConfirm = () => {
     const data = {
@@ -46,10 +37,11 @@ const TerminalObjectivePopup = ({ objective, containerDims }: TerminalObjectiveP
       pinLogic: 'AND' as const,
       instruction,
       hint,
-      flagPart: completeFlag || flagParts.map(fp => fp.part).join('') || 'TERMINAL',
-      bootStageConditions: requiredFlags.length > 0
-        ? [{ bootStageId: 'completion', unlockedFlags: requiredFlags, hint: '' }]
-        : [],
+      flagPart: 'TERMINAL',
+      customToolId: '',
+      bootStageConditions: [],
+      requiresUart,
+      terminalPersistent,
     };
     if (isNew) {
       saveObjective(data);
@@ -114,28 +106,32 @@ const TerminalObjectivePopup = ({ objective, containerDims }: TerminalObjectiveP
         />
       </div>
 
-      {/* Required flags for completion */}
-      <div className="mb-4">
-        <label className="block text-xs text-gray-400 mb-1.5">Flag richieste per completamento</label>
-        {flagParts.length > 0 ? (
-          <div className="flex flex-wrap gap-1.5">
-            {flagParts.map(fp => (
-              <label key={fp.id} className="flex items-center gap-1.5 cursor-pointer bg-gray-700/40 hover:bg-gray-700/70 border border-gray-600/50 rounded px-2 py-1 transition-colors">
-                <input
-                  type="checkbox"
-                  checked={requiredFlags.includes(fp.id)}
-                  onChange={() => toggleFlag(fp.id)}
-                  className="accent-green-500 w-3 h-3"
-                />
-                <span className="text-xs font-mono text-gray-300">{fp.part || fp.id}</span>
-              </label>
-            ))}
+      {/* Requires UART */}
+      <div className="mb-3">
+        <label
+          className="flex items-center gap-2 cursor-pointer select-none"
+          onClick={() => setRequiresUart(!requiresUart)}
+        >
+          <div className={`w-8 h-4 rounded-full transition-colors relative ${requiresUart ? 'bg-green-600' : 'bg-gray-600'}`}>
+            <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform ${requiresUart ? 'translate-x-4' : 'translate-x-0.5'}`} />
           </div>
-        ) : (
-          <p className="text-xs text-gray-500 italic">
-            Nessun flag configurato nella tab Terminale
-          </p>
-        )}
+          <Cable className="h-3.5 w-3.5 text-gray-400" />
+          <span className="text-xs text-gray-300">Richiede collegamento UART</span>
+        </label>
+      </div>
+
+      {/* Terminal Persistent */}
+      <div className="mb-3">
+        <label
+          className="flex items-center gap-2 cursor-pointer select-none"
+          onClick={() => setTerminalPersistent(!terminalPersistent)}
+        >
+          <div className={`w-8 h-4 rounded-full transition-colors relative ${terminalPersistent ? 'bg-green-600' : 'bg-gray-600'}`}>
+            <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform ${terminalPersistent ? 'translate-x-4' : 'translate-x-0.5'}`} />
+          </div>
+          <Lock className="h-3.5 w-3.5 text-gray-400" />
+          <span className="text-xs text-gray-300">Non disattivabile dalla toolbar</span>
+        </label>
       </div>
 
       {/* Buttons */}

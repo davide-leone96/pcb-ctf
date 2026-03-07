@@ -4,7 +4,7 @@
 import { create } from 'zustand';
 import type {
   HardwareComponent, MeasurementPin, UartPin, UartRole, Exercise,
-  ObjectiveType, PinCondition, PinLogic, BootStageCondition,
+  ObjectiveType, PinCondition, PinLogic, BootStageCondition, ToolGroup,
 } from '@/data/exercise';
 import { SETTINGS_STORAGE_KEY, ALL_TOOLS, type Tool } from '@/data/exercise';
 import type { CustomTool, ProbeConnectivity, ToolOutputType, FirmwareDumpConfig } from '@/types/custom-tool';
@@ -28,6 +28,8 @@ export interface DraftObjective {
   flagPart: string;
   coords: [number, number, number, number]; // solo per type='component'
   bootStageConditions: BootStageCondition[];
+  requiresUart: boolean;
+  terminalPersistent: boolean;
 }
 
 export interface DraftFirmwareDumpConfig {
@@ -79,7 +81,7 @@ export interface DraftPin {
   hint: string;
 }
 
-export type SettingsTool = 'component' | 'pin' | 'objective' | 'terminal-config' | 'tools-config';
+export type SettingsTool = 'component' | 'pin' | 'objective' | 'terminal-config' | 'tools-config' | 'firmware';
 
 // --- Custom Tool draft types ---
 
@@ -138,6 +140,11 @@ interface SettingsState {
   // Custom tools (tab Strumenti)
   customTools: DraftCustomTool[];
   activeCustomToolId: string | null;
+  // Firmware
+  firmwarePath: string;
+  firmwareFileName: string;
+  // Tool groups
+  toolGroups: ToolGroup[];
 }
 
 interface SettingsActions {
@@ -226,6 +233,16 @@ interface SettingsActions {
   deleteMode: (toolId: string, modeId: string) => void;
   updateFirmwareDumpConfig: (toolId: string, updates: Partial<DraftFirmwareDumpConfig>) => void;
   uploadFirmwareFile: (toolId: string, file: File) => Promise<{ success: boolean; path?: string; fileName?: string; error?: string }>;
+
+  // Firmware (Init tab)
+  uploadFirmware: (file: File) => Promise<{ success: boolean; path?: string; error?: string }>;
+  deleteFirmware: () => void;
+
+  // Tool groups
+  addToolGroup: () => void;
+  updateToolGroup: (id: string, updates: Partial<Omit<ToolGroup, 'id'>>) => void;
+  deleteToolGroup: (id: string) => void;
+  toggleToolInGroup: (groupId: string, toolId: string) => void;
 }
 
 type SettingsStore = SettingsState & SettingsActions;
@@ -293,6 +310,9 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   canvasPanMode: false,
   customTools: [],
   activeCustomToolId: null,
+  firmwarePath: '',
+  firmwareFileName: '',
+  toolGroups: [],
 
   // --- Tool ---
 
@@ -700,10 +720,13 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   },
 
   toggleStepTool: (stepId, tool) => {
+    const step = get().steps.find(s => s.id === stepId);
+    if (!step) return;
+    const has = step.availableTools.includes(tool);
+
     set({
       steps: get().steps.map(s => {
         if (s.id !== stepId) return s;
-        const has = s.availableTools.includes(tool);
         return {
           ...s,
           availableTools: has
@@ -712,6 +735,22 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         };
       }),
     });
+
+    if (tool === 'terminal') {
+      if (!has) {
+        // Aggiunto tool terminale → aggiungi obiettivo terminale se non esiste
+        const hasTerminalObj = step.objectives.some(o => o.type === 'terminal');
+        if (!hasTerminalObj) {
+          get().addTerminalObjective(stepId);
+        }
+      } else {
+        // Rimosso tool terminale → rimuovi tutti gli obiettivi terminale
+        const terminalObjs = step.objectives.filter(o => o.type === 'terminal');
+        for (const obj of terminalObjs) {
+          get().deleteObjective(stepId, obj.id);
+        }
+      }
+    }
   },
 
   // --- Objective actions ---
@@ -733,6 +772,8 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       flagPart: '',
       coords: comp.coords,
       bootStageConditions: [],
+      requiresUart: false,
+      terminalPersistent: false,
     };
     set({
       steps: updateStepObjectives(get().steps, stepId, objs => [...objs, newObj]),
@@ -761,6 +802,8 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       flagPart: '',
       coords: [0, 0, 0, 0],
       bootStageConditions: [],
+      requiresUart: false,
+      terminalPersistent: false,
     };
     set({
       steps: updateStepObjectives(get().steps, stepId, objs => [...objs, newObj]),
@@ -784,9 +827,22 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       flagPart: '',
       coords: [0, 0, 0, 0],
       bootStageConditions: [],
+      requiresUart: true,
+      terminalPersistent: false,
     };
+    // Aggiungi obiettivo + attiva automaticamente il tool terminale nello step
+    const steps = get().steps.map(s => {
+      if (s.id !== stepId) return s;
+      return {
+        ...s,
+        objectives: [...s.objectives, newObj],
+        availableTools: s.availableTools.includes('terminal')
+          ? s.availableTools
+          : [...s.availableTools, 'terminal' as Tool],
+      };
+    });
     set({
-      steps: updateStepObjectives(get().steps, stepId, objs => [...objs, newObj]),
+      steps,
       activeObjectiveId: id,
       activeStepId: stepId,
     });
@@ -807,6 +863,8 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       flagPart: '',
       coords: [0, 0, 0, 0],
       bootStageConditions: [],
+      requiresUart: false,
+      terminalPersistent: false,
     };
     set({
       steps: updateStepObjectives(get().steps, stepId, objs => [...objs, newObj]),
@@ -816,9 +874,28 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   },
 
   deleteObjective: (stepId, objectiveId) => {
-    const { activeObjectiveId } = get();
+    const { activeObjectiveId, steps } = get();
+    const step = steps.find(s => s.id === stepId);
+    const deletedObj = step?.objectives.find(o => o.id === objectiveId);
+
+    const newSteps = steps.map(s => {
+      if (s.id !== stepId) return s;
+      const newObjs = s.objectives.filter(o => o.id !== objectiveId);
+      // Se l'obiettivo eliminato è terminale e non ne restano altri, rimuovi il tool
+      const shouldRemoveTerminalTool =
+        deletedObj?.type === 'terminal' &&
+        !newObjs.some(o => o.type === 'terminal');
+      return {
+        ...s,
+        objectives: newObjs,
+        availableTools: shouldRemoveTerminalTool
+          ? s.availableTools.filter(t => t !== 'terminal')
+          : s.availableTools,
+      };
+    });
+
     set({
-      steps: updateStepObjectives(get().steps, stepId, objs => objs.filter(o => o.id !== objectiveId)),
+      steps: newSteps,
       activeObjectiveId: activeObjectiveId === objectiveId ? null : activeObjectiveId,
     });
   },
@@ -1079,6 +1156,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         ...(o.type === 'terminal' && o.bootStageConditions.length > 0
           ? { bootStageConditions: o.bootStageConditions }
           : {}),
+        ...(o.type === 'terminal' ? { requiresUart: o.requiresUart, terminalPersistent: o.terminalPersistent } : {}),
         ...(o.type === 'firmware-dump' && o.customToolId ? { customToolId: o.customToolId } : {}),
       }));
       const flagParts = objectives.map(o => o.flagPart).join('');
@@ -1157,6 +1235,8 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         } } : {}),
       }));
 
+    const { firmwarePath } = get();
+
     const exercise: Exercise = {
       pcbImage: pcbImagePath,
       steps: exportSteps,
@@ -1165,6 +1245,8 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       uartPins,
       initialFlag: `flag{${'?'.repeat(firstStepFlagLen)}}`,
       ...(exportedCustomTools.length > 0 ? { customTools: exportedCustomTools } : {}),
+      ...(firmwarePath ? { firmwarePath } : {}),
+      ...(get().toolGroups.length > 0 ? { toolGroups: get().toolGroups } : {}),
     };
 
     return JSON.stringify(exercise, null, 2);
@@ -1203,6 +1285,9 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
           canvasPanMode: false,
           customTools: [],
           activeCustomToolId: null,
+          firmwarePath: '',
+          firmwareFileName: '',
+          toolGroups: [],
         });
         return;
       }
@@ -1244,6 +1329,8 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
                 coords: o.coords || [0, 0, 0, 0],
                 bootStageConditions: (o as any).bootStageConditions || [],
                 customToolId: (o as any).customToolId || '',
+                requiresUart: (o as any).requiresUart ?? (o.type === 'terminal'),
+                terminalPersistent: (o as any).terminalPersistent ?? false,
               };
             }),
           };
@@ -1296,6 +1383,8 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
             flagPart: c.flagPart,
             coords: c.coords,
             bootStageConditions: [],
+            requiresUart: false,
+            terminalPersistent: false,
           })),
         }];
       }
@@ -1379,6 +1468,9 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         canvasPanMode: false,
         customTools: draftCustomTools,
         activeCustomToolId: null,
+        firmwarePath: exercise.firmwarePath || '',
+        firmwareFileName: exercise.firmwarePath ? exercise.firmwarePath.split('/').pop() || '' : '',
+        toolGroups: exercise.toolGroups ?? [],
       });
     } catch { /* ignore invalid data */ }
   },
@@ -1440,6 +1532,9 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       canvasPanMode: false,
       customTools: [],
       activeCustomToolId: null,
+      firmwarePath: '',
+      firmwareFileName: '',
+      toolGroups: [],
     });
   },
 
@@ -1581,5 +1676,52 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       const message = error instanceof Error ? error.message : 'Upload failed';
       return { success: false, error: message };
     }
+  },
+
+  // --- Firmware (Init tab) ---
+
+  uploadFirmware: async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await fetch('/api/firmware/upload', { method: 'POST', body: formData });
+      const result = await response.json();
+      if (result.success) {
+        set({ firmwarePath: result.path, firmwareFileName: result.fileName });
+      }
+      return result;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Upload failed';
+      return { success: false, error: message };
+    }
+  },
+
+  deleteFirmware: () => {
+    set({ firmwarePath: '', firmwareFileName: '' });
+  },
+
+  // --- Tool Groups ---
+
+  addToolGroup: () => {
+    const id = generateId('tg');
+    set({ toolGroups: [...get().toolGroups, { id, name: 'Nuovo gruppo', toolIds: [] }] });
+  },
+
+  updateToolGroup: (id, updates) => {
+    set({ toolGroups: get().toolGroups.map(g => g.id === id ? { ...g, ...updates } : g) });
+  },
+
+  deleteToolGroup: (id) => {
+    set({ toolGroups: get().toolGroups.filter(g => g.id !== id) });
+  },
+
+  toggleToolInGroup: (groupId, toolId) => {
+    set({
+      toolGroups: get().toolGroups.map(g => {
+        if (g.id !== groupId) return g;
+        const has = g.toolIds.includes(toolId);
+        return { ...g, toolIds: has ? g.toolIds.filter(t => t !== toolId) : [...g.toolIds, toolId] };
+      }),
+    });
   },
 }));

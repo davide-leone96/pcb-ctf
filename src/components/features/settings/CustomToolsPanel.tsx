@@ -3,6 +3,8 @@
 
 import { useState, useRef, type ChangeEvent } from 'react';
 import { useSettingsStore, type DraftCustomTool, type DraftToolProbe, type DraftToolMode } from '@/store/settingsStore';
+import type { ToolGroup } from '@/data/exercise';
+import { ALL_TOOLS, type Tool } from '@/data/exercise';
 import { cn } from '@/lib/utils';
 import {
   Plus, Trash2, Pencil, ChevronDown, ChevronRight, Wrench,
@@ -14,6 +16,7 @@ import {
   AlertDialogAction, AlertDialogCancel,
 } from '@/components/ui/alert-dialog';
 
+type ToolTab = 'tools' | 'groups';
 type ToolSection = 'general' | 'probes';
 
 const CONNECTIVITY_LABELS: Record<string, string> = {
@@ -41,39 +44,76 @@ const CustomToolsPanel = () => {
     addCustomTool,
     selectCustomTool,
   } = useSettingsStore();
+  const [activeTab, setActiveTab] = useState<ToolTab>('tools');
 
   return (
     <div className="space-y-3">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-xs text-gray-400 uppercase tracking-wider">
-          Tool personalizzati ({customTools.length})
-        </h3>
+      {/* Tab selector */}
+      <div className="flex gap-1">
         <button
-          onClick={addCustomTool}
-          className="text-gray-400 hover:text-white transition-colors p-0.5"
-          title="Aggiungi tool"
+          onClick={() => setActiveTab('tools')}
+          className={cn(
+            'flex-1 px-2 py-1.5 rounded text-xs transition-colors flex items-center justify-center gap-1',
+            activeTab === 'tools'
+              ? 'bg-purple-600/50 text-white'
+              : 'bg-gray-700/50 text-gray-400 hover:text-gray-300'
+          )}
         >
-          <Plus className="h-4 w-4" />
+          <Wrench className="h-3 w-3" />
+          Tool ({customTools.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('groups')}
+          className={cn(
+            'flex-1 px-2 py-1.5 rounded text-xs transition-colors flex items-center justify-center gap-1',
+            activeTab === 'groups'
+              ? 'bg-blue-600/50 text-white'
+              : 'bg-gray-700/50 text-gray-400 hover:text-gray-300'
+          )}
+        >
+          <Settings className="h-3 w-3" />
+          Gruppi
         </button>
       </div>
 
-      {customTools.length === 0 && (
-        <p className="text-xs text-gray-500 italic">
-          Nessun tool. Clicca + per crearne uno.
-        </p>
+      {activeTab === 'tools' && (
+        <>
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs text-gray-400 uppercase tracking-wider">
+              Tool personalizzati
+            </h3>
+            <button
+              onClick={addCustomTool}
+              className="text-gray-400 hover:text-white transition-colors p-0.5"
+              title="Aggiungi tool"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
+
+          {customTools.length === 0 && (
+            <p className="text-xs text-gray-500 italic">
+              Nessun tool. Clicca + per crearne uno.
+            </p>
+          )}
+
+          <div className="space-y-1">
+            {customTools.map(tool => (
+              <ToolItem
+                key={tool.id}
+                tool={tool}
+                isExpanded={tool.id === activeCustomToolId}
+                onToggle={() => selectCustomTool(tool.id === activeCustomToolId ? null : tool.id)}
+              />
+            ))}
+          </div>
+        </>
       )}
 
-      <div className="space-y-1">
-        {customTools.map(tool => (
-          <ToolItem
-            key={tool.id}
-            tool={tool}
-            isExpanded={tool.id === activeCustomToolId}
-            onToggle={() => selectCustomTool(tool.id === activeCustomToolId ? null : tool.id)}
-          />
-        ))}
-      </div>
+      {activeTab === 'groups' && (
+        <ToolGroupsSection customTools={customTools} />
+      )}
     </div>
   );
 };
@@ -532,5 +572,112 @@ const DeleteToolButton = ({ name, onConfirm }: { name: string; onConfirm: () => 
     </AlertDialogContent>
   </AlertDialog>
 );
+
+// ============================================
+// TOOL GROUPS SECTION
+// ============================================
+
+const BUILTIN_TOOL_LABELS: Record<Tool, string> = {
+  pointer: 'Puntatore',
+  magnifier: 'Lente',
+  multimeter: 'Multimetro',
+  probes: 'UART',
+  terminal: 'Terminale',
+  custom: 'Custom',
+};
+
+const ToolGroupsSection = ({ customTools }: { customTools: DraftCustomTool[] }) => {
+  const { toolGroups, addToolGroup, updateToolGroup, deleteToolGroup, toggleToolInGroup } = useSettingsStore();
+  const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
+
+  const allToolOptions: { id: string; label: string }[] = [
+    ...ALL_TOOLS.map(t => ({ id: t, label: BUILTIN_TOOL_LABELS[t] })),
+    ...customTools.map(t => ({ id: t.id, label: t.name || 'Tool senza nome' })),
+  ];
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xs text-gray-400 uppercase tracking-wider">
+          Gruppi tool ({toolGroups.length})
+        </h3>
+        <button
+          onClick={addToolGroup}
+          className="text-gray-400 hover:text-white transition-colors p-0.5"
+          title="Aggiungi gruppo"
+        >
+          <Plus className="h-4 w-4" />
+        </button>
+      </div>
+
+      {toolGroups.length === 0 && (
+        <p className="text-xs text-gray-500 italic">
+          Nessun gruppo. I tool in uno stesso gruppo possono essere attivi contemporaneamente.
+        </p>
+      )}
+
+      <div className="space-y-1">
+        {toolGroups.map(group => {
+          const isExpanded = group.id === expandedGroupId;
+          return (
+            <div key={group.id} className="bg-gray-700/40 rounded-lg overflow-hidden">
+              {/* Header */}
+              <div
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-700/60 transition-colors"
+                onClick={() => setExpandedGroupId(isExpanded ? null : group.id)}
+              >
+                {isExpanded ? <ChevronDown className="h-3 w-3 text-gray-400" /> : <ChevronRight className="h-3 w-3 text-gray-400" />}
+                <span className="text-sm text-white flex-1 truncate">{group.name}</span>
+                <span className="text-xs text-gray-500">{group.toolIds.length} tool</span>
+                <button
+                  onClick={(e) => { e.stopPropagation(); deleteToolGroup(group.id); }}
+                  className="text-gray-500 hover:text-red-400 transition-colors p-0.5"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              </div>
+
+              {/* Expanded content */}
+              {isExpanded && (
+                <div className="px-3 pb-3 space-y-2">
+                  {/* Group name */}
+                  <input
+                    type="text"
+                    value={group.name}
+                    onChange={(e) => updateToolGroup(group.id, { name: e.target.value })}
+                    className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                    placeholder="Nome gruppo..."
+                  />
+
+                  {/* Tool checkboxes */}
+                  <div className="space-y-0.5">
+                    <label className="block text-xs text-gray-400 mb-1">Tool nel gruppo</label>
+                    {allToolOptions.map(opt => {
+                      const checked = group.toolIds.includes(opt.id);
+                      return (
+                        <label
+                          key={opt.id}
+                          className="flex items-center gap-2 px-2 py-1 rounded text-xs hover:bg-gray-600/40 cursor-pointer transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => toggleToolInGroup(group.id, opt.id)}
+                            className="rounded border-gray-500 text-blue-500 focus:ring-blue-500 focus:ring-offset-0 bg-gray-700"
+                          />
+                          <span className={checked ? 'text-white' : 'text-gray-400'}>{opt.label}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
 
 export default CustomToolsPanel;

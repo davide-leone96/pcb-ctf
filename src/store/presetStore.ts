@@ -45,7 +45,7 @@ function captureCurrentConfig(): { exerciseConfig: Exercise; terminalConfig: any
  * UI-only fields (activeComponentId, canvasZoom, dragState, etc.) are intentionally excluded.
  */
 const SETTINGS_CONTENT_FIELDS = [
-  'components', 'steps', 'pins', 'pcbImagePath',
+  'components', 'steps', 'pins', 'pcbImagePath', 'customTools', 'firmwarePath', 'toolGroups',
 ] as const;
 
 const TERMINAL_CONTENT_FIELDS = [

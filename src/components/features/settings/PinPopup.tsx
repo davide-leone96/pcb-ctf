@@ -2,39 +2,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSettingsStore, type DraftPin, type PinType, type PinShape, type ValueMode } from '@/store/settingsStore';
+import { useSettingsStore, type DraftPin, type ValueMode } from '@/store/settingsStore';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Circle, Square } from 'lucide-react';
 
 interface PinPopupProps {
   pin: DraftPin;
   containerDims: { width: number; height: number };
 }
 
-const PIN_TYPE_OPTIONS: { value: PinType; label: string }[] = [
-  { value: 'custom', label: 'Misura (Custom)' },
-  { value: 'tx', label: 'UART TX' },
-  { value: 'rx', label: 'UART RX' },
-  { value: 'gnd', label: 'GND' },
-  { value: 'vcc', label: 'VCC' },
-];
-
-const UART_DEFAULTS: Record<string, { voltage: number; resistance: number; label: string }> = {
-  tx:  { voltage: 3.3, resistance: 0, label: 'TX (3.3V)' },
-  rx:  { voltage: 3.3, resistance: 0, label: 'RX (3.3V)' },
-  gnd: { voltage: 0,   resistance: 0, label: 'GND (0V)' },
-  vcc: { voltage: 5.0, resistance: 0, label: 'VCC (5V)' },
-};
-
 const PinPopup = ({ pin, containerDims }: PinPopupProps) => {
   const { savePin, updatePin, liveUpdatePin, cancelPinEdit } = useSettingsStore();
 
   const isNew = pin.label === '';
 
-  const [pinType, setPinType] = useState<PinType>(pin.pinType);
   const [label, setLabel] = useState(pin.label);
-  const [shape, setShape] = useState<PinShape>(pin.shape);
   const [size, setSize] = useState(pin.size);
   const [voltageMode, setVoltageMode] = useState<ValueMode>(pin.voltageMode);
   const [voltageFixed, setVoltageFixed] = useState(pin.voltageFixed);
@@ -48,9 +30,7 @@ const PinPopup = ({ pin, containerDims }: PinPopupProps) => {
   const [hint, setHint] = useState(pin.hint);
 
   useEffect(() => {
-    setPinType(pin.pinType);
     setLabel(pin.label);
-    setShape(pin.shape);
     setSize(pin.size);
     setVoltageMode(pin.voltageMode);
     setVoltageFixed(pin.voltageFixed);
@@ -64,26 +44,8 @@ const PinPopup = ({ pin, containerDims }: PinPopupProps) => {
     setHint(pin.hint);
   }, [pin]);
 
-  const isUart = pinType !== 'custom';
-
-  const handleTypeChange = (newType: PinType) => {
-    setPinType(newType);
-    if (newType !== 'custom') {
-      const defaults = UART_DEFAULTS[newType];
-      if (defaults) {
-        setLabel(defaults.label);
-        setVoltageMode('fixed');
-        setVoltageFixed(defaults.voltage);
-        setResistanceMode('fixed');
-        setResistanceFixed(defaults.resistance);
-      }
-    }
-  };
-
   const handleReset = () => {
-    setPinType('custom');
     setLabel('');
-    setShape('circle');
     setSize(2);
     setVoltageMode('fixed');
     setVoltageFixed(0);
@@ -99,9 +61,9 @@ const PinPopup = ({ pin, containerDims }: PinPopupProps) => {
 
   const handleConfirm = () => {
     const data = {
-      pinType,
-      label: label || (isUart ? UART_DEFAULTS[pinType]?.label ?? pinType.toUpperCase() : 'Pin'),
-      shape,
+      pinType: 'custom' as const,
+      label: label || 'Pin',
+      shape: pin.shape,
       size,
       voltageMode,
       voltageFixed,
@@ -162,20 +124,6 @@ const PinPopup = ({ pin, containerDims }: PinPopupProps) => {
         <span className="text-xs text-gray-500">size: {size.toFixed(1)}%</span>
       </div>
 
-      {/* Pin type */}
-      <div className="mb-3">
-        <label className={labelCls}>Tipo pin</label>
-        <select
-          value={pinType}
-          onChange={(e) => handleTypeChange(e.target.value as PinType)}
-          className={cn(inputCls, 'cursor-pointer')}
-        >
-          {PIN_TYPE_OPTIONS.map(opt => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
-          ))}
-        </select>
-      </div>
-
       {/* Label */}
       <div className="mb-3">
         <label className={labelCls}>Label</label>
@@ -183,35 +131,10 @@ const PinPopup = ({ pin, containerDims }: PinPopupProps) => {
           type="text"
           value={label}
           onChange={(e) => setLabel(e.target.value)}
-          placeholder={isUart ? UART_DEFAULTS[pinType]?.label : 'es. R69, C48...'}
+          placeholder="es. R69, C48..."
           className={inputCls}
           autoFocus
         />
-      </div>
-
-      {/* Shape toggle */}
-      <div className="mb-3">
-        <label className={labelCls}>Forma</label>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setShape('circle')}
-            className={cn(
-              'flex items-center gap-1.5 px-3 py-1.5 rounded text-sm transition-colors',
-              shape === 'circle' ? 'bg-blue-600/50 text-white' : 'bg-gray-700/50 text-gray-400 hover:bg-gray-600/50'
-            )}
-          >
-            <Circle className="h-3.5 w-3.5" /> Cerchio
-          </button>
-          <button
-            onClick={() => setShape('square')}
-            className={cn(
-              'flex items-center gap-1.5 px-3 py-1.5 rounded text-sm transition-colors',
-              shape === 'square' ? 'bg-blue-600/50 text-white' : 'bg-gray-700/50 text-gray-400 hover:bg-gray-600/50'
-            )}
-          >
-            <Square className="h-3.5 w-3.5" /> Quadrato
-          </button>
-        </div>
       </div>
 
       {/* Size slider */}
@@ -232,64 +155,59 @@ const PinPopup = ({ pin, containerDims }: PinPopupProps) => {
         />
       </div>
 
-      {/* Voltage & Resistance — hidden for UART types */}
-      {!isUart && (
-        <>
-          {/* Voltage */}
-          <div className="mb-3">
-            <label className={labelCls}>Tensione (V)</label>
-            <div className="flex gap-2 mb-1.5">
-              <button
-                onClick={() => setVoltageMode('fixed')}
-                className={cn('px-2 py-1 rounded text-xs transition-colors', voltageMode === 'fixed' ? 'bg-blue-600/50 text-white' : 'bg-gray-700/50 text-gray-400')}
-              >
-                Fisso
-              </button>
-              <button
-                onClick={() => setVoltageMode('range')}
-                className={cn('px-2 py-1 rounded text-xs transition-colors', voltageMode === 'range' ? 'bg-blue-600/50 text-white' : 'bg-gray-700/50 text-gray-400')}
-              >
-                Range
-              </button>
-            </div>
-            {voltageMode === 'fixed' ? (
-              <input type="number" step="0.1" value={voltageFixed} onChange={(e) => setVoltageFixed(parseFloat(e.target.value) || 0)} className={inputCls} />
-            ) : (
-              <div className="flex gap-2">
-                <input type="number" step="0.1" value={voltageMin} onChange={(e) => setVoltageMin(parseFloat(e.target.value) || 0)} placeholder="Min" className={inputCls} />
-                <input type="number" step="0.1" value={voltageMax} onChange={(e) => setVoltageMax(parseFloat(e.target.value) || 0)} placeholder="Max" className={inputCls} />
-              </div>
-            )}
+      {/* Voltage */}
+      <div className="mb-3">
+        <label className={labelCls}>Tensione (V)</label>
+        <div className="flex gap-2 mb-1.5">
+          <button
+            onClick={() => setVoltageMode('fixed')}
+            className={cn('px-2 py-1 rounded text-xs transition-colors', voltageMode === 'fixed' ? 'bg-blue-600/50 text-white' : 'bg-gray-700/50 text-gray-400')}
+          >
+            Fisso
+          </button>
+          <button
+            onClick={() => setVoltageMode('range')}
+            className={cn('px-2 py-1 rounded text-xs transition-colors', voltageMode === 'range' ? 'bg-blue-600/50 text-white' : 'bg-gray-700/50 text-gray-400')}
+          >
+            Range
+          </button>
+        </div>
+        {voltageMode === 'fixed' ? (
+          <input type="number" step="0.1" value={voltageFixed} onChange={(e) => setVoltageFixed(parseFloat(e.target.value) || 0)} className={inputCls} />
+        ) : (
+          <div className="flex gap-2">
+            <input type="number" step="0.1" value={voltageMin} onChange={(e) => setVoltageMin(parseFloat(e.target.value) || 0)} placeholder="Min" className={inputCls} />
+            <input type="number" step="0.1" value={voltageMax} onChange={(e) => setVoltageMax(parseFloat(e.target.value) || 0)} placeholder="Max" className={inputCls} />
           </div>
+        )}
+      </div>
 
-          {/* Resistance */}
-          <div className="mb-3">
-            <label className={labelCls}>Resistenza (Ohm)</label>
-            <div className="flex gap-2 mb-1.5">
-              <button
-                onClick={() => setResistanceMode('fixed')}
-                className={cn('px-2 py-1 rounded text-xs transition-colors', resistanceMode === 'fixed' ? 'bg-blue-600/50 text-white' : 'bg-gray-700/50 text-gray-400')}
-              >
-                Fisso
-              </button>
-              <button
-                onClick={() => setResistanceMode('range')}
-                className={cn('px-2 py-1 rounded text-xs transition-colors', resistanceMode === 'range' ? 'bg-blue-600/50 text-white' : 'bg-gray-700/50 text-gray-400')}
-              >
-                Range
-              </button>
-            </div>
-            {resistanceMode === 'fixed' ? (
-              <input type="number" step="1" value={resistanceFixed} onChange={(e) => setResistanceFixed(parseFloat(e.target.value) || 0)} className={inputCls} />
-            ) : (
-              <div className="flex gap-2">
-                <input type="number" step="1" value={resistanceMin} onChange={(e) => setResistanceMin(parseFloat(e.target.value) || 0)} placeholder="Min" className={inputCls} />
-                <input type="number" step="1" value={resistanceMax} onChange={(e) => setResistanceMax(parseFloat(e.target.value) || 0)} placeholder="Max" className={inputCls} />
-              </div>
-            )}
+      {/* Resistance */}
+      <div className="mb-3">
+        <label className={labelCls}>Resistenza (Ohm)</label>
+        <div className="flex gap-2 mb-1.5">
+          <button
+            onClick={() => setResistanceMode('fixed')}
+            className={cn('px-2 py-1 rounded text-xs transition-colors', resistanceMode === 'fixed' ? 'bg-blue-600/50 text-white' : 'bg-gray-700/50 text-gray-400')}
+          >
+            Fisso
+          </button>
+          <button
+            onClick={() => setResistanceMode('range')}
+            className={cn('px-2 py-1 rounded text-xs transition-colors', resistanceMode === 'range' ? 'bg-blue-600/50 text-white' : 'bg-gray-700/50 text-gray-400')}
+          >
+            Range
+          </button>
+        </div>
+        {resistanceMode === 'fixed' ? (
+          <input type="number" step="1" value={resistanceFixed} onChange={(e) => setResistanceFixed(parseFloat(e.target.value) || 0)} className={inputCls} />
+        ) : (
+          <div className="flex gap-2">
+            <input type="number" step="1" value={resistanceMin} onChange={(e) => setResistanceMin(parseFloat(e.target.value) || 0)} placeholder="Min" className={inputCls} />
+            <input type="number" step="1" value={resistanceMax} onChange={(e) => setResistanceMax(parseFloat(e.target.value) || 0)} placeholder="Max" className={inputCls} />
           </div>
-        </>
-      )}
+        )}
+      </div>
 
       {/* Description */}
       <div className="mb-3">

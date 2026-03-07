@@ -25,8 +25,9 @@ export default function Home() {
     isFinished,
     resetExercise,
     activeTool,
+    activeTools,
     terminalDiscoveries,
-    uartConnected,
+    uartEverConnected,
     lensVisible,
     startStep,
     validateAndCompleteStep,
@@ -60,6 +61,13 @@ export default function Home() {
 
   const currentStep = exerciseData.steps[currentStepIndex];
   const currentObjective = currentStep?.objectives?.[currentObjectiveIndex];
+
+  // Il terminale è bloccato solo se esiste un obiettivo terminal con requiresUart
+  // e l'UART non è ancora stato connesso
+  const terminalRequiresUart = exerciseData.steps.some(s =>
+    s.objectives.some(o => o.type === 'terminal' && o.requiresUart)
+  );
+  const canAccessTerminal = !terminalRequiresUart || uartEverConnected;
 
   const handleNextStep = () => {
     setShowStepCompletionDialog(true);
@@ -107,7 +115,7 @@ export default function Home() {
             <div className="md:col-span-1">
               <FlagDisplay
                 flag={
-                  activeTool === 'terminal'
+                  activeTools.includes('terminal')
                     ? buildTerminalFlag(terminalDiscoveries)
                     : flag
                 }
@@ -131,8 +139,8 @@ export default function Home() {
               <p className="text-gray-400 text-lg">Clicca su "Start" per iniziare</p>
             </div>
           )}
-          {activeTool === 'terminal' ? (
-            uartConnected ? (
+          {activeTools.includes('terminal') ? (
+            canAccessTerminal ? (
               <Terminal />
             ) : (
               <div className="h-[500px] bg-black/95 rounded-lg text-white font-mono text-sm flex items-center justify-center border border-red-900/50">

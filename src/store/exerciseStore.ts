@@ -34,6 +34,7 @@ interface ExerciseState {
   uartFlag: string;
   isFinished: boolean;
   activeTool: Tool;
+  activeTools: Tool[];
   multimeterUnlocked: boolean;
   uartUnlocked: boolean;
   terminalUnlocked: boolean;
@@ -49,6 +50,7 @@ interface ExerciseState {
   activeAdapterPin: AdapterPin | null;
   uartSnapTarget: string | null;
   uartConnected: boolean;
+  uartEverConnected: boolean;
   lensRadius: number;
   lensZoomLevel: number;
   lensVisible: boolean;
@@ -127,6 +129,7 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   uartFlag: '',
   isFinished: false,
   activeTool: 'pointer',
+  activeTools: ['pointer'],
   multimeterUnlocked: true,
   uartUnlocked: true,
   terminalUnlocked: true,
@@ -146,6 +149,7 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   activeAdapterPin: null,
   uartSnapTarget: null,
   uartConnected: false,
+  uartEverConnected: false,
   lensRadius: 120,
   lensZoomLevel: 2.5,
   lensVisible: false,
@@ -174,6 +178,7 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
       flag: computeBlankFlag(data?.steps?.[0]),
       isFinished: false,
       activeTool: 'pointer',
+      activeTools: ['pointer'],
       mousePosition: null,
       measuredComponentId: null,
       multimeterMode: 'V',
@@ -190,6 +195,7 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
       activeAdapterPin: null,
       uartSnapTarget: null,
       uartConnected: false,
+      uartEverConnected: false,
       uartFlag: '',
       multimeterUnlocked: true,
       uartUnlocked: true,
@@ -204,35 +210,46 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   // ===                     MODIFICA CHIAVE QUI                           ===
   // =========================================================================
   setActiveTool: (tool) => {
-    const { lensVisible, lensIsAnchored } = get();
+    const { exerciseData, activeTools: prevTools } = get();
+    const groups = exerciseData?.toolGroups ?? [];
 
-    // Prima di tutto, imposta lo strumento attivo
-    set({ activeTool: tool });
+    // Trova il gruppo che contiene il tool appena selezionato
+    const toolGroup = groups.find(g => g.toolIds.includes(tool));
 
-    // Se la lente è visibile ma NON ancorata, e si seleziona un tool diverso da pointer,
-    // disattiva automaticamente la lente
-    if (lensVisible && !lensIsAnchored && tool !== 'pointer') {
-      set({ lensVisible: false });
+    let newActiveTools: Tool[];
+    if (toolGroup) {
+      // Il tool è in un gruppo: i tool dello stesso gruppo possono coesistere
+      const groupIds = new Set(toolGroup.toolIds);
+      if (prevTools.includes(tool)) {
+        // Il tool è già attivo → toggle off (ma non lasciare la lista vuota)
+        newActiveTools = prevTools.filter(t => t !== tool);
+        if (newActiveTools.length === 0) newActiveTools = ['pointer'];
+      } else {
+        // Aggiungi il tool, rimuovi quelli che NON sono nel gruppo
+        const keptFromGroup = prevTools.filter(t => groupIds.has(t));
+        newActiveTools = [...keptFromGroup, tool];
+      }
+    } else {
+      // Il tool non è in nessun gruppo
+      if (prevTools.includes(tool) && tool !== 'pointer') {
+        // Già attivo → toggle off, torna al pointer
+        newActiveTools = ['pointer'];
+      } else {
+        newActiveTools = [tool];
+      }
     }
 
-    // Se lo strumento selezionato NON è il multimetro,
-    // pulisci solo lo stato transitorio (mantieni i collegamenti probe1/probe2)
-    if (tool !== 'multimeter') {
-      set({
-        activeProbe: null,
-        snapTarget: null,
-      });
-    }
-    // Quando si attiva il multimetro, l'utente deve cliccare sul puntale per selezionarlo
+    const effectiveTool = newActiveTools[newActiveTools.length - 1];
+    set({ activeTool: effectiveTool, activeTools: newActiveTools });
 
-    // Pulisci lo stato transitorio delle sonde UART quando si cambia tool
-    // (ma mantieni le connessioni e lo stato uartConnected)
-    if (tool !== 'probes') {
+    // Pulisci stato transitorio per tool non più attivi
+    if (!newActiveTools.includes('multimeter')) {
+      set({ activeProbe: null, snapTarget: null });
+    }
+    if (!newActiveTools.includes('probes')) {
       set({ activeAdapterPin: null, uartSnapTarget: null });
     }
-
-    // Pulisci lo stato transitorio dei custom tool quando si cambia tool
-    if (tool !== 'custom') {
+    if (!newActiveTools.includes('custom')) {
       set({ activeCustomToolId: null, activeCustomProbeId: null, customSnapTarget: null });
     }
   },
@@ -388,6 +405,7 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
 
     if (allCorrect) {
       newState.uartFlag = 'flag{UART_CONNECTED}';
+      newState.uartEverConnected = true;
     }
 
     set(newState);
@@ -539,48 +557,15 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
     const { lensVisible, activeTool, probe1, probe2, uartConnections, mousePosition, lensAnchorPosition } = get();
 
     if (lensVisible) {
-      // Se la lente è visibile, nascondila ma mantieni posizione e stato ancoraggio
       set({ lensVisible: false });
     } else {
-      // Se vogliamo mostrare la lente, verifica che il tool corrente sia completo
-      let canActivateLens = true;
-      let shouldSwitchToPointer = false;
-
-      if (activeTool === 'multimeter') {
-        // Multimetro: entrambi i puntali devono essere agganciati
-        if (!probe1.hookedTo || !probe2.hookedTo) {
-          canActivateLens = false;
-          shouldSwitchToPointer = true;
-        }
-      } else if (activeTool === 'probes') {
-        // Sonde UART: tutte e 3 le connessioni devono essere effettuate
-        const allConnected = uartConnections.every(conn => conn.pcbPinId !== null);
-        if (!allConnected) {
-          canActivateLens = false;
-          shouldSwitchToPointer = true;
-        }
-      }
-      // pointer e terminal possono sempre attivare la lente
-
-      // Usa la posizione salvata se esiste, altrimenti mousePosition o default
       const initialPosition = lensAnchorPosition || mousePosition || { x: 400, y: 300 };
-
-      if (shouldSwitchToPointer) {
-        set({
-          activeTool: 'pointer',
-          lensVisible: true,
-          lensIsAnchored: true,
-          lensAnchorPosition: initialPosition,
-          mousePosition: initialPosition,
-        });
-      } else if (canActivateLens) {
-        set({
-          lensVisible: true,
-          lensIsAnchored: true,
-          lensAnchorPosition: initialPosition,
-          mousePosition: initialPosition,
-        });
-      }
+      set({
+        lensVisible: true,
+        lensIsAnchored: true,
+        lensAnchorPosition: initialPosition,
+        mousePosition: initialPosition,
+      });
     }
   },
   toggleLensAnchor: () => {

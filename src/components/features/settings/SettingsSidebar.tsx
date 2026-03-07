@@ -9,10 +9,11 @@ import { cn } from '@/lib/utils';
 import {
   BoxSelect, MapPin, Pencil, Trash2, Check, Save,
   Plus, ChevronDown, ChevronRight, ArrowUp, ArrowDown,
-  Hand, Search, Wrench, Cable, TerminalSquare, RotateCcw, type LucideIcon,
+  Hand, Search, Wrench, Cable, TerminalSquare, RotateCcw, HardDrive, type LucideIcon,
 } from 'lucide-react';
 import TerminalSettingsPanel from './TerminalSettingsPanel';
 import CustomToolsPanel from './CustomToolsPanel';
+import FirmwarePanel from './FirmwarePanel';
 import PresetSelector from './PresetSelector';
 import { usePresetStore } from '@/store/presetStore';
 import {
@@ -88,6 +89,7 @@ const SettingsSidebar = () => {
   const isImageSubTab = activeTool === 'component' || activeTool === 'pin';
   const isTerminalTab = activeTool === 'terminal-config';
   const isToolsTab = activeTool === 'tools-config';
+  const isFirmwareTab = activeTool === 'firmware';
 
   const terminalStore = useTerminalSettingsStore();
   const presetStore = usePresetStore();
@@ -156,13 +158,25 @@ const SettingsSidebar = () => {
               <Wrench className="h-3 w-3" />
               Tools
             </button>
+            <button
+              onClick={() => setActiveTool('firmware')}
+              className={cn(
+                'flex items-center gap-1 px-2 py-1.5 rounded text-xs transition-colors flex-1',
+                isFirmwareTab ? 'bg-orange-500/40 text-orange-200' : 'bg-gray-700/50 text-gray-400 hover:bg-gray-600/50 hover:text-white'
+              )}
+            >
+              <HardDrive className="h-3 w-3" />
+              Firmware
+            </button>
           </div>
         )}
       </div>
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto min-h-0 space-y-3">
-        {isToolsTab ? (
+        {isFirmwareTab ? (
+          <FirmwarePanel />
+        ) : isToolsTab ? (
           <CustomToolsPanel />
         ) : isTerminalTab ? (
           <TerminalSettingsPanel />
@@ -440,7 +454,6 @@ const StepItem = ({
   const [titleValue, setTitleValue] = useState(step.title);
   const [showAddMenu, setShowAddMenu] = useState<null | 'root' | 'component' | 'pin'>(null);
   const [selectedPinIds, setSelectedPinIds] = useState<string[]>([]);
-  const [pinLogic, setPinLogic] = useState<PinLogic>('AND');
 
   const handleTitleSave = () => {
     onUpdateStep({ title: titleValue || `Step ${index + 1}` });
@@ -553,7 +566,7 @@ const StepItem = ({
                           <ChevronRight className="h-3 w-3 text-gray-400 ml-auto" />
                         </button>
                         <button
-                          onClick={() => { setShowAddMenu('pin'); setSelectedPinIds([]); setPinLogic('AND'); }}
+                          onClick={() => { setShowAddMenu('pin'); setSelectedPinIds([]); }}
                           className="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-600 transition-colors flex items-center gap-2"
                         >
                           <MapPin className="h-3 w-3 text-cyan-400" />
@@ -643,35 +656,18 @@ const StepItem = ({
                                 );
                               })}
                             </div>
-                            <div className="px-3 pt-1.5 pb-1 border-t border-gray-600 mt-1 space-y-1.5">
-                              {selectedPinIds.length >= 2 && (
-                                <div className="flex items-center gap-1">
-                                  <span className="text-[10px] text-gray-400">Logica:</span>
-                                  <button
-                                    onClick={() => setPinLogic('AND')}
-                                    className={cn(
-                                      'px-2 py-0.5 rounded text-[10px] font-mono transition-colors',
-                                      pinLogic === 'AND' ? 'bg-cyan-600 text-white' : 'bg-gray-600 text-gray-400 hover:text-white'
-                                    )}
-                                  >
-                                    AND
-                                  </button>
-                                  <button
-                                    onClick={() => setPinLogic('OR')}
-                                    className={cn(
-                                      'px-2 py-0.5 rounded text-[10px] font-mono transition-colors',
-                                      pinLogic === 'OR' ? 'bg-cyan-600 text-white' : 'bg-gray-600 text-gray-400 hover:text-white'
-                                    )}
-                                  >
-                                    OR
-                                  </button>
-                                </div>
-                              )}
+                            <div className="px-3 pt-1.5 pb-1 border-t border-gray-600 mt-1 flex gap-1.5">
                               <button
-                                onClick={() => { onAddPinObjective(selectedPinIds, pinLogic); setShowAddMenu(null); setSelectedPinIds([]); }}
+                                onClick={() => { setShowAddMenu(null); setSelectedPinIds([]); }}
+                                className="flex-1 px-2 py-1 rounded text-xs font-medium transition-colors bg-gray-600 text-gray-300 hover:text-white hover:bg-gray-500"
+                              >
+                                Annulla
+                              </button>
+                              <button
+                                onClick={() => { onAddPinObjective(selectedPinIds, 'AND'); setShowAddMenu(null); setSelectedPinIds([]); }}
                                 disabled={selectedPinIds.length === 0}
                                 className={cn(
-                                  'w-full px-2 py-1 rounded text-xs font-medium transition-colors',
+                                  'flex-1 px-2 py-1 rounded text-xs font-medium transition-colors',
                                   selectedPinIds.length > 0
                                     ? 'bg-cyan-600 hover:bg-cyan-700 text-white'
                                     : 'bg-gray-600 text-gray-400 cursor-not-allowed'

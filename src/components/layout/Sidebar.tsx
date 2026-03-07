@@ -16,7 +16,7 @@ const tools: { id: Tool; label: string; icon: LucideIcon }[] = [
 
 const Sidebar = () => {
   const {
-    activeTool, setActiveTool,
+    activeTool, activeTools, setActiveTool,
     lensVisible, toggleLensVisible,
     exerciseData, currentStepIndex,
     activeCustomToolId, setActiveCustomTool,
@@ -28,6 +28,11 @@ const Sidebar = () => {
     ? tools.filter(t => availableTools.includes(t.id))
     : tools;
 
+  // Il terminale non può essere disattivato se un obiettivo terminal ha terminalPersistent
+  const terminalPersistent = exerciseData?.steps.some(s =>
+    s.objectives.some(o => o.type === 'terminal' && o.terminalPersistent)
+  ) ?? false;
+
   const customTools = exerciseData?.customTools ?? [];
 
   return (
@@ -36,19 +41,18 @@ const Sidebar = () => {
 
       {visibleTools.map((tool) => {
         const isMagnifier = tool.id === 'magnifier';
-        const isActive = isMagnifier ? lensVisible : activeTool === tool.id;
+        const isActive = isMagnifier ? lensVisible : activeTools.includes(tool.id);
 
         const handleClick = () => {
           if (isMagnifier) {
             toggleLensVisible();
-          } else if (tool.id === 'pointer') {
-            setActiveTool('pointer');
           } else {
-            if (isActive) {
-              setActiveTool('pointer');
-            } else {
-              setActiveTool(tool.id);
+            // Se il terminale è persistente e attivo, blocca disattivazione e cambio tool
+            if (terminalPersistent && activeTools.includes('terminal')) {
+              if (tool.id !== 'terminal') return; // non può cambiare tool
+              return; // non può disattivare il terminale
             }
+            setActiveTool(tool.id);
           }
         };
 
@@ -73,8 +77,9 @@ const Sidebar = () => {
               key={ct.id}
               label={ct.name}
               icon={Wrench}
-              isActive={activeTool === 'custom' && activeCustomToolId === ct.id}
+              isActive={activeTools.includes('custom') && activeCustomToolId === ct.id}
               onClick={() => {
+                if (terminalPersistent && activeTools.includes('terminal')) return;
                 if (activeTool === 'custom' && activeCustomToolId === ct.id) {
                   setActiveTool('pointer');
                 } else {

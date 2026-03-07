@@ -39,6 +39,10 @@ export interface Objective {
   bootStageConditions?: BootStageCondition[];
   /** Per type='firmware-dump': ID del custom tool collegato */
   customToolId?: string;
+  /** Per type='terminal': se true, il terminale richiede collegamento UART per avviarsi */
+  requiresUart?: boolean;
+  /** Per type='terminal': se true, il terminale non può essere disattivato dalla toolbar una volta attivato */
+  terminalPersistent?: boolean;
 }
 
 export interface Step {
@@ -78,6 +82,12 @@ export interface UartPin {
 /**
  * Definisce la struttura dell'intero esercizio.
  */
+export interface ToolGroup {
+  id: string;
+  name: string;
+  toolIds: string[];
+}
+
 export interface Exercise {
   pcbImage: string;
   steps: Step[];
@@ -87,6 +97,10 @@ export interface Exercise {
   initialFlag: string;
   /** Tool personalizzati definiti dall'autore tramite la tab "Strumenti" in /settings. */
   customTools?: CustomTool[];
+  /** Percorso del firmware caricato dall'autore. */
+  firmwarePath?: string;
+  /** Gruppi di tool attivabili contemporaneamente. */
+  toolGroups?: ToolGroup[];
 }
 
 // ===================================================================================

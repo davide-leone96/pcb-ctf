@@ -22,7 +22,7 @@ const PCBViewer = () => {
     stepMode,
     selectComponent,
     foundComponents,
-    activeTool, mousePosition, updateMousePosition,
+    activeTool, activeTools, mousePosition, updateMousePosition,
     activeProbe, probe1, probe2, snapTarget,
     setSnapTarget, hookProbe, unhookProbe,
     uartConnections, activeAdapterPin, uartSnapTarget,
@@ -127,12 +127,12 @@ const PCBViewer = () => {
     }
 
     // Permetti ancoraggio lente se:
-    // - activeTool è pointer (sempre)
-    // - activeTool è multimeter con entrambi i puntali agganciati
-    // - activeTool è probes con tutte e 3 le connessioni fatte
-    const isMultimeterComplete = activeTool === 'multimeter' && probe1.hookedTo && probe2.hookedTo;
-    const isUartComplete = activeTool === 'probes' && uartConnections.every(c => c.pcbPinId !== null);
-    const canAnchorLens = activeTool === 'pointer' || isMultimeterComplete || isUartComplete;
+    // - pointer è attivo (sempre)
+    // - multimetro attivo con entrambi i puntali agganciati
+    // - probes attivo con tutte e 3 le connessioni fatte
+    const isMultimeterComplete = activeTools.includes('multimeter') && probe1.hookedTo && probe2.hookedTo;
+    const isUartComplete = activeTools.includes('probes') && uartConnections.every(c => c.pcbPinId !== null);
+    const canAnchorLens = activeTools.includes('pointer') || isMultimeterComplete || isUartComplete;
 
     if (lensVisible && canAnchorLens && mousePosition && !isDraggingLens && !lensIsAnchored) {
       toggleLensAnchor();
@@ -314,7 +314,7 @@ const PCBViewer = () => {
   }
 
   // L'overlay UART (adapter, cavi, pallini) è visibile sia in modalità probes che terminal
-  const showUartOverlay = activeTool === 'probes' || (activeTool === 'terminal' && uartConnected);
+  const showUartOverlay = activeTools.includes('probes') || (activeTools.includes('terminal') && uartConnected);
 
   // Posizioni pixel per snap targets (necessarie per LensContentLayer)
   const snapTargetPos = snapTarget ? getPinPosition(snapTarget) : null;
@@ -350,9 +350,9 @@ const PCBViewer = () => {
       {/* Wrapper relativo che si adatta esattamente alle dimensioni dell'immagine */}
       <div className="relative inline-block w-full">
         <img ref={pcbImageRef} src={exerciseData.pcbImage} alt="Vista PCB" className="h-auto w-full block rounded-lg" style={{ imageRendering: 'crisp-edges' }} draggable={false} />
-        {isSimulatorEnabled && activeTool === 'multimeter' && <Multimeter onPositionChange={setMultimeterPosition} bounds={bounds} />}
+        {isSimulatorEnabled && activeTools.includes('multimeter') && <Multimeter onPositionChange={setMultimeterPosition} bounds={bounds} />}
         {isSimulatorEnabled && showUartOverlay && <UartProbesAdapter onPositionChange={setAdapterPosition} bounds={bounds} readOnly={activeTool !== 'probes'} />}
-        {isSimulatorEnabled && activeTool === 'custom' && activeCustomToolId && (() => {
+        {isSimulatorEnabled && activeTools.includes('custom') && activeCustomToolId && (() => {
           const ct = exerciseData.customTools?.find(t => t.id === activeCustomToolId);
           if (!ct || containerDims.width === 0) return null;
           const pos = customToolPositions[activeCustomToolId] ?? { x: 60, y: 60 };
@@ -380,7 +380,7 @@ const PCBViewer = () => {
         })()}
 
       <div className="absolute inset-0 pointer-events-none z-10">
-        {isSimulatorEnabled && activeTool === 'multimeter' && (
+        {isSimulatorEnabled && activeTools.includes('multimeter') && (
             <svg width="100%" height="100%" className="absolute inset-0" style={{ filter: 'drop-shadow(2px 2px 2px rgba(0,0,0,0.4))' }}>
               <defs><filter id="shadow"><feDropShadow dx="2" dy="2" stdDeviation="2" floodColor="rgba(0,0,0,0.4)"/></filter></defs>
 
@@ -436,9 +436,8 @@ const PCBViewer = () => {
           // - activeTool è pointer (sempre)
           // - activeTool è multimeter senza puntale attivo (nessun cavo in movimento)
           // - activeTool è probes senza pin dell'adattatore attivo (nessun cavo in movimento)
-          const isMultimeterIdle = activeTool === 'multimeter' && !activeProbe;
-          const isUartIdle = activeTool === 'probes' && !activeAdapterPin;
-          const isLensInteractive = activeTool === 'pointer' || isMultimeterIdle || isUartIdle;
+          // La lente è sempre manipolabile quando visibile e ancorata (è un overlay indipendente dal tool attivo)
+          const isLensInteractive = true;
 
           return (
             <div
@@ -536,7 +535,7 @@ const PCBViewer = () => {
           );
         })}
         {/* Pallini e controlli multimetro */}
-        {isSimulatorEnabled && activeTool === 'multimeter' && (
+        {isSimulatorEnabled && activeTools.includes('multimeter') && (
           <>
             {probe1Percent && (
               <div className="group absolute z-20" style={{ left: `${probe1Percent.x}%`, top: `${probe1Percent.y}%`, transform: 'translate(-50%, -50%)' }}>
@@ -584,7 +583,7 @@ const PCBViewer = () => {
           </>
         )}
         {/* Hotspot componenti: invisibili, solo click handler - mostra solo gli obiettivi dello step corrente */}
-        {activeTool === 'pointer' && stepMode === 'active' && currentStepObjectives.map((objective) => {
+        {activeTools.includes('pointer') && stepMode === 'active' && currentStepObjectives.map((objective) => {
           const [left, top, width, height] = objective.coords;
           return <div key={objective.id} onClick={(e) => { e.stopPropagation(); selectComponent(objective.id); }} className="absolute pointer-events-auto cursor-pointer rounded-md" style={{ left: `${left}%`, top: `${top}%`, width: `${width}%`, height: `${height}%`}}/>
         })}

@@ -111,7 +111,13 @@ const TabSelector = ({ activeTabId, onSelect }: { activeTabId: string; onSelect:
 
 const CommandsSection = () => {
   const { commands, activeTabId, setActiveTabId, addCommand, deleteCommand, duplicateCommand, editingCommandId, setEditingCommandId, updateCommand, tabs, bootStages } = useTerminalSettingsStore();
-  const tabCommands = commands.filter(c => c.tabId === activeTabId);
+  const tabCommands = commands
+    .filter(c => c.tabId === activeTabId)
+    .sort((a, b) => {
+      const aBuiltin = a.builtinType ? 0 : 1;
+      const bBuiltin = b.builtinType ? 0 : 1;
+      return aBuiltin - bBuiltin;
+    });
   const editingCommand = editingCommandId ? commands.find(c => c.id === editingCommandId) : null;
 
   return (
@@ -178,7 +184,10 @@ const CommandItem = ({
   const hasConstraints = constraintParts.length > 0;
 
   return (
-    <div className="flex items-center gap-1.5 px-2 py-1.5 rounded hover:bg-gray-700/50 group">
+    <div className={cn(
+      "flex items-center gap-1.5 px-2 py-1.5 rounded group",
+      isBuiltin ? 'bg-blue-900/30 hover:bg-blue-900/50' : 'hover:bg-gray-700/50'
+    )}>
       {isBuiltin
         ? <Cpu  className="h-2.5 w-2.5 text-blue-400 flex-shrink-0" title={`Built-in: ${command.builtinType}`} />
         : <Code className="h-2.5 w-2.5 text-gray-500 flex-shrink-0" title="Comando custom" />
