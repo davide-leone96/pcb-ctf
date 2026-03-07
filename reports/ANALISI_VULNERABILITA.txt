@@ -1,0 +1,330 @@
+ANALISI VULNERABILITA
+
+# **Report Analisi Vulnerabilità – TP-Link WR841N (300N)**
+
+Per foto o output, può esserti utile anche il file su cui ha lavorato francese, te l’avevo inviato.
+
+## 1. Identificazione hardware
+
+- Modello: **TP-Link WR841N (300N)**
+- Chipset: **Qualcomm Atheros QCA9533-BL3A**
+- RAM: **32 MB**
+- Flash: **4 MB NOR**
+
+Problema iniziale: la UART non funzionava perché la pista del **pin RX** era interrotta.
+
+- Soluzione: collegati i due punti con puntali (PCBite) → UART funzionale.
+
+## 2. Accesso alla console seriale (UART)
+
+**Bootlog catturato (estratto principale):**
+
+```
+Linux version 2.6.31 (tomcat@buildserver) (gcc version 4.3.3) #61 Tue Jun 16 14:17:33 CST 2015
+Ram size passed from bootloader =32M
+flash_size passed from bootloader = 4
+CPU revision is: 00019374 (MIPS 24Kc)
+...
+Kernel command line: console=ttyS0,115200 root=31:2 rootfstype=squashfs init=/sbin/init \
+mtdparts=ath-nor0:128k(u-boot),1024k(kernel),2816k(rootfs),64k(config),64k(art) mem=32M
+...
+init started:  BusyBox v1.01 (2015.06.16) multi-call binary
+```
+
+Note:
+
+- `root=31:2` → corrisponde a `/dev/mtdblock2` (rootfs), perchè `31` = major number che si usa per dire che è un device MTD block; `2` = minor → corrisponde a seconda partizione ovvero `/dev/mtdblock2`.
+- `rootfstype=squashfs` → FS principale in sola lettura, essendo squashfs.
+- Partizioni flash dichiarate:`u-boot` (128k, bootloader)`kernel` (1024k, immagine linux)`rootfs` (2816k, filesystem squashfs read only)`config` (64k, contiene tutte le configurazioni del router)`art` (64k, dati calibrazione Wi-Fi).
+- mem=32M si riferisce a quanta RAM il kernel ha disponibile, ovvero 32MB.
+
+## 3. Accesso al bootloader (U-Boot)
+
+Per interrompere il boot e accedere a console bootloader U-Boot bisogna digitare **tpl** entro 1 secondo quando si accende router. (informazione trovata sul web)
+
+Comandi disponibili (estratto da `help`):
+
+```
+boot, bootm, cp, erase, md, mm, mw, nm, ping, printenv,
+reset, run, setenv, tftpboot, version
+```
+
+`printenv` →  `bootargs=console=ttyS0,115200 root=31:02 rootfstype=jffs2 init=/sbin/init mtdparts=ath-nor0:32k(u-boot1),32k(u-boot2),3008k(rootfs),896k(uImage),64k(mib0),64k(ART)`
+
+⚠️ **Incoerenza**:
+
+- In printenv, rootfs è dichiarato come **JFFS2**, con schema partizioni differente.
+- Nel bootlog reale, invece:
+    - `rootfstype=squashfs`
+    - schema: `128k(u-boot),1024k(kernel),2816k(rootfs),64k(config),64k(art)`
+
+→ Quindi le variabili U-Boot risultano **vecchie / non aggiornate**. Il sistema/kernel ignora le variabili `bootargs` perchè probabilmente usa direttamente stringa hardcoded nel codice. Infatti, se si fa `setenv` modificando qualche variabile, non c’è cambiamento.
+
+## 4. Esplorazione shell root
+
+Una volta effettuato il boot completo, possiamo effettuare login con credenziali scoperte (root:sohoadmin) e ottenere shell root.
+
+Comandi a disposizione non sono altro che gli eseguibili presenti nelle cartelle bin, sbin, usr/bin, usr/sbin:
+
+```
+bin/:
+busybox  chmod  df    false     ip            kill  login  mount  ping  rm  sleep  umount
+cat      date   echo  hostname  iptables-xml  ln    ls     msh    ps    sh  true
+
+sbin/:
+80211stats   brctl     init            iptables-restore  iwpriv   pktlogconf  route    vconfig
+apstats      getty     insmod          iptables-save     klogd    pktlogdump  syslogd  wifitool
+athstats     hostapd   iptables        iwconfig          logread  reboot      tc       wlanconfig
+athstatsclr  ifconfig  iptables-multi  iwlist            lsmod    rmmod       udhcpc   wpa_supplicant
+
+usr/bin/:
+'['   arping   backdoorTest   dbclient   dropbear   dropbearconvert   dropbearkey   httpd   lld2d   logger   scp   test   tftp
+
+usr/sbin/:
+bpalogin  dhcp6c  dhcp6ctl  dhcp6s  dropbearmulti  ping6  pppd  radvd  radvdctl  udhcpd  xl2tpd
+```
+
+Analizziamo le partizioni:
+
+```
+# cat /proc/mtd
+dev:    size   erasesize  name
+mtd0: 00020000 00010000 "u-boot"
+mtd1: 00100000 00010000 "kernel"
+mtd2: 002c0000 00010000 "rootfs"
+mtd3: 00010000 00010000 "config"
+mtd4: 00010000 00010000 "art"
+
+# mount
+/dev/mtdblock2 on / type squashfs (ro,relatime)
+/proc on /proc type proc (rw,relatime)
+devpts on /dev/pts type devpts (rw,relatime,mode=622)
+none on /tmp type ramfs (rw,relatime)
+none on /var type ramfs (rw,relatime)
+```
+
+Sono quindi coerenti con la stringa di boot:
+
+```
+Kernel command line: console=ttyS0,115200 root=31:2 rootfstype=squashfs 
+init=/sbin/init mtdparts=ath-nor0:128k(u-boot),1024k(kernel),2816k(rootfs),
+64k(config),64k(art) mem=32M
+```
+
+Dump partizioni può essere effettuato tramite TFTP (esempio con partizione roofs):
+
+```
+tftp -p -l /dev/mtdblock2 -r rootfs 192.168.0.100
+```
+
+Oppure possiamo dumpare attraverso il programmer CH341A + test clip.
+
+---
+
+## 5. Analisi contenuti flash
+
+### 5.1 RootFS (SquashFS, mtdblock2)
+
+Estratto directory (parziale):
+
+```
+/bin/busybox
+/etc/passwd
+/etc/shadow
+/etc/inittab
+/lib/modules/2.6.31/
+/usr/bin/dropbear
+/usr/bin/httpd
+/usr/bin/backdoorTest
+/web/userRpm/*.htm
+```
+
+- `/sbin/init` → symlink a `busybox`
+- `/etc/inittab` definisce quali processi avviare subito dopo che /sbin/init è stato avviato. Contiene:
+    
+    ```
+    ::sysinit:/etc/rc.d/rcS # ciò che deve essere avviato all'inizializzazione
+    ::respawn:/sbin/getty ttyS0 115200 # questo permette di avere shell uart
+    ::shutdown:/bin/umount -a
+    ```
+    
+    Al boot accade questo:
+    
+    1. Kernel → passa controllo a `/sbin/init` (BusyBox). Questo avvia lo script /etc/rc.d/rcS perchè è sysinit quindi viene avviato a inizializzazione del sistema; e con esso anche respawn che ci dà interfaccia uart.
+    2. `/etc/rc.d/rcS` lancia gli script:
+        - montaggio di tutti i filesystem di /etc/fstab,
+        - inizializzazione rete e firewall,
+        - avvio del “cuore” del router, il programma (`httpd`). Gestisce altre inizializzazioni e gestisce tutte le richieste http al pannello di controllo web del router. È programma che gestisce tutte le modifiche che vogliamo effettuare alle configurazioni del router.
+
+- In `/etc/shadow`:
+
+```
+root:$1$GTN.gpri$DlSyKvZKMR9A9Uj9e9wR3/:15502:0:99999:7:::
+```
+
+Nel contesto Linux, **`$1$`** indica che la password è hashata con **MD5-Crypt**, e il formato generale è `$id$salt$hash`.
+
+Anche se conosciamo già la password `sohoadmin`, possiamo verificarla con **hashcat**:
+
+```
+hashcat -m 500 -a 0 hash.txt wordlist.txt
+```
+
+dove `hash.txt` contiene `$1$GTN.gpri$DlSyKvZKMR9A9Uj9e9wR3/` e `wordlist.txt` contiene `sohoadmin`.
+
+Output: `Hash.Result: sohoadmin` → hash confermato.
+
+### 5.2 Partizione config (mtd3)
+
+Contiene:
+
+- Username `admin` e password in **MD5 non salato**, che sono per credenziali di pannello router.
+- WPA/WPA2 key in **chiaro**.
+
+Lanciando comando strings su mtd3, otteniamo stringa interessante che corrisponde a credenziali pannello router e la wpa key:
+
+```
+admin21232f297a57a5a743894a0e4a801fc3 # stringa alfanumerica è MD5("admin")
+97928270 # vecchia e wpa pw default
+```
+
+Se facciamo modifica di pw del pannello di controllo e di wpa:
+
+```
+admin568ef81550071b3dc7a13beea465516f # stringa alfanumerica è MD5("testadminpw")
+testwifipw # nuova pw wpa
+```
+
+### Nota sulla sicurezza
+
+- Nei router tipicamente **non viene considerata vulnerabilità** il salvataggio in chiaro della WPA key.
+- In questi sistemi manca ogni concetto di TPM o storage sicuro: l’accesso alla flash **implica accesso a tutte le credenziali**.
+- Questo è accettato in ambito consumer, perché il threat model non prevede attacchi con accesso fisico al chip.
+
+---
+
+## 6. Vulnerabilità verificata e presente
+
+---
+
+### CVE-2023-33538 – SSID Injection
+
+Con **Ghidra** ho importato e analizzato il binario `httpd` (server web embedded).
+
+- Nel path che gestisce il form di configurazione wireless, ho trovato la call:
+    
+    ```c
+    execFormatCmd("iwconfig %s essid %s", ifname, user_ssid);
+    ```
+    
+- Non viene fatto alcun controllo/sanitizzazione su `user_ssid`.
+- Questo permette **command injection** tramite SSID impostato da pannello web.
+
+**Exploit:**
+
+- Inserire nel pannello di controllo del router un SSID che finisca per `; reboot` → salva → il router crasha e si riavvia.
+- Ad ogni boot, il sistema rilegge quell’SSID dalla flash e lo riapplica → entra in **loop infinito**.
+
+Unico modo per non entrare in loop è entrare nella console bootloader U-Boot, però:
+
+- Da U-Boot UART non è possibile riscrivere la flash, quindi se tentiamo di modificare SSID, la modifica non sarà permanente.
+- Il tasto reset hardware non funziona in questa condizione, perché al momento della pressione del tasto il router è ancora occupato ad avviare le ultime cose rimanente e quindi la gestione del reset non avviene.
+
+**Fix:**
+
+Ho dovuto, tramite CH341A, dumpare il firmware sul PC, e modificare la parte dove c’era salvato l’SSID, per poi riflashare il firmware nello storage flash del router. Mentre cercavo di modificare l’SSID corrotto, ho per sbaglio lasciato un byte in meno e questo ha spostato e invalidato i puntatori/indirizzi, rendendo impossibile il boot. Ho dovuto quindi aggiungere un nuovo byte (con uno spazio).
+
+---
+
+### Backdoor custom
+
+Ho infine voluto simulare un attacco supply-chain inserendo una backdoor. Ho creato un mini server TCP in C che prova a connettersi a un host remoto fornendo shell → reverse shell. 
+
+### **1. Identificazione architettura**
+
+Ho verificato toolchain/ABI controllando un binario del firmware del router:
+
+```bash
+$ file bin/busybox
+bin/busybox: ELF 32-bit MSB executable, MIPS, MIPS32 rel2 version 1 (SYSV), dynamically linked, interpreter /lib/ld-uClibc.so.0, no section header
+
+```
+
+→  **MIPS big-endian (MSB), MIPS32r2, uClibc**.
+
+---
+
+**2. Compilazione backdoor**
+
+Con questa informazione ho compilato statico con la toolchain giusta, aiutandomi con `buildroot`:
+
+```bash
+buildroot/output/host/bin/mips-linux-gcc -static backdoorTest.c -o backdoorTest
+```
+
+Binario statico per evitare dipendenze runtime.
+
+---
+
+**3. Estrazione rootfs dal firmware**
+
+Con `dd` byte-per-byte, per rispettare offset e dimensioni (abbiamo informazioni su posizione roofs e size grazie a analisi precedenti):
+
+```bash
+dd if=firmware.bin of=squashfs.img skip=1179648 count=2794097 bs=1
+```
+
+Poi estraiamo:
+
+```bash
+sudo unsquashfs squashfs.img
+```
+
+---
+
+**4. Modifica rootfs**
+
+- Copiato `backdoorTest` dentro `squashfs-root/usr/bin/`.
+- E aggiunta una riga a `squashfs-root/etc/rc.d/rcS` per avviarlo:
+    
+    ```bash
+    /usr/bin/backdoorTest &
+    ```
+    
+
+---
+
+**5. Ricostruzione e reintegro**
+
+```bash
+mksquashfs squashfs-root/ newsquashfs.img -comp lzma -no-xattrs -noappend
+binwalk newsquashfs.img   # verifica coerenza
+dd if=newsquashfs.img of=firmware.bin bs=1 seek=1179648 conv=notrunc
+sudo flashrom -p ch341a_spi --progress -w firmware.bin -VV -c W25Q32BV/W25Q32CV/W25Q32DV
+
+```
+
+Note:
+
+- `no-xattrs` indispensabile, altrimenti kernel del router blocca il boot perchè è un kernel vecchio e non supporta gli attributi estesi.
+- `noappend` garantisce immagine pulita a ogni rebuild.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
