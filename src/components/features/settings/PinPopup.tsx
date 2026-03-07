@@ -131,7 +131,7 @@ const PinPopup = ({ pin, containerDims }: PinPopupProps) => {
           type="text"
           value={label}
           onChange={(e) => setLabel(e.target.value)}
-          placeholder="es. R69, C48..."
+          placeholder="e.g. R69, C48..."
           className={inputCls}
           autoFocus
         />
@@ -139,7 +139,7 @@ const PinPopup = ({ pin, containerDims }: PinPopupProps) => {
 
       {/* Size slider */}
       <div className="mb-3">
-        <label className={labelCls}>Dimensione: {size.toFixed(1)}%</label>
+        <label className={labelCls}>Size: {size.toFixed(1)}%</label>
         <input
           type="range"
           min="0.5"
@@ -157,13 +157,13 @@ const PinPopup = ({ pin, containerDims }: PinPopupProps) => {
 
       {/* Voltage */}
       <div className="mb-3">
-        <label className={labelCls}>Tensione (V)</label>
+        <label className={labelCls}>Voltage (V)</label>
         <div className="flex gap-2 mb-1.5">
           <button
             onClick={() => setVoltageMode('fixed')}
             className={cn('px-2 py-1 rounded text-xs transition-colors', voltageMode === 'fixed' ? 'bg-blue-600/50 text-white' : 'bg-gray-700/50 text-gray-400')}
           >
-            Fisso
+            Fixed
           </button>
           <button
             onClick={() => setVoltageMode('range')}
@@ -184,13 +184,13 @@ const PinPopup = ({ pin, containerDims }: PinPopupProps) => {
 
       {/* Resistance */}
       <div className="mb-3">
-        <label className={labelCls}>Resistenza (Ohm)</label>
+        <label className={labelCls}>Resistance (Ohm)</label>
         <div className="flex gap-2 mb-1.5">
           <button
             onClick={() => setResistanceMode('fixed')}
             className={cn('px-2 py-1 rounded text-xs transition-colors', resistanceMode === 'fixed' ? 'bg-blue-600/50 text-white' : 'bg-gray-700/50 text-gray-400')}
           >
-            Fisso
+            Fixed
           </button>
           <button
             onClick={() => setResistanceMode('range')}
@@ -211,11 +211,11 @@ const PinPopup = ({ pin, containerDims }: PinPopupProps) => {
 
       {/* Description */}
       <div className="mb-3">
-        <label className={labelCls}>Descrizione</label>
+        <label className={labelCls}>Description</label>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Descrizione del pin..."
+          placeholder="Pin description..."
           rows={2}
           className={cn(inputCls, 'resize-none')}
         />
@@ -228,7 +228,7 @@ const PinPopup = ({ pin, containerDims }: PinPopupProps) => {
           type="text"
           value={hint}
           onChange={(e) => setHint(e.target.value)}
-          placeholder="Suggerimento..."
+          placeholder="Hint..."
           className={inputCls}
         />
       </div>
@@ -240,7 +240,7 @@ const PinPopup = ({ pin, containerDims }: PinPopupProps) => {
         </Button>
         <div className="flex gap-2">
           <Button variant="ghost" size="sm" onClick={cancelPinEdit} className="text-gray-400 hover:text-white">
-            Annulla
+            Cancel
           </Button>
           <Button size="sm" onClick={handleConfirm} className="bg-blue-600 hover:bg-blue-700">
             OK

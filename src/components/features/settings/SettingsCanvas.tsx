@@ -238,7 +238,7 @@ const SettingsCanvas = () => {
       const rect = imageRef.current.getBoundingClientRect();
       const dx = e.clientX - panStart.current.x;
       const dy = e.clientY - panStart.current.y;
-      // Converti il pan da pixel schermo a percentuale dell'immagine
+      // Convert pan from screen pixels to image percentage
       const dxPercent = (dx / rect.width) * 100;
       const dyPercent = (dy / rect.height) * 100;
       setPan(panOrigin.current.x + dxPercent, panOrigin.current.y + dyPercent);
@@ -421,25 +421,25 @@ const SettingsCanvas = () => {
           </div>
 
           <h3 className="text-xl font-semibold text-gray-200 mb-2">
-            {isDragOverImage ? 'Rilascia qui' : 'Nessuna immagine caricata'}
+            {isDragOverImage ? 'Drop here' : 'No image loaded'}
           </h3>
 
           <p className="text-gray-400 text-sm mb-6 max-w-md">
             {isDragOverImage
-              ? 'Rilascia il file per caricarlo'
-              : 'Carica un\'immagine PCB per iniziare a configurare componenti, pin e obiettivi'}
+              ? 'Drop the file to upload it'
+              : 'Upload a PCB image to start configuring components, pins, and objectives'}
           </p>
 
           {!isDragOverImage && (
             <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
               <div className="text-xs text-gray-500">
-                Trascina un'immagine qui oppure usa il pulsante carica nella toolbar
+                Drag an image here or use the upload button in the toolbar
               </div>
             </div>
           )}
 
           <div className="mt-6 flex items-center justify-center gap-2 text-xs text-gray-500">
-            <span>Formati supportati:</span>
+            <span>Supported formats:</span>
             <span className="text-gray-400 font-mono">JPEG, PNG, WebP</span>
           </div>
         </div>
@@ -467,7 +467,7 @@ const SettingsCanvas = () => {
       {isDragOverImage && (
         <div className="absolute inset-0 bg-blue-500/10 z-50 flex items-center justify-center pointer-events-none">
           <span className="text-blue-300 text-sm font-medium bg-black/60 px-3 py-1.5 rounded">
-            Rilascia per caricare immagine
+            Drop to upload image
           </span>
         </div>
       )}
@@ -528,7 +528,7 @@ const SettingsCanvas = () => {
                     initialCoords: [left, top, width, height],
                   });
                 }}
-                title="Trascina per spostare · handle per ridimensionare"
+                title="Drag to move · handles to resize"
               >
                 {comp.name && (
                   <span className="absolute -top-5 left-0 text-xs text-green-300 whitespace-nowrap bg-black/70 px-1 rounded select-none pointer-events-none">
@@ -698,7 +698,7 @@ const SettingsCanvas = () => {
                     initialCoords: pin.coords,
                   });
                 }}
-                title="Trascina per spostare"
+                title="Drag to move"
               >
                 {pin.label && (
                   <span
@@ -809,7 +809,7 @@ const TerminalConfigPreview = () => {
       const parsed: any = yaml.load(editorContent);
 
       if (!parsed || typeof parsed !== 'object' || !parsed.tabs) {
-        setParseError('Configurazione non valida: manca la proprietà "tabs"');
+        setParseError('Invalid configuration: missing "tabs" property');
         return;
       }
 
@@ -819,7 +819,7 @@ const TerminalConfigPreview = () => {
       setIsDirty(false);
       setTimeout(() => setImportSuccess(false), 2500);
     } catch (err: any) {
-      setParseError(err.message || 'Errore di parsing');
+      setParseError(err.message || 'Parse error');
     }
   }, [editorContent, loadFromTerminalConfig]);
 
@@ -840,9 +840,9 @@ const TerminalConfigPreview = () => {
           <div className="mx-auto w-24 h-24 rounded-full flex items-center justify-center mb-6 bg-gray-700/50">
             <TerminalSquare className="w-12 h-12 text-gray-400" />
           </div>
-          <h3 className="text-xl font-semibold text-gray-200 mb-2">Configurazione terminale</h3>
+          <h3 className="text-xl font-semibold text-gray-200 mb-2">Terminal Configuration</h3>
           <p className="text-gray-400 text-sm">
-            La configurazione verr&agrave; caricata automaticamente.
+            The configuration will be loaded automatically.
           </p>
         </div>
       </div>
@@ -901,18 +901,18 @@ const TerminalConfigPreview = () => {
             )}
           >
             {importSuccess ? <Check className="h-3 w-3" /> : <Pencil className="h-3 w-3" />}
-            {importSuccess ? 'Importato!' : 'Importa modifiche'}
+            {importSuccess ? 'Imported!' : 'Import changes'}
           </button>
           <button
             onClick={handleReset}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium bg-gray-700 text-gray-300 hover:text-white hover:bg-gray-600 transition-colors"
-            title="Ricarica dallo store corrente"
+            title="Reload from current store"
           >
             <RotateCcw className="h-3 w-3" />
-            Ricarica
+            Reload
           </button>
           {isDirty && !parseError && !importSuccess && (
-            <span className="text-[10px] text-amber-400 ml-auto">Modifiche non salvate</span>
+            <span className="text-[10px] text-amber-400 ml-auto">Unsaved changes</span>
           )}
           {parseError && (
             <div className="flex items-center gap-1.5 text-xs text-red-400 ml-auto flex-1 min-w-0 justify-end">
@@ -921,7 +921,7 @@ const TerminalConfigPreview = () => {
             </div>
           )}
           {importSuccess && (
-            <span className="text-xs text-green-400 ml-auto">Configurazione importata nello store</span>
+            <span className="text-xs text-green-400 ml-auto">Configuration imported to store</span>
           )}
         </div>
       )}
@@ -934,7 +934,7 @@ const TerminalConfigPreview = () => {
             onChange={handleEditorChange}
             spellCheck={false}
             className="w-full h-full min-h-[400px] bg-transparent text-[10px] font-mono text-purple-200 resize-none outline-none p-4 focus:bg-gray-900/50"
-            placeholder="Incolla qui la configurazione YAML..."
+            placeholder="Paste YAML configuration here..."
           />
         </div>
       ) : (
@@ -943,7 +943,7 @@ const TerminalConfigPreview = () => {
           {/* Stats grid */}
           <div className="grid grid-cols-2 gap-3">
             <StatCard icon={Layers} label="Tab" count={tabs.length} color="purple" />
-            <StatCard icon={Terminal} label="Comandi" count={commands.length} color="green" />
+            <StatCard icon={Terminal} label="Commands" count={commands.length} color="green" />
             <StatCard icon={Flag} label="Flag" count={flagParts.length} color="amber" />
             <StatCard icon={Cpu} label="Boot Stages" count={bootStages.length} color="blue" />
             <StatCard icon={FolderTree} label="Directory" count={dirs.length} color="cyan" />
@@ -965,7 +965,7 @@ const TerminalConfigPreview = () => {
                   <span className="text-[10px] text-gray-500 font-mono ml-auto">{tab.id}</span>
                 </div>
                 <div className="grid grid-cols-4 gap-2 text-[10px] text-gray-400">
-                  <div>{tabCmds.length} comandi</div>
+                  <div>{tabCmds.length} commands</div>
                   <div>{tabStages.length} boot stages</div>
                   <div>{tabDirs.length} directory</div>
                   <div>{tabFiles.length} file</div>
@@ -981,7 +981,7 @@ const TerminalConfigPreview = () => {
                       </span>
                     ))}
                     {tabCmds.length > 20 && (
-                      <span className="text-[10px] text-gray-500">+{tabCmds.length - 20} altri</span>
+                      <span className="text-[10px] text-gray-500">+{tabCmds.length - 20} more</span>
                     )}
                   </div>
                 )}
@@ -1179,7 +1179,7 @@ const FirmwareUploadPanel = () => {
     setUploading(true);
     setError('');
     const result = await uploadFirmware(file);
-    if (!result.success) setError(result.error || 'Upload fallito');
+    if (!result.success) setError(result.error || 'Upload failed');
     setUploading(false);
   };
 
@@ -1220,14 +1220,14 @@ const FirmwareUploadPanel = () => {
                 onClick={() => inputRef.current?.click()}
                 className="px-4 py-2 rounded-lg bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white text-sm transition-colors"
               >
-                Sostituisci
+                Replace
               </button>
               <button
                 onClick={deleteFirmware}
                 className="px-4 py-2 rounded-lg bg-red-900/40 text-red-400 hover:bg-red-900/60 hover:text-red-300 text-sm transition-colors flex items-center gap-1.5"
               >
                 <Trash2 className="h-3.5 w-3.5" />
-                Rimuovi
+                Remove
               </button>
             </div>
           </div>
@@ -1263,10 +1263,10 @@ const FirmwareUploadPanel = () => {
           )}
         </div>
         <h3 className="text-lg font-semibold text-gray-300 mb-2">
-          {uploading ? 'Caricamento in corso...' : 'Carica firmware'}
+          {uploading ? 'Uploading...' : 'Upload firmware'}
         </h3>
         <p className="text-gray-500 text-sm">
-          {isDragOver ? 'Rilascia il file qui' : 'Trascina un file qui o clicca per selezionarlo'}
+          {isDragOver ? 'Drop the file here' : 'Drag a file here or click to select'}
         </p>
         <p className="text-gray-600 text-xs mt-2">.bin, .hex, .elf, .img, .fw, .rom — Max 50 MB</p>
         {error && <p className="text-red-400 text-sm mt-3">{error}</p>}

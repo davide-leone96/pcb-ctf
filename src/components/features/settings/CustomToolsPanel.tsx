@@ -20,16 +20,16 @@ type ToolTab = 'tools' | 'groups';
 type ToolSection = 'general' | 'probes';
 
 const CONNECTIVITY_LABELS: Record<string, string> = {
-  measurement: 'Solo misura (V/Ω)',
-  uart: 'Solo UART',
-  all: 'Tutti i pin',
+  measurement: 'Measurement only (V/Ω)',
+  uart: 'UART only',
+  all: 'All pins',
 };
 
 const OUTPUT_TYPE_LABELS: Record<string, string> = {
-  none: 'Nessuno',
-  numeric: 'Numerico',
+  none: 'None',
+  numeric: 'Numeric',
   leds: 'LED',
-  'connection-status': 'Stato connessione',
+  'connection-status': 'Connection status',
   'firmware-dump': 'Firmware Dump',
 };
 
@@ -72,7 +72,7 @@ const CustomToolsPanel = () => {
           )}
         >
           <Settings className="h-3 w-3" />
-          Gruppi
+          Groups
         </button>
       </div>
 
@@ -81,12 +81,12 @@ const CustomToolsPanel = () => {
           {/* Header */}
           <div className="flex items-center justify-between">
             <h3 className="text-xs text-gray-400 uppercase tracking-wider">
-              Tool personalizzati
+              Custom tools
             </h3>
             <button
               onClick={addCustomTool}
               className="text-gray-400 hover:text-white transition-colors p-0.5"
-              title="Aggiungi tool"
+              title="Add tool"
             >
               <Plus className="h-4 w-4" />
             </button>
@@ -94,7 +94,7 @@ const CustomToolsPanel = () => {
 
           {customTools.length === 0 && (
             <p className="text-xs text-gray-500 italic">
-              Nessun tool. Clicca + per crearne uno.
+              No tools. Click + to create one.
             </p>
           )}
 
@@ -163,7 +163,7 @@ const ToolItem = ({
             autoFocus
           />
         ) : (
-          <span className="text-sm truncate flex-1">{tool.name || 'Senza nome'}</span>
+          <span className="text-sm truncate flex-1">{tool.name || 'Unnamed'}</span>
         )}
 
         <div
@@ -173,11 +173,11 @@ const ToolItem = ({
           <button
             onClick={() => { setEditingName(true); setNameValue(tool.name); }}
             className="text-gray-400 hover:text-white p-0.5"
-            title="Rinomina"
+            title="Rename"
           >
             <Pencil className="h-3 w-3" />
           </button>
-          <DeleteToolButton name={tool.name || 'questo tool'} onConfirm={() => deleteCustomTool(tool.id)} />
+          <DeleteToolButton name={tool.name || 'this tool'} onConfirm={() => deleteCustomTool(tool.id)} />
         </div>
       </div>
 
@@ -196,7 +196,7 @@ const ToolItem = ({
               )}
             >
               <Settings className="h-3 w-3" />
-              Generale
+              General
             </button>
             <button
               onClick={() => setSection('probes')}
@@ -208,7 +208,7 @@ const ToolItem = ({
               )}
             >
               <CircleDot className="h-3 w-3" />
-              Sonde ({tool.probes.length})
+              Probes ({tool.probes.length})
             </button>
           </div>
 
@@ -235,11 +235,11 @@ const GeneralSection = ({ tool }: { tool: DraftCustomTool }) => {
     <div className="space-y-2">
       {/* Description */}
       <div>
-        <label className="text-[10px] text-gray-500 uppercase block mb-0.5">Descrizione</label>
+        <label className="text-[10px] text-gray-500 uppercase block mb-0.5">Description</label>
         <textarea
           value={tool.description}
           onChange={e => updateCustomTool(tool.id, { description: e.target.value })}
-          placeholder="Descrizione del tool..."
+          placeholder="Tool description..."
           rows={2}
           className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 resize-none"
         />
@@ -247,7 +247,7 @@ const GeneralSection = ({ tool }: { tool: DraftCustomTool }) => {
 
       {/* Output type */}
       <div>
-        <label className="text-[10px] text-gray-500 uppercase block mb-0.5">Tipo output</label>
+        <label className="text-[10px] text-gray-500 uppercase block mb-0.5">Output type</label>
         <div className="flex gap-1.5">
           <select
             value={tool.outputType}
@@ -262,7 +262,7 @@ const GeneralSection = ({ tool }: { tool: DraftCustomTool }) => {
             <input
               value={tool.outputUnit}
               onChange={e => updateCustomTool(tool.id, { outputUnit: e.target.value })}
-              placeholder="Unità"
+              placeholder="Unit"
               className="w-16 bg-gray-700/50 border border-gray-600 rounded px-2 py-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
             />
           )}
@@ -278,17 +278,17 @@ const GeneralSection = ({ tool }: { tool: DraftCustomTool }) => {
       {tool.outputType === 'numeric' && (
         <div>
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] text-gray-500 uppercase">Modi di misura</span>
+            <span className="text-[10px] text-gray-500 uppercase">Measurement modes</span>
             <button
               onClick={() => addModeToTool(tool.id)}
               className="text-gray-400 hover:text-white transition-colors p-0.5"
-              title="Aggiungi modo"
+              title="Add mode"
             >
               <Plus className="h-3.5 w-3.5" />
             </button>
           </div>
           {tool.modes.length === 0 && (
-            <p className="text-[10px] text-gray-500 italic">Nessun modo. Clicca + per aggiungerne uno.</p>
+            <p className="text-[10px] text-gray-500 italic">No modes. Click + to add one.</p>
           )}
           <div className="space-y-1">
             {tool.modes.map(mode => (
@@ -317,7 +317,7 @@ const FirmwareDumpSection = ({ tool }: { tool: DraftCustomTool }) => {
     setUploading(true);
     const result = await uploadFirmwareFile(tool.id, file);
     setUploading(false);
-    if (!result.success) alert(`Errore upload: ${result.error}`);
+    if (!result.success) alert(`Upload error: ${result.error}`);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -332,9 +332,9 @@ const FirmwareDumpSection = ({ tool }: { tool: DraftCustomTool }) => {
     <div className="space-y-2.5">
       {/* Pin mapping */}
       <div>
-        <label className="text-[10px] text-gray-500 uppercase block mb-1">Connessioni richieste</label>
+        <label className="text-[10px] text-gray-500 uppercase block mb-1">Required connections</label>
         {tool.probes.length === 0 ? (
-          <p className="text-[10px] text-gray-500 italic">Aggiungi sonde nella tab &quot;Sonde&quot; prima</p>
+          <p className="text-[10px] text-gray-500 italic">Add probes in the &quot;Probes&quot; tab first</p>
         ) : (
           <div className="space-y-1">
             {tool.probes.map(probe => {
@@ -348,7 +348,7 @@ const FirmwareDumpSection = ({ tool }: { tool: DraftCustomTool }) => {
                     onChange={e => setConnection(probe.id, e.target.value)}
                     className="flex-1 bg-gray-700/50 border border-gray-600 rounded px-1.5 py-0.5 text-[10px] text-white focus:outline-none focus:border-orange-500 min-w-0"
                   >
-                    <option value="">— qualsiasi —</option>
+                    <option value="">— any —</option>
                     {pins.map(pin => (
                       <option key={pin.id} value={pin.id}>
                         {pin.label || pin.pinType.toUpperCase()} ({pin.pinType})
@@ -364,7 +364,7 @@ const FirmwareDumpSection = ({ tool }: { tool: DraftCustomTool }) => {
 
       {/* Duration */}
       <div>
-        <label className="text-[10px] text-gray-500 uppercase block mb-0.5">Durata dump (sec)</label>
+        <label className="text-[10px] text-gray-500 uppercase block mb-0.5">Dump duration (sec)</label>
         <input
           type="number"
           min={1}
@@ -377,7 +377,7 @@ const FirmwareDumpSection = ({ tool }: { tool: DraftCustomTool }) => {
 
       {/* File upload */}
       <div>
-        <label className="text-[10px] text-gray-500 uppercase block mb-1">File firmware</label>
+        <label className="text-[10px] text-gray-500 uppercase block mb-1">Firmware file</label>
         <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => fileInputRef.current?.click()}
@@ -385,7 +385,7 @@ const FirmwareDumpSection = ({ tool }: { tool: DraftCustomTool }) => {
             className="flex items-center gap-1 px-2 py-1 rounded text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white transition-colors disabled:opacity-50"
           >
             <Upload className="h-3 w-3" />
-            {uploading ? 'Caricamento...' : 'Carica file'}
+            {uploading ? 'Uploading...' : 'Upload file'}
           </button>
           {cfg.fileName && (
             <div className="flex items-center gap-1 text-[10px] text-orange-300">
@@ -394,7 +394,7 @@ const FirmwareDumpSection = ({ tool }: { tool: DraftCustomTool }) => {
               <button
                 onClick={() => updateFirmwareDumpConfig(tool.id, { filePath: '', fileName: '' })}
                 className="text-red-400 hover:text-red-300 ml-0.5"
-                title="Rimuovi"
+                title="Remove"
               >
                 ×
               </button>
@@ -423,7 +423,7 @@ const ModeRow = ({
     <input
       value={mode.name}
       onChange={e => onUpdate(toolId, mode.id, { name: e.target.value })}
-      placeholder="Nome"
+      placeholder="Name"
       className="flex-1 bg-gray-700/50 border border-gray-600 rounded px-1.5 py-0.5 text-[11px] text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 min-w-0"
     />
     <input
@@ -435,7 +435,7 @@ const ModeRow = ({
     <input
       value={mode.unit}
       onChange={e => onUpdate(toolId, mode.id, { unit: e.target.value })}
-      placeholder="Unità"
+      placeholder="Unit"
       className="w-12 bg-gray-700/50 border border-gray-600 rounded px-1.5 py-0.5 text-[11px] text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
     />
     <button
@@ -457,17 +457,17 @@ const ProbesSection = ({ tool }: { tool: DraftCustomTool }) => {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-[10px] text-gray-500 uppercase">Sonde ({tool.probes.length})</span>
+        <span className="text-[10px] text-gray-500 uppercase">Probes ({tool.probes.length})</span>
         <button
           onClick={() => addProbeToTool(tool.id)}
           className="text-gray-400 hover:text-white transition-colors p-0.5"
-          title="Aggiungi sonda"
+          title="Add probe"
         >
           <Plus className="h-3.5 w-3.5" />
         </button>
       </div>
       {tool.probes.length === 0 && (
-        <p className="text-[10px] text-gray-500 italic">Nessuna sonda. Clicca + per aggiungerne una.</p>
+        <p className="text-[10px] text-gray-500 italic">No probes. Click + to add one.</p>
       )}
       <div className="space-y-1.5">
         {tool.probes.map(probe => (
@@ -491,7 +491,7 @@ const ProbeRow = ({ toolId, probe }: { toolId: string; probe: DraftToolProbe }) 
       <button
         onClick={() => deleteProbe(toolId, probe.id)}
         className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-400 p-0.5"
-        title="Elimina sonda"
+        title="Delete probe"
       >
         <Trash2 className="h-3 w-3" />
       </button>
@@ -505,7 +505,7 @@ const ProbeRow = ({ toolId, probe }: { toolId: string; probe: DraftToolProbe }) 
             value={probe.color}
             onChange={e => updateProbe(toolId, probe.id, { color: e.target.value })}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-            title="Colore sonda"
+            title="Probe color"
           />
           <div
             className="w-5 h-5 rounded-full border-2 border-gray-600 flex-shrink-0"
@@ -516,7 +516,7 @@ const ProbeRow = ({ toolId, probe }: { toolId: string; probe: DraftToolProbe }) 
         <input
           value={probe.label}
           onChange={e => updateProbe(toolId, probe.id, { label: e.target.value })}
-          placeholder="Etichetta (es. CH1+)"
+          placeholder="Label (e.g. CH1+)"
           className="flex-1 bg-gray-700/50 border border-gray-600 rounded px-1.5 py-0.5 text-[11px] text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 min-w-0"
         />
       </div>
@@ -526,7 +526,7 @@ const ProbeRow = ({ toolId, probe }: { toolId: string; probe: DraftToolProbe }) 
         <input
           value={probe.role}
           onChange={e => updateProbe(toolId, probe.id, { role: e.target.value })}
-          placeholder="Ruolo (es. positivo)"
+          placeholder="Role (e.g. positive)"
           className="flex-1 bg-gray-700/50 border border-gray-600 rounded px-1.5 py-0.5 text-[11px] text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 min-w-0"
         />
         <select
@@ -556,17 +556,17 @@ const DeleteToolButton = ({ name, onConfirm }: { name: string; onConfirm: () => 
     </AlertDialogTrigger>
     <AlertDialogContent className="bg-gray-800 border-gray-600 text-white">
       <AlertDialogHeader>
-        <AlertDialogTitle>Eliminare &quot;{name}&quot;?</AlertDialogTitle>
+        <AlertDialogTitle>Delete &quot;{name}&quot;?</AlertDialogTitle>
         <AlertDialogDescription className="text-gray-400">
-          Questa azione non può essere annullata.
+          This action cannot be undone.
         </AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>
         <AlertDialogCancel className="bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600 hover:text-white">
-          Annulla
+          Cancel
         </AlertDialogCancel>
         <AlertDialogAction onClick={onConfirm} className="bg-red-600 hover:bg-red-700 text-white">
-          Elimina
+          Delete
         </AlertDialogAction>
       </AlertDialogFooter>
     </AlertDialogContent>
@@ -578,11 +578,11 @@ const DeleteToolButton = ({ name, onConfirm }: { name: string; onConfirm: () => 
 // ============================================
 
 const BUILTIN_TOOL_LABELS: Record<Tool, string> = {
-  pointer: 'Puntatore',
-  magnifier: 'Lente',
-  multimeter: 'Multimetro',
+  pointer: 'Pointer',
+  magnifier: 'Magnifier',
+  multimeter: 'Multimeter',
   probes: 'UART',
-  terminal: 'Terminale',
+  terminal: 'Terminal',
   custom: 'Custom',
 };
 
@@ -592,19 +592,19 @@ const ToolGroupsSection = ({ customTools }: { customTools: DraftCustomTool[] }) 
 
   const allToolOptions: { id: string; label: string }[] = [
     ...ALL_TOOLS.map(t => ({ id: t, label: BUILTIN_TOOL_LABELS[t] })),
-    ...customTools.map(t => ({ id: t.id, label: t.name || 'Tool senza nome' })),
+    ...customTools.map(t => ({ id: t.id, label: t.name || 'Unnamed tool' })),
   ];
 
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <h3 className="text-xs text-gray-400 uppercase tracking-wider">
-          Gruppi tool ({toolGroups.length})
+          Tool groups ({toolGroups.length})
         </h3>
         <button
           onClick={addToolGroup}
           className="text-gray-400 hover:text-white transition-colors p-0.5"
-          title="Aggiungi gruppo"
+          title="Add group"
         >
           <Plus className="h-4 w-4" />
         </button>
@@ -612,7 +612,7 @@ const ToolGroupsSection = ({ customTools }: { customTools: DraftCustomTool[] }) 
 
       {toolGroups.length === 0 && (
         <p className="text-xs text-gray-500 italic">
-          Nessun gruppo. I tool in uno stesso gruppo possono essere attivi contemporaneamente.
+          No groups. Tools in the same group can be active simultaneously.
         </p>
       )}
 
@@ -646,12 +646,12 @@ const ToolGroupsSection = ({ customTools }: { customTools: DraftCustomTool[] }) 
                     value={group.name}
                     onChange={(e) => updateToolGroup(group.id, { name: e.target.value })}
                     className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
-                    placeholder="Nome gruppo..."
+                    placeholder="Group name..."
                   />
 
                   {/* Tool checkboxes */}
                   <div className="space-y-0.5">
-                    <label className="block text-xs text-gray-400 mb-1">Tool nel gruppo</label>
+                    <label className="block text-xs text-gray-400 mb-1">Tools in group</label>
                     {allToolOptions.map(opt => {
                       const checked = group.toolIds.includes(opt.id);
                       return (

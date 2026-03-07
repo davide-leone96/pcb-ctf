@@ -7,11 +7,11 @@ import { Hand, Search, Wrench, Cable, TerminalSquare, type LucideIcon } from 'lu
 import { useExerciseStore, Tool } from '@/store/exerciseStore';
 
 const tools: { id: Tool; label: string; icon: LucideIcon }[] = [
-  { id: 'pointer', label: 'Puntatore', icon: Hand },
-  { id: 'magnifier', label: "Lente d'ingrandimento", icon: Search },
-  { id: 'multimeter', label: 'Multimetro', icon: Wrench },
-  { id: 'probes', label: 'Connessione UART', icon: Cable },
-  { id: 'terminal', label: 'Terminale', icon: TerminalSquare },
+  { id: 'pointer', label: 'Pointer', icon: Hand },
+  { id: 'magnifier', label: 'Magnifier', icon: Search },
+  { id: 'multimeter', label: 'Multimeter', icon: Wrench },
+  { id: 'probes', label: 'UART Connection', icon: Cable },
+  { id: 'terminal', label: 'Terminal', icon: TerminalSquare },
 ];
 
 const Sidebar = () => {
@@ -36,7 +36,7 @@ const Sidebar = () => {
 
   return (
     <aside className="flex flex-col items-center gap-y-4 rounded-lg bg-gray-800 p-4">
-      <h2 className="sr-only">Barra degli Strumenti</h2>
+      <h2 className="sr-only">Toolbar</h2>
 
       {visibleTools.map((tool) => {
         const isMagnifier = tool.id === 'magnifier';

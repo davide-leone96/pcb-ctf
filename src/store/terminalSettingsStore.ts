@@ -922,7 +922,7 @@ export const useTerminalSettingsStore = create<TerminalSettingsState>()(
       if (result.success && result.data) {
         localStorage.setItem(TERMINAL_STORAGE_KEY, JSON.stringify(result.data));
         get().loadFromTerminalConfig(result.data);
-        return { success: true, message: 'Configurazione terminale caricata' };
+        return { success: true, message: 'Terminal configuration loaded' };
       }
       return result;
     } catch (error: any) {

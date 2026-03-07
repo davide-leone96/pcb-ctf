@@ -513,11 +513,11 @@ const FirmwareDumpModal = ({
               onClick={onClose}
               className="px-3 py-2 rounded bg-gray-700 hover:bg-gray-600 text-gray-300 text-xs transition-colors"
             >
-              Chiudi
+              Close
             </button>
           </div>
         ) : (
-          <p className="text-[10px] text-gray-500 text-center font-mono">In corso — non disconnettere le sonde</p>
+          <p className="text-[10px] text-gray-500 text-center font-mono">In progress — do not disconnect the probes</p>
         )}
       </div>
     </div>

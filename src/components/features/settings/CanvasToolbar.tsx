@@ -53,7 +53,7 @@ const CanvasToolbar = () => {
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } else {
-      alert(`Errore: ${result.error}`);
+      alert(`Error: ${result.error}`);
     }
   };
 
@@ -87,10 +87,10 @@ const CanvasToolbar = () => {
         <button
           onClick={() => fileInputRef.current?.click()}
           className="flex items-center gap-1 text-xs text-gray-300 hover:text-white transition-colors px-1 py-0.5"
-          title="Carica immagine PCB"
+          title="Upload PCB image"
         >
           <Upload className="h-3.5 w-3.5" />
-          <span>Immagine</span>
+          <span>Image</span>
         </button>
       </div>
 
@@ -102,7 +102,7 @@ const CanvasToolbar = () => {
           'p-1 rounded transition-colors',
           !hasImage ? 'text-gray-600 cursor-not-allowed' : 'text-gray-400 hover:text-red-400',
         )}
-        title="Elimina immagine corrente"
+        title="Delete current image"
       >
         <Trash2 className="h-3.5 w-3.5" />
       </button>
@@ -127,7 +127,7 @@ const CanvasToolbar = () => {
           'p-1 rounded transition-colors',
           canvasPanMode ? 'bg-blue-600 text-white' : 'text-gray-300 hover:text-white',
         )}
-        title={canvasPanMode ? 'Disattiva trascinamento' : 'Trascina per posizionare'}
+        title={canvasPanMode ? 'Disable panning' : 'Drag to position'}
       >
         <Crosshair className="h-3.5 w-3.5" />
       </button>
@@ -135,13 +135,13 @@ const CanvasToolbar = () => {
       <div className="w-px h-5 bg-gray-700" />
 
       {/* Rotation */}
-      <button onClick={() => rotateBy(-90)} className="p-1 text-gray-300 hover:text-white transition-colors" title="Ruota -90°">
+      <button onClick={() => rotateBy(-90)} className="p-1 text-gray-300 hover:text-white transition-colors" title="Rotate -90°">
         <RotateCcw className="h-3.5 w-3.5" />
       </button>
       <button
         onClick={() => rotateBy(-1)}
         className="px-1 py-0.5 text-[10px] font-mono text-gray-400 hover:text-white transition-colors"
-        title="Ruota -1°"
+        title="Rotate -1°"
       >
         -1°
       </button>
@@ -159,18 +159,18 @@ const CanvasToolbar = () => {
       <button
         onClick={() => rotateBy(1)}
         className="px-1 py-0.5 text-[10px] font-mono text-gray-400 hover:text-white transition-colors"
-        title="Ruota +1°"
+        title="Rotate +1°"
       >
         +1°
       </button>
-      <button onClick={() => rotateBy(90)} className="p-1 text-gray-300 hover:text-white transition-colors" title="Ruota +90°">
+      <button onClick={() => rotateBy(90)} className="p-1 text-gray-300 hover:text-white transition-colors" title="Rotate +90°">
         <RotateCw className="h-3.5 w-3.5" />
       </button>
 
       <div className="w-px h-5 bg-gray-700" />
 
       {/* Reset */}
-      <button onClick={resetCanvasTransform} className="p-1 text-gray-400 hover:text-white transition-colors" title="Reset trasformazioni">
+      <button onClick={resetCanvasTransform} className="p-1 text-gray-400 hover:text-white transition-colors" title="Reset transformations">
         <RefreshCw className="h-3.5 w-3.5" />
       </button>
 
@@ -184,22 +184,22 @@ const CanvasToolbar = () => {
             ? 'bg-green-600 hover:bg-green-700 text-white'
             : 'bg-gray-700 text-gray-500 cursor-not-allowed'
         )}
-        title="Salva le trasformazioni in modo permanente"
+        title="Save transformations permanently"
       >
         {isSaving ? (
           <>
             <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-            <span>Salvataggio...</span>
+            <span>Saving...</span>
           </>
         ) : saved ? (
           <>
             <Check className="h-3.5 w-3.5" />
-            <span>Salvato!</span>
+            <span>Saved!</span>
           </>
         ) : (
           <>
             <Save className="h-3.5 w-3.5" />
-            <span>Salva trasformazioni</span>
+            <span>Save transformations</span>
           </>
         )}
       </button>

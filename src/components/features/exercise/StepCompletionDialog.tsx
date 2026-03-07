@@ -30,7 +30,7 @@ const StepCompletionDialog = ({
     if (isValid) {
       setValidationMessage({
         type: 'success',
-        text: 'Flag corretta! Passaggio allo step successivo...',
+        text: 'Correct flag! Moving to the next step...',
       });
       setTimeout(() => {
         setInputFlag('');
@@ -40,7 +40,7 @@ const StepCompletionDialog = ({
     } else {
       setValidationMessage({
         type: 'error',
-        text: 'Flag errata. Riprova.',
+        text: 'Incorrect flag. Try again.',
       });
     }
   };
@@ -56,10 +56,10 @@ const StepCompletionDialog = ({
       <DialogContent className="bg-gray-800 text-white border-gray-700 max-w-md">
         <DialogHeader>
           <DialogTitle className="text-yellow-400 text-xl">
-            Completa Step {currentStepNumber}
+            Complete Step {currentStepNumber}
           </DialogTitle>
           <DialogDescription className="text-gray-400 mt-2">
-            Inserisci la flag che hai raccolto per sbloccare lo step successivo.
+            Enter the flag you collected to unlock the next step.
           </DialogDescription>
         </DialogHeader>
 
@@ -103,14 +103,14 @@ const StepCompletionDialog = ({
               disabled={!inputFlag.trim()}
               className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Valida
+              Validate
             </Button>
             <Button
               onClick={handleClose}
               variant="outline"
               className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700"
             >
-              Annulla
+              Cancel
             </Button>
           </div>
         </div>

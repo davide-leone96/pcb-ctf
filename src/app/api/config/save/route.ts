@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     const filePath = path.join(process.cwd(), 'src/data/exercise.override.json');
     await writeFile(filePath, JSON.stringify(exerciseData, null, 2));
 
-    return NextResponse.json({ success: true, message: 'Configurazione salvata con successo' });
+    return NextResponse.json({ success: true, message: 'Configuration saved successfully' });
   } catch (error: any) {
     console.error('Error saving config:', error);
     return NextResponse.json(

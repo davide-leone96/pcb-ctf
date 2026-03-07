@@ -11,14 +11,14 @@ import SettingsCanvas from '@/components/features/settings/SettingsCanvas';
 import CanvasToolbar from '@/components/features/settings/CanvasToolbar';
 
 export default function SettingsPage() {
-  // In PROD questa rotta non esiste (404)
+  // In PROD this route does not exist (404)
   if (!isDev) {
     notFound();
   }
   const loadFromStorage = useSettingsStore(s => s.loadFromStorage);
   const activeTool = useSettingsStore(s => s.activeTool);
   const fetchPresets = usePresetStore(s => s.fetchPresets);
-  // Carica sempre la configurazione salvata all'avvio + lista preset
+  // Always load saved configuration on startup + preset list
   useEffect(() => {
     loadFromStorage();
     fetchPresets();
@@ -27,17 +27,17 @@ export default function SettingsPage() {
   return (
     <main className="flex min-h-screen flex-col items-center bg-gray-900 p-6 lg:p-12">
       <h1 className="mb-8 text-3xl font-bold text-white">
-        ARTIC - Configurazione Esercizio
+        ARTIC - Exercise Configuration
       </h1>
       <div className="grid w-full max-w-7xl gap-x-8 gap-y-2" style={{ gridTemplateColumns: 'auto 1fr' }}>
-        {/* Row 1, Col 2: toolbar allineata al canvas */}
+        {/* Row 1, Col 2: toolbar aligned with canvas */}
         {(activeTool === 'component' || activeTool === 'pin') && (
           <div className="col-start-2 row-start-1">
             <CanvasToolbar />
           </div>
         )}
 
-        {/* Row 2, Col 1: sidebar centrata rispetto al canvas */}
+        {/* Row 2, Col 1: sidebar centered relative to canvas */}
         <div className="col-start-1 row-start-2 self-center flex-shrink-0">
           <SettingsSidebar />
         </div>

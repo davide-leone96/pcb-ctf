@@ -351,7 +351,7 @@ function TerminalInner({ config }: { config: TerminalConfig }) {
   if (!tabs.length) {
     return (
       <div className="flex items-center justify-center h-full text-xs text-gray-500 italic">
-        Nessun tab configurato
+        No tabs configured
       </div>
     );
   }
@@ -449,12 +449,12 @@ export default function TerminalPreviewPanel() {
       <div className="flex items-center gap-3 bg-gray-900/80 px-3 py-1.5 border-b border-gray-700/50 flex-shrink-0 select-none">
         <span className="text-xs text-green-400 font-mono font-medium">Preview Config</span>
         <span className="text-[10px] text-gray-500">
-          Ctrl+L pulire · Tab completamento · ↑↓ storia
+          Ctrl+L clear · Tab completion · ↑↓ history
         </span>
         <button
           onClick={() => store.setPreviewOpen(false)}
           className="ml-auto p-1 rounded text-gray-500 hover:text-white hover:bg-gray-700 transition-colors"
-          title="Chiudi preview"
+          title="Close preview"
         >
           <X className="h-3.5 w-3.5" />
         </button>

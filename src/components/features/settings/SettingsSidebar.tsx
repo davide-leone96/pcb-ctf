@@ -35,11 +35,11 @@ const TOOL_ICONS: Record<Tool, LucideIcon> = {
 };
 
 const TOOL_LABELS: Record<Tool, string> = {
-  pointer: 'Puntatore',
-  magnifier: 'Lente',
-  multimeter: 'Multimetro',
+  pointer: 'Pointer',
+  magnifier: 'Magnifier',
+  multimeter: 'Multimeter',
   probes: 'UART',
-  terminal: 'Terminale',
+  terminal: 'Terminal',
   custom: 'Custom',
 };
 
@@ -83,7 +83,7 @@ const SettingsSidebar = () => {
       setApplied(true);
       setTimeout(() => setApplied(false), 2000);
     } else {
-      alert(`Errore salvataggio configurazione: ${result.error}`);
+      alert(`Error saving configuration: ${result.error}`);
     }
   };
 
@@ -186,7 +186,7 @@ const SettingsSidebar = () => {
           <TerminalSettingsPanel />
         ) : isImageSubTab ? (
           <>
-            {/* Sub-tool selector: Componente / Pin */}
+            {/* Sub-tool selector: Component / Pin */}
             <div className="flex gap-1">
               <button
                 onClick={() => setActiveTool('component')}
@@ -198,7 +198,7 @@ const SettingsSidebar = () => {
                 )}
               >
                 <BoxSelect className="h-3.5 w-3.5 inline mr-1" />
-                Componente
+                Component
               </button>
               <button
                 onClick={() => setActiveTool('pin')}
@@ -229,17 +229,17 @@ const SettingsSidebar = () => {
                 </AlertDialogTrigger>
                 <AlertDialogContent className="bg-gray-800 border-gray-600 text-white">
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Cancellare tutti i componenti e pin?</AlertDialogTitle>
+                    <AlertDialogTitle>Delete all components and pins?</AlertDialogTitle>
                     <AlertDialogDescription className="text-gray-400">
-                      Questa azione eliminerà tutti i componenti e pin della tab Init.
-                      Gli step e obiettivi non saranno toccati.
+                      This action will delete all components and pins from the Init tab.
+                      Steps and objectives will not be affected.
                       <br /><br />
-                      <strong className="text-yellow-400">Questa azione non può essere annullata.</strong>
+                      <strong className="text-yellow-400">This action cannot be undone.</strong>
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel className="bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600 hover:text-white">
-                      Annulla
+                      Cancel
                     </AlertDialogCancel>
                     <AlertDialogAction
                       onClick={resetInitComponents}
@@ -256,11 +256,11 @@ const SettingsSidebar = () => {
             {activeTool === 'component' && (
               <div>
                 <h3 className="text-xs text-gray-400 uppercase tracking-wider mb-2">
-                  Componenti ({components.length})
+                  Components ({components.length})
                 </h3>
-                <p className="text-xs text-gray-500 mb-2">Trascina sull&apos;immagine per disegnare un componente.</p>
+                <p className="text-xs text-gray-500 mb-2">Drag on the image to draw a component.</p>
                 {components.length === 0 && (
-                  <p className="text-xs text-gray-500 italic">Nessun componente.</p>
+                  <p className="text-xs text-gray-500 italic">No components.</p>
                 )}
                 <div className="space-y-1">
                   {components.map(comp => (
@@ -276,9 +276,9 @@ const SettingsSidebar = () => {
                 <h3 className="text-xs text-gray-400 uppercase tracking-wider mb-2">
                   Pin ({pins.length})
                 </h3>
-                <p className="text-xs text-gray-500 mb-2">Clicca sull&apos;immagine per posizionare un pin.</p>
+                <p className="text-xs text-gray-500 mb-2">Click on the image to place a pin.</p>
                 {pins.length === 0 && (
-                  <p className="text-xs text-gray-500 italic">Nessun pin posizionato.</p>
+                  <p className="text-xs text-gray-500 italic">No pins placed.</p>
                 )}
                 <div className="space-y-1">
                   {pins.map(pin => (
@@ -297,14 +297,14 @@ const SettingsSidebar = () => {
                 <button
                   onClick={addStep}
                   className="text-gray-400 hover:text-white transition-colors p-0.5"
-                  title="Aggiungi step"
+                  title="Add step"
                 >
                   <Plus className="h-4 w-4" />
                 </button>
               </div>
 
               {steps.length === 0 && (
-                <p className="text-xs text-gray-500 italic">Nessuno step. Clicca + per crearne uno.</p>
+                <p className="text-xs text-gray-500 italic">No steps. Click + to create one.</p>
               )}
 
               <div className="space-y-1">
@@ -352,7 +352,7 @@ const SettingsSidebar = () => {
           disabled={!hasAnyContent}
         >
           {applied ? <Check className="h-4 w-4 mr-2" /> : <Save className="h-4 w-4 mr-2" />}
-          {applied ? 'Configurazione applicata!' : 'Applica al simulatore'}
+          {applied ? 'Configuration applied!' : 'Apply to simulator'}
         </Button>
 
         <AlertDialog>
@@ -369,23 +369,23 @@ const SettingsSidebar = () => {
           </AlertDialogTrigger>
           <AlertDialogContent className="bg-gray-800 border-gray-600 text-white">
             <AlertDialogHeader>
-              <AlertDialogTitle>Ripulire tutte le configurazioni?</AlertDialogTitle>
+              <AlertDialogTitle>Clear all configurations?</AlertDialogTitle>
               <AlertDialogDescription className="text-gray-400">
-                Questa azione cancellerà tutti i componenti, pin, step, obiettivi e la configurazione del terminale (comandi, filesystem, boot, flag).
-                Anche l&apos;immagine PCB personalizzata verrà rimossa.
+                This action will delete all components, pins, steps, objectives and the terminal configuration (commands, filesystem, boot, flags).
+                The custom PCB image will also be removed.
                 <br /><br />
-                <strong className="text-red-400">Questa azione non può essere annullata.</strong>
+                <strong className="text-red-400">This action cannot be undone.</strong>
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel className="bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600 hover:text-white">
-                Annulla
+                Cancel
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => { resetAllConfig(); terminalStore.resetAll(); presetStore.clearActivePreset(); }}
                 className="bg-red-600 hover:bg-red-700 text-white"
               >
-                Reset completo
+                Full reset
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -451,21 +451,21 @@ const StepItem = ({
             autoFocus
           />
         ) : (
-          <span className="text-sm truncate flex-1">{step.title || 'Senza nome'}</span>
+          <span className="text-sm truncate flex-1">{step.title || 'Unnamed'}</span>
         )}
 
         {/* Actions on hover */}
         <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-          <button onClick={() => { setEditingTitle(true); setTitleValue(step.title); }} className="text-gray-400 hover:text-white p-0.5" title="Rinomina">
+          <button onClick={() => { setEditingTitle(true); setTitleValue(step.title); }} className="text-gray-400 hover:text-white p-0.5" title="Rename">
             <Pencil className="h-3 w-3" />
           </button>
           {!isFirst && (
-            <button onClick={() => onReorder('up')} className="text-gray-400 hover:text-white p-0.5" title="Sposta su">
+            <button onClick={() => onReorder('up')} className="text-gray-400 hover:text-white p-0.5" title="Move up">
               <ArrowUp className="h-3 w-3" />
             </button>
           )}
           {!isLast && (
-            <button onClick={() => onReorder('down')} className="text-gray-400 hover:text-white p-0.5" title="Sposta giu">
+            <button onClick={() => onReorder('down')} className="text-gray-400 hover:text-white p-0.5" title="Move down">
               <ArrowDown className="h-3 w-3" />
             </button>
           )}
@@ -481,7 +481,7 @@ const StepItem = ({
             <textarea
               value={step.description}
               onChange={(e) => onUpdateStep({ description: e.target.value })}
-              placeholder="Descrizione dello step..."
+              placeholder="Step description..."
               rows={2}
               className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 resize-none"
             />
@@ -489,7 +489,7 @@ const StepItem = ({
 
           {/* Tool toggles */}
           <div>
-            <span className="text-[10px] text-gray-500 uppercase">Tool disponibili</span>
+            <span className="text-[10px] text-gray-500 uppercase">Available tools</span>
             <div className="flex gap-1 mt-1 flex-wrap">
               {ALL_TOOLS.map(tool => {
                 const Icon = TOOL_ICONS[tool];
@@ -514,12 +514,12 @@ const StepItem = ({
           {/* Objectives */}
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-[10px] text-gray-500 uppercase">Obiettivi ({step.objectives.length})</span>
+              <span className="text-[10px] text-gray-500 uppercase">Objectives ({step.objectives.length})</span>
               <div className="relative">
                 <button
                   onClick={() => setShowAddMenu(showAddMenu ? null : 'root')}
                   className="text-gray-400 hover:text-white transition-colors p-0.5"
-                  title="Aggiungi obiettivo"
+                  title="Add objective"
                 >
                   <Plus className="h-3.5 w-3.5" />
                 </button>
@@ -532,7 +532,7 @@ const StepItem = ({
                           className="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-600 transition-colors flex items-center gap-2"
                         >
                           <BoxSelect className="h-3 w-3 text-blue-400" />
-                          <span className="text-white">Componente</span>
+                          <span className="text-white">Component</span>
                           <ChevronRight className="h-3 w-3 text-gray-400 ml-auto" />
                         </button>
                         <button
@@ -548,7 +548,7 @@ const StepItem = ({
                           className="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-600 transition-colors flex items-center gap-2"
                         >
                           <TerminalSquare className="h-3 w-3 text-green-400" />
-                          <span className="text-white">Terminale</span>
+                          <span className="text-white">Terminal</span>
                         </button>
                       </>
                     )}
@@ -559,10 +559,10 @@ const StepItem = ({
                           className="w-full text-left px-3 py-1 text-[10px] text-gray-400 hover:text-white hover:bg-gray-600 transition-colors flex items-center gap-1 border-b border-gray-600 mb-1"
                         >
                           <ArrowUp className="h-2.5 w-2.5 rotate-[-90deg]" />
-                          Indietro
+                          Back
                         </button>
                         {availableComponents.length === 0 ? (
-                          <p className="px-3 py-1.5 text-xs text-gray-400 italic">Crea prima un componente nella tab Init</p>
+                          <p className="px-3 py-1.5 text-xs text-gray-400 italic">Create a component in the Init tab first</p>
                         ) : (
                           availableComponents.map(comp => (
                             <button
@@ -571,7 +571,7 @@ const StepItem = ({
                               className="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-600 transition-colors flex items-center gap-2"
                             >
                               <div className="w-2.5 h-2.5 flex-shrink-0 border border-green-400/60 bg-green-500/15 rounded-sm" />
-                              <span className="text-blue-300">{comp.name || 'Senza nome'}</span>
+                              <span className="text-blue-300">{comp.name || 'Unnamed'}</span>
                             </button>
                           ))
                         )}
@@ -584,10 +584,10 @@ const StepItem = ({
                           className="w-full text-left px-3 py-1 text-[10px] text-gray-400 hover:text-white hover:bg-gray-600 transition-colors flex items-center gap-1 border-b border-gray-600 mb-1"
                         >
                           <ArrowUp className="h-2.5 w-2.5 rotate-[-90deg]" />
-                          Indietro
+                          Back
                         </button>
                         {availablePins.length === 0 ? (
-                          <p className="px-3 py-1.5 text-xs text-gray-400 italic">Crea prima un pin nella tab Init</p>
+                          <p className="px-3 py-1.5 text-xs text-gray-400 italic">Create a pin in the Init tab first</p>
                         ) : (
                           <>
                             <div className="max-h-[180px] overflow-y-auto">
@@ -624,7 +624,7 @@ const StepItem = ({
                                 onClick={() => { setShowAddMenu(null); setSelectedPinIds([]); }}
                                 className="flex-1 px-2 py-1 rounded text-xs font-medium transition-colors bg-gray-600 text-gray-300 hover:text-white hover:bg-gray-500"
                               >
-                                Annulla
+                                Cancel
                               </button>
                               <button
                                 onClick={() => { onAddPinObjective(selectedPinIds, 'AND'); setShowAddMenu(null); setSelectedPinIds([]); }}
@@ -636,7 +636,7 @@ const StepItem = ({
                                     : 'bg-gray-600 text-gray-400 cursor-not-allowed'
                                 )}
                               >
-                                Aggiungi {selectedPinIds.length > 0 ? `(${selectedPinIds.length})` : ''}
+                                Add {selectedPinIds.length > 0 ? `(${selectedPinIds.length})` : ''}
                               </button>
                             </div>
                           </>
@@ -695,7 +695,7 @@ const ObjectiveItem = ({
       {objective.type === 'pin' ? `PIN\u00B7${objective.pinLogic}` :
        objective.type === 'terminal' ? 'TRM' : 'COM'}
     </span>
-    <span className="text-xs truncate flex-1">{objective.name || 'Senza nome'}</span>
+    <span className="text-xs truncate flex-1">{objective.name || 'Unnamed'}</span>
     <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
       {!isFirst && (
         <button onClick={() => onReorder('up')} className="text-gray-400 hover:text-white p-0.5">
@@ -728,7 +728,7 @@ const ComponentItem = ({
 }) => (
   <div className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-700/50 group">
     <div className="w-3.5 h-3.5 flex-shrink-0 border-2 border-green-400/60 bg-green-500/15 rounded-sm" />
-    <span className="text-sm truncate flex-1">{component.name || 'Senza nome'}</span>
+    <span className="text-sm truncate flex-1">{component.name || 'Unnamed'}</span>
     <button onClick={() => onEdit(component.id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-white p-0.5">
       <Pencil className="h-3.5 w-3.5" />
     </button>
@@ -754,7 +754,7 @@ const PinItem = ({
         className={cn('w-3.5 h-3.5 flex-shrink-0 border-2', pin.shape === 'circle' ? 'rounded-full' : 'rounded-sm')}
         style={{ borderColor: color, backgroundColor: `${color}33` }}
       />
-      <span className="text-sm truncate flex-1">{pin.label || 'Senza nome'}</span>
+      <span className="text-sm truncate flex-1">{pin.label || 'Unnamed'}</span>
       <span className="text-[10px] px-1 rounded font-mono" style={{ color, backgroundColor: `${color}1a` }}>
         {typeLabel}
       </span>
@@ -777,17 +777,17 @@ const DeleteButton = ({ name, onConfirm }: { name: string; onConfirm: () => void
     </AlertDialogTrigger>
     <AlertDialogContent className="bg-gray-800 border-gray-600 text-white">
       <AlertDialogHeader>
-        <AlertDialogTitle>Eliminare &quot;{name}&quot;?</AlertDialogTitle>
+        <AlertDialogTitle>Delete &quot;{name}&quot;?</AlertDialogTitle>
         <AlertDialogDescription className="text-gray-400">
-          Questa azione non può essere annullata.
+          This action cannot be undone.
         </AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>
         <AlertDialogCancel className="bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600 hover:text-white">
-          Annulla
+          Cancel
         </AlertDialogCancel>
         <AlertDialogAction onClick={onConfirm} className="bg-red-600 hover:bg-red-700 text-white">
-          Elimina
+          Delete
         </AlertDialogAction>
       </AlertDialogFooter>
     </AlertDialogContent>

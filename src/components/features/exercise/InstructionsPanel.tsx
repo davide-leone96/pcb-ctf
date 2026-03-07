@@ -99,14 +99,14 @@ const InstructionsPanel = ({
     return (
       <div className="rounded-lg bg-gray-800 p-4 text-white h-full flex flex-col">
         <h3 className="text-lg font-bold text-green-400 mb-3">
-          {stepTitle} — Completato!
+          {stepTitle} — Completed!
         </h3>
         <div className="text-gray-300 flex-grow">
           <p className="leading-relaxed mb-4">
-            Congratulazioni! Hai completato tutti gli obiettivi di questo step.
+            Congratulations! You have completed all objectives for this step.
           </p>
           <p className="leading-relaxed">
-            Copia la flag dal pannello a destra e clicca su "Next" per procedere allo step successivo.
+            Copy the flag from the panel on the right and click &quot;Next&quot; to proceed to the next step.
           </p>
         </div>
         <div className="mt-4">

@@ -32,16 +32,16 @@ const PresetManageDialog = ({ open, onOpenChange, onLoadPreset }: PresetManageDi
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-gray-800 border-gray-600 text-white sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Gestisci preset</DialogTitle>
+          <DialogTitle>Manage presets</DialogTitle>
           <DialogDescription className="text-gray-400">
-            Modifica, rinomina o elimina le configurazioni salvate.
+            Edit, rename, or delete saved configurations.
           </DialogDescription>
         </DialogHeader>
 
         <div className="max-h-[400px] overflow-y-auto space-y-1 py-2">
           {presets.length === 0 ? (
             <p className="text-sm text-gray-500 italic text-center py-6">
-              Nessun preset salvato.
+              No saved presets.
             </p>
           ) : (
             presets.map(preset => (
@@ -80,7 +80,7 @@ const PresetRow = ({
     setRenamingOpen(false);
   };
 
-  const formattedDate = new Date(preset.updatedAt).toLocaleDateString('it-IT', {
+  const formattedDate = new Date(preset.updatedAt).toLocaleDateString('en-US', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -116,14 +116,14 @@ const PresetRow = ({
                 <span className="text-sm font-medium truncate">{preset.name}</span>
                 {isActive && (
                   <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-600/40 text-blue-300 flex-shrink-0">
-                    in modifica
+                    editing
                   </span>
                 )}
               </div>
               {preset.description && (
                 <p className="text-xs text-gray-500 truncate mt-0.5">{preset.description}</p>
               )}
-              <p className="text-[10px] text-gray-600 mt-0.5">Aggiornato: {formattedDate}</p>
+              <p className="text-[10px] text-gray-600 mt-0.5">Updated: {formattedDate}</p>
             </>
           )}
         </div>
@@ -133,29 +133,29 @@ const PresetRow = ({
             <button
               onClick={() => { setRenamingOpen(true); setNameValue(preset.name); }}
               className="text-gray-500 hover:text-gray-300 p-1 transition-colors"
-              title="Rinomina"
+              title="Rename"
             >
               <Tag className="h-3.5 w-3.5" />
             </button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <button className="text-gray-500 hover:text-red-400 p-1 transition-colors" title="Elimina">
+                <button className="text-gray-500 hover:text-red-400 p-1 transition-colors" title="Delete">
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
               </AlertDialogTrigger>
               <AlertDialogContent className="bg-gray-800 border-gray-600 text-white">
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Eliminare &quot;{preset.name}&quot;?</AlertDialogTitle>
+                  <AlertDialogTitle>Delete &quot;{preset.name}&quot;?</AlertDialogTitle>
                   <AlertDialogDescription className="text-gray-400">
-                    Questa azione non può essere annullata. La configurazione salvata verrà eliminata definitivamente.
+                    This action cannot be undone. The saved configuration will be permanently deleted.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel className="bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600 hover:text-white">
-                    Annulla
+                    Cancel
                   </AlertDialogCancel>
                   <AlertDialogAction onClick={onDelete} className="bg-red-600 hover:bg-red-700 text-white">
-                    Elimina
+                    Delete
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -178,7 +178,7 @@ const PresetRow = ({
             }`}
           >
             <Pencil className="h-3 w-3 mr-1.5" />
-            {isActive ? 'Già in modifica' : 'Carica e modifica'}
+            {isActive ? 'Already editing' : 'Load and edit'}
           </Button>
         </div>
       )}

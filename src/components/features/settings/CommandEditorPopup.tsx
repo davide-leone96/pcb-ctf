@@ -32,7 +32,7 @@ const CommandEditorPopup = ({ command, onUpdate, onClose, availableBootStages, a
           <div className="flex items-center gap-2">
             <Code className="h-4 w-4 text-green-400" />
             <span className="text-sm font-medium text-white">
-              {command.name ? `Modifica: ${command.name}` : 'Nuovo comando'}
+              {command.name ? `Edit: ${command.name}` : 'New command'}
             </span>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-white p-0.5">
@@ -43,10 +43,10 @@ const CommandEditorPopup = ({ command, onUpdate, onClose, availableBootStages, a
         {/* Tab nav */}
         <div className="flex gap-1 px-4 pt-2">
           {([
-            { id: 'general', label: 'Generale', icon: Settings2 },
+            { id: 'general', label: 'General', icon: Settings2 },
             { id: 'output', label: 'Output', icon: FileText },
-            { id: 'effects', label: 'Effetti', icon: Zap },
-            { id: 'constraints', label: 'Vincoli', icon: Flag },
+            { id: 'effects', label: 'Effects', icon: Zap },
+            { id: 'constraints', label: 'Constraints', icon: Flag },
           ] as const).map(({ id, label, icon: Icon }) => (
             <button
               key={id}
@@ -86,7 +86,7 @@ const CommandEditorPopup = ({ command, onUpdate, onClose, availableBootStages, a
             onClick={onClose}
             className="px-4 py-1.5 rounded text-xs bg-green-600 hover:bg-green-700 text-white transition-colors"
           >
-            Chiudi
+            Close
           </button>
         </div>
       </div>
@@ -113,8 +113,8 @@ const GeneralTab = ({ command, onUpdate }: { command: DraftCommand; onUpdate: (d
 
   return (
     <div className="space-y-3">
-      <EditorField label="Nome comando" value={command.name} onChange={(v) => onUpdate({ name: v })} mono placeholder="es: cat, help, scan" />
-      <EditorField label="Descrizione" value={command.description} onChange={(v) => onUpdate({ description: v })} placeholder="Descrizione del comando" />
+      <EditorField label="Command name" value={command.name} onChange={(v) => onUpdate({ name: v })} mono placeholder="e.g. cat, help, scan" />
+      <EditorField label="Description" value={command.description} onChange={(v) => onUpdate({ description: v })} placeholder="Command description" />
 
       {/* Aliases */}
       <div>
@@ -136,7 +136,7 @@ const GeneralTab = ({ command, onUpdate }: { command: DraftCommand; onUpdate: (d
             value={aliasInput}
             onChange={(e) => setAliasInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') handleAddAlias(); }}
-            placeholder="Aggiungi alias..."
+            placeholder="Add alias..."
             className="flex-1 bg-gray-700/50 border border-gray-600 rounded px-2 py-1 text-xs text-white font-mono placeholder-gray-500 focus:outline-none focus:border-green-500 min-w-0"
           />
           <button onClick={handleAddAlias} className="text-gray-400 hover:text-green-400 p-1">
@@ -164,7 +164,7 @@ const OutputTab = ({ command, onUpdate, generateId }: { command: DraftCommand; o
             onClick={() => onUpdate({ outputType: type })}
             className={cn('flex-1 px-2 py-1.5 rounded text-xs transition-colors capitalize', command.outputType === type ? 'bg-green-600/50 text-white' : 'bg-gray-700/40 text-gray-400 hover:text-gray-300')}
           >
-            {type === 'none' ? 'Nessuno' : type === 'static' ? 'Statico' : 'Condizionale'}
+            {type === 'none' ? 'None' : type === 'static' ? 'Static' : 'Conditional'}
           </button>
         ))}
       </div>
@@ -354,7 +354,7 @@ const EffectsTab = ({
         </div>
 
         {command.flagUnlocks.length === 0 && (
-          <p className="text-xs text-gray-500 italic">Nessun flag unlock.</p>
+          <p className="text-xs text-gray-500 italic">No flag unlocks.</p>
         )}
 
         {command.flagUnlocks.map((fu, i) => (
@@ -435,7 +435,7 @@ const FlagUnlockEditor = ({
         onChange={(e) => onUpdate({ flagId: e.target.value })}
         className="flex-1 bg-gray-700/50 border border-gray-600 rounded px-1 py-0.5 text-xs text-white focus:outline-none focus:border-green-500"
       >
-        <option value="">-- Seleziona flag --</option>
+        <option value="">-- Select flag --</option>
         {availableFlags.map(f => (
           <option key={f.id} value={f.id}>{f.id} ({f.part})</option>
         ))}
@@ -452,7 +452,7 @@ const FlagUnlockEditor = ({
         onChange={(e) => onUpdate({ conditional: e.target.checked })}
         className="accent-green-500 h-3 w-3"
       />
-      <span className="text-[10px] text-gray-400">Condizionale</span>
+      <span className="text-[10px] text-gray-400">Conditional</span>
     </label>
 
     {unlock.conditional && (
@@ -505,9 +505,9 @@ const ConstraintsTab = ({
   <div className="space-y-3">
     {/* Boot stages */}
     <div>
-      <label className="text-[10px] text-gray-500 block mb-1">Boot stages consentiti</label>
+      <label className="text-[10px] text-gray-500 block mb-1">Allowed boot stages</label>
       {availableBootStages.length === 0 ? (
-        <p className="text-xs text-gray-500 italic">Nessun boot stage definito.</p>
+        <p className="text-xs text-gray-500 italic">No boot stages defined.</p>
       ) : (
         <div className="flex flex-wrap gap-1">
           {availableBootStages.map(stage => {
@@ -532,7 +532,7 @@ const ConstraintsTab = ({
         </div>
       )}
       {command.bootStages.length === 0 && availableBootStages.length > 0 && (
-        <p className="text-[10px] text-gray-500 mt-1 italic">Nessun vincolo = disponibile in tutti gli stage</p>
+        <p className="text-[10px] text-gray-500 mt-1 italic">No constraints = available in all stages</p>
       )}
     </div>
 

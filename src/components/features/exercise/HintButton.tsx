@@ -29,7 +29,7 @@ const HintButton = ({ hintText }: HintButtonProps) => {
         <DialogHeader>
           <DialogTitle className="flex items-center">
             <Lightbulb className="mr-2 h-5 w-5 text-yellow-400" />
-            Suggerimento
+            Hint
           </DialogTitle>
           <DialogDescription className="pt-4 text-base">
             {hintText}

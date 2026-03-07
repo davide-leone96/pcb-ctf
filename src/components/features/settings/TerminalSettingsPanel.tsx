@@ -131,14 +131,14 @@ const CommandsSection = () => {
         <button
           onClick={() => addCommand(activeTabId)}
           className="text-gray-400 hover:text-white transition-colors p-0.5"
-          title="Aggiungi comando"
+          title="Add command"
         >
           <Plus className="h-4 w-4" />
         </button>
       </div>
 
       {tabCommands.length === 0 && (
-        <p className="text-xs text-gray-500 italic">Nessun comando per questo tab.</p>
+        <p className="text-xs text-gray-500 italic">No commands for this tab.</p>
       )}
 
       <div className="space-y-1">
@@ -199,19 +199,19 @@ const CommandItem = ({
         {command.name || '<vuoto>'}
       </span>
       {hasConstraints && (
-        <Shield className="h-2.5 w-2.5 text-orange-400 flex-shrink-0" title={`Vincoli: ${constraintParts.join(' · ')}`} />
+        <Shield className="h-2.5 w-2.5 text-orange-400 flex-shrink-0" title={`Constraints: ${constraintParts.join(' · ')}`} />
       )}
       {command.flagUnlocks.length > 0 && (
-        <Flag className="h-2.5 w-2.5 text-amber-400 flex-shrink-0" title="Sblocca flag" />
+        <Flag className="h-2.5 w-2.5 text-amber-400 flex-shrink-0" title="Unlocks flag" />
       )}
       <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-        <button onClick={onEdit} className="text-gray-400 hover:text-white p-0.5" title="Modifica">
+        <button onClick={onEdit} className="text-gray-400 hover:text-white p-0.5" title="Edit">
           <Pencil className="h-3 w-3" />
         </button>
-        <button onClick={onDuplicate} className="text-gray-400 hover:text-blue-400 p-0.5" title="Duplica">
+        <button onClick={onDuplicate} className="text-gray-400 hover:text-blue-400 p-0.5" title="Duplicate">
           <Copy className="h-3 w-3" />
         </button>
-        <button onClick={onDelete} className="text-gray-400 hover:text-red-400 p-0.5" title="Elimina">
+        <button onClick={onDelete} className="text-gray-400 hover:text-red-400 p-0.5" title="Delete">
           <Trash2 className="h-3 w-3" />
         </button>
       </div>
@@ -249,14 +249,14 @@ export const FlagsSection = () => {
           <button
             onClick={addFlagPart}
             className="text-gray-400 hover:text-white transition-colors p-0.5"
-            title="Aggiungi parte flag"
+            title="Add flag part"
           >
             <Plus className="h-4 w-4" />
           </button>
         </div>
 
         {flagParts.length === 0 && (
-          <p className="text-xs text-gray-500 italic">Nessuna parte flag.</p>
+          <p className="text-xs text-gray-500 italic">No flag parts.</p>
         )}
 
         <div className="space-y-2">
@@ -310,7 +310,7 @@ export const FlagPartItem = ({
         <div className="px-2 pb-2 space-y-1.5">
           <FieldInput label="ID" value={flagPart.id} onChange={(v) => onUpdate({ id: v })} mono />
           <FieldInput label="Part" value={flagPart.part} onChange={(v) => onUpdate({ part: v })} mono />
-          <FieldInput label="Descrizione" value={flagPart.description} onChange={(v) => onUpdate({ description: v })} />
+          <FieldInput label="Description" value={flagPart.description} onChange={(v) => onUpdate({ description: v })} />
           <FieldInput label="Hint" value={flagPart.hint} onChange={(v) => onUpdate({ hint: v })} />
         </div>
       )}
@@ -337,14 +337,14 @@ const BootSection = () => {
         <button
           onClick={() => addBootStage(activeTabId)}
           className="text-gray-400 hover:text-white transition-colors p-0.5"
-          title="Aggiungi boot stage"
+          title="Add boot stage"
         >
           <Plus className="h-4 w-4" />
         </button>
       </div>
 
       {tabStages.length === 0 && (
-        <p className="text-xs text-gray-500 italic">Nessun boot stage per questo tab.</p>
+        <p className="text-xs text-gray-500 italic">No boot stages for this tab.</p>
       )}
 
       <div className="space-y-2">
@@ -406,7 +406,7 @@ const BootStageItem = ({
               onChange={(e) => onUpdate({ nextStage: e.target.value })}
               className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-green-500"
             >
-              <option value="">-- Nessuno (ultimo stage) --</option>
+              <option value="">-- None (last stage) --</option>
               {allStages.filter(s => s.id !== stage.id).map(s => (
                 <option key={s.id} value={s.id}>{s.name || s.id}</option>
               ))}
@@ -495,7 +495,7 @@ const FilesystemSection = () => {
           <FsTreeRow node={tree} depth={0} />
         </div>
       ) : (
-        <p className="text-xs text-gray-500 italic">Nessuna directory root "/". Aggiungila con il pulsante.</p>
+        <p className="text-xs text-gray-500 italic">No root directory "/". Add it with the button.</p>
       )}
     </div>
   );
@@ -571,14 +571,14 @@ const FsTreeRow = ({ node, depth }: { node: FsTreeNode; depth: number }) => {
             <button
               onClick={(e) => { e.stopPropagation(); addChild('directory'); }}
               className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-blue-400 p-0.5 transition-opacity flex-shrink-0"
-              title="Nuova cartella"
+              title="New folder"
             >
               <Folder className="h-3 w-3" />
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); addChild('file'); }}
               className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-green-400 p-0.5 transition-opacity flex-shrink-0"
-              title="Nuovo file"
+              title="New file"
             >
               <FileText className="h-3 w-3" />
             </button>
@@ -603,7 +603,7 @@ const FsTreeRow = ({ node, depth }: { node: FsTreeNode; depth: number }) => {
           style={{ paddingLeft: `${indent + 20}px` }}
         >
           <div className="flex items-center justify-between gap-2">
-            <span className="text-[10px] text-gray-500 uppercase tracking-wider">Modifica</span>
+            <span className="text-[10px] text-gray-500 uppercase tracking-wider">Edit</span>
             <button
               onClick={() => setEditing(false)}
               className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] bg-green-700/40 hover:bg-green-700/70 text-green-300 transition-colors"
@@ -620,13 +620,13 @@ const FsTreeRow = ({ node, depth }: { node: FsTreeNode; depth: number }) => {
           />
           {!isDir && (
             <div>
-              <label className="text-[10px] text-gray-500 block mb-0.5">Contenuto</label>
+              <label className="text-[10px] text-gray-500 block mb-0.5">Content</label>
               <textarea
                 value={node.entry.content}
                 onChange={(e) => updateFilesystemEntry(node.entry.id, { content: e.target.value })}
                 rows={5}
                 className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1 text-[10px] text-gray-300 font-mono placeholder-gray-500 focus:outline-none focus:border-green-500 resize-none"
-                placeholder="Contenuto del file..."
+                placeholder="File content..."
               />
             </div>
           )}
@@ -657,14 +657,14 @@ const TabsSection = () => {
         <button
           onClick={addTab}
           className="text-gray-400 hover:text-white transition-colors p-0.5"
-          title="Aggiungi tab"
+          title="Add tab"
         >
           <Plus className="h-4 w-4" />
         </button>
       </div>
 
       {tabs.length === 0 && (
-        <p className="text-xs text-gray-500 italic">Nessun tab.</p>
+        <p className="text-xs text-gray-500 italic">No tabs.</p>
       )}
 
       <div className="space-y-2">

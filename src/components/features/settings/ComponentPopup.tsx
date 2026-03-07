@@ -93,10 +93,10 @@ const ComponentPopup = ({ component, containerDims }: ComponentPopupProps) => {
       {/* Buttons */}
       <div className="flex justify-end gap-2">
         <Button variant="ghost" size="sm" onClick={cancelComponentEdit} className="text-gray-400 hover:text-white">
-          Annulla
+          Cancel
         </Button>
         <Button size="sm" onClick={handleConfirm} className="bg-green-600 hover:bg-green-700">
-          Conferma
+          Confirm
         </Button>
       </div>
     </div>
