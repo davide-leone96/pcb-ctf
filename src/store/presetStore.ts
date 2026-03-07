@@ -45,7 +45,7 @@ function captureCurrentConfig(): { exerciseConfig: Exercise; terminalConfig: any
  * UI-only fields (activeComponentId, canvasZoom, dragState, etc.) are intentionally excluded.
  */
 const SETTINGS_CONTENT_FIELDS = [
-  'components', 'steps', 'pins', 'pcbImagePath', 'customTools', 'firmwarePath', 'toolGroups', 'toolConfig',
+  'components', 'steps', 'pins', 'pcbImagePath', 'customTools', 'firmwarePath', 'toolGroups', 'toolConfig', 'completionDialog',
 ] as const;
 
 const TERMINAL_CONTENT_FIELDS = [
@@ -184,7 +184,7 @@ export const usePresetStore = create<PresetState>((set, get) => {
 
         const existing = get().presets.find(p => p.id === id);
         if (!existing) {
-          return { success: false, error: 'Preset non trovato' };
+          return { success: false, error: 'Preset not found' };
         }
 
         const preset: Preset = {
