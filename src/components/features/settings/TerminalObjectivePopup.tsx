@@ -66,17 +66,17 @@ const TerminalObjectivePopup = ({ objective, containerDims }: TerminalObjectiveP
       {/* Header */}
       <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-700">
         <TerminalSquare className="h-4 w-4 text-green-400 flex-shrink-0" />
-        <span className="text-sm font-medium text-green-300">Obiettivo Terminale</span>
+        <span className="text-sm font-medium text-green-300">Terminal Objective</span>
       </div>
 
       {/* Title */}
       <div className="mb-3">
-        <label className="block text-xs text-gray-400 mb-1">Titolo</label>
+        <label className="block text-xs text-gray-400 mb-1">Title</label>
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Nome dell'obiettivo..."
+          placeholder="Objective name..."
           className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition-colors"
           autoFocus
         />
@@ -84,11 +84,11 @@ const TerminalObjectivePopup = ({ objective, containerDims }: TerminalObjectiveP
 
       {/* Instruction */}
       <div className="mb-3">
-        <label className="block text-xs text-gray-400 mb-1">Descrizione didattica</label>
+        <label className="block text-xs text-gray-400 mb-1">Instruction</label>
         <textarea
           value={instruction}
           onChange={(e) => setInstruction(e.target.value)}
-          placeholder="Istruzione per lo studente..."
+          placeholder="Instruction for the student..."
           rows={3}
           className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition-colors resize-none"
         />
@@ -101,7 +101,7 @@ const TerminalObjectivePopup = ({ objective, containerDims }: TerminalObjectiveP
           type="text"
           value={hint}
           onChange={(e) => setHint(e.target.value)}
-          placeholder="Suggerimento generale..."
+          placeholder="General hint..."
           className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition-colors"
         />
       </div>
@@ -116,7 +116,7 @@ const TerminalObjectivePopup = ({ objective, containerDims }: TerminalObjectiveP
             <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform ${requiresUart ? 'translate-x-4' : 'translate-x-0.5'}`} />
           </div>
           <Cable className="h-3.5 w-3.5 text-gray-400" />
-          <span className="text-xs text-gray-300">Richiede collegamento UART</span>
+          <span className="text-xs text-gray-300">Requires UART connection</span>
         </label>
       </div>
 
@@ -130,17 +130,17 @@ const TerminalObjectivePopup = ({ objective, containerDims }: TerminalObjectiveP
             <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform ${terminalPersistent ? 'translate-x-4' : 'translate-x-0.5'}`} />
           </div>
           <Lock className="h-3.5 w-3.5 text-gray-400" />
-          <span className="text-xs text-gray-300">Non disattivabile dalla toolbar</span>
+          <span className="text-xs text-gray-300">Cannot be disabled from toolbar</span>
         </label>
       </div>
 
       {/* Buttons */}
       <div className="flex justify-end gap-2">
         <Button variant="ghost" size="sm" onClick={cancelObjectiveEdit} className="text-gray-400 hover:text-white">
-          Annulla
+          Cancel
         </Button>
         <Button size="sm" onClick={handleConfirm} className="bg-green-700 hover:bg-green-600">
-          Conferma
+          Confirm
         </Button>
       </div>
     </div>

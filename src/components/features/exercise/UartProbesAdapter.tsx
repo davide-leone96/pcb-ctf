@@ -152,7 +152,7 @@ const UartProbesAdapter = ({ onPositionChange, bounds, readOnly = false }: UartP
               />
               <span className="text-xs mt-1 font-mono" style={{ color }}>{label}</span>
               <span className="text-[10px] text-gray-400">
-                {isConnected ? 'linked' : isActive ? 'attivo' : 'click'}
+                {isConnected ? 'linked' : isActive ? 'active' : 'click'}
               </span>
             </div>
           );
@@ -168,14 +168,14 @@ const UartProbesAdapter = ({ onPositionChange, bounds, readOnly = false }: UartP
       )}>
         {uartConnected ? (
           <span className="flex items-center justify-center gap-1">
-            <Check className="h-3 w-3" /> Connessione UART attiva!
+            <Check className="h-3 w-3" /> UART connection active!
           </span>
         ) : hasWrongConnections ? (
           <span className="flex items-center justify-center gap-1">
-            <AlertTriangle className="h-3 w-3" /> Verifica crossover TX/RX
+            <AlertTriangle className="h-3 w-3" /> Check TX/RX crossover
           </span>
         ) : (
-          `${connectedCount}/3 collegati`
+          `${connectedCount}/3 connected`
         )}
       </div>
     </div>

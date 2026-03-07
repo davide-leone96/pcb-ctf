@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     const filePath = path.join(process.cwd(), 'src/data/terminal.override.json');
     await writeFile(filePath, JSON.stringify(terminalConfig, null, 2));
 
-    return NextResponse.json({ success: true, message: 'Configurazione terminale salvata con successo' });
+    return NextResponse.json({ success: true, message: 'Terminal configuration saved successfully' });
   } catch (error: any) {
     console.error('Error saving terminal config:', error);
     return NextResponse.json(

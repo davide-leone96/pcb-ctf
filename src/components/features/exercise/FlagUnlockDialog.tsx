@@ -24,7 +24,7 @@ const FlagUnlockDialog = ({ isOpen, onClose, toolId, toolName }: FlagUnlockDialo
       setError('');
       onClose();
     } else {
-      setError('Flag non corretta. Riprova!');
+      setError('Incorrect flag. Try again!');
     }
   };
 
@@ -38,9 +38,9 @@ const FlagUnlockDialog = ({ isOpen, onClose, toolId, toolName }: FlagUnlockDialo
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Sblocca {toolName}</DialogTitle>
+          <DialogTitle>Unlock {toolName}</DialogTitle>
           <DialogDescription>
-            Inserisci la flag trovata nelle fasi precedenti per sbloccare questo strumento.
+            Enter the flag found in the previous steps to unlock this tool.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
@@ -77,10 +77,10 @@ const FlagUnlockDialog = ({ isOpen, onClose, toolId, toolName }: FlagUnlockDialo
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={handleClose}>
-            Annulla
+            Cancel
           </Button>
           <Button onClick={handleSubmit}>
-            Conferma
+            Confirm
           </Button>
         </DialogFooter>
       </DialogContent>

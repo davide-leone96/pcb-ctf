@@ -22,7 +22,7 @@ const FirmwarePanel = () => {
       ) : (
         <div className="flex items-center gap-2 bg-gray-700/30 rounded-lg p-3">
           <HardDrive className="h-4 w-4 text-gray-500 flex-shrink-0" />
-          <p className="text-sm text-gray-500">Trascina un file nel pannello principale per caricarlo</p>
+          <p className="text-sm text-gray-500">Drag a file to the main panel to upload it</p>
         </div>
       )}
     </div>

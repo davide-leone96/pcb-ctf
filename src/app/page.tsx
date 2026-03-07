@@ -43,7 +43,7 @@ export default function Home() {
   if (isLoading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-gray-900">
-        <div className="text-white text-xl">Caricamento configurazione...</div>
+        <div className="text-white text-xl">Loading configuration...</div>
       </main>
     );
   }
@@ -52,8 +52,8 @@ export default function Home() {
     return (
       <main className="flex min-h-screen items-center justify-center bg-gray-900">
         <div className="text-white text-xl text-center">
-          <p className="text-red-400 mb-4">Errore: Configurazione esercizio non valida</p>
-          <p className="text-gray-400 text-sm">La struttura degli step non è stata trovata.</p>
+          <p className="text-red-400 mb-4">Error: Invalid exercise configuration</p>
+          <p className="text-gray-400 text-sm">The step structure was not found.</p>
         </div>
       </main>
     );
@@ -150,8 +150,8 @@ export default function Home() {
               ) : (
                 <div className="h-[500px] bg-black/95 rounded-lg text-white font-mono text-sm flex items-center justify-center border border-red-900/50">
                   <div className="text-center">
-                    <p className="text-yellow-400 font-bold text-base">Nessuna connessione UART</p>
-                    <p className="text-gray-400 mt-2">Collega le sonde dall&apos;adattatore USB-to-Serial ai pin UART prima di aprire il terminale.</p>
+                    <p className="text-yellow-400 font-bold text-base">No UART connection</p>
+                    <p className="text-gray-400 mt-2">Connect the probes from the USB-to-Serial adapter to the UART pins before opening the terminal.</p>
                   </div>
                 </div>
               )

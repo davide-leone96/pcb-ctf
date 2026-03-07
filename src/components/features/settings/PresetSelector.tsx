@@ -102,7 +102,7 @@ const PresetSelector = () => {
                   {isDirty && <span className="text-yellow-400 ml-1">*</span>}
                 </>
               ) : (
-                <span className="text-gray-500">Nessun preset</span>
+                <span className="text-gray-500">No preset</span>
               )}
             </span>
             <ChevronDown className={`h-3.5 w-3.5 text-gray-400 flex-shrink-0 ml-1 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
@@ -111,7 +111,7 @@ const PresetSelector = () => {
           {dropdownOpen && (
             <div className="absolute left-0 right-0 top-full mt-1 bg-gray-700 border border-gray-600 rounded-lg shadow-xl z-50 py-1 max-h-[200px] overflow-y-auto">
               {presets.length === 0 ? (
-                <p className="px-3 py-2 text-xs text-gray-500 italic">Nessun preset salvato</p>
+                <p className="px-3 py-2 text-xs text-gray-500 italic">No saved presets</p>
               ) : (
                 presets.map(p => (
                   <button
@@ -125,7 +125,7 @@ const PresetSelector = () => {
                   >
                     <span className="truncate flex-1">{p.name}</span>
                     {p.id === activePresetId && (
-                      <span className="text-[10px] text-blue-400 flex-shrink-0">attivo</span>
+                      <span className="text-[10px] text-blue-400 flex-shrink-0">active</span>
                     )}
                   </button>
                 ))
@@ -143,7 +143,7 @@ const PresetSelector = () => {
             className="flex-1 border-gray-600 text-gray-300 hover:text-white hover:bg-gray-700 text-xs px-2"
           >
             <Save className="h-3 w-3 mr-1" />
-            Salva come...
+            Save as...
           </Button>
           {activePresetId && (
             <Button
@@ -155,10 +155,10 @@ const PresetSelector = () => {
                   ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
                   : 'bg-gray-700 text-gray-500 cursor-not-allowed border border-gray-600'
               }`}
-              title={isDirty ? 'Salva le modifiche nel preset attivo' : 'Nessuna modifica da salvare'}
+              title={isDirty ? 'Save changes to active preset' : 'No changes to save'}
             >
               <RefreshCw className={`h-3 w-3 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
-              {updateFeedback ? 'OK!' : 'Aggiorna'}
+              {updateFeedback ? 'OK!' : 'Update'}
             </Button>
           )}
           <Button
@@ -186,26 +186,26 @@ const PresetSelector = () => {
       <AlertDialog open={!!unsavedWarning} onOpenChange={(open) => { if (!open) setUnsavedWarning(null); }}>
         <AlertDialogContent className="bg-gray-800 border-gray-600 text-white">
           <AlertDialogHeader>
-            <AlertDialogTitle>Modifiche non salvate</AlertDialogTitle>
+            <AlertDialogTitle>Unsaved changes</AlertDialogTitle>
             <AlertDialogDescription className="text-gray-400">
-              Hai modifiche non salvate nel preset corrente. Cosa vuoi fare?
+              You have unsaved changes in the current preset. What would you like to do?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex gap-2">
             <AlertDialogCancel className="bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600 hover:text-white">
-              Annulla
+              Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => handleConfirmSwitch(false)}
               className="bg-orange-600 hover:bg-orange-700 text-white"
             >
-              Continua senza salvare
+              Continue without saving
             </AlertDialogAction>
             <AlertDialogAction
               onClick={() => handleConfirmSwitch(true)}
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
-              Salva e carica
+              Save and load
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

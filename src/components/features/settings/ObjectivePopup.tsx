@@ -6,9 +6,9 @@ import { useSettingsStore, type DraftObjective, type PinCondition } from '@/stor
 import { Button } from '@/components/ui/button';
 
 const TERMINAL_OPTIONS = [
-  { value: '', label: 'Seleziona terminale...' },
-  { value: 'probe1', label: 'Multimetro - Puntale 1' },
-  { value: 'probe2', label: 'Multimetro - Puntale 2' },
+  { value: '', label: 'Select terminal...' },
+  { value: 'probe1', label: 'Multimeter - Probe 1' },
+  { value: 'probe2', label: 'Multimeter - Probe 2' },
   { value: 'adapter-tx', label: 'UART Adapter - TX' },
   { value: 'adapter-rx', label: 'UART Adapter - RX' },
   { value: 'adapter-gnd', label: 'UART Adapter - GND' },
@@ -179,7 +179,7 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Nome dell'obiettivo..."
+          placeholder="Objective name..."
           className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
           autoFocus
         />
@@ -187,11 +187,11 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
 
       {/* Instruction */}
       <div className="mb-3">
-        <label className="block text-xs text-gray-400 mb-1">Descrizione didattica</label>
+        <label className="block text-xs text-gray-400 mb-1">Instruction</label>
         <textarea
           value={instruction}
           onChange={(e) => setInstruction(e.target.value)}
-          placeholder="Istruzione per lo studente..."
+          placeholder="Instruction for the student..."
           rows={3}
           className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors resize-none"
         />
@@ -204,7 +204,7 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
           type="text"
           value={hint}
           onChange={(e) => setHint(e.target.value)}
-          placeholder="Suggerimento per lo studente..."
+          placeholder="Hint for the student..."
           className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
         />
       </div>
@@ -216,7 +216,7 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
           type="text"
           value={flagPart}
           onChange={(e) => setFlagPart(e.target.value)}
-          placeholder={name ? name.toUpperCase().replace(/\s+/g, '_') : 'auto da nome'}
+          placeholder={name ? name.toUpperCase().replace(/\s+/g, '_') : 'auto from name'}
           className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors font-mono"
         />
       </div>
@@ -224,10 +224,10 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
       {/* Buttons */}
       <div className="flex justify-end gap-2">
         <Button variant="ghost" size="sm" onClick={cancelObjectiveEdit} className="text-gray-400 hover:text-white">
-          Annulla
+          Cancel
         </Button>
         <Button size="sm" onClick={handleConfirm} className="bg-blue-600 hover:bg-blue-700">
-          Conferma
+          Confirm
         </Button>
       </div>
     </div>

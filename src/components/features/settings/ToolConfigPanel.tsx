@@ -30,13 +30,13 @@ const ToolConfigPanel = () => {
   return (
     <div className="space-y-2">
       <h3 className="text-xs text-gray-400 uppercase tracking-wider mb-2">
-        Configurazione Tool
+        Tool Configuration
       </h3>
 
       {/* === MAGNIFIER === */}
       <SectionAccordion
         icon={<Search className="h-3.5 w-3.5 text-blue-400" />}
-        title="Lente d'ingrandimento"
+        title="Magnifier"
         expanded={expandedSection === 'magnifier'}
         onToggle={() => toggleSection('magnifier')}
         color="blue"
@@ -45,7 +45,7 @@ const ToolConfigPanel = () => {
           {/* Radius */}
           <div>
             <label className="flex items-center justify-between text-xs text-gray-400 mb-1">
-              <span>Raggio</span>
+              <span>Radius</span>
               <span className="font-mono text-gray-500">{magnifier.defaultRadius}px</span>
             </label>
             <input
@@ -89,7 +89,7 @@ const ToolConfigPanel = () => {
       {/* === TERMINAL === */}
       <SectionAccordion
         icon={<TerminalSquare className="h-3.5 w-3.5 text-green-400" />}
-        title="Terminale"
+        title="Terminal"
         expanded={expandedSection === 'terminal'}
         onToggle={() => toggleSection('terminal')}
         color="green"
@@ -97,16 +97,16 @@ const ToolConfigPanel = () => {
         <div className="space-y-3">
           {/* Requires UART */}
           <ToggleRow
-            label="Richiede collegamento UART"
-            description="Il terminale non si apre finche' l'UART non e' connesso"
+            label="Requires UART connection"
+            description="The terminal won't open until UART is connected"
             checked={terminal.requiresUart}
             onChange={() => updateTerminalToolConfig({ requiresUart: !terminal.requiresUart })}
           />
 
           {/* Persistent */}
           <ToggleRow
-            label="Non disattivabile dalla toolbar"
-            description="Una volta attivato, il terminale non puo' essere spento"
+            label="Cannot be disabled from toolbar"
+            description="Once activated, the terminal cannot be turned off"
             checked={terminal.persistent}
             onChange={() => updateTerminalToolConfig({ persistent: !terminal.persistent })}
           />
@@ -114,7 +114,7 @@ const ToolConfigPanel = () => {
           {/* Boot stage conditions */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs text-gray-400">Condizioni Flag (Boot Stage)</label>
+              <label className="text-xs text-gray-400">Flag Conditions (Boot Stage)</label>
               <button
                 onClick={() => {
                   const newCondition = {
@@ -127,7 +127,7 @@ const ToolConfigPanel = () => {
                   });
                 }}
                 className="text-gray-400 hover:text-white transition-colors p-0.5"
-                title="Aggiungi condizione"
+                title="Add condition"
               >
                 <Plus className="h-3.5 w-3.5" />
               </button>
@@ -135,7 +135,7 @@ const ToolConfigPanel = () => {
 
             {terminal.bootStageConditions.length === 0 && (
               <p className="text-[10px] text-gray-500 italic">
-                Nessuna condizione flag. Aggiungi per definire quando il terminale completa l&apos;obiettivo.
+                No flag conditions. Add one to define when the terminal completes the objective.
               </p>
             )}
 
@@ -168,22 +168,22 @@ const ToolConfigPanel = () => {
       {/* === TOOL GROUPS === */}
       <SectionAccordion
         icon={<Layers className="h-3.5 w-3.5 text-amber-400" />}
-        title="Gruppi tool"
+        title="Tool groups"
         expanded={expandedSection === 'groups'}
         onToggle={() => toggleSection('groups')}
         color="amber"
       >
         <div className="space-y-3">
           <p className="text-[10px] text-gray-500">
-            I tool nello stesso gruppo possono essere attivi contemporaneamente.
+            Tools in the same group can be active simultaneously.
           </p>
 
           <div className="flex items-center justify-between">
-            <span className="text-[10px] text-gray-500 uppercase">Gruppi ({toolGroups.length})</span>
+            <span className="text-[10px] text-gray-500 uppercase">Groups ({toolGroups.length})</span>
             <button
               onClick={addToolGroup}
               className="text-gray-400 hover:text-white transition-colors p-0.5"
-              title="Aggiungi gruppo"
+              title="Add group"
             >
               <Plus className="h-3.5 w-3.5" />
             </button>
@@ -191,7 +191,7 @@ const ToolConfigPanel = () => {
 
           {toolGroups.length === 0 && (
             <p className="text-[10px] text-gray-500 italic">
-              Nessun gruppo. Clicca + per crearne uno.
+              No groups. Click + to create one.
             </p>
           )}
 
@@ -413,7 +413,7 @@ const BootStageConditionEditor = ({
         onChange={(e) => onUpdate({ ...condition, bootStageId: e.target.value })}
         className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-green-500"
       >
-        <option value="">-- Seleziona --</option>
+        <option value="">-- Select --</option>
         {bootStages.map(stage => {
           const tab = tabs.find(t => t.id === stage.tabId);
           return (
@@ -427,9 +427,9 @@ const BootStageConditionEditor = ({
 
     {/* Flag parts selector */}
     <div>
-      <label className="block text-[10px] text-gray-500 mb-0.5">Flag da sbloccare</label>
+      <label className="block text-[10px] text-gray-500 mb-0.5">Flags to unlock</label>
       {flagParts.length === 0 ? (
-        <p className="text-[10px] text-gray-500 italic">Definisci prima i flag nella tab Terminal</p>
+        <p className="text-[10px] text-gray-500 italic">Define flags in the Terminal tab first</p>
       ) : (
         <div className="space-y-0.5 max-h-[100px] overflow-y-auto">
           {flagParts.map(flag => {
@@ -465,7 +465,7 @@ const BootStageConditionEditor = ({
         type="text"
         value={condition.hint}
         onChange={(e) => onUpdate({ ...condition, hint: e.target.value })}
-        placeholder="Suggerimento..."
+        placeholder="Hint..."
         className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-green-500"
       />
     </div>
@@ -473,11 +473,11 @@ const BootStageConditionEditor = ({
 );
 
 const TOOL_LABELS: Record<Tool, string> = {
-  pointer: 'Puntatore',
-  magnifier: 'Lente',
-  multimeter: 'Multimetro',
+  pointer: 'Pointer',
+  magnifier: 'Magnifier',
+  multimeter: 'Multimeter',
   probes: 'UART',
-  terminal: 'Terminale',
+  terminal: 'Terminal',
   custom: 'Custom',
 };
 
@@ -496,7 +496,7 @@ const ToolGroupEditor = ({
         value={group.name}
         onChange={(e) => onUpdate({ name: e.target.value })}
         className="flex-1 bg-gray-700/50 border border-gray-600 rounded px-2 py-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 min-w-0"
-        placeholder="Nome gruppo..."
+        placeholder="Group name..."
       />
       <button onClick={onDelete} className="text-gray-400 hover:text-red-400 p-0.5 flex-shrink-0">
         <Trash2 className="h-3 w-3" />
@@ -504,7 +504,7 @@ const ToolGroupEditor = ({
     </div>
 
     <div className="space-y-0.5">
-      <label className="block text-[10px] text-gray-500 mb-1">Tool nel gruppo</label>
+      <label className="block text-[10px] text-gray-500 mb-1">Tools in group</label>
       {ALL_TOOLS.map(tool => {
         const checked = group.toolIds.includes(tool);
         return (

@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
 
     if (!file) {
       return NextResponse.json(
-        { success: false, error: 'Nessun file fornito' },
+        { success: false, error: 'No file provided' },
         { status: 400 },
       );
     }

@@ -462,12 +462,12 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
 
     // Verifica che ci sia un'immagine caricata
     if (!pcbImagePath) {
-      return { success: false, error: 'Nessuna immagine caricata' };
+      return { success: false, error: 'No image loaded' };
     }
 
     // Se non ci sono trasformazioni da applicare, return
     if (canvasZoom === 1 && canvasRotation === 0 && canvasPanX === 0 && canvasPanY === 0) {
-      return { success: false, error: 'Nessuna trasformazione da applicare' };
+      return { success: false, error: 'No transformations to apply' };
     }
 
     // Salva il path dell'immagine vecchia da eliminare dopo
@@ -1560,7 +1560,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       if (result.success && result.data) {
         localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(result.data));
         get().loadFromStorage();
-        return { success: true, message: 'Configurazione caricata con successo' };
+        return { success: true, message: 'Configuration loaded successfully' };
       }
       return result;
     } catch (error: any) {

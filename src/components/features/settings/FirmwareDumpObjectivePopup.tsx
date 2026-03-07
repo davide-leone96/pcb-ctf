@@ -67,17 +67,17 @@ const FirmwareDumpObjectivePopup = ({ objective, containerDims }: FirmwareDumpOb
       {/* Header */}
       <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-700">
         <HardDrive className="h-4 w-4 text-orange-400 flex-shrink-0" />
-        <span className="text-sm font-medium text-orange-300">Obiettivo Firmware Dump</span>
+        <span className="text-sm font-medium text-orange-300">Firmware Dump Objective</span>
       </div>
 
       {/* Title */}
       <div className="mb-3">
-        <label className="block text-xs text-gray-400 mb-1">Titolo</label>
+        <label className="block text-xs text-gray-400 mb-1">Title</label>
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Nome dell'obiettivo..."
+          placeholder="Objective name..."
           className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 transition-colors"
           autoFocus
         />
@@ -85,10 +85,10 @@ const FirmwareDumpObjectivePopup = ({ objective, containerDims }: FirmwareDumpOb
 
       {/* Linked tool */}
       <div className="mb-3">
-        <label className="block text-xs text-gray-400 mb-1">Tool collegato</label>
+        <label className="block text-xs text-gray-400 mb-1">Linked tool</label>
         {firmwareDumpTools.length === 0 ? (
           <p className="text-xs text-gray-500 italic">
-            Crea prima un tool con outputType &quot;Firmware Dump&quot; nella tab Tools
+            Create a tool with outputType &quot;Firmware Dump&quot; in the Tools tab first
           </p>
         ) : (
           <select
@@ -96,7 +96,7 @@ const FirmwareDumpObjectivePopup = ({ objective, containerDims }: FirmwareDumpOb
             onChange={e => setCustomToolId(e.target.value)}
             className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white focus:outline-none focus:border-orange-500"
           >
-            <option value="">— seleziona tool —</option>
+            <option value="">— select tool —</option>
             {firmwareDumpTools.map(t => (
               <option key={t.id} value={t.id}>{t.name || t.id}</option>
             ))}
@@ -106,11 +106,11 @@ const FirmwareDumpObjectivePopup = ({ objective, containerDims }: FirmwareDumpOb
 
       {/* Instruction */}
       <div className="mb-3">
-        <label className="block text-xs text-gray-400 mb-1">Descrizione didattica</label>
+        <label className="block text-xs text-gray-400 mb-1">Instruction</label>
         <textarea
           value={instruction}
           onChange={(e) => setInstruction(e.target.value)}
-          placeholder="Istruzione per lo studente..."
+          placeholder="Instruction for the student..."
           rows={3}
           className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 transition-colors resize-none"
         />
@@ -123,14 +123,14 @@ const FirmwareDumpObjectivePopup = ({ objective, containerDims }: FirmwareDumpOb
           type="text"
           value={hint}
           onChange={(e) => setHint(e.target.value)}
-          placeholder="Suggerimento per lo studente..."
+          placeholder="Hint for the student..."
           className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 transition-colors"
         />
       </div>
 
       {/* Flag part */}
       <div className="mb-4">
-        <label className="block text-xs text-gray-400 mb-1">Parte della flag</label>
+        <label className="block text-xs text-gray-400 mb-1">Flag part</label>
         <input
           type="text"
           value={flagPart}
@@ -143,10 +143,10 @@ const FirmwareDumpObjectivePopup = ({ objective, containerDims }: FirmwareDumpOb
       {/* Buttons */}
       <div className="flex justify-end gap-2">
         <Button variant="ghost" size="sm" onClick={cancelObjectiveEdit} className="text-gray-400 hover:text-white">
-          Annulla
+          Cancel
         </Button>
         <Button size="sm" onClick={handleConfirm} className="bg-orange-700 hover:bg-orange-600">
-          Conferma
+          Confirm
         </Button>
       </div>
     </div>
