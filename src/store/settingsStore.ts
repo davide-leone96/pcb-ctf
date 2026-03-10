@@ -6,7 +6,7 @@ import type {
   HardwareComponent, MeasurementPin, UartPin, UartRole, Exercise,
   ObjectiveType, PinCondition, PinLogic, BootStageCondition, ToolGroup,
   ToolConfig, MagnifierConfig, UartConnectorConfig, TerminalToolConfig,
-  CompletionDialogConfig,
+  CompletionDialogConfig, FirmwareDumpPin, SpiRole, FirmwareDumpToolConfig,
 } from '@/data/exercise';
 import { SETTINGS_STORAGE_KEY, ALL_TOOLS, type Tool } from '@/data/exercise';
 import type { CustomTool, ProbeConnectivity, ToolOutputType, FirmwareDumpConfig } from '@/types/custom-tool';
@@ -60,7 +60,7 @@ export interface DraftComponent {
   coords: [number, number, number, number];
 }
 
-export type PinType = 'custom' | 'tx' | 'rx' | 'gnd' | 'vcc';
+export type PinType = 'custom' | 'tx' | 'rx' | 'gnd' | 'vcc' | 'cs' | 'clk' | 'mosi' | 'miso';
 export type PinShape = 'circle' | 'square';
 export type ValueMode = 'fixed' | 'range';
 
@@ -83,7 +83,15 @@ export interface DraftPin {
   hint: string;
 }
 
-export type SettingsTool = 'component' | 'pin' | 'objective' | 'terminal-config' | 'tools-config' | 'firmware' | 'tool-config';
+export interface DraftFirmwareDumpPin {
+  id: string;
+  role: SpiRole;
+  label: string;
+  size: number;
+  coords: [number, number];
+}
+
+export type SettingsTool = 'component' | 'pin' | 'objective' | 'terminal-config' | 'tools-config' | 'tool-config';
 
 // --- Custom Tool draft types ---
 
@@ -139,6 +147,9 @@ interface SettingsState {
   canvasPanX: number;
   canvasPanY: number;
   canvasPanMode: boolean;
+  // Firmware dump pins (SPI pins on the PCB)
+  firmwareDumpPins: DraftFirmwareDumpPin[];
+  activeFirmwareDumpPinId: string | null;
   // Custom tools (tab Strumenti)
   customTools: DraftCustomTool[];
   activeCustomToolId: string | null;
@@ -250,10 +261,17 @@ interface SettingsActions {
   deleteToolGroup: (id: string) => void;
   toggleToolInGroup: (groupId: string, toolId: string) => void;
 
+  // Firmware dump pins (SPI pins on PCB)
+  addFirmwareDumpPin: (role: SpiRole, coords: [number, number]) => void;
+  updateFirmwareDumpPin: (id: string, updates: Partial<Omit<DraftFirmwareDumpPin, 'id'>>) => void;
+  deleteFirmwareDumpPin: (id: string) => void;
+  editFirmwareDumpPin: (id: string) => void;
+
   // Tool config (built-in tool configuration)
   updateMagnifierConfig: (updates: Partial<MagnifierConfig>) => void;
   updateUartConnectorConfig: (updates: Partial<UartConnectorConfig>) => void;
   updateTerminalToolConfig: (updates: Partial<TerminalToolConfig>) => void;
+  updateFirmwareDumpToolConfig: (updates: Partial<FirmwareDumpToolConfig>) => void;
   toggleUartVisibleStep: (stepId: string) => void;
   updateCompletionDialog: (updates: Partial<CompletionDialogConfig>) => void;
 }
@@ -321,6 +339,8 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   canvasPanX: 0,
   canvasPanY: 0,
   canvasPanMode: false,
+  firmwareDumpPins: [],
+  activeFirmwareDumpPinId: null,
   customTools: [],
   activeCustomToolId: null,
   firmwarePath: '',
@@ -1233,12 +1253,25 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         coords: [p.coords[0] - p.size / 2, p.coords[1] - p.size / 2, p.size, p.size] as [number, number, number, number],
       }));
 
+    const UART_PIN_TYPES = ['tx', 'rx', 'gnd', 'vcc'];
+    const SPI_PIN_TYPES = ['cs', 'clk', 'mosi', 'miso'];
+
     const uartPins: UartPin[] = pins
-      .filter(p => p.pinType !== 'custom')
+      .filter(p => UART_PIN_TYPES.includes(p.pinType))
       .map(p => ({
         id: p.id,
         role: p.pinType as UartRole,
         label: p.label,
+        coords: [p.coords[0] - p.size / 2, p.coords[1] - p.size / 2, p.size, p.size] as [number, number, number, number],
+      }));
+
+    // Export SPI pins from DraftPin system (pins with SPI pin types)
+    const spiPinsFromDraft: FirmwareDumpPin[] = pins
+      .filter(p => SPI_PIN_TYPES.includes(p.pinType))
+      .map(p => ({
+        id: p.id,
+        role: p.pinType as SpiRole,
+        label: p.label || p.pinType.toUpperCase(),
         coords: [p.coords[0] - p.size / 2, p.coords[1] - p.size / 2, p.size, p.size] as [number, number, number, number],
       }));
 
@@ -1263,7 +1296,18 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         } } : {}),
       }));
 
-    const { firmwarePath } = get();
+    const { firmwarePath, firmwareDumpPins: draftFwPins } = get();
+
+    // Export firmware dump pins: merge from dedicated DraftFirmwareDumpPin + SPI DraftPins
+    const fwPinsFromDedicated: FirmwareDumpPin[] = draftFwPins.map(p => ({
+      id: p.id,
+      role: p.role,
+      label: p.label,
+      coords: [p.coords[0] - p.size / 2, p.coords[1] - p.size / 2, p.size, p.size] as [number, number, number, number],
+    }));
+    // Merge, deduplicating by ID (DraftPin SPI pins take priority)
+    const existingIds = new Set(spiPinsFromDraft.map(p => p.id));
+    const fwDumpPins = [...spiPinsFromDraft, ...fwPinsFromDedicated.filter(p => !existingIds.has(p.id))];
 
     const exercise: Exercise = {
       pcbImage: pcbImagePath,
@@ -1274,6 +1318,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       initialFlag: `flag{${'?'.repeat(firstStepFlagLen)}}`,
       ...(exportedCustomTools.length > 0 ? { customTools: exportedCustomTools } : {}),
       ...(firmwarePath ? { firmwarePath } : {}),
+      ...(fwDumpPins.length > 0 ? { firmwareDumpPins: fwDumpPins } : {}),
       ...(get().toolGroups.length > 0 ? { toolGroups: get().toolGroups } : {}),
       toolConfig: get().toolConfig,
       completionDialog: get().completionDialog,
@@ -1313,6 +1358,8 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
           canvasPanX: 0,
           canvasPanY: 0,
           canvasPanMode: false,
+          firmwareDumpPins: [],
+          activeFirmwareDumpPinId: null,
           customTools: [],
           activeCustomToolId: null,
           firmwarePath: '',
@@ -1455,6 +1502,18 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         };
       });
 
+      // Converti firmwareDumpPins → DraftFirmwareDumpPin[]
+      const draftFwPins: DraftFirmwareDumpPin[] = (exercise.firmwareDumpPins ?? []).map((p, i) => {
+        const [left, top, width, height] = p.coords;
+        return {
+          id: p.id || `fw-pin-${i + 1}`,
+          role: p.role,
+          label: p.label,
+          size: Math.max(width, height),
+          coords: [left + width / 2, top + height / 2] as [number, number],
+        };
+      });
+
       // Converti customTools salvati → DraftCustomTool[]
       const draftCustomTools: DraftCustomTool[] = (exercise.customTools ?? []).map(t => ({
         id: t.id,
@@ -1501,6 +1560,8 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         canvasPanX: 0,
         canvasPanY: 0,
         canvasPanMode: false,
+        firmwareDumpPins: draftFwPins,
+        activeFirmwareDumpPinId: null,
         customTools: draftCustomTools,
         activeCustomToolId: null,
         firmwarePath: exercise.firmwarePath || '',
@@ -1520,6 +1581,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
             persistent: exercise.toolConfig?.terminal?.persistent ?? false,
             bootStageConditions: exercise.toolConfig?.terminal?.bootStageConditions ?? [],
           },
+          ...(exercise.toolConfig?.firmwareDump ? { firmwareDump: exercise.toolConfig.firmwareDump } : {}),
         },
         completionDialog: {
           title: exercise.completionDialog?.title ?? 'Exercise Completed!',
@@ -1590,6 +1652,8 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       canvasPanX: 0,
       canvasPanY: 0,
       canvasPanMode: false,
+      firmwareDumpPins: [],
+      activeFirmwareDumpPinId: null,
       customTools: [],
       activeCustomToolId: null,
       firmwarePath: '',
@@ -1843,6 +1907,54 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
           ...toolConfig.uartConnector!,
           visibleInSteps: has ? current.filter(s => s !== stepId) : [...current, stepId],
         },
+      },
+    });
+  },
+
+  // --- Firmware dump pins ---
+
+  addFirmwareDumpPin: (role, coords) => {
+    const SPI_LABELS: Record<SpiRole, string> = {
+      vcc: 'VCC', gnd: 'GND', cs: 'CS', clk: 'CLK', mosi: 'MOSI', miso: 'MISO',
+    };
+    const pin: DraftFirmwareDumpPin = {
+      id: generateId('fw-pin'),
+      role,
+      label: SPI_LABELS[role],
+      size: 2,
+      coords,
+    };
+    set({ firmwareDumpPins: [...get().firmwareDumpPins, pin], activeFirmwareDumpPinId: pin.id });
+  },
+
+  updateFirmwareDumpPin: (id, updates) => {
+    set({
+      firmwareDumpPins: get().firmwareDumpPins.map(p =>
+        p.id === id ? { ...p, ...updates } : p
+      ),
+    });
+  },
+
+  deleteFirmwareDumpPin: (id) => {
+    set({
+      firmwareDumpPins: get().firmwareDumpPins.filter(p => p.id !== id),
+      activeFirmwareDumpPinId: get().activeFirmwareDumpPinId === id ? null : get().activeFirmwareDumpPinId,
+    });
+  },
+
+  editFirmwareDumpPin: (id) => {
+    set({ activeFirmwareDumpPinId: id });
+  },
+
+  updateFirmwareDumpToolConfig: (updates) => {
+    const { toolConfig } = get();
+    const current = toolConfig.firmwareDump ?? {
+      probes: [], requiredConnections: [], filePath: '', fileName: '', dumpDurationSec: 3,
+    };
+    set({
+      toolConfig: {
+        ...toolConfig,
+        firmwareDump: { ...current, ...updates },
       },
     });
   },

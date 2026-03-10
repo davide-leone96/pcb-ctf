@@ -2,9 +2,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSettingsStore, type DraftPin, type ValueMode } from '@/store/settingsStore';
+import { useSettingsStore, type DraftPin, type ValueMode, type PinType } from '@/store/settingsStore';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+
+const PIN_TYPE_OPTIONS: { value: PinType; label: string; group: string; color: string }[] = [
+  { value: 'custom', label: 'Custom', group: 'General', color: '#60A5FA' },
+  { value: 'tx', label: 'TX', group: 'UART', color: '#4ADE80' },
+  { value: 'rx', label: 'RX', group: 'UART', color: '#FB923C' },
+  { value: 'gnd', label: 'GND', group: 'Common', color: '#6B7280' },
+  { value: 'vcc', label: 'VCC', group: 'Common', color: '#EF4444' },
+  { value: 'cs', label: 'CS', group: 'SPI', color: '#A855F7' },
+  { value: 'clk', label: 'CLK', group: 'SPI', color: '#3B82F6' },
+  { value: 'mosi', label: 'MOSI', group: 'SPI', color: '#22C55E' },
+  { value: 'miso', label: 'MISO', group: 'SPI', color: '#FACC15' },
+];
 
 interface PinPopupProps {
   pin: DraftPin;
@@ -16,6 +28,7 @@ const PinPopup = ({ pin, containerDims }: PinPopupProps) => {
 
   const isNew = pin.label === '';
 
+  const [pinType, setPinType] = useState<PinType>(pin.pinType);
   const [label, setLabel] = useState(pin.label);
   const [size, setSize] = useState(pin.size);
   const [voltageMode, setVoltageMode] = useState<ValueMode>(pin.voltageMode);
@@ -30,6 +43,7 @@ const PinPopup = ({ pin, containerDims }: PinPopupProps) => {
   const [hint, setHint] = useState(pin.hint);
 
   useEffect(() => {
+    setPinType(pin.pinType);
     setLabel(pin.label);
     setSize(pin.size);
     setVoltageMode(pin.voltageMode);
@@ -45,6 +59,7 @@ const PinPopup = ({ pin, containerDims }: PinPopupProps) => {
   }, [pin]);
 
   const handleReset = () => {
+    setPinType('custom');
     setLabel('');
     setSize(2);
     setVoltageMode('fixed');
@@ -61,8 +76,8 @@ const PinPopup = ({ pin, containerDims }: PinPopupProps) => {
 
   const handleConfirm = () => {
     const data = {
-      pinType: 'custom' as const,
-      label: label || 'Pin',
+      pinType,
+      label: label || (pinType === 'custom' ? 'Pin' : pinType.toUpperCase()),
       shape: pin.shape,
       size,
       voltageMode,
@@ -122,6 +137,36 @@ const PinPopup = ({ pin, containerDims }: PinPopupProps) => {
           [{pin.coords[0].toFixed(1)}, {pin.coords[1].toFixed(1)}]%
         </span>
         <span className="text-xs text-gray-500">size: {size.toFixed(1)}%</span>
+      </div>
+
+      {/* Pin Type */}
+      <div className="mb-3">
+        <label className={labelCls}>Type</label>
+        <div className="flex flex-wrap gap-1">
+          {PIN_TYPE_OPTIONS.map(opt => (
+            <button
+              key={opt.value}
+              onClick={() => {
+                setPinType(opt.value);
+                if (!label || PIN_TYPE_OPTIONS.some(o => o.label === label)) {
+                  setLabel(opt.value === 'custom' ? '' : opt.label);
+                }
+              }}
+              className={cn(
+                'px-2 py-1 rounded text-xs font-mono transition-colors border',
+                pinType === opt.value
+                  ? 'border-white/30 text-white'
+                  : 'border-transparent text-gray-400 hover:text-gray-200'
+              )}
+              style={{
+                backgroundColor: pinType === opt.value ? `${opt.color}33` : undefined,
+                color: pinType === opt.value ? opt.color : undefined,
+              }}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Label */}

@@ -583,6 +583,7 @@ const BUILTIN_TOOL_LABELS: Record<Tool, string> = {
   multimeter: 'Multimeter',
   probes: 'UART',
   terminal: 'Terminal',
+  'firmware-dump': 'FW Dump',
   custom: 'Custom',
 };
 
