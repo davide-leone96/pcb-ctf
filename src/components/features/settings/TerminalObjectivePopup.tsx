@@ -3,8 +3,9 @@
 
 import { useState, useEffect } from 'react';
 import { useSettingsStore, type DraftObjective } from '@/store/settingsStore';
+import { useTerminalSettingsStore } from '@/store/terminalSettingsStore';
 import { Button } from '@/components/ui/button';
-import { TerminalSquare, Cable, Lock } from 'lucide-react';
+import { TerminalSquare, Cable, Lock, Package } from 'lucide-react';
 
 interface TerminalObjectivePopupProps {
   objective: DraftObjective;
@@ -13,6 +14,7 @@ interface TerminalObjectivePopupProps {
 
 const TerminalObjectivePopup = ({ objective, containerDims }: TerminalObjectivePopupProps) => {
   const { saveObjective, updateObjective, cancelObjectiveEdit } = useSettingsStore();
+  const { terminalComponents } = useTerminalSettingsStore();
 
   const isNew = objective.instruction === '' && objective.hint === '' && objective.flagPart === '';
 
@@ -21,6 +23,7 @@ const TerminalObjectivePopup = ({ objective, containerDims }: TerminalObjectiveP
   const [hint, setHint] = useState(objective.hint);
   const [requiresUart, setRequiresUart] = useState(objective.requiresUart);
   const [terminalPersistent, setTerminalPersistent] = useState(objective.terminalPersistent);
+  const [terminalComponentId, setTerminalComponentId] = useState(objective.terminalComponentId || '');
 
   useEffect(() => {
     setName(objective.name);
@@ -28,6 +31,7 @@ const TerminalObjectivePopup = ({ objective, containerDims }: TerminalObjectiveP
     setHint(objective.hint);
     setRequiresUart(objective.requiresUart);
     setTerminalPersistent(objective.terminalPersistent);
+    setTerminalComponentId(objective.terminalComponentId || '');
   }, [objective]);
 
   const handleConfirm = () => {
@@ -39,6 +43,7 @@ const TerminalObjectivePopup = ({ objective, containerDims }: TerminalObjectiveP
       hint,
       flagPart: 'TERMINAL',
       customToolId: '',
+      terminalComponentId,
       bootStageConditions: [],
       requiresUart,
       terminalPersistent,
@@ -52,9 +57,9 @@ const TerminalObjectivePopup = ({ objective, containerDims }: TerminalObjectiveP
 
   // Centered positioning (terminal objectives have no canvas coords)
   const popupWidth = 340;
-  const popupMaxHeight = Math.min(440, containerDims.height - 16);
+  const popupMaxHeight = Math.min(480, containerDims.height - 16);
   const posX = Math.max(8, Math.min((containerDims.width - popupWidth) / 2, containerDims.width - popupWidth - 8));
-  const posY = Math.max(8, Math.min(containerDims.height / 2 - 220, containerDims.height - popupMaxHeight - 8));
+  const posY = Math.max(8, Math.min(containerDims.height / 2 - 240, containerDims.height - popupMaxHeight - 8));
 
   return (
     <div
@@ -68,6 +73,26 @@ const TerminalObjectivePopup = ({ objective, containerDims }: TerminalObjectiveP
         <TerminalSquare className="h-4 w-4 text-green-400 flex-shrink-0" />
         <span className="text-sm font-medium text-green-300">Terminal Objective</span>
       </div>
+
+      {/* Terminal component selector */}
+      {terminalComponents.length > 0 && (
+        <div className="mb-3">
+          <label className="block text-xs text-gray-400 mb-1 flex items-center gap-1">
+            <Package className="h-3 w-3" />
+            Componente terminale
+          </label>
+          <select
+            value={terminalComponentId}
+            onChange={(e) => setTerminalComponentId(e.target.value)}
+            className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white focus:outline-none focus:border-green-500 transition-colors"
+          >
+            <option value="">-- Nessuno --</option>
+            {terminalComponents.map(tc => (
+              <option key={tc.id} value={tc.id}>{tc.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Title */}
       <div className="mb-3">

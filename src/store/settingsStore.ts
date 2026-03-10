@@ -23,6 +23,7 @@ export interface DraftObjective {
   type: ObjectiveType;
   componentId: string;
   customToolId: string; // per type='firmware-dump': ID del tool collegato
+  terminalComponentId: string; // per type='terminal': ID del componente terminale
   pinConditions: PinCondition[];
   pinLogic: PinLogic;
   instruction: string;
@@ -202,7 +203,7 @@ interface SettingsActions {
   // Objective actions
   addObjective: (stepId: string, componentId: string) => void;
   addPinObjective: (stepId: string, pinIds: string[], logic: PinLogic) => void;
-  addTerminalObjective: (stepId: string) => void;
+  addTerminalObjective: (stepId: string, terminalComponentId?: string) => void;
   addFirmwareDumpObjective: (stepId: string) => void;
   deleteObjective: (stepId: string, objectiveId: string) => void;
   reorderObjective: (stepId: string, objectiveId: string, direction: 'up' | 'down') => void;
@@ -813,6 +814,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       type: 'component',
       componentId,
       customToolId: '',
+      terminalComponentId: '',
       pinConditions: [],
       pinLogic: 'AND',
       instruction: '',
@@ -843,6 +845,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       type: 'pin',
       componentId: '',
       customToolId: '',
+      terminalComponentId: '',
       pinConditions,
       pinLogic: logic,
       instruction: '',
@@ -860,7 +863,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     });
   },
 
-  addTerminalObjective: (stepId) => {
+  addTerminalObjective: (stepId, terminalComponentId) => {
     const id = generateId('obj');
     const newObj: DraftObjective = {
       id,
@@ -868,6 +871,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       type: 'terminal',
       componentId: '',
       customToolId: '',
+      terminalComponentId: terminalComponentId || '',
       pinConditions: [],
       pinLogic: 'AND',
       instruction: '',
@@ -904,6 +908,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       type: 'firmware-dump',
       componentId: '',
       customToolId: '',
+      terminalComponentId: '',
       pinConditions: [],
       pinLogic: 'AND',
       instruction: '',
@@ -1205,6 +1210,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
           ? { bootStageConditions: o.bootStageConditions }
           : {}),
         ...(o.type === 'terminal' ? { requiresUart: o.requiresUart, terminalPersistent: o.terminalPersistent } : {}),
+        ...(o.type === 'terminal' && o.terminalComponentId ? { terminalComponentId: o.terminalComponentId } : {}),
         ...(o.type === 'firmware-dump' && o.customToolId ? { customToolId: o.customToolId } : {}),
       }));
       const flagParts = objectives.map(o => o.flagPart).join('');
@@ -1411,6 +1417,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
                 coords: o.coords || [0, 0, 0, 0],
                 bootStageConditions: (o as any).bootStageConditions || [],
                 customToolId: (o as any).customToolId || '',
+                terminalComponentId: (o as any).terminalComponentId || '',
                 requiresUart: (o as any).requiresUart ?? (o.type === 'terminal'),
                 terminalPersistent: (o as any).terminalPersistent ?? false,
               };
@@ -1458,6 +1465,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
             type: 'component' as const,
             componentId: c.id || '',
             customToolId: '',
+            terminalComponentId: '',
             pinConditions: [],
             pinLogic: 'AND' as PinLogic,
             instruction: c.instruction,

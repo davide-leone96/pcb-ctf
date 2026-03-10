@@ -38,6 +38,7 @@ const FirmwareDumpObjectivePopup = ({ objective, containerDims }: FirmwareDumpOb
       hint,
       flagPart: flagPart || name.toUpperCase().replace(/\s+/g, '_'),
       customToolId: '',
+      terminalComponentId: '',
       pinConditions: [],
       pinLogic: 'AND' as const,
       bootStageConditions: [],
