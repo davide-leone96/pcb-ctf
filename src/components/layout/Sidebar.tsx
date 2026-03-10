@@ -3,7 +3,7 @@
 'use client';
 
 import ToolButton from '@/components/layout/exercise/ToolButton';
-import { Hand, Search, Wrench, Cable, TerminalSquare, type LucideIcon } from 'lucide-react';
+import { Hand, Search, Wrench, Cable, TerminalSquare, HardDrive, type LucideIcon } from 'lucide-react';
 import { useExerciseStore, Tool } from '@/store/exerciseStore';
 
 const tools: { id: Tool; label: string; icon: LucideIcon }[] = [
@@ -12,6 +12,7 @@ const tools: { id: Tool; label: string; icon: LucideIcon }[] = [
   { id: 'multimeter', label: 'Multimeter', icon: Wrench },
   { id: 'probes', label: 'UART Connection', icon: Cable },
   { id: 'terminal', label: 'Terminal', icon: TerminalSquare },
+  { id: 'firmware-dump', label: 'Firmware Dump', icon: HardDrive },
 ];
 
 const Sidebar = () => {

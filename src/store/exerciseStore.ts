@@ -1,7 +1,7 @@
 // src/store/exerciseStore.ts
 
 import { create } from 'zustand';
-import type { Exercise, PinCondition } from '@/data/exercise';
+import type { Exercise, PinCondition, FirmwareDumpProbeConfig } from '@/data/exercise';
 import { type Tool, ALL_TOOLS } from '@/data/exercise';
 
 export type { Tool };
@@ -18,6 +18,8 @@ export type StepMode = 'education' | 'active' | 'completed';
 export interface MousePosition { x: number; y: number; }
 export interface ProbeState { hookedTo: string | null; }
 export interface UartConnection { adapterPin: AdapterPin; pcbPinId: string | null; }
+export interface FirmwareDumpConnection { probeId: string; pinId: string | null; }
+export type FirmwareDumpStatus = 'idle' | 'dumping' | 'complete';
 
 interface ExerciseState {
   // Step management
@@ -59,6 +61,12 @@ interface ExerciseState {
   multimeterPosition: MousePosition | null;
   uartAdapterPosition: MousePosition | null;
 
+  // Firmware dump tool state
+  firmwareDumpConnections: FirmwareDumpConnection[];
+  activeFirmwareProbeId: string | null;
+  firmwareDumpSnapTarget: string | null;
+  firmwareDumpPosition: MousePosition | null;
+  firmwareDumpStatus: FirmwareDumpStatus;
 }
 
 interface ExerciseActions {
@@ -96,6 +104,14 @@ interface ExerciseActions {
   validateFlag: (inputFlag: string, toolId: 'multimeter' | 'probes' | 'terminal') => boolean;
   unlockTool: (toolId: 'multimeter' | 'probes' | 'terminal') => void;
 
+  // Firmware dump actions
+  selectFirmwareProbe: (probeId: string) => void;
+  setFirmwareDumpSnapTarget: (pinId: string | null) => void;
+  hookFirmwareProbe: () => void;
+  unhookFirmwareProbe: (probeId: string) => void;
+  setFirmwareDumpPosition: (position: MousePosition | null) => void;
+  startFirmwareDump: () => void;
+  completeFirmwareDump: () => void;
 }
 
 type ExerciseStore = ExerciseState & ExerciseActions;
@@ -144,6 +160,13 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   multimeterPosition: null,
   uartAdapterPosition: null,
 
+  // Firmware dump tool initial state
+  firmwareDumpConnections: [],
+  activeFirmwareProbeId: null,
+  firmwareDumpSnapTarget: null,
+  firmwareDumpPosition: null,
+  firmwareDumpStatus: 'idle',
+
   // Azioni
   resetExercise: () => {
     const { exerciseData: data } = get();
@@ -182,9 +205,15 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
       lensVisible: false,
       lensIsAnchored: false,
       lensAnchorPosition: null,
+      // Firmware dump reset
+      firmwareDumpConnections: [],
+      activeFirmwareProbeId: null,
+      firmwareDumpSnapTarget: null,
+      firmwareDumpPosition: null,
+      firmwareDumpStatus: 'idle',
     });
   },
-  
+
   // =========================================================================
   // ===                     MODIFICA CHIAVE QUI                           ===
   // =========================================================================
@@ -227,6 +256,9 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
     }
     if (!newActiveTools.includes('probes')) {
       set({ activeAdapterPin: null, uartSnapTarget: null });
+    }
+    if (!newActiveTools.includes('firmware-dump')) {
+      set({ activeFirmwareProbeId: null, firmwareDumpSnapTarget: null });
     }
   },
   // =========================================================================
@@ -590,9 +622,75 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
     }
   },
 
+  // =========================================================================
+  // ===                     FIRMWARE DUMP ACTIONS                        ===
+  // =========================================================================
+  selectFirmwareProbe: (probeId) => {
+    const { activeFirmwareProbeId, firmwareDumpConnections } = get();
+    if (activeFirmwareProbeId === probeId) {
+      set({ activeFirmwareProbeId: null, firmwareDumpSnapTarget: null });
+      return;
+    }
+    // If already connected, disconnect first
+    const conn = firmwareDumpConnections.find(c => c.probeId === probeId);
+    if (conn?.pinId) {
+      const updated = firmwareDumpConnections.map(c =>
+        c.probeId === probeId ? { ...c, pinId: null } : c
+      );
+      set({ firmwareDumpConnections: updated });
+    }
+    set({ activeFirmwareProbeId: probeId, firmwareDumpSnapTarget: null });
+  },
+
+  setFirmwareDumpSnapTarget: (pinId) => set({ firmwareDumpSnapTarget: pinId }),
+
+  hookFirmwareProbe: () => {
+    const { activeFirmwareProbeId, firmwareDumpSnapTarget, firmwareDumpConnections } = get();
+    if (!activeFirmwareProbeId || !firmwareDumpSnapTarget) return;
+
+    // Prevent connecting two probes to the same pin
+    const alreadyUsed = firmwareDumpConnections.find(
+      c => c.pinId === firmwareDumpSnapTarget && c.probeId !== activeFirmwareProbeId
+    );
+    if (alreadyUsed) return;
+
+    const updated = firmwareDumpConnections.map(c =>
+      c.probeId === activeFirmwareProbeId ? { ...c, pinId: firmwareDumpSnapTarget } : c
+    );
+    set({
+      firmwareDumpConnections: updated,
+      activeFirmwareProbeId: null,
+      firmwareDumpSnapTarget: null,
+    });
+  },
+
+  unhookFirmwareProbe: (probeId) => {
+    const { firmwareDumpConnections } = get();
+    const updated = firmwareDumpConnections.map(c =>
+      c.probeId === probeId ? { ...c, pinId: null } : c
+    );
+    set({ firmwareDumpConnections: updated });
+  },
+
+  setFirmwareDumpPosition: (position) => set({ firmwareDumpPosition: position }),
+
+  startFirmwareDump: () => set({ firmwareDumpStatus: 'dumping' }),
+
+  completeFirmwareDump: () => {
+    set({ firmwareDumpStatus: 'complete' });
+    // Complete firmware-dump objective if active
+    const { stepMode, exerciseData: data, currentStepIndex, currentObjectiveIndex } = get();
+    const currentStep = data?.steps?.[currentStepIndex];
+    const currentObj = currentStep?.objectives?.[currentObjectiveIndex];
+    if (stepMode === 'active' && currentObj?.type === 'firmware-dump') {
+      get()._completeCurrentObjective();
+    }
+  },
+
   // Step management actions
   setExerciseData: (data) => {
     const magnifierConfig = data?.toolConfig?.magnifier;
+    const fwProbes = data?.toolConfig?.firmwareDump?.probes ?? [];
     set({
       exerciseData: data,
       currentStepIndex: 0,
@@ -606,6 +704,9 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
         lensRadius: magnifierConfig.defaultRadius,
         lensZoomLevel: magnifierConfig.defaultZoomLevel,
       } : {}),
+      // Initialize firmware dump connections from config
+      firmwareDumpConnections: fwProbes.map(p => ({ probeId: p.id, pinId: null })),
+      firmwareDumpStatus: 'idle',
     });
   },
 

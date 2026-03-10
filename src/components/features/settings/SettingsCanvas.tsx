@@ -5,7 +5,7 @@ import { useRef, useState, useLayoutEffect, useEffect, useMemo, useCallback, typ
 import { useSettingsStore } from '@/store/settingsStore';
 import { useTerminalSettingsStore } from '@/store/terminalSettingsStore';
 import { cn } from '@/lib/utils';
-import { Upload, Terminal, TerminalSquare, Flag, Cpu, FolderTree, Layers, FileCode, Check, AlertTriangle, Pencil, RotateCcw, Play, Square, Wrench, HardDrive, FileCheck, Trash2, Search } from 'lucide-react';
+import { Upload, Terminal, TerminalSquare, Flag, Cpu, FolderTree, Layers, FileCode, Check, AlertTriangle, Pencil, RotateCcw, Play, Square, Wrench, Search } from 'lucide-react';
 import yaml from 'js-yaml';
 import ComponentPopup from './ComponentPopup';
 import ObjectivePopup from './ObjectivePopup';
@@ -381,7 +381,6 @@ const SettingsCanvas = () => {
   const isInitTab = activeTool === 'component' || activeTool === 'pin';
   const isTerminalTab = activeTool === 'terminal-config';
   const isToolsTab = activeTool === 'tools-config';
-  const isFirmwareTab = activeTool === 'firmware';
 
   // Terminal tab: show config preview or live terminal preview in the same canvas area
   if (isTerminalTab) {
@@ -393,7 +392,6 @@ const SettingsCanvas = () => {
   if (isToolsTab) return <MagnifierPreviewPanel pcbImagePath={pcbImagePath} />;
 
   // Firmware tab: show firmware upload panel
-  if (isFirmwareTab) return <FirmwareUploadPanel />;
 
   // Empty state with upload area
   if (!hasImage) {
@@ -1168,113 +1166,5 @@ const MagnifierPreviewPanel = ({ pcbImagePath }: { pcbImagePath: string }) => {
 // FIRMWARE UPLOAD PANEL
 // ============================================
 
-const FirmwareUploadPanel = () => {
-  const { firmwarePath, firmwareFileName, uploadFirmware, deleteFirmware } = useSettingsStore();
-  const [isDragOver, setIsDragOver] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const handleFile = async (file: File) => {
-    setUploading(true);
-    setError('');
-    const result = await uploadFirmware(file);
-    if (!result.success) setError(result.error || 'Upload failed');
-    setUploading(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    const file = e.dataTransfer.files[0];
-    if (file) handleFile(file);
-  };
-
-  const handleFileInput = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) handleFile(file);
-    if (inputRef.current) inputRef.current.value = '';
-  };
-
-  if (firmwarePath) {
-    return (
-      <div className="relative min-h-[500px] flex flex-col rounded-lg bg-gray-900/80 border border-gray-700 overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center gap-2 px-4 py-3 bg-gray-800/80 border-b border-gray-700">
-          <HardDrive className="h-4 w-4 text-orange-400 flex-shrink-0" />
-          <span className="text-sm font-medium text-white">Firmware</span>
-        </div>
-
-        {/* File info */}
-        <div className="flex-1 flex items-center justify-center p-10">
-          <div className="text-center space-y-4">
-            <div className="mx-auto w-24 h-24 rounded-full flex items-center justify-center bg-green-900/30">
-              <FileCheck className="w-12 h-12 text-green-400" />
-            </div>
-            <div>
-              <p className="text-lg font-semibold text-white">{firmwareFileName || 'firmware'}</p>
-              <p className="text-sm text-gray-400 font-mono mt-1">{firmwarePath}</p>
-            </div>
-            <div className="flex gap-2 justify-center">
-              <button
-                onClick={() => inputRef.current?.click()}
-                className="px-4 py-2 rounded-lg bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white text-sm transition-colors"
-              >
-                Replace
-              </button>
-              <button
-                onClick={deleteFirmware}
-                className="px-4 py-2 rounded-lg bg-red-900/40 text-red-400 hover:bg-red-900/60 hover:text-red-300 text-sm transition-colors flex items-center gap-1.5"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-                Remove
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <input ref={inputRef} type="file" className="hidden" onChange={handleFileInput} accept=".bin,.hex,.elf,.img,.fw,.rom" />
-      </div>
-    );
-  }
-
-  return (
-    <div
-      onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
-      onDragLeave={() => setIsDragOver(false)}
-      onDrop={handleDrop}
-      onClick={() => inputRef.current?.click()}
-      className={cn(
-        'relative min-h-[500px] flex items-center justify-center rounded-lg transition-all cursor-pointer',
-        isDragOver
-          ? 'bg-orange-500/10 border-2 border-orange-400 border-dashed'
-          : 'bg-gray-800/50 border-2 border-gray-600 border-dashed hover:border-gray-500 hover:bg-gray-800/70',
-      )}
-    >
-      <div className="text-center px-6 py-12">
-        <div className={cn(
-          'mx-auto w-24 h-24 rounded-full flex items-center justify-center mb-6 transition-all',
-          isDragOver ? 'bg-orange-500/20 scale-110' : 'bg-gray-700/50',
-        )}>
-          {uploading ? (
-            <div className="w-12 h-12 border-4 border-orange-400/30 border-t-orange-400 rounded-full animate-spin" />
-          ) : (
-            <Upload className={cn('w-12 h-12 transition-colors', isDragOver ? 'text-orange-400' : 'text-gray-400')} />
-          )}
-        </div>
-        <h3 className="text-lg font-semibold text-gray-300 mb-2">
-          {uploading ? 'Uploading...' : 'Upload firmware'}
-        </h3>
-        <p className="text-gray-500 text-sm">
-          {isDragOver ? 'Drop the file here' : 'Drag a file here or click to select'}
-        </p>
-        <p className="text-gray-600 text-xs mt-2">.bin, .hex, .elf, .img, .fw, .rom — Max 50 MB</p>
-        {error && <p className="text-red-400 text-sm mt-3">{error}</p>}
-      </div>
-
-      <input ref={inputRef} type="file" className="hidden" onChange={handleFileInput} accept=".bin,.hex,.elf,.img,.fw,.rom" />
-    </div>
-  );
-};
 
 export default SettingsCanvas;

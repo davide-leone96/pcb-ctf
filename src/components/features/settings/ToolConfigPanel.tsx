@@ -3,18 +3,30 @@
 
 import { useSettingsStore } from '@/store/settingsStore';
 import { useTerminalSettingsStore } from '@/store/terminalSettingsStore';
-import { Search, TerminalSquare, Plus, Trash2, ChevronDown, ChevronRight, Layers, PartyPopper } from 'lucide-react';
-import { ALL_TOOLS, type Tool } from '@/data/exercise';
+import { Search, TerminalSquare, Plus, Trash2, ChevronDown, ChevronRight, Layers, PartyPopper, HardDrive, Upload } from 'lucide-react';
+import { ALL_TOOLS, type Tool, type SpiRole } from '@/data/exercise';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
 const ToolConfigPanel = () => {
   const {
-    toolConfig, steps,
-    updateMagnifierConfig, updateTerminalToolConfig,
+    toolConfig, steps, pins,
+    updateMagnifierConfig, updateTerminalToolConfig, updateFirmwareDumpToolConfig,
     toolGroups, addToolGroup, updateToolGroup, deleteToolGroup, toggleToolInGroup,
     completionDialog, updateCompletionDialog,
+    firmwareDumpPins,
   } = useSettingsStore();
+
+  const SPI_PIN_TYPES = ['vcc', 'gnd', 'cs', 'clk', 'mosi', 'miso'];
+
+  // All non-custom pins are available as firmware dump targets (SPI + UART VCC/GND share types)
+  const allSpiPins = [
+    ...pins
+      .filter(p => SPI_PIN_TYPES.includes(p.pinType))
+      .map(p => ({ id: p.id, role: p.pinType as import('@/data/exercise').SpiRole, label: p.label || p.pinType.toUpperCase() })),
+    ...firmwareDumpPins
+      .map(p => ({ id: p.id, role: p.role, label: p.label })),
+  ];
 
   const { flagParts, bootStages, tabs } = useTerminalSettingsStore();
 
@@ -207,6 +219,21 @@ const ToolConfigPanel = () => {
             ))}
           </div>
         </div>
+      </SectionAccordion>
+
+      {/* === FIRMWARE DUMP === */}
+      <SectionAccordion
+        icon={<HardDrive className="h-3.5 w-3.5 text-orange-400" />}
+        title="Firmware Dump"
+        expanded={expandedSection === 'firmware-dump'}
+        onToggle={() => toggleSection('firmware-dump')}
+        color="orange"
+      >
+        <FirmwareDumpConfigSection
+          config={toolConfig.firmwareDump}
+          availablePins={allSpiPins}
+          onUpdate={updateFirmwareDumpToolConfig}
+        />
       </SectionAccordion>
 
       {/* === COMPLETION DIALOG === */}
@@ -478,6 +505,7 @@ const TOOL_LABELS: Record<Tool, string> = {
   multimeter: 'Multimeter',
   probes: 'UART',
   terminal: 'Terminal',
+  'firmware-dump': 'FW Dump',
   custom: 'Custom',
 };
 
@@ -525,5 +553,162 @@ const ToolGroupEditor = ({
     </div>
   </div>
 );
+
+// ============================================
+// FIRMWARE DUMP CONFIG SECTION
+// ============================================
+
+const SPI_ROLES: SpiRole[] = ['vcc', 'gnd', 'cs', 'clk', 'mosi', 'miso'];
+const SPI_ROLE_COLORS: Record<SpiRole, string> = {
+  vcc: '#EF4444', gnd: '#6B7280', cs: '#A855F7',
+  clk: '#3B82F6', mosi: '#22C55E', miso: '#FACC15',
+};
+
+const FirmwareDumpConfigSection = ({
+  config,
+  availablePins,
+  onUpdate,
+}: {
+  config: import('@/data/exercise').FirmwareDumpToolConfig | undefined;
+  availablePins: Array<{ id: string; role: import('@/data/exercise').SpiRole; label: string }>;
+  onUpdate: (updates: Partial<import('@/data/exercise').FirmwareDumpToolConfig>) => void;
+}) => {
+  const probes = config?.probes ?? [];
+  const requiredConnections = config?.requiredConnections ?? [];
+  const [isUploading, setIsUploading] = useState(false);
+
+  const addProbe = (role: SpiRole) => {
+    const id = `fw-probe-${Date.now().toString(36)}`;
+    const label = role.toUpperCase();
+    const color = SPI_ROLE_COLORS[role];
+    onUpdate({
+      probes: [...probes, { id, role, label, color }],
+    });
+  };
+
+  const removeProbe = (probeId: string) => {
+    onUpdate({
+      probes: probes.filter(p => p.id !== probeId),
+      requiredConnections: requiredConnections.filter(c => c.probeId !== probeId),
+    });
+  };
+
+  const updateRequiredConnection = (probeId: string, pinId: string) => {
+    const existing = requiredConnections.filter(c => c.probeId !== probeId);
+    if (pinId) {
+      existing.push({ probeId, pinId });
+    }
+    onUpdate({ requiredConnections: existing });
+  };
+
+  const handleFirmwareUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await fetch('/api/firmware/upload', { method: 'POST', body: formData });
+      const result = await response.json();
+      if (result.success) {
+        onUpdate({ filePath: result.path, fileName: result.fileName });
+      }
+    } finally {
+      setIsUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      {/* Probes */}
+      <div>
+        <label className="text-xs text-gray-400 mb-1 block">SPI Probes</label>
+        <div className="space-y-1.5">
+          {probes.map(probe => {
+            const connPinId = requiredConnections.find(c => c.probeId === probe.id)?.pinId ?? '';
+            return (
+              <div key={probe.id} className="flex items-center gap-2 bg-gray-700/30 rounded p-1.5">
+                <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: SPI_ROLE_COLORS[probe.role] }} />
+                <span className="text-xs font-mono text-gray-300 w-10">{probe.label}</span>
+                <select
+                  value={connPinId}
+                  onChange={e => updateRequiredConnection(probe.id, e.target.value)}
+                  className="flex-1 bg-gray-700/50 border border-gray-600 rounded px-1.5 py-0.5 text-xs text-white focus:outline-none focus:border-orange-500"
+                >
+                  <option value="">— no pin —</option>
+                  {availablePins.map(p => (
+                    <option key={p.id} value={p.id}>{p.label} ({p.role.toUpperCase()})</option>
+                  ))}
+                </select>
+                <button onClick={() => removeProbe(probe.id)} className="text-gray-500 hover:text-red-400 p-0.5">
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+        {probes.length < 6 && (
+          <div className="flex flex-wrap gap-1 mt-1.5">
+            {SPI_ROLES.filter(role => !probes.some(p => p.role === role)).map(role => (
+              <button
+                key={role}
+                onClick={() => addProbe(role)}
+                className="text-[10px] px-1.5 py-0.5 bg-gray-700/50 hover:bg-gray-600/50 text-gray-400 rounded flex items-center gap-1"
+              >
+                <Plus className="h-2.5 w-2.5" /> {role.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Firmware file */}
+      <div>
+        <label className="text-xs text-gray-400 mb-1 block">Firmware File</label>
+        {config?.filePath ? (
+          <div className="flex items-center gap-2 bg-gray-700/30 rounded p-1.5">
+            <span className="text-xs font-mono text-gray-300 flex-1 truncate">{config.fileName}</span>
+            <button onClick={() => onUpdate({ filePath: '', fileName: '' })} className="text-gray-500 hover:text-red-400 p-0.5">
+              <Trash2 className="h-3 w-3" />
+            </button>
+          </div>
+        ) : (
+          <label className={cn(
+            'flex items-center gap-2 bg-gray-700/30 hover:bg-gray-600/30 rounded p-2 cursor-pointer transition-colors',
+            isUploading && 'opacity-50 pointer-events-none'
+          )}>
+            <Upload className="h-3.5 w-3.5 text-gray-400" />
+            <span className="text-xs text-gray-400">{isUploading ? 'Uploading...' : 'Upload .bin file'}</span>
+            <input type="file" accept=".bin,.img,.fw" className="hidden" onChange={handleFirmwareUpload} />
+          </label>
+        )}
+      </div>
+
+      {/* Duration */}
+      <div>
+        <label className="flex items-center justify-between text-xs text-gray-400 mb-1">
+          <span>Dump duration</span>
+          <span className="font-mono text-gray-500">{config?.dumpDurationSec ?? 3}s</span>
+        </label>
+        <input
+          type="range"
+          min="1"
+          max="10"
+          step="1"
+          value={config?.dumpDurationSec ?? 3}
+          onChange={e => onUpdate({ dumpDurationSec: parseInt(e.target.value) })}
+          className="w-full accent-orange-500"
+        />
+      </div>
+
+      {availablePins.length === 0 && (
+        <p className="text-[10px] text-orange-400/80 italic">
+          Place SPI pins on the PCB (Init tab → Pin) to configure probe-to-pin mappings.
+        </p>
+      )}
+    </div>
+  );
+};
 
 export default ToolConfigPanel;

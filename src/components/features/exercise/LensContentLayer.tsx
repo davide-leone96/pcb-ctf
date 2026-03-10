@@ -2,8 +2,10 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import type { AdapterPin, UartConnection, Tool } from '@/store/exerciseStore';
+import type { AdapterPin, UartConnection, FirmwareDumpConnection, Tool } from '@/store/exerciseStore';
 import { WIRE_COLORS } from './UartProbesAdapter';
+import { SPI_WIRE_COLORS } from './FirmwareDumper';
+import type { SpiRole } from '@/data/exercise';
 import {
   type LensViewport,
   type Point,
@@ -36,6 +38,14 @@ interface LensContentLayerProps {
   activeUartProbePos: Point | null;
   adapterPosition: Point | null;
   uartSnapTargetPos: Point | null;
+
+  // Firmware dump
+  firmwareDumpConnections?: FirmwareDumpConnection[];
+  activeFirmwareProbeId?: string | null;
+  firmwareDumpSnapTargetPos?: Point | null;
+  dumperPosition?: Point | null;
+  firmwareDumpProbes?: Array<{ id: string; role: SpiRole; color: string }>;
+  getFirmwareDumpWireOrigin?: (probeId: string) => Point | null;
 
   // Funzioni helper
   getCurvePath: (
@@ -81,6 +91,12 @@ const LensContentLayer: React.FC<LensContentLayerProps> = ({
   activeUartProbePos,
   adapterPosition,
   uartSnapTargetPos,
+  firmwareDumpConnections,
+  activeFirmwareProbeId,
+  firmwareDumpSnapTargetPos,
+  dumperPosition,
+  firmwareDumpProbes,
+  getFirmwareDumpWireOrigin,
   getCurvePath,
   getUartWireOrigin,
   getPinPosition,
@@ -273,6 +289,34 @@ const LensContentLayer: React.FC<LensContentLayerProps> = ({
       }
     }
 
+    // === FIRMWARE DUMP ===
+    if (activeTool === 'firmware-dump' && dumperPosition && firmwareDumpConnections && getFirmwareDumpWireOrigin) {
+      firmwareDumpConnections.forEach((conn) => {
+        if (!conn.pinId) return;
+        const wireOrigin = getFirmwareDumpWireOrigin(conn.probeId);
+        const pinPos = getPinPosition(conn.pinId);
+        const probe = firmwareDumpProbes?.find(p => p.id === conn.probeId);
+        const color = probe ? (SPI_WIRE_COLORS[probe.role] || probe.color) : '#888';
+
+        if (wireOrigin && pinPos) {
+          const pathD = getCurvePath(wireOrigin, pinPos);
+          const points = extractPathPoints(pathD);
+          if (points && isBezierCurveIntersectingLens(points.start, points.control, points.end, lensViewport)) {
+            elements.push({ type: 'wire', color, pathD, strokeWidth: 4 });
+          }
+        }
+        if (pinPos && isPointInLens(pinPos, lensViewport)) {
+          elements.push({ type: 'ball', color, position: pinPos, size: 20 });
+        }
+      });
+
+      if (firmwareDumpSnapTargetPos && activeFirmwareProbeId && isPointInLens(firmwareDumpSnapTargetPos, lensViewport)) {
+        const probe = firmwareDumpProbes?.find(p => p.id === activeFirmwareProbeId);
+        const color = probe ? (SPI_WIRE_COLORS[probe.role] || probe.color) : '#A855F7';
+        elements.push({ type: 'snap-indicator', color, position: firmwareDumpSnapTargetPos, size: 20 });
+      }
+    }
+
     return elements;
   }, [
     lensViewport,
@@ -289,6 +333,12 @@ const LensContentLayer: React.FC<LensContentLayerProps> = ({
     activeUartProbePos,
     adapterPosition,
     uartSnapTargetPos,
+    firmwareDumpConnections,
+    activeFirmwareProbeId,
+    firmwareDumpSnapTargetPos,
+    dumperPosition,
+    firmwareDumpProbes,
+    getFirmwareDumpWireOrigin,
     getCurvePath,
     getUartWireOrigin,
     getPinPosition,

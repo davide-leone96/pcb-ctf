@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { XCircle } from 'lucide-react';
 import Multimeter from './Multimeter';
 import UartProbesAdapter, { WIRE_COLORS } from './UartProbesAdapter';
+import FirmwareDumper, { SPI_WIRE_COLORS } from './FirmwareDumper';
 import LensContentLayer from './LensContentLayer';
 import type { AdapterPin } from '@/store/exerciseStore';
 
@@ -26,6 +27,8 @@ const PCBViewer = () => {
     setSnapTarget, hookProbe, unhookProbe,
     uartConnections, activeAdapterPin, uartSnapTarget,
     setUartSnapTarget, hookUartProbe, unhookUartProbe, uartConnected,
+    firmwareDumpConnections, activeFirmwareProbeId, firmwareDumpSnapTarget,
+    setFirmwareDumpSnapTarget, hookFirmwareProbe, unhookFirmwareProbe,
     lensRadius, lensZoomLevel, lensVisible, lensIsAnchored, lensAnchorPosition,
     toggleLensAnchor, setLensAnchorPosition,
     isSimulatorEnabled,
@@ -37,6 +40,7 @@ const PCBViewer = () => {
   const [containerDims, setContainerDims] = useState({ width: 0, height: 0 });
   const [multimeterPosition, setMultimeterPosition] = useState<{ x: number; y: number } | null>(null);
   const [adapterPosition, setAdapterPosition] = useState<{ x: number; y: number } | null>(null);
+  const [dumperPosition, setDumperPosition] = useState<{ x: number; y: number } | null>(null);
   const [bounds, setBounds] = useState<DOMRect | null>(null);
   const [isDraggingLens, setIsDraggingLens] = useState(false);
 
@@ -119,6 +123,7 @@ const PCBViewer = () => {
   const handleContainerClick = (e: React.MouseEvent) => {
     if (activeTool === 'multimeter' && snapTarget) hookProbe();
     if (activeTool === 'probes' && uartSnapTarget) hookUartProbe();
+    if (activeTool === 'firmware-dump' && firmwareDumpSnapTarget) hookFirmwareProbe();
 
     // Permetti ancoraggio lente se:
     // - pointer è attivo (sempre)
@@ -134,14 +139,16 @@ const PCBViewer = () => {
   };
 
   // Snap detection: cerca il pin più vicino in base al filter specificato
-  const findClosestPin = (mouseX: number, mouseY: number, filterType: 'all' | 'uart-only' = 'all'): string | null => {
+  const findClosestPin = (mouseX: number, mouseY: number, filterType: 'all' | 'uart-only' | 'firmware-dump-only' = 'all'): string | null => {
     if (!pcbImageRef.current || !exerciseData) return null;
 
     let closestPin: string | null = null;
     let minDistance = Infinity;
     const pinsToCheck = filterType === 'uart-only'
       ? getAllPins(exerciseData).filter(pin => pin.isUart)
-      : getAllPins(exerciseData); // 'all': cerca tra TUTTI i pin (measurement + UART)
+      : filterType === 'firmware-dump-only'
+      ? getAllPins(exerciseData).filter(pin => pin.isFirmwareDump)
+      : getAllPins(exerciseData);
 
     // ⚠️ CRITICO: Usa l'immagine, non il container!
     const imgRect = pcbImageRef.current.getBoundingClientRect();
@@ -190,6 +197,13 @@ const PCBViewer = () => {
     } else if (activeTool === 'probes' && uartSnapTarget) {
       setUartSnapTarget(null);
     }
+    if (activeTool === 'firmware-dump' && activeFirmwareProbeId) {
+      updateMousePosition({ x: mouseX, y: mouseY });
+      const closest = findClosestPin(mouseX, mouseY, 'firmware-dump-only');
+      if (firmwareDumpSnapTarget !== closest) setFirmwareDumpSnapTarget(closest);
+    } else if (activeTool === 'firmware-dump' && firmwareDumpSnapTarget) {
+      setFirmwareDumpSnapTarget(null);
+    }
 
   };
 
@@ -197,6 +211,7 @@ const PCBViewer = () => {
     updateMousePosition(null);
     setSnapTarget(null);
     setUartSnapTarget(null);
+    setFirmwareDumpSnapTarget(null);
   };
   
   // Posizione percentuale del centro di qualsiasi pin (measurement o UART)
@@ -273,6 +288,25 @@ const PCBViewer = () => {
   };
 
   const uartSnapTargetPercent = uartSnapTarget ? getPinCenterPercent(uartSnapTarget) : null;
+  const firmwareDumpSnapTargetPercent = firmwareDumpSnapTarget ? getPinCenterPercent(firmwareDumpSnapTarget) : null;
+
+  // Firmware dump wire origin helper
+  const getFirmwareDumpWireOrigin = (probeId: string) => {
+    if (!dumperPosition || !exerciseData?.toolConfig?.firmwareDump?.probes) return null;
+    const probes = exerciseData.toolConfig.firmwareDump.probes;
+    const idx = probes.findIndex(p => p.id === probeId);
+    if (idx < 0) return null;
+    const cols = 3;
+    const col = idx % cols;
+    const row = Math.floor(idx / cols);
+    return {
+      x: dumperPosition.x + 53 + col * 88,
+      y: dumperPosition.y + 72 + row * 62,
+    };
+  };
+
+  // Firmware dump overlay visibility
+  const showFirmwareDumpOverlay = activeTools.includes('firmware-dump');
 
   // Posizione del cavo UART attivo: usa snap target se disponibile, altrimenti mouse
   let activeUartProbePos = mousePosition;
@@ -336,6 +370,7 @@ const PCBViewer = () => {
         'relative',
         (activeTool === 'multimeter' && activeProbe) ? 'cursor-none' : '',
         (activeTool === 'probes' && activeAdapterPin) ? 'cursor-none' : '',
+        (activeTool === 'firmware-dump' && activeFirmwareProbeId) ? 'cursor-none' : '',
       )}
     >
       {/* Wrapper relativo che si adatta esattamente alle dimensioni dell'immagine */}
@@ -343,6 +378,7 @@ const PCBViewer = () => {
         <img ref={pcbImageRef} src={exerciseData.pcbImage} alt="PCB View" className="h-auto w-full block rounded-lg" style={{ imageRendering: 'crisp-edges' }} draggable={false} />
         {isSimulatorEnabled && activeTools.includes('multimeter') && <Multimeter onPositionChange={setMultimeterPosition} bounds={bounds} />}
         {isSimulatorEnabled && showUartOverlay && <UartProbesAdapter onPositionChange={setAdapterPosition} bounds={bounds} readOnly={activeTool !== 'probes'} />}
+        {isSimulatorEnabled && showFirmwareDumpOverlay && <FirmwareDumper onPositionChange={setDumperPosition} bounds={bounds} />}
 
       <div className="absolute inset-0 pointer-events-none z-10">
         {isSimulatorEnabled && activeTools.includes('multimeter') && (
@@ -389,6 +425,25 @@ const PCBViewer = () => {
             })}
           </svg>
         )}
+        {isSimulatorEnabled && showFirmwareDumpOverlay && (
+          <svg width="100%" height="100%" className="absolute inset-0" style={{ filter: 'drop-shadow(2px 2px 2px rgba(0,0,0,0.4))' }}>
+            {firmwareDumpConnections.map(conn => {
+              const wireOrigin = getFirmwareDumpWireOrigin(conn.probeId);
+              const probe = exerciseData?.toolConfig?.firmwareDump?.probes.find(p => p.id === conn.probeId);
+              const color = probe ? (SPI_WIRE_COLORS[probe.role] || probe.color) : '#888';
+
+              if (conn.probeId === activeFirmwareProbeId) {
+                const endPos = firmwareDumpSnapTarget ? getPinPosition(firmwareDumpSnapTarget) : mousePosition;
+                return <path key={conn.probeId} d={getCurvePath(wireOrigin, endPos)} stroke={color} strokeWidth="4" fill="none" strokeDasharray="8,4" opacity="0.7" />;
+              }
+              if (conn.pinId) {
+                const pinPos = getPinPosition(conn.pinId);
+                return <path key={conn.probeId} d={getCurvePath(wireOrigin, pinPos)} stroke={color} strokeWidth="4" fill="none" />;
+              }
+              return null;
+            })}
+          </svg>
+        )}
       </div>
 
       {/* Layer z-25: Lente d'ingrandimento con contenuto zoomato */}
@@ -398,7 +453,7 @@ const PCBViewer = () => {
           if (!lensPosition) return null;
 
           // La lente NON è interattiva quando una sonda è attiva (per evitare conflitti di cursore)
-          const isProbeActive = !!(activeProbe || activeAdapterPin);
+          const isProbeActive = !!(activeProbe || activeAdapterPin || activeFirmwareProbeId);
           const isLensInteractive = !isProbeActive;
 
           return (
@@ -449,6 +504,12 @@ const PCBViewer = () => {
                 activeUartProbePos={activeUartProbePos}
                 adapterPosition={adapterPosition}
                 uartSnapTargetPos={uartSnapTargetPos}
+                firmwareDumpConnections={firmwareDumpConnections}
+                activeFirmwareProbeId={activeFirmwareProbeId}
+                firmwareDumpSnapTargetPos={firmwareDumpSnapTarget ? getPinPosition(firmwareDumpSnapTarget) : null}
+                dumperPosition={dumperPosition}
+                firmwareDumpProbes={exerciseData?.toolConfig?.firmwareDump?.probes}
+                getFirmwareDumpWireOrigin={getFirmwareDumpWireOrigin}
                 getCurvePath={getCurvePath}
                 getUartWireOrigin={getUartWireOrigin}
                 getPinPosition={getPinPosition}
@@ -514,6 +575,32 @@ const PCBViewer = () => {
             {activeTool === 'probes' && activeAdapterPin && uartSnapTargetPercent && (
               <div className="absolute pointer-events-none z-20" style={{ left: `${uartSnapTargetPercent.x}%`, top: `${uartSnapTargetPercent.y}%`, transform: 'translate(-50%, -50%)' }}>
                 <div className="w-5 h-5 rounded-full border-2 bg-white/20 animate-probe-pulse" style={{ borderColor: WIRE_COLORS[activeAdapterPin] }} />
+              </div>
+            )}
+          </>
+        )}
+        {/* Firmware dump pin dots */}
+        {isSimulatorEnabled && showFirmwareDumpOverlay && (
+          <>
+            {firmwareDumpConnections.filter(c => c.pinId).map(conn => {
+              const pinPercent = getPinCenterPercent(conn.pinId);
+              if (!pinPercent) return null;
+              const probe = exerciseData?.toolConfig?.firmwareDump?.probes.find(p => p.id === conn.probeId);
+              const color = probe ? (SPI_WIRE_COLORS[probe.role] || probe.color) : '#888';
+              return (
+                <div key={conn.probeId} className="group absolute z-20" style={{ left: `${pinPercent.x}%`, top: `${pinPercent.y}%`, transform: 'translate(-50%, -50%)' }}>
+                  <div className="w-5 h-5 rounded-full border-2 border-white/50 shadow-md" style={{ backgroundColor: color }} />
+                  {activeTool === 'firmware-dump' && (
+                    <div className="absolute -inset-2 pointer-events-auto cursor-pointer" onClick={(e) => { e.stopPropagation(); unhookFirmwareProbe(conn.probeId); }}>
+                      <XCircle size={14} className="text-white bg-red-600 rounded-full absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            {activeTool === 'firmware-dump' && activeFirmwareProbeId && firmwareDumpSnapTargetPercent && (
+              <div className="absolute pointer-events-none z-20" style={{ left: `${firmwareDumpSnapTargetPercent.x}%`, top: `${firmwareDumpSnapTargetPercent.y}%`, transform: 'translate(-50%, -50%)' }}>
+                <div className="w-5 h-5 rounded-full border-2 bg-white/20 animate-probe-pulse" style={{ borderColor: SPI_WIRE_COLORS[exerciseData?.toolConfig?.firmwareDump?.probes.find(p => p.id === activeFirmwareProbeId)?.role ?? 'cs'] ?? '#A855F7' }} />
               </div>
             )}
           </>

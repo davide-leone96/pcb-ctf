@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { useSettingsStore, type DraftObjective } from '@/store/settingsStore';
 import { Button } from '@/components/ui/button';
-import { HardDrive } from 'lucide-react';
+import { HardDrive, AlertTriangle } from 'lucide-react';
 
 interface FirmwareDumpObjectivePopupProps {
   objective: DraftObjective;
@@ -12,7 +12,7 @@ interface FirmwareDumpObjectivePopupProps {
 }
 
 const FirmwareDumpObjectivePopup = ({ objective, containerDims }: FirmwareDumpObjectivePopupProps) => {
-  const { saveObjective, updateObjective, cancelObjectiveEdit, customTools } = useSettingsStore();
+  const { saveObjective, updateObjective, cancelObjectiveEdit, toolConfig } = useSettingsStore();
 
   const isNew = objective.instruction === '' && objective.hint === '' && objective.flagPart === '';
 
@@ -20,17 +20,16 @@ const FirmwareDumpObjectivePopup = ({ objective, containerDims }: FirmwareDumpOb
   const [instruction, setInstruction] = useState(objective.instruction);
   const [hint, setHint] = useState(objective.hint);
   const [flagPart, setFlagPart] = useState(objective.flagPart);
-  const [customToolId, setCustomToolId] = useState(objective.customToolId ?? '');
 
   useEffect(() => {
     setName(objective.name);
     setInstruction(objective.instruction);
     setHint(objective.hint);
     setFlagPart(objective.flagPart);
-    setCustomToolId(objective.customToolId ?? '');
   }, [objective]);
 
-  const firmwareDumpTools = customTools.filter(t => t.outputType === 'firmware-dump');
+  const fwConfig = toolConfig.firmwareDump;
+  const hasConfig = fwConfig && fwConfig.probes.length > 0;
 
   const handleConfirm = () => {
     const data = {
@@ -38,7 +37,7 @@ const FirmwareDumpObjectivePopup = ({ objective, containerDims }: FirmwareDumpOb
       instruction,
       hint,
       flagPart: flagPart || name.toUpperCase().replace(/\s+/g, '_'),
-      customToolId,
+      customToolId: '',
       pinConditions: [],
       pinLogic: 'AND' as const,
       bootStageConditions: [],
@@ -70,6 +69,22 @@ const FirmwareDumpObjectivePopup = ({ objective, containerDims }: FirmwareDumpOb
         <span className="text-sm font-medium text-orange-300">Firmware Dump Objective</span>
       </div>
 
+      {/* Config status */}
+      <div className="mb-3">
+        {hasConfig ? (
+          <div className="text-xs bg-gray-700/50 rounded p-2 space-y-1">
+            <div className="text-gray-400">SPI Flash Reader configured:</div>
+            <div className="text-gray-300">{fwConfig!.probes.length} probes, {fwConfig!.requiredConnections.length} required connections</div>
+            {fwConfig!.fileName && <div className="text-gray-300 font-mono">{fwConfig!.fileName}</div>}
+          </div>
+        ) : (
+          <div className="text-xs bg-orange-900/30 rounded p-2 flex items-center gap-2">
+            <AlertTriangle className="h-3.5 w-3.5 text-orange-400 flex-shrink-0" />
+            <span className="text-orange-300">Configure the SPI Flash Reader in the Tool Config tab first</span>
+          </div>
+        )}
+      </div>
+
       {/* Title */}
       <div className="mb-3">
         <label className="block text-xs text-gray-400 mb-1">Title</label>
@@ -81,27 +96,6 @@ const FirmwareDumpObjectivePopup = ({ objective, containerDims }: FirmwareDumpOb
           className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 transition-colors"
           autoFocus
         />
-      </div>
-
-      {/* Linked tool */}
-      <div className="mb-3">
-        <label className="block text-xs text-gray-400 mb-1">Linked tool</label>
-        {firmwareDumpTools.length === 0 ? (
-          <p className="text-xs text-gray-500 italic">
-            Create a tool with outputType &quot;Firmware Dump&quot; in the Tools tab first
-          </p>
-        ) : (
-          <select
-            value={customToolId}
-            onChange={e => setCustomToolId(e.target.value)}
-            className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white focus:outline-none focus:border-orange-500"
-          >
-            <option value="">— select tool —</option>
-            {firmwareDumpTools.map(t => (
-              <option key={t.id} value={t.id}>{t.name || t.id}</option>
-            ))}
-          </select>
-        )}
       </div>
 
       {/* Instruction */}

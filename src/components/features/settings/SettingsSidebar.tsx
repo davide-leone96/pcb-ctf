@@ -12,7 +12,6 @@ import {
   Hand, Search, Wrench, Cable, TerminalSquare, RotateCcw, HardDrive, type LucideIcon,
 } from 'lucide-react';
 import TerminalSettingsPanel from './TerminalSettingsPanel';
-import FirmwarePanel from './FirmwarePanel';
 import ToolConfigPanel from './ToolConfigPanel';
 import PresetSelector from './PresetSelector';
 import { usePresetStore } from '@/store/presetStore';
@@ -31,6 +30,7 @@ const TOOL_ICONS: Record<Tool, LucideIcon> = {
   multimeter: Wrench,
   probes: Cable,
   terminal: TerminalSquare,
+  'firmware-dump': HardDrive,
   custom: Wrench,
 };
 
@@ -40,6 +40,7 @@ const TOOL_LABELS: Record<Tool, string> = {
   multimeter: 'Multimeter',
   probes: 'UART',
   terminal: 'Terminal',
+  'firmware-dump': 'FW Dump',
   custom: 'Custom',
 };
 
@@ -49,6 +50,11 @@ const PIN_TYPE_COLORS: Record<string, string> = {
   rx: '#FACC15',
   gnd: '#6B7280',
   vcc: '#EF4444',
+  // SPI pin types
+  cs: '#A855F7',
+  clk: '#3B82F6',
+  mosi: '#22C55E',
+  miso: '#FACC15',
 };
 
 const PIN_TYPE_LABELS: Record<string, string> = {
@@ -57,6 +63,11 @@ const PIN_TYPE_LABELS: Record<string, string> = {
   rx: 'RX',
   gnd: 'GND',
   vcc: 'VCC',
+  // SPI pin types
+  cs: 'CS',
+  clk: 'CLK',
+  mosi: 'MOSI',
+  miso: 'MISO',
 };
 
 // --- Main Sidebar ---
@@ -67,8 +78,9 @@ const SettingsSidebar = () => {
     components, editComponent, deleteComponent,
     steps, activeStepId, selectStep,
     addStep, deleteStep, reorderStep, updateStep, toggleStepTool,
-    addObjective, addPinObjective, addTerminalObjective, deleteObjective, reorderObjective, editObjective,
+    addObjective, addPinObjective, addTerminalObjective, addFirmwareDumpObjective, deleteObjective, reorderObjective, editObjective,
     pins, editPin, deletePin,
+    firmwareDumpPins, addFirmwareDumpPin, updateFirmwareDumpPin, deleteFirmwareDumpPin,
     saveToFile, resetAllConfig, resetInitComponents,
   } = useSettingsStore();
 
@@ -92,7 +104,6 @@ const SettingsSidebar = () => {
   const isImageSubTab = activeTool === 'component' || activeTool === 'pin';
   const isTerminalTab = activeTool === 'terminal-config';
   const isToolsTab = activeTool === 'tools-config';
-  const isFirmwareTab = activeTool === 'firmware';
 
   const terminalStore = useTerminalSettingsStore();
   const presetStore = usePresetStore();
@@ -162,16 +173,6 @@ const SettingsSidebar = () => {
               <Wrench className="h-3 w-3" />
               Tools
             </button>
-            <button
-              onClick={() => setActiveTool('firmware')}
-              className={cn(
-                'flex items-center gap-1 px-2 py-1.5 rounded text-xs transition-colors flex-1',
-                isFirmwareTab ? 'bg-orange-500/40 text-orange-200' : 'bg-gray-700/50 text-gray-400 hover:bg-gray-600/50 hover:text-white'
-              )}
-            >
-              <HardDrive className="h-3 w-3" />
-              Firmware
-            </button>
           </div>
         )}
       </div>
@@ -180,8 +181,6 @@ const SettingsSidebar = () => {
       <div className="flex-1 overflow-y-auto min-h-0 space-y-3">
         {isToolsTab ? (
           <ToolConfigPanel />
-        ) : isFirmwareTab ? (
-          <FirmwarePanel />
         ) : isTerminalTab ? (
           <TerminalSettingsPanel />
         ) : isImageSubTab ? (
@@ -324,6 +323,7 @@ const SettingsSidebar = () => {
                     onAddObjective={(componentId) => addObjective(step.id, componentId)}
                     onAddPinObjective={(pinIds, logic) => addPinObjective(step.id, pinIds, logic)}
                     onAddTerminalObjective={() => addTerminalObjective(step.id)}
+                    onAddFirmwareDumpObjective={() => addFirmwareDumpObjective(step.id)}
                     availableComponents={components}
                     availablePins={pins}
                     onDeleteObjective={(objId) => deleteObjective(step.id, objId)}
@@ -400,7 +400,7 @@ const SettingsSidebar = () => {
 const StepItem = ({
   step, index, isExpanded, isFirst, isLast,
   onToggle, onDelete, onReorder, onUpdateStep, onToggleTool,
-  onAddObjective, onAddPinObjective, onAddTerminalObjective, onDeleteObjective, onReorderObjective, onEditObjective,
+  onAddObjective, onAddPinObjective, onAddTerminalObjective, onAddFirmwareDumpObjective, onDeleteObjective, onReorderObjective, onEditObjective,
   availableComponents, availablePins,
 }: {
   step: DraftStep;
@@ -416,6 +416,7 @@ const StepItem = ({
   onAddObjective: (componentId: string) => void;
   onAddPinObjective: (pinIds: string[], logic: PinLogic) => void;
   onAddTerminalObjective: () => void;
+  onAddFirmwareDumpObjective: () => void;
   onDeleteObjective: (objId: string) => void;
   onReorderObjective: (objId: string, dir: 'up' | 'down') => void;
   onEditObjective: (objId: string) => void;
@@ -549,6 +550,13 @@ const StepItem = ({
                         >
                           <TerminalSquare className="h-3 w-3 text-green-400" />
                           <span className="text-white">Terminal</span>
+                        </button>
+                        <button
+                          onClick={() => { onAddFirmwareDumpObjective(); setShowAddMenu(null); }}
+                          className="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-600 transition-colors flex items-center gap-2"
+                        >
+                          <HardDrive className="h-3 w-3 text-orange-400" />
+                          <span className="text-white">Firmware Dump</span>
                         </button>
                       </>
                     )}

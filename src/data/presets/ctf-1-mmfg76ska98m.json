@@ -4,7 +4,7 @@
     "name": "CTF-1",
     "description": "TP-LINK",
     "createdAt": "2026-03-06T22:10:23.396Z",
-    "updatedAt": "2026-03-07T14:38:02.270Z"
+    "updatedAt": "2026-03-09T16:31:45.582Z"
   },
   "exerciseConfig": {
     "pcbImage": "/images/preset-ctf-1-mmfg76ska98m.png",
@@ -18,7 +18,8 @@
           "pointer",
           "custom",
           "multimeter",
-          "magnifier"
+          "magnifier",
+          "firmware-dump"
         ],
         "objectives": [
           {
@@ -253,6 +254,26 @@
         "requiresUart": false,
         "persistent": true,
         "bootStageConditions": []
+      },
+      "firmwareDump": {
+        "probes": [
+          {
+            "id": "fw-probe-mmjef1rq",
+            "role": "gnd",
+            "label": "GND",
+            "color": "#6B7280"
+          },
+          {
+            "id": "fw-probe-mmjef2sm",
+            "role": "vcc",
+            "label": "VCC",
+            "color": "#EF4444"
+          }
+        ],
+        "requiredConnections": [],
+        "filePath": "",
+        "fileName": "",
+        "dumpDurationSec": 3
       }
     },
     "completionDialog": {
@@ -260,7 +281,7 @@
       "description": "Congratulations, you have successfully completed all objectives.",
       "redirectUrl": "",
       "redirectLabel": "Next Exercise",
-      "downloadFilePath": "/uploads/firmware-1772839791936-fw_test.bin",
+      "downloadFilePath": "",
       "downloadLabel": "Download File",
       "downloadFileName": "",
       "showCopyFlag": true

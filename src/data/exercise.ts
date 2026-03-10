@@ -9,8 +9,8 @@ export type ObjectiveType = 'component' | 'uart' | 'terminal' | 'pin' | 'firmwar
  * Tool hardcoded del simulatore + 'custom' per i tool definiti dall'autore.
  * 'custom' NON è incluso in ALL_TOOLS per evitare che appaia nei toggle degli step.
  */
-export type Tool = 'pointer' | 'magnifier' | 'multimeter' | 'probes' | 'terminal' | 'custom';
-export const ALL_TOOLS: Tool[] = ['pointer', 'magnifier', 'multimeter', 'probes', 'terminal'];
+export type Tool = 'pointer' | 'magnifier' | 'multimeter' | 'probes' | 'terminal' | 'firmware-dump' | 'custom';
+export const ALL_TOOLS: Tool[] = ['pointer', 'magnifier', 'multimeter', 'probes', 'terminal', 'firmware-dump'];
 
 export interface PinCondition {
   pinId: string;
@@ -79,6 +79,30 @@ export interface UartPin {
   coords: [number, number, number, number];
 }
 
+export type SpiRole = 'vcc' | 'gnd' | 'cs' | 'clk' | 'mosi' | 'miso';
+
+export interface FirmwareDumpPin {
+  id: string;
+  role: SpiRole;
+  label: string;
+  coords: [number, number, number, number];
+}
+
+export interface FirmwareDumpProbeConfig {
+  id: string;
+  role: SpiRole;
+  label: string;
+  color: string;
+}
+
+export interface FirmwareDumpToolConfig {
+  probes: FirmwareDumpProbeConfig[];
+  requiredConnections: Array<{ probeId: string; pinId: string }>;
+  filePath: string;
+  fileName: string;
+  dumpDurationSec: number;
+}
+
 /**
  * Definisce la struttura dell'intero esercizio.
  */
@@ -132,6 +156,7 @@ export interface ToolConfig {
   magnifier?: MagnifierConfig;
   uartConnector?: UartConnectorConfig;
   terminal?: TerminalToolConfig;
+  firmwareDump?: FirmwareDumpToolConfig;
 }
 
 export interface Exercise {
@@ -149,6 +174,8 @@ export interface Exercise {
   toolGroups?: ToolGroup[];
   /** Configurazione dei tool built-in (lente, UART, terminale). */
   toolConfig?: ToolConfig;
+  /** Pin SPI sulla PCB per il firmware dump. */
+  firmwareDumpPins?: FirmwareDumpPin[];
   /** Configurazione del popup di completamento esercizio. */
   completionDialog?: CompletionDialogConfig;
 }
@@ -402,12 +429,23 @@ const UART_ELECTRICAL: Record<UartRole, { valueV: number; valueOhm: number }> = 
   gnd: { valueV: 0,    valueOhm: 0 },
 };
 
-/** Restituisce tensione e resistenza per qualsiasi pin (measurement o UART). */
+const SPI_ELECTRICAL: Record<SpiRole, { valueV: number; valueOhm: number }> = {
+  vcc:  { valueV: 3.3,  valueOhm: 0 },
+  gnd:  { valueV: 0,    valueOhm: 0 },
+  cs:   { valueV: 3.3,  valueOhm: 10000 },
+  clk:  { valueV: 0,    valueOhm: 50 },
+  mosi: { valueV: 0,    valueOhm: 50 },
+  miso: { valueV: 0,    valueOhm: 50 },
+};
+
+/** Restituisce tensione e resistenza per qualsiasi pin (measurement, UART o SPI). */
 export function getPinValues(pinId: string): { valueV: number; valueOhm: number } | null {
   const mPin = exerciseData.pins.find(p => p.id === pinId);
   if (mPin) return { valueV: mPin.valueV, valueOhm: mPin.valueOhm };
   const uPin = exerciseData.uartPins.find(p => p.id === pinId);
   if (uPin) return UART_ELECTRICAL[uPin.role];
+  const sPin = exerciseData.firmwareDumpPins?.find(p => p.id === pinId);
+  if (sPin) return SPI_ELECTRICAL[sPin.role];
   return null;
 }
 
@@ -417,14 +455,17 @@ export function getPinCoords(pinId: string, data: Exercise): [number, number, nu
   if (mPin) return mPin.coords;
   const uPin = data.uartPins.find(p => p.id === pinId);
   if (uPin) return uPin.coords;
+  const sPin = data.firmwareDumpPins?.find(p => p.id === pinId);
+  if (sPin) return sPin.coords;
   return null;
 }
 
 /** Tutti i pin combinati per iterazione (snap detection, overlay). */
-export function getAllPins(data: Exercise): { id: string; coords: [number, number, number, number]; isUart: boolean; role?: UartRole; label?: string }[] {
+export function getAllPins(data: Exercise): { id: string; coords: [number, number, number, number]; isUart: boolean; isFirmwareDump: boolean; role?: UartRole | SpiRole; label?: string }[] {
   return [
-    ...data.pins.map(p => ({ id: p.id, coords: p.coords, isUart: false as const })),
-    ...data.uartPins.map(p => ({ id: p.id, coords: p.coords, isUart: true as const, role: p.role, label: p.label })),
+    ...data.pins.map(p => ({ id: p.id, coords: p.coords, isUart: false as const, isFirmwareDump: false as const })),
+    ...data.uartPins.map(p => ({ id: p.id, coords: p.coords, isUart: true as const, isFirmwareDump: false as const, role: p.role, label: p.label })),
+    ...(data.firmwareDumpPins ?? []).map(p => ({ id: p.id, coords: p.coords, isUart: false as const, isFirmwareDump: true as const, role: p.role, label: p.label })),
   ];
 }
 
