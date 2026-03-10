@@ -766,7 +766,9 @@ const SettingsCanvas = () => {
 // ============================================
 
 const TerminalConfigPreview = () => {
-  const { tabs, commands, bootStages, filesystemEntries, flagParts, completeFlag, exportAsTerminalConfig, loadFromTerminalConfig, initialized, previewOpen, setPreviewOpen } = useTerminalSettingsStore();
+  const { tabs, commands, bootStages, filesystemEntries, flagParts, terminalComponents, activeTerminalComponentId, exportAsTerminalConfig, loadFromTerminalConfig, initialized, previewOpen, setPreviewOpen } = useTerminalSettingsStore();
+  const activeComp = terminalComponents.find(tc => tc.id === activeTerminalComponentId);
+  const completeFlag = activeComp?.completeFlag || '';
   const [viewMode, setViewMode] = useState<'summary' | 'yaml'>('summary');
   const [editorContent, setEditorContent] = useState('');
   const [parseError, setParseError] = useState<string | null>(null);
@@ -847,8 +849,16 @@ const TerminalConfigPreview = () => {
     );
   }
 
-  const dirs = filesystemEntries.filter(e => e.type === 'directory');
-  const files = filesystemEntries.filter(e => e.type === 'file');
+  // Scope data to active terminal component
+  const compTabs = tabs.filter(t => t.terminalComponentId === activeTerminalComponentId);
+  const compTabIds = new Set(compTabs.map(t => t.id));
+  const compCommands = commands.filter(c => compTabIds.has(c.tabId));
+  const compBootStages = bootStages.filter(b => compTabIds.has(b.tabId));
+  const compFs = filesystemEntries.filter(f => compTabIds.has(f.tabId));
+  const compFlagParts = flagParts.filter(fp => fp.terminalComponentId === activeTerminalComponentId);
+
+  const dirs = compFs.filter(e => e.type === 'directory');
+  const files = compFs.filter(e => e.type === 'file');
   const isCodeView = viewMode === 'yaml';
 
   return (
@@ -940,18 +950,18 @@ const TerminalConfigPreview = () => {
         <div className="flex-1 overflow-auto p-4 space-y-4">
           {/* Stats grid */}
           <div className="grid grid-cols-2 gap-3">
-            <StatCard icon={Layers} label="Tab" count={tabs.length} color="purple" />
-            <StatCard icon={Terminal} label="Commands" count={commands.length} color="green" />
-            <StatCard icon={Flag} label="Flag" count={flagParts.length} color="amber" />
-            <StatCard icon={Cpu} label="Boot Stages" count={bootStages.length} color="blue" />
+            <StatCard icon={Layers} label="Tab" count={compTabs.length} color="purple" />
+            <StatCard icon={Terminal} label="Commands" count={compCommands.length} color="green" />
+            <StatCard icon={Flag} label="Flag" count={compFlagParts.length} color="amber" />
+            <StatCard icon={Cpu} label="Boot Stages" count={compBootStages.length} color="blue" />
             <StatCard icon={FolderTree} label="Directory" count={dirs.length} color="cyan" />
             <StatCard icon={FolderTree} label="File" count={files.length} color="emerald" />
           </div>
 
           {/* Tabs detail */}
-          {tabs.map(tab => {
-            const tabCmds = commands.filter(c => c.tabId === tab.id);
-            const tabStages = bootStages.filter(b => b.tabId === tab.id);
+          {compTabs.map(tab => {
+            const tabCmds = compCommands.filter(c => c.tabId === tab.id);
+            const tabStages = compBootStages.filter(b => b.tabId === tab.id);
             const tabDirs = dirs.filter(d => d.tabId === tab.id);
             const tabFiles = files.filter(f => f.tabId === tab.id);
 
@@ -973,7 +983,7 @@ const TerminalConfigPreview = () => {
                     {tabCmds.slice(0, 20).map(cmd => (
                       <span key={cmd.id} className={cn(
                         'px-1.5 py-0.5 rounded text-[10px] font-mono',
-                        cmd.handler === 'builtin' ? 'bg-yellow-600/20 text-yellow-400' : 'bg-green-600/20 text-green-400'
+                        cmd.builtinType ? 'bg-yellow-600/20 text-yellow-400' : 'bg-green-600/20 text-green-400'
                       )}>
                         {cmd.name || '?'}
                       </span>
@@ -988,7 +998,7 @@ const TerminalConfigPreview = () => {
           })}
 
           {/* Flag preview */}
-          {flagParts.length > 0 && (
+          {compFlagParts.length > 0 && (
             <div className="rounded border border-amber-700/50 bg-amber-900/20 p-3">
               <div className="flex items-center gap-2 mb-2">
                 <Flag className="h-3.5 w-3.5 text-amber-400" />
@@ -996,7 +1006,7 @@ const TerminalConfigPreview = () => {
               </div>
               <div className="font-mono text-xs text-amber-200/80 mb-2">{completeFlag}</div>
               <div className="flex flex-wrap gap-1">
-                {flagParts.map(fp => (
+                {compFlagParts.map(fp => (
                   <span key={fp.id} className="px-1.5 py-0.5 rounded bg-amber-700/30 text-[10px] font-mono text-amber-300">
                     {fp.id}: {fp.part}
                   </span>

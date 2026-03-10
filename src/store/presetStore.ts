@@ -36,7 +36,7 @@ interface PresetState {
 function captureCurrentConfig(): { exerciseConfig: Exercise; terminalConfig: any } {
   const exerciseJson = useSettingsStore.getState().exportAsJson();
   const exerciseConfig: Exercise = JSON.parse(exerciseJson);
-  const terminalConfig = useTerminalSettingsStore.getState().exportAsTerminalConfig();
+  const terminalConfig = useTerminalSettingsStore.getState().exportAllTerminalConfigs();
   return { exerciseConfig, terminalConfig };
 }
 
@@ -49,7 +49,7 @@ const SETTINGS_CONTENT_FIELDS = [
 ] as const;
 
 const TERMINAL_CONTENT_FIELDS = [
-  'tabs', 'commands', 'bootStages', 'filesystemEntries', 'flagParts', 'completeFlag',
+  'terminalComponents', 'tabs', 'commands', 'bootStages', 'filesystemEntries', 'flagParts',
 ] as const;
 
 export const usePresetStore = create<PresetState>((set, get) => {
@@ -121,7 +121,18 @@ export const usePresetStore = create<PresetState>((set, get) => {
         // trigger dirty tracking.
         localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(preset.exerciseConfig));
         useSettingsStore.getState().loadFromStorage();
-        useTerminalSettingsStore.getState().loadFromTerminalConfig(preset.terminalConfig);
+        // Handle both old single-config and new bundle format
+        const tc = preset.terminalConfig;
+        if (Array.isArray(tc)) {
+          // New bundle format: [{id, name, config}]
+          const tStore = useTerminalSettingsStore.getState();
+          tStore.resetAll();
+          for (const entry of tc) {
+            tStore.loadFromTerminalConfig(entry.config, entry.id);
+          }
+        } else {
+          useTerminalSettingsStore.getState().loadFromTerminalConfig(tc);
+        }
 
         localStorage.setItem(ACTIVE_PRESET_STORAGE_KEY, id);
         set({ activePresetId: id, isDirty: false });

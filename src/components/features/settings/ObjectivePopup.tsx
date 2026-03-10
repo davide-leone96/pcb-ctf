@@ -57,6 +57,7 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
       hint,
       flagPart: flagPart || name.toUpperCase().replace(/\s+/g, '_'),
       customToolId: '',
+      terminalComponentId: '',
       bootStageConditions: [],
       requiresUart: false,
       terminalPersistent: false,

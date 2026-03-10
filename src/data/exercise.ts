@@ -39,6 +39,8 @@ export interface Objective {
   bootStageConditions?: BootStageCondition[];
   /** Per type='firmware-dump': ID del custom tool collegato */
   customToolId?: string;
+  /** Per type='terminal': ID del componente terminale da usare */
+  terminalComponentId?: string;
   /** Per type='terminal': se true, il terminale richiede collegamento UART per avviarsi */
   requiresUart?: boolean;
   /** Per type='terminal': se true, il terminale non può essere disattivato dalla toolbar una volta attivato */

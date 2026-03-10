@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { useSettingsStore, type DraftStep, type DraftObjective, type DraftComponent, type DraftPin, type SettingsTool, type PinLogic } from '@/store/settingsStore';
-import { useTerminalSettingsStore } from '@/store/terminalSettingsStore';
+import { useTerminalSettingsStore, type DraftTerminalComponent } from '@/store/terminalSettingsStore';
 import { ALL_TOOLS, type Tool } from '@/data/exercise';
 import { cn } from '@/lib/utils';
 import {
@@ -322,10 +322,11 @@ const SettingsSidebar = () => {
                     onToggleTool={(tool) => toggleStepTool(step.id, tool)}
                     onAddObjective={(componentId) => addObjective(step.id, componentId)}
                     onAddPinObjective={(pinIds, logic) => addPinObjective(step.id, pinIds, logic)}
-                    onAddTerminalObjective={() => addTerminalObjective(step.id)}
+                    onAddTerminalObjective={(tcId) => addTerminalObjective(step.id, tcId)}
                     onAddFirmwareDumpObjective={() => addFirmwareDumpObjective(step.id)}
                     availableComponents={components}
                     availablePins={pins}
+                    availableTerminalComponents={terminalStore.terminalComponents}
                     onDeleteObjective={(objId) => deleteObjective(step.id, objId)}
                     onReorderObjective={(objId, dir) => reorderObjective(step.id, objId, dir)}
                     onEditObjective={editObjective}
@@ -401,7 +402,7 @@ const StepItem = ({
   step, index, isExpanded, isFirst, isLast,
   onToggle, onDelete, onReorder, onUpdateStep, onToggleTool,
   onAddObjective, onAddPinObjective, onAddTerminalObjective, onAddFirmwareDumpObjective, onDeleteObjective, onReorderObjective, onEditObjective,
-  availableComponents, availablePins,
+  availableComponents, availablePins, availableTerminalComponents,
 }: {
   step: DraftStep;
   index: number;
@@ -415,17 +416,18 @@ const StepItem = ({
   onToggleTool: (tool: Tool) => void;
   onAddObjective: (componentId: string) => void;
   onAddPinObjective: (pinIds: string[], logic: PinLogic) => void;
-  onAddTerminalObjective: () => void;
+  onAddTerminalObjective: (terminalComponentId?: string) => void;
   onAddFirmwareDumpObjective: () => void;
   onDeleteObjective: (objId: string) => void;
   onReorderObjective: (objId: string, dir: 'up' | 'down') => void;
   onEditObjective: (objId: string) => void;
   availableComponents: DraftComponent[];
   availablePins: DraftPin[];
+  availableTerminalComponents: DraftTerminalComponent[];
 }) => {
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleValue, setTitleValue] = useState(step.title);
-  const [showAddMenu, setShowAddMenu] = useState<null | 'root' | 'component' | 'pin'>(null);
+  const [showAddMenu, setShowAddMenu] = useState<null | 'root' | 'component' | 'pin' | 'terminal'>(null);
   const [selectedPinIds, setSelectedPinIds] = useState<string[]>([]);
 
   const handleTitleSave = () => {
@@ -545,11 +547,21 @@ const StepItem = ({
                           <ChevronRight className="h-3 w-3 text-gray-400 ml-auto" />
                         </button>
                         <button
-                          onClick={() => { onAddTerminalObjective(); setShowAddMenu(null); }}
+                          onClick={() => {
+                            if (availableTerminalComponents.length <= 1) {
+                              onAddTerminalObjective(availableTerminalComponents[0]?.id);
+                              setShowAddMenu(null);
+                            } else {
+                              setShowAddMenu('terminal');
+                            }
+                          }}
                           className="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-600 transition-colors flex items-center gap-2"
                         >
                           <TerminalSquare className="h-3 w-3 text-green-400" />
                           <span className="text-white">Terminal</span>
+                          {availableTerminalComponents.length > 1 && (
+                            <ChevronRight className="h-3 w-3 text-gray-400 ml-auto" />
+                          )}
                         </button>
                         <button
                           onClick={() => { onAddFirmwareDumpObjective(); setShowAddMenu(null); }}
@@ -580,6 +592,31 @@ const StepItem = ({
                             >
                               <div className="w-2.5 h-2.5 flex-shrink-0 border border-green-400/60 bg-green-500/15 rounded-sm" />
                               <span className="text-blue-300">{comp.name || 'Unnamed'}</span>
+                            </button>
+                          ))
+                        )}
+                      </>
+                    )}
+                    {showAddMenu === 'terminal' && (
+                      <>
+                        <button
+                          onClick={() => setShowAddMenu('root')}
+                          className="w-full text-left px-3 py-1 text-[10px] text-gray-400 hover:text-white hover:bg-gray-600 transition-colors flex items-center gap-1 border-b border-gray-600 mb-1"
+                        >
+                          <ArrowUp className="h-2.5 w-2.5 rotate-[-90deg]" />
+                          Back
+                        </button>
+                        {availableTerminalComponents.length === 0 ? (
+                          <p className="px-3 py-1.5 text-xs text-gray-400 italic">Crea un componente terminale nel tab Terminal</p>
+                        ) : (
+                          availableTerminalComponents.map(tc => (
+                            <button
+                              key={tc.id}
+                              onClick={() => { onAddTerminalObjective(tc.id); setShowAddMenu(null); }}
+                              className="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-600 transition-colors flex items-center gap-2"
+                            >
+                              <TerminalSquare className="h-3 w-3 text-green-400" />
+                              <span className="text-green-300">{tc.name || 'Unnamed'}</span>
                             </button>
                           ))
                         )}

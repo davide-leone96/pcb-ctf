@@ -2,13 +2,13 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useTerminalSettingsStore, type TerminalSection, type DraftCommand, type DraftFlagPart, type DraftBootStage, type DraftFilesystemEntry, type DraftTab } from '@/store/terminalSettingsStore';
+import { useTerminalSettingsStore, type TerminalSection, type DraftCommand, type DraftFlagPart, type DraftBootStage, type DraftFilesystemEntry, type DraftTab, type DraftTerminalComponent } from '@/store/terminalSettingsStore';
 import { cn } from '@/lib/utils';
 import terminalConfig from '@/config/terminal.config';
 import {
   Plus, Trash2, Pencil, ChevronDown, ChevronRight, Check,
   ArrowUp, ArrowDown, Copy, Terminal, Flag, Cpu, FolderTree, Layers,
-  FileText, Folder, Code, Zap, Shield,
+  FileText, Folder, Code, Zap, Shield, Package,
 } from 'lucide-react';
 import {
   AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader,
@@ -35,6 +35,8 @@ const SECTIONS: { id: TerminalSection; label: string; icon: typeof Terminal }[] 
 
 const TerminalSettingsPanel = () => {
   const store = useTerminalSettingsStore();
+  const hasComponents = store.terminalComponents.length > 0;
+  const activeComp = store.terminalComponents.find(tc => tc.id === store.activeTerminalComponentId);
 
   // Initialize from static config if store has never been hydrated with data
   // (persist middleware auto-rehydrates draft state from localStorage on mount)
@@ -42,37 +44,173 @@ const TerminalSettingsPanel = () => {
     if (!store.initialized) {
       store.loadFromTerminalConfig(terminalConfig);
     }
-    // Migrate persisted builtin commands → custom (localStorage rehydration)
+    // Migrate persisted builtin commands -> custom (localStorage rehydration)
     store.normalizeBuiltinCommands();
   }, [store.initialized]);
 
   return (
     <div className="space-y-3">
-      {/* Section navigation */}
-      <div className="flex flex-wrap gap-1">
-        {SECTIONS.map(({ id, label, icon: Icon }) => (
-          <button
-            key={id}
-            onClick={() => store.setActiveSection(id)}
-            className={cn(
-              'flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors',
-              store.activeSection === id
-                ? 'bg-green-600/60 text-white'
-                : 'bg-gray-700/50 text-gray-400 hover:text-gray-300'
-            )}
-          >
-            <Icon className="h-3 w-3" />
-            {label}
-          </button>
-        ))}
+      {/* Terminal component selector */}
+      <TerminalComponentSelector />
+
+      {/* Only show sections if a component is active */}
+      {hasComponents && activeComp && (
+        <>
+          {/* Section navigation */}
+          <div className="flex flex-wrap gap-1">
+            {SECTIONS.map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                onClick={() => store.setActiveSection(id)}
+                className={cn(
+                  'flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors',
+                  store.activeSection === id
+                    ? 'bg-green-600/60 text-white'
+                    : 'bg-gray-700/50 text-gray-400 hover:text-gray-300'
+                )}
+              >
+                <Icon className="h-3 w-3" />
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* Section content */}
+          {store.activeSection === 'commands' && <CommandsSection />}
+          {store.activeSection === 'boot' && <BootSection />}
+          {store.activeSection === 'filesystem' && <FilesystemSection />}
+          {store.activeSection === 'tabs' && <TabsSection />}
+          {store.activeSection === 'flags' && <FlagsSection />}
+        </>
+      )}
+    </div>
+  );
+};
+
+// ============================================
+// TERMINAL COMPONENT SELECTOR
+// ============================================
+
+const TerminalComponentSelector = () => {
+  const {
+    terminalComponents, activeTerminalComponentId,
+    addTerminalComponent, deleteTerminalComponent, duplicateTerminalComponent,
+    setActiveTerminalComponentId, updateTerminalComponent,
+  } = useTerminalSettingsStore();
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+
+  const handleStartRename = (tc: DraftTerminalComponent) => {
+    setEditingId(tc.id);
+    setEditName(tc.name);
+  };
+
+  const handleFinishRename = () => {
+    if (editingId && editName.trim()) {
+      updateTerminalComponent(editingId, { name: editName.trim() });
+    }
+    setEditingId(null);
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-xs text-gray-400 uppercase tracking-wider">
+          Componenti terminale ({terminalComponents.length})
+        </h3>
+        <button
+          onClick={addTerminalComponent}
+          className="text-gray-400 hover:text-white transition-colors p-0.5"
+          title="Nuovo componente terminale"
+        >
+          <Plus className="h-4 w-4" />
+        </button>
       </div>
 
-      {/* Section content */}
-      {store.activeSection === 'commands' && <CommandsSection />}
-      {store.activeSection === 'boot' && <BootSection />}
-      {store.activeSection === 'filesystem' && <FilesystemSection />}
-      {store.activeSection === 'tabs' && <TabsSection />}
-      {store.activeSection === 'flags' && <FlagsSection />}
+      {terminalComponents.length === 0 && (
+        <p className="text-xs text-gray-500 italic">Nessun componente terminale. Clicca + per crearne uno.</p>
+      )}
+
+      <div className="space-y-1">
+        {terminalComponents.map(tc => {
+          const isActive = tc.id === activeTerminalComponentId;
+          const isEditing = tc.id === editingId;
+
+          return (
+            <div
+              key={tc.id}
+              className={cn(
+                'flex items-center gap-1.5 px-2 py-1.5 rounded cursor-pointer group transition-colors',
+                isActive
+                  ? 'bg-green-600/40 text-white'
+                  : 'hover:bg-gray-700/50 text-gray-300'
+              )}
+              onClick={() => !isEditing && setActiveTerminalComponentId(tc.id)}
+            >
+              <Package className="h-3 w-3 text-green-400 flex-shrink-0" />
+
+              {isEditing ? (
+                <input
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  onBlur={handleFinishRename}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleFinishRename(); if (e.key === 'Escape') setEditingId(null); }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex-1 bg-gray-700 border border-gray-500 rounded px-1 py-0.5 text-xs text-white focus:outline-none focus:border-green-500 min-w-0"
+                  autoFocus
+                />
+              ) : (
+                <span className="text-xs truncate flex-1">{tc.name}</span>
+              )}
+
+              <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" onClick={e => e.stopPropagation()}>
+                <button
+                  onClick={() => handleStartRename(tc)}
+                  className="text-gray-400 hover:text-white p-0.5"
+                  title="Rinomina"
+                >
+                  <Pencil className="h-3 w-3" />
+                </button>
+                <button
+                  onClick={() => duplicateTerminalComponent(tc.id)}
+                  className="text-gray-400 hover:text-blue-400 p-0.5"
+                  title="Duplica"
+                >
+                  <Copy className="h-3 w-3" />
+                </button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <button className="text-gray-400 hover:text-red-400 p-0.5" title="Elimina">
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="bg-gray-800 border-gray-600 text-white">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Eliminare &quot;{tc.name}&quot;?</AlertDialogTitle>
+                      <AlertDialogDescription className="text-gray-400">
+                        Tutti i tab, comandi, boot stages, filesystem e flag di questo componente terminale verranno eliminati.
+                        <br /><br />
+                        <strong className="text-red-400">Questa azione non puo essere annullata.</strong>
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel className="bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600 hover:text-white">
+                        Annulla
+                      </AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => deleteTerminalComponent(tc.id)}
+                        className="bg-red-600 hover:bg-red-700 text-white"
+                      >
+                        Elimina
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };
@@ -83,11 +221,13 @@ const TerminalSettingsPanel = () => {
 
 const TabSelector = ({ activeTabId, onSelect }: { activeTabId: string; onSelect: (id: string) => void }) => {
   const tabs = useTerminalSettingsStore(s => s.tabs);
-  if (tabs.length <= 1) return null;
+  const activeComponentId = useTerminalSettingsStore(s => s.activeTerminalComponentId);
+  const compTabs = tabs.filter(t => t.terminalComponentId === activeComponentId);
+  if (compTabs.length <= 1) return null;
 
   return (
     <div className="flex gap-1 mb-2">
-      {tabs.map(tab => (
+      {compTabs.map(tab => (
         <button
           key={tab.id}
           onClick={() => onSelect(tab.id)}
@@ -110,15 +250,18 @@ const TabSelector = ({ activeTabId, onSelect }: { activeTabId: string; onSelect:
 // ============================================
 
 const CommandsSection = () => {
-  const { commands, activeTabId, setActiveTabId, addCommand, deleteCommand, duplicateCommand, editingCommandId, setEditingCommandId, updateCommand, tabs, bootStages } = useTerminalSettingsStore();
+  const { commands, activeTabId, setActiveTabId, addCommand, deleteCommand, duplicateCommand, editingCommandId, setEditingCommandId, updateCommand, tabs, bootStages, activeTerminalComponentId, flagParts } = useTerminalSettingsStore();
+  const compTabs = tabs.filter(t => t.terminalComponentId === activeTerminalComponentId);
+  const compTabIds = new Set(compTabs.map(t => t.id));
   const tabCommands = commands
-    .filter(c => c.tabId === activeTabId)
+    .filter(c => c.tabId === activeTabId && compTabIds.has(c.tabId))
     .sort((a, b) => {
       const aBuiltin = a.builtinType ? 0 : 1;
       const bBuiltin = b.builtinType ? 0 : 1;
       return aBuiltin - bBuiltin;
     });
   const editingCommand = editingCommandId ? commands.find(c => c.id === editingCommandId) : null;
+  const compFlagParts = flagParts.filter(fp => fp.terminalComponentId === activeTerminalComponentId);
 
   return (
     <div>
@@ -160,7 +303,7 @@ const CommandsSection = () => {
           onUpdate={(data) => updateCommand(editingCommand.id, data)}
           onClose={() => setEditingCommandId(null)}
           availableBootStages={bootStages.filter(b => b.tabId === activeTabId)}
-          availableFlags={useTerminalSettingsStore.getState().flagParts}
+          availableFlags={compFlagParts}
         />
       )}
     </div>
@@ -189,8 +332,8 @@ const CommandItem = ({
       isBuiltin ? 'bg-blue-900/30 hover:bg-blue-900/50' : 'hover:bg-gray-700/50'
     )}>
       {isBuiltin
-        ? <Cpu  className="h-2.5 w-2.5 text-blue-400 flex-shrink-0" title={`Built-in: ${command.builtinType}`} />
-        : <Code className="h-2.5 w-2.5 text-gray-500 flex-shrink-0" title="Comando custom" />
+        ? <Cpu  className="h-2.5 w-2.5 text-blue-400 flex-shrink-0" />
+        : <Code className="h-2.5 w-2.5 text-gray-500 flex-shrink-0" />
       }
       <span className={cn(
         'text-xs font-mono truncate flex-1',
@@ -199,10 +342,10 @@ const CommandItem = ({
         {command.name || '<vuoto>'}
       </span>
       {hasConstraints && (
-        <Shield className="h-2.5 w-2.5 text-orange-400 flex-shrink-0" title={`Constraints: ${constraintParts.join(' · ')}`} />
+        <Shield className="h-2.5 w-2.5 text-orange-400 flex-shrink-0" />
       )}
       {command.flagUnlocks.length > 0 && (
-        <Flag className="h-2.5 w-2.5 text-amber-400 flex-shrink-0" title="Unlocks flag" />
+        <Flag className="h-2.5 w-2.5 text-amber-400 flex-shrink-0" />
       )}
       <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
         <button onClick={onEdit} className="text-gray-400 hover:text-white p-0.5" title="Edit">
@@ -224,7 +367,9 @@ const CommandItem = ({
 // ============================================
 
 export const FlagsSection = () => {
-  const { flagParts, completeFlag, addFlagPart, updateFlagPart, deleteFlagPart, updateCompleteFlag } = useTerminalSettingsStore();
+  const { flagParts, terminalComponents, activeTerminalComponentId, addFlagPart, updateFlagPart, deleteFlagPart, updateCompleteFlag } = useTerminalSettingsStore();
+  const activeComp = terminalComponents.find(tc => tc.id === activeTerminalComponentId);
+  const compFlagParts = flagParts.filter(fp => fp.terminalComponentId === activeTerminalComponentId);
 
   return (
     <div className="space-y-3">
@@ -233,7 +378,7 @@ export const FlagsSection = () => {
         <label className="text-xs text-gray-400 uppercase tracking-wider block mb-1">Flag completa</label>
         <input
           type="text"
-          value={completeFlag}
+          value={activeComp?.completeFlag || ''}
           onChange={(e) => updateCompleteFlag(e.target.value)}
           placeholder="flag{...}"
           className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-xs text-amber-300 font-mono placeholder-gray-500 focus:outline-none focus:border-green-500"
@@ -244,7 +389,7 @@ export const FlagsSection = () => {
       <div>
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-xs text-gray-400 uppercase tracking-wider">
-            Parti ({flagParts.length})
+            Parti ({compFlagParts.length})
           </h3>
           <button
             onClick={addFlagPart}
@@ -255,12 +400,12 @@ export const FlagsSection = () => {
           </button>
         </div>
 
-        {flagParts.length === 0 && (
+        {compFlagParts.length === 0 && (
           <p className="text-xs text-gray-500 italic">No flag parts.</p>
         )}
 
         <div className="space-y-2">
-          {flagParts.map((fp, i) => (
+          {compFlagParts.map((fp, i) => (
             <FlagPartItem
               key={fp.id}
               flagPart={fp}
@@ -273,11 +418,11 @@ export const FlagsSection = () => {
       </div>
 
       {/* Preview */}
-      {flagParts.length > 0 && (
+      {compFlagParts.length > 0 && (
         <div className="pt-2 border-t border-gray-700">
           <span className="text-[10px] text-gray-500 uppercase">Preview parti</span>
           <div className="text-xs font-mono text-amber-300/70 mt-1">
-            {flagParts.map(f => f.part).join(' + ')}
+            {compFlagParts.map(f => f.part).join(' + ')}
           </div>
         </div>
       )}
@@ -646,13 +791,14 @@ const FsTreeRow = ({ node, depth }: { node: FsTreeNode; depth: number }) => {
 // ============================================
 
 const TabsSection = () => {
-  const { tabs, addTab, updateTab, deleteTab } = useTerminalSettingsStore();
+  const { tabs, activeTerminalComponentId, addTab, updateTab, deleteTab } = useTerminalSettingsStore();
+  const compTabs = tabs.filter(t => t.terminalComponentId === activeTerminalComponentId);
 
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-xs text-gray-400 uppercase tracking-wider">
-          Tab terminale ({tabs.length})
+          Tab terminale ({compTabs.length})
         </h3>
         <button
           onClick={addTab}
@@ -663,12 +809,12 @@ const TabsSection = () => {
         </button>
       </div>
 
-      {tabs.length === 0 && (
+      {compTabs.length === 0 && (
         <p className="text-xs text-gray-500 italic">No tabs.</p>
       )}
 
       <div className="space-y-2">
-        {tabs.map((tab, i) => (
+        {compTabs.map((tab, i) => (
           <TabItem
             key={tab.id}
             tab={tab}
