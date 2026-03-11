@@ -29,7 +29,6 @@ const TOOL_ICONS: Record<Tool, LucideIcon> = {
   magnifier: Search,
   multimeter: Wrench,
   probes: Cable,
-  terminal: TerminalSquare,
   'firmware-dump': HardDrive,
   custom: Wrench,
 };
@@ -39,7 +38,6 @@ const TOOL_LABELS: Record<Tool, string> = {
   magnifier: 'Magnifier',
   multimeter: 'Multimeter',
   probes: 'UART',
-  terminal: 'Terminal',
   'firmware-dump': 'FW Dump',
   custom: 'Custom',
 };

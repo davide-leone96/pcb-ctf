@@ -582,7 +582,6 @@ const BUILTIN_TOOL_LABELS: Record<Tool, string> = {
   magnifier: 'Magnifier',
   multimeter: 'Multimeter',
   probes: 'UART',
-  terminal: 'Terminal',
   'firmware-dump': 'FW Dump',
   custom: 'Custom',
 };

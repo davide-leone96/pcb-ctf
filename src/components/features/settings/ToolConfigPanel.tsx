@@ -3,37 +3,32 @@
 
 import { useSettingsStore } from '@/store/settingsStore';
 import { useTerminalSettingsStore } from '@/store/terminalSettingsStore';
-import { Search, TerminalSquare, Plus, Trash2, ChevronDown, ChevronRight, Layers, PartyPopper, HardDrive, Upload } from 'lucide-react';
+import { Search, TerminalSquare, Cable, Plus, Trash2, ChevronDown, ChevronRight, Layers, PartyPopper, HardDrive, Upload } from 'lucide-react';
 import { ALL_TOOLS, type Tool, type SpiRole } from '@/data/exercise';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
 const ToolConfigPanel = () => {
   const {
-    toolConfig, steps, pins,
-    updateMagnifierConfig, updateTerminalToolConfig, updateFirmwareDumpToolConfig,
+    toolConfig, pins,
+    updateMagnifierConfig, updateUartConnectorConfig, updateFirmwareDumpToolConfig,
     toolGroups, addToolGroup, updateToolGroup, deleteToolGroup, toggleToolInGroup,
     completionDialog, updateCompletionDialog,
     firmwareDumpPins,
   } = useSettingsStore();
 
-  const SPI_PIN_TYPES = ['vcc', 'gnd', 'cs', 'clk', 'mosi', 'miso'];
-
-  // All non-custom pins are available as firmware dump targets (SPI + UART VCC/GND share types)
-  const allSpiPins = [
-    ...pins
-      .filter(p => SPI_PIN_TYPES.includes(p.pinType))
-      .map(p => ({ id: p.id, role: p.pinType as import('@/data/exercise').SpiRole, label: p.label || p.pinType.toUpperCase() })),
-    ...firmwareDumpPins
-      .map(p => ({ id: p.id, role: p.role, label: p.label })),
+  // All pins available as firmware dump targets (all pin types + dedicated firmware dump pins)
+  const allAvailablePins = [
+    ...pins.map(p => ({ id: p.id, role: p.pinType, label: p.label || p.pinType.toUpperCase() })),
+    ...firmwareDumpPins.map(p => ({ id: p.id, role: p.role, label: p.label })),
   ];
 
-  const { flagParts, bootStages, tabs } = useTerminalSettingsStore();
+  const { terminalComponents } = useTerminalSettingsStore();
 
   const [expandedSection, setExpandedSection] = useState<string | null>('magnifier');
 
   const magnifier = toolConfig.magnifier!;
-  const terminal = toolConfig.terminal!;
+  const uartConnector = toolConfig.uartConnector;
 
   const toggleSection = (section: string) => {
     setExpandedSection(prev => prev === section ? null : section);
@@ -98,81 +93,41 @@ const ToolConfigPanel = () => {
         </div>
       </SectionAccordion>
 
-      {/* === TERMINAL === */}
+      {/* === UART CONNECTOR === */}
       <SectionAccordion
-        icon={<TerminalSquare className="h-3.5 w-3.5 text-green-400" />}
-        title="Terminal"
-        expanded={expandedSection === 'terminal'}
-        onToggle={() => toggleSection('terminal')}
+        icon={<Cable className="h-3.5 w-3.5 text-green-400" />}
+        title="UART Connector"
+        expanded={expandedSection === 'uart'}
+        onToggle={() => toggleSection('uart')}
         color="green"
       >
         <div className="space-y-3">
-          {/* Requires UART */}
-          <ToggleRow
-            label="Requires UART connection"
-            description="The terminal won't open until UART is connected"
-            checked={terminal.requiresUart}
-            onChange={() => updateTerminalToolConfig({ requiresUart: !terminal.requiresUart })}
-          />
+          <p className="text-[10px] text-gray-500">
+            Configure which terminal to launch after correct UART connection.
+          </p>
 
-          {/* Persistent */}
-          <ToggleRow
-            label="Cannot be disabled from toolbar"
-            description="Once activated, the terminal cannot be turned off"
-            checked={terminal.persistent}
-            onChange={() => updateTerminalToolConfig({ persistent: !terminal.persistent })}
-          />
-
-          {/* Boot stage conditions */}
+          {/* Terminal to launch */}
           <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs text-gray-400">Flag Conditions (Boot Stage)</label>
-              <button
-                onClick={() => {
-                  const newCondition = {
-                    bootStageId: bootStages[0]?.id || '',
-                    unlockedFlags: [] as string[],
-                    hint: '',
-                  };
-                  updateTerminalToolConfig({
-                    bootStageConditions: [...terminal.bootStageConditions, newCondition],
-                  });
-                }}
-                className="text-gray-400 hover:text-white transition-colors p-0.5"
-                title="Add condition"
+            <label className="block text-xs text-gray-400 mb-1 flex items-center gap-1">
+              <TerminalSquare className="h-3 w-3" />
+              Terminal to launch on connection
+            </label>
+            {terminalComponents.length > 0 ? (
+              <select
+                value={uartConnector?.terminalComponentId ?? ''}
+                onChange={(e) => updateUartConnectorConfig({ terminalComponentId: e.target.value || undefined })}
+                className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-green-500"
               >
-                <Plus className="h-3.5 w-3.5" />
-              </button>
-            </div>
-
-            {terminal.bootStageConditions.length === 0 && (
+                <option value="">-- None --</option>
+                {terminalComponents.map(tc => (
+                  <option key={tc.id} value={tc.id}>{tc.name}</option>
+                ))}
+              </select>
+            ) : (
               <p className="text-[10px] text-gray-500 italic">
-                No flag conditions. Add one to define when the terminal completes the objective.
+                Create a terminal component in the Terminal tab first.
               </p>
             )}
-
-            <div className="space-y-2">
-              {terminal.bootStageConditions.map((condition, index) => (
-                <BootStageConditionEditor
-                  key={index}
-                  condition={condition}
-                  index={index}
-                  bootStages={bootStages}
-                  flagParts={flagParts}
-                  tabs={tabs}
-                  onUpdate={(updated) => {
-                    const newConditions = [...terminal.bootStageConditions];
-                    newConditions[index] = updated;
-                    updateTerminalToolConfig({ bootStageConditions: newConditions });
-                  }}
-                  onDelete={() => {
-                    updateTerminalToolConfig({
-                      bootStageConditions: terminal.bootStageConditions.filter((_, i) => i !== index),
-                    });
-                  }}
-                />
-              ))}
-            </div>
           </div>
         </div>
       </SectionAccordion>
@@ -231,7 +186,8 @@ const ToolConfigPanel = () => {
       >
         <FirmwareDumpConfigSection
           config={toolConfig.firmwareDump}
-          availablePins={allSpiPins}
+          availablePins={allAvailablePins}
+          terminalComponents={terminalComponents}
           onUpdate={updateFirmwareDumpToolConfig}
         />
       </SectionAccordion>
@@ -413,98 +369,11 @@ const ToggleRow = ({
   </div>
 );
 
-const BootStageConditionEditor = ({
-  condition, index, bootStages, flagParts, tabs, onUpdate, onDelete,
-}: {
-  condition: { bootStageId: string; unlockedFlags: string[]; hint: string };
-  index: number;
-  bootStages: Array<{ id: string; name: string; tabId: string }>;
-  flagParts: Array<{ id: string; part: string; description: string }>;
-  tabs: Array<{ id: string; name: string }>;
-  onUpdate: (updated: { bootStageId: string; unlockedFlags: string[]; hint: string }) => void;
-  onDelete: () => void;
-}) => (
-  <div className="rounded border border-gray-700 bg-gray-800/50 p-2 space-y-2">
-    <div className="flex items-center justify-between">
-      <span className="text-[10px] text-gray-500 font-mono">#{index + 1}</span>
-      <button onClick={onDelete} className="text-gray-400 hover:text-red-400 p-0.5">
-        <Trash2 className="h-3 w-3" />
-      </button>
-    </div>
-
-    {/* Boot stage selector */}
-    <div>
-      <label className="block text-[10px] text-gray-500 mb-0.5">Boot Stage</label>
-      <select
-        value={condition.bootStageId}
-        onChange={(e) => onUpdate({ ...condition, bootStageId: e.target.value })}
-        className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-green-500"
-      >
-        <option value="">-- Select --</option>
-        {bootStages.map(stage => {
-          const tab = tabs.find(t => t.id === stage.tabId);
-          return (
-            <option key={stage.id} value={stage.id}>
-              {tab ? `[${tab.name}] ` : ''}{stage.name || stage.id}
-            </option>
-          );
-        })}
-      </select>
-    </div>
-
-    {/* Flag parts selector */}
-    <div>
-      <label className="block text-[10px] text-gray-500 mb-0.5">Flags to unlock</label>
-      {flagParts.length === 0 ? (
-        <p className="text-[10px] text-gray-500 italic">Define flags in the Terminal tab first</p>
-      ) : (
-        <div className="space-y-0.5 max-h-[100px] overflow-y-auto">
-          {flagParts.map(flag => {
-            const isSelected = condition.unlockedFlags.includes(flag.id);
-            return (
-              <label key={flag.id} className="flex items-center gap-2 px-1 py-0.5 rounded hover:bg-gray-700/50 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={isSelected}
-                  onChange={() => {
-                    const newFlags = isSelected
-                      ? condition.unlockedFlags.filter(f => f !== flag.id)
-                      : [...condition.unlockedFlags, flag.id];
-                    onUpdate({ ...condition, unlockedFlags: newFlags });
-                  }}
-                  className="accent-green-500 h-3 w-3 flex-shrink-0"
-                />
-                <span className="text-xs text-green-300 font-mono">{flag.part || flag.id}</span>
-                {flag.description && (
-                  <span className="text-[10px] text-gray-500 truncate">{flag.description}</span>
-                )}
-              </label>
-            );
-          })}
-        </div>
-      )}
-    </div>
-
-    {/* Hint */}
-    <div>
-      <label className="block text-[10px] text-gray-500 mb-0.5">Hint</label>
-      <input
-        type="text"
-        value={condition.hint}
-        onChange={(e) => onUpdate({ ...condition, hint: e.target.value })}
-        placeholder="Hint..."
-        className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-green-500"
-      />
-    </div>
-  </div>
-);
-
 const TOOL_LABELS: Record<Tool, string> = {
   pointer: 'Pointer',
   magnifier: 'Magnifier',
   multimeter: 'Multimeter',
   probes: 'UART',
-  terminal: 'Terminal',
   'firmware-dump': 'FW Dump',
   custom: 'Custom',
 };
@@ -567,10 +436,12 @@ const SPI_ROLE_COLORS: Record<SpiRole, string> = {
 const FirmwareDumpConfigSection = ({
   config,
   availablePins,
+  terminalComponents,
   onUpdate,
 }: {
   config: import('@/data/exercise').FirmwareDumpToolConfig | undefined;
-  availablePins: Array<{ id: string; role: import('@/data/exercise').SpiRole; label: string }>;
+  availablePins: Array<{ id: string; role: string; label: string }>;
+  terminalComponents: Array<{ id: string; name: string }>;
   onUpdate: (updates: Partial<import('@/data/exercise').FirmwareDumpToolConfig>) => void;
 }) => {
   const probes = config?.probes ?? [];
@@ -702,9 +573,33 @@ const FirmwareDumpConfigSection = ({
         />
       </div>
 
+      {/* Terminal to launch */}
+      <div>
+        <label className="block text-xs text-gray-400 mb-1 flex items-center gap-1">
+          <TerminalSquare className="h-3 w-3" />
+          Terminal to launch on connection
+        </label>
+        {terminalComponents.length > 0 ? (
+          <select
+            value={config?.terminalComponentId ?? ''}
+            onChange={(e) => onUpdate({ terminalComponentId: e.target.value || undefined })}
+            className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-orange-500"
+          >
+            <option value="">-- None --</option>
+            {terminalComponents.map(tc => (
+              <option key={tc.id} value={tc.id}>{tc.name}</option>
+            ))}
+          </select>
+        ) : (
+          <p className="text-[10px] text-gray-500 italic">
+            Create a terminal component in the Terminal tab first.
+          </p>
+        )}
+      </div>
+
       {availablePins.length === 0 && (
         <p className="text-[10px] text-orange-400/80 italic">
-          Place SPI pins on the PCB (Init tab → Pin) to configure probe-to-pin mappings.
+          Place pins on the PCB (Init tab → Pin) to configure probe-to-pin mappings.
         </p>
       )}
     </div>

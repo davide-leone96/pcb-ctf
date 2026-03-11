@@ -3,8 +3,9 @@
 
 import { useState, useEffect } from 'react';
 import { useSettingsStore, type DraftObjective } from '@/store/settingsStore';
+import { useTerminalSettingsStore } from '@/store/terminalSettingsStore';
 import { Button } from '@/components/ui/button';
-import { HardDrive, AlertTriangle } from 'lucide-react';
+import { HardDrive, AlertTriangle, TerminalSquare } from 'lucide-react';
 
 interface FirmwareDumpObjectivePopupProps {
   objective: DraftObjective;
@@ -13,6 +14,7 @@ interface FirmwareDumpObjectivePopupProps {
 
 const FirmwareDumpObjectivePopup = ({ objective, containerDims }: FirmwareDumpObjectivePopupProps) => {
   const { saveObjective, updateObjective, cancelObjectiveEdit, toolConfig } = useSettingsStore();
+  const { terminalComponents } = useTerminalSettingsStore();
 
   const isNew = objective.instruction === '' && objective.hint === '' && objective.flagPart === '';
 
@@ -20,12 +22,14 @@ const FirmwareDumpObjectivePopup = ({ objective, containerDims }: FirmwareDumpOb
   const [instruction, setInstruction] = useState(objective.instruction);
   const [hint, setHint] = useState(objective.hint);
   const [flagPart, setFlagPart] = useState(objective.flagPart);
+  const [terminalComponentId, setTerminalComponentId] = useState(objective.terminalComponentId || '');
 
   useEffect(() => {
     setName(objective.name);
     setInstruction(objective.instruction);
     setHint(objective.hint);
     setFlagPart(objective.flagPart);
+    setTerminalComponentId(objective.terminalComponentId || '');
   }, [objective]);
 
   const fwConfig = toolConfig.firmwareDump;
@@ -38,7 +42,7 @@ const FirmwareDumpObjectivePopup = ({ objective, containerDims }: FirmwareDumpOb
       hint,
       flagPart: flagPart || name.toUpperCase().replace(/\s+/g, '_'),
       customToolId: '',
-      terminalComponentId: '',
+      terminalComponentId,
       pinConditions: [],
       pinLogic: 'AND' as const,
       bootStageConditions: [],
@@ -85,6 +89,26 @@ const FirmwareDumpObjectivePopup = ({ objective, containerDims }: FirmwareDumpOb
           </div>
         )}
       </div>
+
+      {/* Terminal to launch on dump completion */}
+      {terminalComponents.length > 0 && (
+        <div className="mb-3">
+          <label className="block text-xs text-gray-400 mb-1 flex items-center gap-1">
+            <TerminalSquare className="h-3 w-3" />
+            Terminal to launch on dump completion
+          </label>
+          <select
+            value={terminalComponentId}
+            onChange={(e) => setTerminalComponentId(e.target.value)}
+            className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white focus:outline-none focus:border-orange-500 transition-colors"
+          >
+            <option value="">-- None --</option>
+            {terminalComponents.map(tc => (
+              <option key={tc.id} value={tc.id}>{tc.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Title */}
       <div className="mb-3">

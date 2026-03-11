@@ -208,7 +208,7 @@ const LensContentLayer: React.FC<LensContentLayerProps> = ({
     }
 
     // === UART ===
-    const showUartOverlay = activeTool === 'probes' || activeTool === 'terminal';
+    const showUartOverlay = activeTool === 'probes';
     if (showUartOverlay && adapterPosition) {
       // Cavi UART connessi (fissi)
       uartConnections.forEach((conn) => {

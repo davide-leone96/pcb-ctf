@@ -9,8 +9,8 @@ export type ObjectiveType = 'component' | 'uart' | 'terminal' | 'pin' | 'firmwar
  * Tool hardcoded del simulatore + 'custom' per i tool definiti dall'autore.
  * 'custom' NON è incluso in ALL_TOOLS per evitare che appaia nei toggle degli step.
  */
-export type Tool = 'pointer' | 'magnifier' | 'multimeter' | 'probes' | 'terminal' | 'firmware-dump' | 'custom';
-export const ALL_TOOLS: Tool[] = ['pointer', 'magnifier', 'multimeter', 'probes', 'terminal', 'firmware-dump'];
+export type Tool = 'pointer' | 'magnifier' | 'multimeter' | 'probes' | 'firmware-dump' | 'custom';
+export const ALL_TOOLS: Tool[] = ['pointer', 'magnifier', 'multimeter', 'probes', 'firmware-dump'];
 
 export interface PinCondition {
   pinId: string;
@@ -103,6 +103,8 @@ export interface FirmwareDumpToolConfig {
   filePath: string;
   fileName: string;
   dumpDurationSec: number;
+  /** Terminal component da avviare automaticamente dopo firmware dump completato */
+  terminalComponentId?: string;
 }
 
 /**
@@ -124,6 +126,8 @@ export interface UartConnectorConfig {
   persistAfterConnection: boolean;
   /** ID degli step in cui il connettore resta visibile (con stato connesso) dopo la prima connessione */
   visibleInSteps: string[];
+  /** Terminal component da avviare automaticamente dopo connessione UART corretta */
+  terminalComponentId?: string;
 }
 
 export interface TerminalToolConfig {
@@ -256,7 +260,7 @@ export const defaultExerciseData: Exercise = {
       description:
         "Connessione UART stabilita! Ora hai accesso alla console seriale del dispositivo. In questo step dovrai esplorare il sistema embedded attraverso il terminale, analizzare la configurazione di U-Boot, ottenere accesso root, cercare credenziali e vulnerabilità. Ogni scoperta rivelerà una parte della flag finale. Seleziona lo strumento 'Terminale' dalla sidebar per iniziare.",
       expectedFlag: 'flag{b00t_r00t_h4sh_l34k_1nj3ct_sh3ll}',
-      availableTools: ['terminal'],
+      availableTools: ['pointer'],
       objectives: [
         {
           id: 'boot',
