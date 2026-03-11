@@ -3,7 +3,7 @@
 'use client';
 
 import ToolButton from '@/components/layout/exercise/ToolButton';
-import { Hand, Search, Wrench, Cable, TerminalSquare, HardDrive, type LucideIcon } from 'lucide-react';
+import { Hand, Search, Wrench, Cable, HardDrive, type LucideIcon } from 'lucide-react';
 import { useExerciseStore, Tool } from '@/store/exerciseStore';
 
 const tools: { id: Tool; label: string; icon: LucideIcon }[] = [
@@ -11,7 +11,6 @@ const tools: { id: Tool; label: string; icon: LucideIcon }[] = [
   { id: 'magnifier', label: 'Magnifier', icon: Search },
   { id: 'multimeter', label: 'Multimeter', icon: Wrench },
   { id: 'probes', label: 'UART Connection', icon: Cable },
-  { id: 'terminal', label: 'Terminal', icon: TerminalSquare },
   { id: 'firmware-dump', label: 'Firmware Dump', icon: HardDrive },
 ];
 
@@ -28,13 +27,6 @@ const Sidebar = () => {
     ? tools.filter(t => availableTools.includes(t.id))
     : tools;
 
-  // Il terminale non può essere disattivato se toolConfig.terminal.persistent oppure
-  // se un obiettivo terminal ha terminalPersistent (retrocompatibilità)
-  const terminalPersistent = exerciseData?.toolConfig?.terminal?.persistent ??
-    (exerciseData?.steps.some(s =>
-      s.objectives.some(o => o.type === 'terminal' && o.terminalPersistent)
-    ) ?? false);
-
   return (
     <aside className="flex flex-col items-center gap-y-4 rounded-lg bg-gray-800 p-4">
       <h2 className="sr-only">Toolbar</h2>
@@ -47,11 +39,6 @@ const Sidebar = () => {
           if (isMagnifier) {
             toggleLensVisible();
           } else {
-            // Se il terminale è persistente e attivo, blocca disattivazione e cambio tool
-            if (terminalPersistent && activeTools.includes('terminal')) {
-              if (tool.id !== 'terminal') return; // non può cambiare tool
-              return; // non può disattivare il terminale
-            }
             setActiveTool(tool.id);
           }
         };

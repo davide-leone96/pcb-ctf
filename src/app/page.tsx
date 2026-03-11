@@ -32,6 +32,7 @@ export default function Home() {
     startStep,
     validateAndCompleteStep,
     setExerciseData,
+    activeTerminalComponentId,
   } = useExerciseStore();
 
   useEffect(() => {
@@ -61,12 +62,6 @@ export default function Home() {
 
   const currentStep = exerciseData.steps[currentStepIndex];
   const currentObjective = currentStep?.objectives?.[currentObjectiveIndex];
-
-  // Il terminale è bloccato se toolConfig.terminal.requiresUart oppure
-  // se esistono obiettivi terminal con requiresUart (retrocompatibilità)
-  const terminalRequiresUart = exerciseData.toolConfig?.terminal?.requiresUart ??
-    exerciseData.steps.some(s => s.objectives.some(o => o.type === 'terminal' && o.requiresUart));
-  const canAccessTerminal = !terminalRequiresUart || uartEverConnected;
 
   const handleNextStep = () => {
     setShowStepCompletionDialog(true);
@@ -129,7 +124,7 @@ export default function Home() {
             <div className="md:col-span-1">
               <FlagDisplay
                 flag={
-                  activeTools.includes('terminal')
+                  activeTerminalComponentId
                     ? buildTerminalFlag(terminalDiscoveries)
                     : flag
                 }
@@ -144,17 +139,8 @@ export default function Home() {
 
           {/* Row 2, Col 2: contenuto principale */}
           <div className="col-start-2 row-start-2 border-2 border-dashed border-gray-500 rounded-lg p-4 relative">
-            {activeTools.includes('terminal') ? (
-              canAccessTerminal ? (
-                <Terminal />
-              ) : (
-                <div className="h-[500px] bg-black/95 rounded-lg text-white font-mono text-sm flex items-center justify-center border border-red-900/50">
-                  <div className="text-center">
-                    <p className="text-yellow-400 font-bold text-base">No UART connection</p>
-                    <p className="text-gray-400 mt-2">Connect the probes from the USB-to-Serial adapter to the UART pins before opening the terminal.</p>
-                  </div>
-                </div>
-              )
+            {activeTerminalComponentId ? (
+              <Terminal terminalComponentId={activeTerminalComponentId} />
             ) : (
               <PCBViewer />
             )}

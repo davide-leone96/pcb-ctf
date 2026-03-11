@@ -42,11 +42,15 @@ let persistedLocalCmdHistory: string[] = [];
 // COMPONENT
 // ============================================
 
-export default function Terminal() {
+interface TerminalProps {
+  terminalComponentId?: string;
+}
+
+export default function Terminal({ terminalComponentId }: TerminalProps) {
   const { terminalDiscoveries, addTerminalDiscovery, exerciseData } = useExerciseStore();
 
   // Load terminal config dynamically (localStorage → static fallback)
-  const { config: terminalConfigDynamic } = useTerminalConfig();
+  const { config: terminalConfigDynamic } = useTerminalConfig(terminalComponentId);
 
   // Initialize configuration and executor (rebuild when config changes)
   const configLoader = useMemo(() => new TerminalConfigLoader(terminalConfigDynamic), [terminalConfigDynamic]);

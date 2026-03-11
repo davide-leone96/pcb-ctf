@@ -67,6 +67,9 @@ interface ExerciseState {
   firmwareDumpSnapTarget: string | null;
   firmwareDumpPosition: MousePosition | null;
   firmwareDumpStatus: FirmwareDumpStatus;
+
+  // Terminal auto-launch (set by UART/firmware-dump completion)
+  activeTerminalComponentId: string | null;
 }
 
 interface ExerciseActions {
@@ -167,6 +170,9 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   firmwareDumpPosition: null,
   firmwareDumpStatus: 'idle',
 
+  // Terminal auto-launch
+  activeTerminalComponentId: null,
+
   // Azioni
   resetExercise: () => {
     const { exerciseData: data } = get();
@@ -211,6 +217,8 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
       firmwareDumpSnapTarget: null,
       firmwareDumpPosition: null,
       firmwareDumpStatus: 'idle',
+      // Terminal auto-launch reset
+      activeTerminalComponentId: null,
     });
   },
 
@@ -425,7 +433,18 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
       const { stepMode, exerciseData: storeData, currentStepIndex, currentObjectiveIndex } = get();
       const currentStep = storeData?.steps?.[currentStepIndex];
       const currentObj = currentStep?.objectives?.[currentObjectiveIndex];
+
+      // Auto-launch terminal from toolConfig (UART connector configuration)
+      const uartTerminalId = storeData?.toolConfig?.uartConnector?.terminalComponentId;
+      if (uartTerminalId && !get().activeTerminalComponentId) {
+        set({ activeTerminalComponentId: uartTerminalId });
+      }
+
       if (stepMode === 'active') {
+        // Auto-launch terminal if the objective specifies a terminal component
+        if (currentObj?.terminalComponentId) {
+          set({ activeTerminalComponentId: currentObj.terminalComponentId });
+        }
         // Completa obiettivi di tipo 'uart' direttamente
         if (currentObj?.type === 'uart') {
           get()._completeCurrentObjective();
@@ -682,7 +701,18 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
     const { stepMode, exerciseData: data, currentStepIndex, currentObjectiveIndex } = get();
     const currentStep = data?.steps?.[currentStepIndex];
     const currentObj = currentStep?.objectives?.[currentObjectiveIndex];
+
+    // Auto-launch terminal from toolConfig (firmware dump configuration)
+    const fwTerminalId = data?.toolConfig?.firmwareDump?.terminalComponentId;
+    if (fwTerminalId && !get().activeTerminalComponentId) {
+      set({ activeTerminalComponentId: fwTerminalId });
+    }
+
     if (stepMode === 'active' && currentObj?.type === 'firmware-dump') {
+      // Auto-launch terminal if the objective specifies a terminal component (overrides toolConfig)
+      if (currentObj.terminalComponentId) {
+        set({ activeTerminalComponentId: currentObj.terminalComponentId });
+      }
       get()._completeCurrentObjective();
     }
   },

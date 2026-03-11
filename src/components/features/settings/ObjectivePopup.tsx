@@ -3,7 +3,9 @@
 
 import { useState, useEffect } from 'react';
 import { useSettingsStore, type DraftObjective, type PinCondition } from '@/store/settingsStore';
+import { useTerminalSettingsStore } from '@/store/terminalSettingsStore';
 import { Button } from '@/components/ui/button';
+import { TerminalSquare } from 'lucide-react';
 
 const TERMINAL_OPTIONS = [
   { value: '', label: 'Select terminal...' },
@@ -26,6 +28,7 @@ interface ObjectivePopupProps {
 
 const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
   const { saveObjective, updateObjective, cancelObjectiveEdit, pins } = useSettingsStore();
+  const { terminalComponents } = useTerminalSettingsStore();
 
   const isNew = objective.instruction === '' && objective.hint === '' && objective.flagPart === '';
   const [name, setName] = useState(objective.name);
@@ -34,6 +37,10 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
   const [flagPart, setFlagPart] = useState(objective.flagPart);
   const [conditions, setConditions] = useState<PinCondition[]>(objective.pinConditions);
   const [pinLogic, setPinLogic] = useState<'AND' | 'OR'>(objective.pinLogic);
+  const [terminalComponentId, setTerminalComponentId] = useState(objective.terminalComponentId || '');
+
+  // Show terminal selector for uart and pin objectives (terminal launches on completion)
+  const showTerminalSelector = (objective.type === 'uart' || objective.type === 'pin') && terminalComponents.length > 0;
 
   useEffect(() => {
     setName(objective.name);
@@ -42,6 +49,7 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
     setFlagPart(objective.flagPart);
     setConditions(objective.pinConditions);
     setPinLogic(objective.pinLogic);
+    setTerminalComponentId(objective.terminalComponentId || '');
   }, [objective]);
 
   const updateConditionTerminal = (pinId: string, terminal: string) => {
@@ -57,7 +65,7 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
       hint,
       flagPart: flagPart || name.toUpperCase().replace(/\s+/g, '_'),
       customToolId: '',
-      terminalComponentId: '',
+      terminalComponentId,
       bootStageConditions: [],
       requiresUart: false,
       terminalPersistent: false,
@@ -170,6 +178,26 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
               );
             })}
           </div>
+        </div>
+      )}
+
+      {/* Terminal to launch on completion */}
+      {showTerminalSelector && (
+        <div className="mb-3">
+          <label className="block text-xs text-gray-400 mb-1 flex items-center gap-1">
+            <TerminalSquare className="h-3 w-3" />
+            Terminal to launch on completion
+          </label>
+          <select
+            value={terminalComponentId}
+            onChange={(e) => setTerminalComponentId(e.target.value)}
+            className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors"
+          >
+            <option value="">-- None --</option>
+            {terminalComponents.map(tc => (
+              <option key={tc.id} value={tc.id}>{tc.name}</option>
+            ))}
+          </select>
         </div>
       )}
 

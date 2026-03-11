@@ -10,6 +10,7 @@ import yaml from 'js-yaml';
 import ComponentPopup from './ComponentPopup';
 import ObjectivePopup from './ObjectivePopup';
 import TerminalObjectivePopup from './TerminalObjectivePopup';
+import FirmwareDumpObjectivePopup from './FirmwareDumpObjectivePopup';
 import PinPopup from './PinPopup';
 import TerminalPreviewPanel from './TerminalPreviewPanel';
 
@@ -750,6 +751,8 @@ const SettingsCanvas = () => {
         {activeObjective && containerDims.width > 0 && (
           activeObjective.type === 'terminal'
             ? <TerminalObjectivePopup objective={activeObjective} containerDims={containerDims} />
+            : activeObjective.type === 'firmware-dump'
+            ? <FirmwareDumpObjectivePopup objective={activeObjective} containerDims={containerDims} />
             : <ObjectivePopup objective={activeObjective} containerDims={containerDims} />
         )}
 
