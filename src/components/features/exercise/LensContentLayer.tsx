@@ -20,8 +20,11 @@ interface LensContentLayerProps {
   lensViewport: LensViewport;
   containerDims: { width: number; height: number };
 
-  // Tool attivo
+  // Tool attivo e tool abilitati
   activeTool: Tool;
+  activeTools: Tool[];
+  showUartOverlay: boolean;
+  showFirmwareDumpOverlay: boolean;
 
   // Multimetro
   probe1Pos: Point | null;
@@ -79,6 +82,9 @@ type VisibleElement =
 const LensContentLayer: React.FC<LensContentLayerProps> = ({
   lensViewport,
   activeTool,
+  activeTools,
+  showUartOverlay,
+  showFirmwareDumpOverlay,
   probe1Pos,
   probe2Pos,
   activeProbePos,
@@ -106,7 +112,7 @@ const LensContentLayer: React.FC<LensContentLayerProps> = ({
     const elements: VisibleElement[] = [];
 
     // === MULTIMETRO ===
-    if (activeTool === 'multimeter') {
+    if (activeTools.includes('multimeter')) {
       // Cavo sonda 1 (rosso) - fisso
       if (probe1Pos && wireOrigin1) {
         const pathD = getCurvePath(wireOrigin1, probe1Pos);
@@ -208,7 +214,6 @@ const LensContentLayer: React.FC<LensContentLayerProps> = ({
     }
 
     // === UART ===
-    const showUartOverlay = activeTool === 'probes';
     if (showUartOverlay && adapterPosition) {
       // Cavi UART connessi (fissi)
       uartConnections.forEach((conn) => {
@@ -290,7 +295,7 @@ const LensContentLayer: React.FC<LensContentLayerProps> = ({
     }
 
     // === FIRMWARE DUMP ===
-    if (activeTool === 'firmware-dump' && dumperPosition && firmwareDumpConnections && getFirmwareDumpWireOrigin) {
+    if (showFirmwareDumpOverlay && dumperPosition && firmwareDumpConnections && getFirmwareDumpWireOrigin) {
       firmwareDumpConnections.forEach((conn) => {
         if (!conn.pinId) return;
         const wireOrigin = getFirmwareDumpWireOrigin(conn.probeId);
@@ -321,6 +326,9 @@ const LensContentLayer: React.FC<LensContentLayerProps> = ({
   }, [
     lensViewport,
     activeTool,
+    activeTools,
+    showUartOverlay,
+    showFirmwareDumpOverlay,
     probe1Pos,
     probe2Pos,
     activeProbePos,

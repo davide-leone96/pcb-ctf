@@ -4,7 +4,7 @@
     "name": "CTF-1",
     "description": "TP-LINK",
     "createdAt": "2026-03-06T22:10:23.396Z",
-    "updatedAt": "2026-03-11T17:06:07.537Z"
+    "updatedAt": "2026-03-13T12:32:30.521Z"
   },
   "exerciseConfig": {
     "pcbImage": "/images/preset-ctf-1-mmfg76ska98m.png",
@@ -221,8 +221,7 @@
         "visibleInSteps": [
           "step-mm5hzst08lpuk",
           "step-mmfg4aupwth6w"
-        ],
-        "terminalComponentId": "tc-mml69qr052j45"
+        ]
       },
       "terminal": {
         "requiresUart": false,
@@ -1175,7 +1174,12 @@
                 "name": "ls",
                 "description": "List directory contents",
                 "handler": "builtin",
-                "builtinType": "ls"
+                "builtinType": "ls",
+                "sideEffects": {
+                  "unlockFlags": [
+                    "flag-mmnddzmbliy4k"
+                  ]
+                }
               },
               "cd": {
                 "name": "cd",
@@ -1246,7 +1250,19 @@
               "SHELL": "/bin/sh"
             }
           }
-        ]
+        ],
+        "flags": {
+          "parts": [
+            {
+              "id": "flag-mmnddzmbliy4k",
+              "part": "",
+              "description": "Comando per visualizzare il contenuto del direttorio",
+              "hint": "ls"
+            }
+          ],
+          "completeFlag": "test",
+          "showProgress": true
+        }
       }
     }
   ]

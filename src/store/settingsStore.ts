@@ -163,6 +163,7 @@ interface SettingsState {
   toolConfig: ToolConfig;
   // Completion dialog config
   completionDialog: CompletionDialogConfig;
+  completionDialogEnabled: boolean;
 }
 
 interface SettingsActions {
@@ -275,6 +276,7 @@ interface SettingsActions {
   updateFirmwareDumpToolConfig: (updates: Partial<FirmwareDumpToolConfig>) => void;
   toggleUartVisibleStep: (stepId: string) => void;
   updateCompletionDialog: (updates: Partial<CompletionDialogConfig>) => void;
+  toggleCompletionDialog: () => void;
 }
 
 type SettingsStore = SettingsState & SettingsActions;
@@ -362,6 +364,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     downloadFileName: '',
     showCopyFlag: true,
   },
+  completionDialogEnabled: false,
 
   // --- Tool ---
 
@@ -1287,7 +1290,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       ...(fwDumpPins.length > 0 ? { firmwareDumpPins: fwDumpPins } : {}),
       ...(get().toolGroups.length > 0 ? { toolGroups: get().toolGroups } : {}),
       toolConfig: get().toolConfig,
-      completionDialog: get().completionDialog,
+      ...(get().completionDialogEnabled ? { completionDialog: get().completionDialog } : {}),
     };
 
     return JSON.stringify(exercise, null, 2);
@@ -1562,6 +1565,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
           downloadFileName: exercise.completionDialog?.downloadFileName ?? '',
           showCopyFlag: exercise.completionDialog?.showCopyFlag ?? true,
         },
+        completionDialogEnabled: !!exercise.completionDialog,
       });
     } catch { /* ignore invalid data */ }
   },
@@ -1643,6 +1647,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         downloadFileName: '',
         showCopyFlag: true,
       },
+      completionDialogEnabled: false,
     });
   },
 
@@ -1932,5 +1937,9 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     set({
       completionDialog: { ...get().completionDialog, ...updates },
     });
+  },
+
+  toggleCompletionDialog: () => {
+    set({ completionDialogEnabled: !get().completionDialogEnabled });
   },
 }));

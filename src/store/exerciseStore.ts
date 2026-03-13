@@ -70,6 +70,18 @@ interface ExerciseState {
 
   // Terminal auto-launch (set by UART/firmware-dump completion)
   activeTerminalComponentId: string | null;
+  /** Tab del terminale da attivare automaticamente quando il terminale si apre */
+  activeTerminalDefaultTab: string | null;
+  /** Flag progressiva del terminale (aggiornata dal componente Terminal) */
+  terminalCurrentFlag: string;
+  /** Il valore completeFlag del terminale (per costruire la flag combinata dello step) */
+  terminalCompleteFlag: string;
+  /** Se la challenge del terminale è stata completata */
+  terminalChallengeCompleted: boolean;
+  /** Descrizione del sotto-obiettivo terminale corrente (dalla flag part) */
+  terminalObjectiveDescription: string;
+  /** Hint del sotto-obiettivo terminale corrente (dalla flag part) */
+  terminalObjectiveHint: string;
 }
 
 interface ExerciseActions {
@@ -77,7 +89,7 @@ interface ExerciseActions {
   setExerciseData: (data: Exercise) => void;
   startStep: () => void;
   validateAndCompleteStep: (inputFlag: string) => boolean;
-  _completeCurrentObjective: () => void;
+  _completeCurrentObjective: (opts?: { fromTerminal?: boolean }) => void;
   _checkPinConditions: () => void;
 
   // Legacy actions
@@ -106,6 +118,15 @@ interface ExerciseActions {
   setUartAdapterPosition: (position: MousePosition | null) => void;
   validateFlag: (inputFlag: string, toolId: 'multimeter' | 'probes' | 'terminal') => boolean;
   unlockTool: (toolId: 'multimeter' | 'probes' | 'terminal') => void;
+
+  // Terminal challenge completion (called by Terminal component when all flags discovered)
+  completeTerminalChallenge: () => void;
+  /** Aggiorna la flag progressiva del terminale (chiamato dal componente Terminal) */
+  setTerminalCurrentFlag: (flag: string) => void;
+  /** Imposta il valore completeFlag del terminale */
+  setTerminalCompleteFlag: (flag: string) => void;
+  /** Aggiorna descrizione e hint del sotto-obiettivo terminale corrente */
+  setTerminalObjectiveInfo: (description: string, hint: string) => void;
 
   // Firmware dump actions
   selectFirmwareProbe: (probeId: string) => void;
@@ -172,6 +193,12 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
 
   // Terminal auto-launch
   activeTerminalComponentId: null,
+  activeTerminalDefaultTab: null,
+  terminalCurrentFlag: '',
+  terminalCompleteFlag: '',
+  terminalChallengeCompleted: false,
+  terminalObjectiveDescription: '',
+  terminalObjectiveHint: '',
 
   // Azioni
   resetExercise: () => {
@@ -219,6 +246,12 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
       firmwareDumpStatus: 'idle',
       // Terminal auto-launch reset
       activeTerminalComponentId: null,
+      activeTerminalDefaultTab: null,
+      terminalCurrentFlag: '',
+      terminalCompleteFlag: '',
+      terminalChallengeCompleted: false,
+      terminalObjectiveDescription: '',
+      terminalObjectiveHint: '',
     });
   },
 
@@ -346,24 +379,8 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
 
       set({ terminalDiscoveries: newDiscoveries });
 
-      // Completa l'obiettivo terminale corrente quando tutti i flag configurati sono stati scoperti
-      const { stepMode, exerciseData: storeData, currentStepIndex, currentObjectiveIndex } = get();
-      const currentStep = storeData?.steps?.[currentStepIndex];
-      const currentObj = currentStep?.objectives?.[currentObjectiveIndex];
-
-      if (stepMode === 'active' && currentObj?.type === 'terminal') {
-        // Cerca flag richiesti: prima dall'obiettivo, poi dal toolConfig globale
-        const objFlags = (currentObj.bootStageConditions ?? []).flatMap(c => c.unlockedFlags);
-        const globalFlags = (storeData?.toolConfig?.terminal?.bootStageConditions ?? []).flatMap(c => c.unlockedFlags);
-        const requiredFlags = objFlags.length > 0 ? objFlags : globalFlags;
-
-        if (
-          requiredFlags.length > 0 &&
-          requiredFlags.every(f => newDiscoveries.includes(f))
-        ) {
-          get()._completeCurrentObjective();
-        }
-      }
+      // La completion dell'obiettivo è ora gestita da completeTerminalChallenge(),
+      // chiamato dal componente Terminal quando tutti i flag del terminale sono scoperti.
     }
   },
 
@@ -435,9 +452,14 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
       const currentObj = currentStep?.objectives?.[currentObjectiveIndex];
 
       // Auto-launch terminal from toolConfig (UART connector configuration)
-      const uartTerminalId = storeData?.toolConfig?.uartConnector?.terminalComponentId;
-      if (uartTerminalId && !get().activeTerminalComponentId) {
-        set({ activeTerminalComponentId: uartTerminalId });
+      const uartConfig = storeData?.toolConfig?.uartConnector;
+      console.log('[hookUartProbe] allCorrect, uartConfig.terminalComponentId:', uartConfig?.terminalComponentId, 'current activeTerminal:', get().activeTerminalComponentId);
+      if (uartConfig?.terminalComponentId && !get().activeTerminalComponentId) {
+        set({
+          activeTerminalComponentId: uartConfig.terminalComponentId,
+          activeTerminalDefaultTab: uartConfig.terminalDefaultTab ?? null,
+        });
+        console.log('[hookUartProbe] SET activeTerminalComponentId to:', uartConfig.terminalComponentId);
       }
 
       if (stepMode === 'active') {
@@ -445,17 +467,16 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
         if (currentObj?.terminalComponentId) {
           set({ activeTerminalComponentId: currentObj.terminalComponentId });
         }
-        // Completa obiettivi di tipo 'uart' direttamente
+        // Completa obiettivi di tipo 'uart':
+        // - Se è stato lanciato un terminale → NON completare ora,
+        //   sarà completato da addTerminalDiscovery dopo tutti i flag terminale
+        // - Altrimenti → completa direttamente al collegamento dei pin
         if (currentObj?.type === 'uart') {
-          get()._completeCurrentObjective();
+          if (!get().activeTerminalComponentId) {
+            get()._completeCurrentObjective();
+          }
         }
-        // Completa anche obiettivi di tipo 'pin' che hanno condizioni adapter
-        // (configurati via settings page con pin conditions per UART)
-        else if (currentObj?.type === 'pin' && currentObj.pinConditions?.some(
-          (c: any) => c.terminal?.startsWith('adapter-')
-        )) {
-          get()._completeCurrentObjective();
-        }
+        // Obiettivi 'pin' con adapter sono gestiti da _checkPinConditions (sotto)
       }
     }
 
@@ -490,12 +511,13 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
     get()._completeCurrentObjective();
   },
 
-  _completeCurrentObjective: () => {
+  _completeCurrentObjective: (opts) => {
     const {
       currentStepIndex,
       currentObjectiveIndex,
       foundComponents,
       exerciseData: data,
+      activeTerminalComponentId,
     } = get();
 
     if (!data || !data.steps) return;
@@ -506,6 +528,13 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
     const currentObjective = currentStep.objectives[currentObjectiveIndex];
     if (!currentObjective) return;
 
+    // Se il terminale è attivo, solo completeTerminalChallenge può completare l'obiettivo
+    if (activeTerminalComponentId && !opts?.fromTerminal) {
+      console.log('[_completeCurrentObjective] BLOCKED: terminal active, caller:', new Error().stack?.split('\n')[2]);
+      return;
+    }
+    console.log('[_completeCurrentObjective] EXECUTING for:', currentObjective.id, currentObjective.type, 'fromTerminal:', opts?.fromTerminal, 'activeTerminal:', activeTerminalComponentId);
+
     // Previeni doppio completamento dello stesso obiettivo
     if (foundComponents.includes(currentObjective.id)) return;
 
@@ -515,6 +544,11 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
     let flagContent = '';
     for (let i = 0; i <= currentObjectiveIndex; i++) {
       flagContent += currentStep.objectives[i].flagPart;
+    }
+    // Se il terminale ha una completeFlag, aggiungila come parte della flag dello step
+    const { terminalCompleteFlag } = get();
+    if (terminalCompleteFlag) {
+      flagContent += '_' + terminalCompleteFlag;
     }
     const newFlag = `flag{${flagContent}}`;
 
@@ -576,7 +610,36 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
       : conditions.some(isConditionMet);
 
     if (satisfied) {
-      get()._completeCurrentObjective();
+      // Se le condizioni soddisfatte coinvolgono adapter pin, auto-launch terminale
+      const hasAdapterConditions = conditions.some(c =>
+        c.terminal.startsWith('adapter-')
+      );
+      if (hasAdapterConditions) {
+        // Marca UART come connesso (le condizioni adapter sono soddisfatte)
+        set({ uartConnected: true, uartEverConnected: true });
+
+        // Auto-launch terminal from toolConfig (UART connector)
+        const uartConfig = data?.toolConfig?.uartConnector;
+        if (uartConfig?.terminalComponentId && !get().activeTerminalComponentId) {
+          set({
+            activeTerminalComponentId: uartConfig.terminalComponentId,
+            activeTerminalDefaultTab: uartConfig.terminalDefaultTab ?? null,
+          });
+        }
+        // Auto-launch terminal from objective
+        if (currentObj.terminalComponentId && !get().activeTerminalComponentId) {
+          set({ activeTerminalComponentId: currentObj.terminalComponentId });
+        }
+      }
+
+      // Se è stato lanciato un terminale → NON completare ora,
+      // sarà completato da addTerminalDiscovery quando tutti i flag terminale sono scoperti.
+      // Se NON c'è un terminale → completa direttamente.
+      const termId = get().activeTerminalComponentId;
+      console.log('[_checkPinConditions] satisfied, activeTerminalComponentId:', termId);
+      if (!termId) {
+        get()._completeCurrentObjective();
+      }
     }
   },
 
@@ -642,6 +705,20 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   },
 
   // =========================================================================
+  // ===         TERMINAL CHALLENGE COMPLETION                            ===
+  // =========================================================================
+  completeTerminalChallenge: () => {
+    const { stepMode, activeTerminalComponentId } = get();
+    if (stepMode !== 'active' || !activeTerminalComponentId) return;
+    set({ terminalChallengeCompleted: true });
+    get()._completeCurrentObjective({ fromTerminal: true });
+  },
+
+  setTerminalCurrentFlag: (flag) => set({ terminalCurrentFlag: flag }),
+  setTerminalCompleteFlag: (flag) => set({ terminalCompleteFlag: flag }),
+  setTerminalObjectiveInfo: (description, hint) => set({ terminalObjectiveDescription: description, terminalObjectiveHint: hint }),
+
+  // =========================================================================
   // ===                     FIRMWARE DUMP ACTIONS                        ===
   // =========================================================================
   selectFirmwareProbe: (probeId) => {
@@ -703,9 +780,12 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
     const currentObj = currentStep?.objectives?.[currentObjectiveIndex];
 
     // Auto-launch terminal from toolConfig (firmware dump configuration)
-    const fwTerminalId = data?.toolConfig?.firmwareDump?.terminalComponentId;
-    if (fwTerminalId && !get().activeTerminalComponentId) {
-      set({ activeTerminalComponentId: fwTerminalId });
+    const fwConfig = data?.toolConfig?.firmwareDump;
+    if (fwConfig?.terminalComponentId && !get().activeTerminalComponentId) {
+      set({
+        activeTerminalComponentId: fwConfig.terminalComponentId,
+        activeTerminalDefaultTab: fwConfig.terminalDefaultTab ?? null,
+      });
     }
 
     if (stepMode === 'active' && currentObj?.type === 'firmware-dump') {
@@ -713,7 +793,11 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
       if (currentObj.terminalComponentId) {
         set({ activeTerminalComponentId: currentObj.terminalComponentId });
       }
-      get()._completeCurrentObjective();
+      // Se è stato lanciato un terminale → NON completare ora,
+      // sarà completato da addTerminalDiscovery quando tutti i flag terminale sono scoperti.
+      if (!get().activeTerminalComponentId) {
+        get()._completeCurrentObjective();
+      }
     }
   },
 
@@ -780,9 +864,7 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
 
     if (isLastStep) {
       // Tutti gli step completati
-      set({
-        isFinished: true,
-      });
+      set({ isFinished: true });
     } else {
       // Passa allo step successivo
       set({
@@ -795,6 +877,15 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
         lensVisible: false,
         lensIsAnchored: false,
         lensAnchorPosition: null,
+        // Reset terminal state for new step
+        activeTerminalComponentId: null,
+        activeTerminalDefaultTab: null,
+        terminalCurrentFlag: '',
+        terminalCompleteFlag: '',
+        terminalChallengeCompleted: false,
+        terminalDiscoveries: [],
+        terminalObjectiveDescription: '',
+        terminalObjectiveHint: '',
       });
     }
 

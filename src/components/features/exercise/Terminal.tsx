@@ -4,7 +4,6 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useExerciseStore } from '@/store/exerciseStore';
 import { Monitor, Wifi } from 'lucide-react';
-import TerminalChallengeCompleteDialog from './TerminalChallengeCompleteDialog';
 import { CommandExecutor } from '@/lib/terminal-command-executor';
 import { TerminalConfigLoader } from '@/lib/terminal-config-loader';
 import { registerBuiltinHandlers, getFileType, getStringsOutput } from '@/lib/terminal-builtin-handlers';
@@ -16,7 +15,8 @@ import type { CommandContext } from '@/types/terminal-config';
 // TYPES
 // ============================================
 
-type TerminalTab = 'uart' | 'local';
+/** Internal tab slot: 'primary' = first config tab, 'secondary' = second config tab */
+type TabSlot = 'primary' | 'secondary';
 
 type HistoryLine = {
   type: 'output' | 'input' | 'system' | 'flag' | 'error';
@@ -25,18 +25,17 @@ type HistoryLine = {
 };
 
 // ============================================
-// MODULE-LEVEL PERSISTED STATE (UART)
+// MODULE-LEVEL PERSISTED STATE (PRIMARY / SECONDARY)
 // ============================================
 
-let persistedUartHistory: HistoryLine[] | null = null;
+let persistedPrimaryHistory: HistoryLine[] | null = null;
 let persistedStage: string | null = null;
-let persistedUartPath = '/';
-let persistedUartCmdHistory: string[] = [];
+let persistedPrimaryPath = '/';
+let persistedPrimaryCmdHistory: string[] = [];
 
-// MODULE-LEVEL PERSISTED STATE (LOCAL)
-let persistedLocalHistory: HistoryLine[] | null = null;
-let persistedLocalPath = '/home/kali';
-let persistedLocalCmdHistory: string[] = [];
+let persistedSecondaryHistory: HistoryLine[] | null = null;
+let persistedSecondaryPath = '/home/kali';
+let persistedSecondaryCmdHistory: string[] = [];
 
 // ============================================
 // COMPONENT
@@ -44,10 +43,12 @@ let persistedLocalCmdHistory: string[] = [];
 
 interface TerminalProps {
   terminalComponentId?: string;
+  /** Tab ID (from config) da attivare all'apertura del terminale */
+  defaultTab?: string;
 }
 
-export default function Terminal({ terminalComponentId }: TerminalProps) {
-  const { terminalDiscoveries, addTerminalDiscovery, exerciseData } = useExerciseStore();
+export default function Terminal({ terminalComponentId, defaultTab }: TerminalProps) {
+  const { terminalDiscoveries, addTerminalDiscovery, completeTerminalChallenge, setTerminalCurrentFlag, setTerminalCompleteFlag, setTerminalObjectiveInfo } = useExerciseStore();
 
   // Load terminal config dynamically (localStorage → static fallback)
   const { config: terminalConfigDynamic } = useTerminalConfig(terminalComponentId);
@@ -65,32 +66,69 @@ export default function Terminal({ terminalComponentId }: TerminalProps) {
     return exec;
   }, []);
 
-  // Tab state
-  const [activeTab, setActiveTab] = useState<TerminalTab>('uart');
+  // ============================================
+  // DYNAMIC TAB MAPPING
+  // ============================================
 
-  // UART state
-  const [uartHistory, setUartHistory] = useState<HistoryLine[]>(
-    persistedUartHistory || []
+  const configTabs = useMemo(() => configLoader.getTabs(), [configLoader]);
+
+  /** Map internal slot → actual config tab ID */
+  const tabIdMap = useMemo(() => ({
+    primary: configTabs[0]?.id || 'uart',
+    secondary: configTabs[1]?.id || 'local',
+  }), [configTabs]);
+
+  /** Display info for each tab */
+  const tabInfo = useMemo(() => ({
+    primary: { name: configTabs[0]?.name || 'UART Console', icon: 'wifi' as const },
+    secondary: { name: configTabs[1]?.name || 'Local Machine', icon: 'monitor' as const },
+  }), [configTabs]);
+
+  const hasTwoTabs = configTabs.length >= 2;
+
+  /** Determine initial slot from defaultTab prop */
+  const initialSlot = useMemo((): TabSlot => {
+    if (!defaultTab) return 'primary';
+    // Match by config tab ID
+    if (defaultTab === tabIdMap.secondary) return 'secondary';
+    if (defaultTab === tabIdMap.primary) return 'primary';
+    // Legacy: match by old 'uart'/'local' names
+    if (defaultTab === 'local' && hasTwoTabs) return 'secondary';
+    return 'primary';
+  }, [defaultTab, tabIdMap, hasTwoTabs]);
+
+  // Tab state
+  const [activeSlot, setActiveSlot] = useState<TabSlot>(initialSlot);
+
+  /** The actual config tab ID for the currently active slot */
+  const activeTabId = tabIdMap[activeSlot];
+
+  // PRIMARY state
+  const [primaryHistory, setPrimaryHistory] = useState<HistoryLine[]>(
+    persistedPrimaryHistory || []
   );
   const [stage, setStage] = useState<string>(
-    persistedStage || configLoader.getInitialBootStage('uart') || 'connecting'
+    persistedStage || configLoader.getInitialBootStage(tabIdMap.primary) || 'connecting'
   );
-  const [uartPath, setUartPath] = useState(persistedUartPath);
-  const [uartCmdHistory, setUartCmdHistory] = useState<string[]>(persistedUartCmdHistory);
+  const [primaryPath, setPrimaryPath] = useState(
+    persistedPrimaryPath !== '/' ? persistedPrimaryPath : (configLoader.getInitialPath(tabIdMap.primary) || '/')
+  );
+  const [primaryCmdHistory, setPrimaryCmdHistory] = useState<string[]>(persistedPrimaryCmdHistory);
 
-  // Local state
-  const [localHistory, setLocalHistory] = useState<HistoryLine[]>(
-    persistedLocalHistory || []
+  // SECONDARY state
+  const [secondaryHistory, setSecondaryHistory] = useState<HistoryLine[]>(
+    persistedSecondaryHistory || []
   );
-  const [localPath, setLocalPath] = useState(persistedLocalPath);
-  const [localCmdHistory, setLocalCmdHistory] = useState<string[]>(persistedLocalCmdHistory);
+  const [secondaryPath, setSecondaryPath] = useState(
+    persistedSecondaryPath !== '/home/kali' ? persistedSecondaryPath : (configLoader.getInitialPath(tabIdMap.secondary) || '/home/kali')
+  );
+  const [secondaryCmdHistory, setSecondaryCmdHistory] = useState<string[]>(persistedSecondaryCmdHistory);
 
   // Input state
   const [currentInput, setCurrentInput] = useState('');
   const [cmdHistoryIndex, setCmdHistoryIndex] = useState(-1);
 
   // UI state
-  const [showCompleteDialog, setShowCompleteDialog] = useState(false);
 
   // Refs
   const inputRef = useRef<HTMLInputElement>(null);
@@ -98,9 +136,10 @@ export default function Terminal({ terminalComponentId }: TerminalProps) {
   const bootTimerRef = useRef<NodeJS.Timeout | null>(null);
   const bootAnimRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Get current history and setHistory based on active tab
-  const history = activeTab === 'uart' ? uartHistory : localHistory;
-  const setHistory = activeTab === 'uart' ? setUartHistory : setLocalHistory;
+  // Get current history and setHistory based on active slot
+  const isPrimary = activeSlot === 'primary';
+  const history = isPrimary ? primaryHistory : secondaryHistory;
+  const setHistory = isPrimary ? setPrimaryHistory : setSecondaryHistory;
 
   // Auto-scroll to bottom when history changes
   useEffect(() => {
@@ -111,22 +150,22 @@ export default function Terminal({ terminalComponentId }: TerminalProps) {
 
   // Persist state
   useEffect(() => {
-    persistedUartHistory = uartHistory;
+    persistedPrimaryHistory = primaryHistory;
     persistedStage = stage;
-    persistedUartPath = uartPath;
-    persistedUartCmdHistory = uartCmdHistory;
-  }, [uartHistory, stage, uartPath, uartCmdHistory]);
+    persistedPrimaryPath = primaryPath;
+    persistedPrimaryCmdHistory = primaryCmdHistory;
+  }, [primaryHistory, stage, primaryPath, primaryCmdHistory]);
 
   useEffect(() => {
-    persistedLocalHistory = localHistory;
-    persistedLocalPath = localPath;
-    persistedLocalCmdHistory = localCmdHistory;
-  }, [localHistory, localPath, localCmdHistory]);
+    persistedSecondaryHistory = secondaryHistory;
+    persistedSecondaryPath = secondaryPath;
+    persistedSecondaryCmdHistory = secondaryCmdHistory;
+  }, [secondaryHistory, secondaryPath, secondaryCmdHistory]);
 
   // Focus input on mount and tab switch
   useEffect(() => {
     inputRef.current?.focus();
-  }, [activeTab]);
+  }, [activeSlot]);
 
   // Cleanup timers on unmount
   useEffect(() => {
@@ -136,35 +175,62 @@ export default function Terminal({ terminalComponentId }: TerminalProps) {
     };
   }, []);
 
+  // Set terminal's completeFlag in the store so it can be included in the step flag
+  useEffect(() => {
+    const completeFlag = configLoader.getCompleteFlag();
+    if (completeFlag) {
+      setTerminalCompleteFlag(completeFlag);
+    }
+  }, [configLoader, setTerminalCompleteFlag]);
+
   // --- Flag discovery (uses store) ---
   const discoverFlag = useCallback(
     (flagId: string) => {
       if (terminalDiscoveries.includes(flagId)) return;
       addTerminalDiscovery(flagId);
-      // Flag piece will appear silently in the flag box above (no terminal feedback)
     },
     [terminalDiscoveries, addTerminalDiscovery]
   );
 
-  // Show completion dialog when all flag parts are discovered
+  // Update progressive terminal flag and current sub-objective info in store
   useEffect(() => {
     const flagParts = configLoader.getFlagParts();
-    if (terminalDiscoveries.length === flagParts.length && flagParts.length > 0) {
-      setShowCompleteDialog(true);
+    // When all parts are discovered, show the author's completeFlag; otherwise build progressively
+    const allDiscovered = flagParts.length > 0 && flagParts.every(fp => terminalDiscoveries.includes(fp.id));
+    const currentFlag = allDiscovered
+      ? (configLoader.getCompleteFlag() || configLoader.buildCurrentFlag(terminalDiscoveries))
+      : configLoader.buildCurrentFlag(terminalDiscoveries);
+    setTerminalCurrentFlag(currentFlag);
+
+    // Find next undiscovered flag part → its description/hint become the current sub-objective
+    const nextPart = flagParts.find(fp => !terminalDiscoveries.includes(fp.id));
+    if (nextPart) {
+      setTerminalObjectiveInfo(nextPart.description, nextPart.hint);
+    } else if (flagParts.length > 0) {
+      setTerminalObjectiveInfo('All flags discovered!', '');
     }
-  }, [terminalDiscoveries, configLoader]);
+  }, [terminalDiscoveries, configLoader, setTerminalCurrentFlag, setTerminalObjectiveInfo]);
+
+  // Complete objective when all flag parts are discovered
+  useEffect(() => {
+    const flagParts = configLoader.getFlagParts();
+    if (flagParts.length > 0 && flagParts.every(fp => terminalDiscoveries.includes(fp.id))) {
+      completeTerminalChallenge();
+    }
+  }, [terminalDiscoveries, configLoader, completeTerminalChallenge]);
 
   // ============================================
-  // BOOT SEQUENCES (UART only)
+  // BOOT SEQUENCES (PRIMARY tab only)
   // ============================================
 
   useEffect(() => {
-    if (activeTab !== 'uart') return;
+    if (activeSlot !== 'primary') return;
 
-    const bootSequence = configLoader.getBootSequence('uart');
+    const primaryTabId = tabIdMap.primary;
+    const bootSequence = configLoader.getBootSequence(primaryTabId);
     if (!bootSequence) return;
 
-    const currentStage = configLoader.getBootStage('uart', stage);
+    const currentStage = configLoader.getBootStage(primaryTabId, stage);
     if (!currentStage) return;
 
     // If stage has lines and duration, animate them
@@ -175,7 +241,7 @@ export default function Terminal({ terminalComponentId }: TerminalProps) {
       bootAnimRef.current = setInterval(() => {
         if (lineIndex < currentStage.lines.length) {
           const line = currentStage.lines[lineIndex];
-          setUartHistory(prev => [...prev, { type: 'output', content: line }]);
+          setPrimaryHistory(prev => [...prev, { type: 'output', content: line }]);
           lineIndex++;
         } else {
           if (bootAnimRef.current) clearInterval(bootAnimRef.current);
@@ -193,7 +259,7 @@ export default function Terminal({ terminalComponentId }: TerminalProps) {
         if (bootAnimRef.current) clearInterval(bootAnimRef.current);
       };
     }
-  }, [stage, activeTab, configLoader]);
+  }, [stage, activeSlot, configLoader, tabIdMap.primary]);
 
   // ============================================
   // COMMAND EXECUTION
@@ -203,18 +269,16 @@ export default function Terminal({ terminalComponentId }: TerminalProps) {
     const trimmed = input.trim();
     if (!trimmed) return;
 
-    const isUart = activeTab === 'uart';
-    const tabId = activeTab;
-    const currentSetHistory = isUart ? setUartHistory : setLocalHistory;
+    const currentSetHistory = isPrimary ? setPrimaryHistory : setSecondaryHistory;
 
     // Build command context
     const parts = trimmed.split(/\s+/);
     const commandName = parts[0];
     const args = parts.slice(1);
 
-    const currentPath = isUart ? uartPath : localPath;
-    const filesystem = configLoader.getFilesystem(tabId);
-    const environment = configLoader.getEnvironment(tabId);
+    const currentPath = isPrimary ? primaryPath : secondaryPath;
+    const filesystem = configLoader.getFilesystem(activeTabId);
+    const environment = configLoader.getEnvironment(activeTabId);
 
     if (!filesystem) return;
 
@@ -226,9 +290,9 @@ export default function Terminal({ terminalComponentId }: TerminalProps) {
       environment,
       bootStage: stage,
       discoveredFlags: terminalDiscoveries,
-      history: isUart ? uartCmdHistory : localCmdHistory,
+      history: isPrimary ? primaryCmdHistory : secondaryCmdHistory,
       state: {},
-      tab: tabId,
+      tab: activeTabId,
     };
 
     // Add input to history
@@ -239,21 +303,20 @@ export default function Terminal({ terminalComponentId }: TerminalProps) {
     ]);
 
     // Update command history
-    if (isUart) {
-      setUartCmdHistory(prev => [...prev, trimmed]);
+    if (isPrimary) {
+      setPrimaryCmdHistory(prev => [...prev, trimmed]);
     } else {
-      setLocalCmdHistory(prev => [...prev, trimmed]);
+      setSecondaryCmdHistory(prev => [...prev, trimmed]);
     }
 
     // Get command definition
-    const commandDef = configLoader.getCommand(tabId, commandName);
+    const commandDef = configLoader.getCommand(activeTabId, commandName);
 
     if (!commandDef) {
       currentSetHistory(prev => [
         ...prev,
         { type: 'error', content: `${commandName}: command not found` },
       ]);
-      // Re-focus input
       setTimeout(() => inputRef.current?.focus(), 0);
       return;
     }
@@ -304,10 +367,10 @@ export default function Terminal({ terminalComponentId }: TerminalProps) {
 
           // Change path
           if (changes.currentPath) {
-            if (isUart) {
-              setUartPath(changes.currentPath);
+            if (isPrimary) {
+              setPrimaryPath(changes.currentPath);
             } else {
-              setLocalPath(changes.currentPath);
+              setSecondaryPath(changes.currentPath);
             }
           }
         }
@@ -317,10 +380,10 @@ export default function Terminal({ terminalComponentId }: TerminalProps) {
       if (commandName === 'cd' && args.length > 0) {
         const targetPath = resolvePath(args[0], currentPath);
         if (pathExists(targetPath, filesystem) && isDirectory(targetPath, filesystem)) {
-          if (isUart) {
-            setUartPath(targetPath);
+          if (isPrimary) {
+            setPrimaryPath(targetPath);
           } else {
-            setLocalPath(targetPath);
+            setSecondaryPath(targetPath);
           }
         }
       }
@@ -340,25 +403,23 @@ export default function Terminal({ terminalComponentId }: TerminalProps) {
   // ============================================
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    const cmdHistory = activeTab === 'uart' ? uartCmdHistory : localCmdHistory;
+    const cmdHistory = isPrimary ? primaryCmdHistory : secondaryCmdHistory;
 
     if (e.key === 'Enter') {
       e.preventDefault();
 
-      // Handle special boot stages
-      if (activeTab === 'uart') {
+      // Handle special boot stages (primary tab only)
+      if (isPrimary) {
         if (stage === 'uboot_wait') {
-          // Stop autoboot and go to U-Boot shell
           setStage('uboot_shell');
-          setUartHistory(prev => [...prev, { type: 'output', content: '' }]);
+          setPrimaryHistory(prev => [...prev, { type: 'output', content: '' }]);
           setCurrentInput('');
           return;
         }
 
         if (stage === 'login') {
-          // Handle login
           const trimmed = currentInput.trim();
-          setUartHistory(prev => [
+          setPrimaryHistory(prev => [
             ...prev,
             { type: 'input', content: trimmed, prompt: '(none) login: ' },
           ]);
@@ -366,7 +427,7 @@ export default function Terminal({ terminalComponentId }: TerminalProps) {
           if (trimmed.toLowerCase() === 'root') {
             setStage('password');
           } else {
-            setUartHistory(prev => [
+            setPrimaryHistory(prev => [
               ...prev,
               { type: 'output', content: 'Login incorrect' },
               { type: 'output', content: '' },
@@ -378,27 +439,26 @@ export default function Terminal({ terminalComponentId }: TerminalProps) {
         }
 
         if (stage === 'password') {
-          // Handle password
           const trimmed = currentInput.trim();
-          setUartHistory(prev => [
+          setPrimaryHistory(prev => [
             ...prev,
             { type: 'input', content: '********', prompt: 'Password: ' },
           ]);
 
           if (trimmed === 'sohoadmin') {
-            // Successful login
-            const shellStage = configLoader.getBootStage('uart', 'shell');
+            const primaryTabId = tabIdMap.primary;
+            const shellStage = configLoader.getBootStage(primaryTabId, 'shell');
             if (shellStage?.lines) {
-              setUartHistory(prev => [
+              setPrimaryHistory(prev => [
                 ...prev,
                 ...shellStage.lines.map(l => ({ type: 'output' as const, content: l })),
               ]);
             }
             setStage('shell');
-            setUartPath('/');
+            setPrimaryPath('/');
             discoverFlag('root');
           } else {
-            setUartHistory(prev => [
+            setPrimaryHistory(prev => [
               ...prev,
               { type: 'output', content: 'Login incorrect' },
               { type: 'output', content: '' },
@@ -447,11 +507,10 @@ export default function Terminal({ terminalComponentId }: TerminalProps) {
   function handleTabCompletion() {
     if (!currentInput) return;
 
-    const tabId = activeTab;
-    const filesystem = configLoader.getFilesystem(tabId);
+    const filesystem = configLoader.getFilesystem(activeTabId);
     if (!filesystem) return;
 
-    const curPath = activeTab === 'uart' ? uartPath : localPath;
+    const curPath = isPrimary ? primaryPath : secondaryPath;
     const parts = currentInput.split(/\s+/);
     const lastPart = parts[parts.length - 1];
 
@@ -485,14 +544,22 @@ export default function Terminal({ terminalComponentId }: TerminalProps) {
   // ============================================
 
   function getPrompt(): string {
-    if (activeTab === 'local') {
-      const displayPath = localPath.replace('/home/kali', '~');
+    if (!isPrimary) {
+      const displayPath = secondaryPath.replace('/home/kali', '~');
       return `kali@local:${displayPath}$ `;
     }
 
-    // UART prompts - shell stage needs dynamic path
+    // Primary tab prompts - check if boot sequence exists
+    const hasBootSequence = !!configLoader.getBootSequence(tabIdMap.primary);
+
+    if (!hasBootSequence) {
+      // No boot sequence: show a simple shell prompt
+      return `${primaryPath} $ `;
+    }
+
+    // Boot sequence prompts
     if (stage === 'shell') {
-      return `${uartPath} # `;
+      return `${primaryPath} # `;
     }
 
     switch (stage) {
@@ -504,9 +571,12 @@ export default function Terminal({ terminalComponentId }: TerminalProps) {
     }
   }
 
+  // Input visibility: always visible for secondary tab and for primary without boot sequence
+  const hasBootSequence = !!configLoader.getBootSequence(tabIdMap.primary);
   const isInputVisible =
-    activeTab === 'local' ||
-    (activeTab === 'uart' && ['uboot_wait', 'uboot_shell', 'login', 'password', 'shell'].includes(stage));
+    !isPrimary ||
+    !hasBootSequence ||
+    (isPrimary && ['uboot_wait', 'uboot_shell', 'login', 'password', 'shell'].includes(stage));
 
   const discoveredCount = terminalDiscoveries.length;
   const flagParts = configLoader.getFlagParts();
@@ -515,8 +585,8 @@ export default function Terminal({ terminalComponentId }: TerminalProps) {
   // TAB SWITCH
   // ============================================
 
-  function switchTab(tab: TerminalTab) {
-    setActiveTab(tab);
+  function switchTab(slot: TabSlot) {
+    setActiveSlot(slot);
     setCurrentInput('');
     setCmdHistoryIndex(-1);
   }
@@ -529,29 +599,33 @@ export default function Terminal({ terminalComponentId }: TerminalProps) {
     <div className="relative h-[500px] bg-black/95 rounded-lg overflow-hidden text-white font-mono text-xs flex flex-col animate-in fade-in duration-300 border border-green-900/50">
       {/* Header with tabs */}
       <div className="flex items-center bg-gray-900/80 px-1 select-none flex-shrink-0 border-b border-gray-700/50">
-        {/* Tabs */}
+        {/* Primary tab (always visible) */}
         <button
-          onClick={() => switchTab('uart')}
+          onClick={() => switchTab('primary')}
           className={`flex items-center gap-1.5 px-3 py-1.5 text-xs border-b-2 transition-colors ${
-            activeTab === 'uart'
+            activeSlot === 'primary'
               ? 'border-green-500 text-green-400 bg-gray-800/50'
               : 'border-transparent text-gray-500 hover:text-gray-300'
           }`}
         >
           <Wifi className="h-3 w-3" />
-          UART Console
+          {tabInfo.primary.name}
         </button>
-        <button
-          onClick={() => switchTab('local')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 text-xs border-b-2 transition-colors ${
-            activeTab === 'local'
-              ? 'border-blue-500 text-blue-400 bg-gray-800/50'
-              : 'border-transparent text-gray-500 hover:text-gray-300'
-          }`}
-        >
-          <Monitor className="h-3 w-3" />
-          Local Machine
-        </button>
+
+        {/* Secondary tab (only if config has 2+ tabs) */}
+        {hasTwoTabs && (
+          <button
+            onClick={() => switchTab('secondary')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs border-b-2 transition-colors ${
+              activeSlot === 'secondary'
+                ? 'border-blue-500 text-blue-400 bg-gray-800/50'
+                : 'border-transparent text-gray-500 hover:text-gray-300'
+            }`}
+          >
+            <Monitor className="h-3 w-3" />
+            {tabInfo.secondary.name}
+          </button>
+        )}
 
         <div className="flex-grow" />
 
@@ -618,13 +692,6 @@ export default function Terminal({ terminalComponentId }: TerminalProps) {
         )}
       </div>
 
-      {/* Completion Dialog */}
-      <TerminalChallengeCompleteDialog
-        isOpen={showCompleteDialog}
-        onClose={() => setShowCompleteDialog(false)}
-        flag={configLoader.getCompleteFlag()}
-        config={exerciseData?.completionDialog}
-      />
     </div>
   );
 }
