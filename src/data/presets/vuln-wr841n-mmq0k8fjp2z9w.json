@@ -1,0 +1,435 @@
+{
+  "metadata": {
+    "id": "vuln-wr841n-mmq0k8fjp2z9w",
+    "name": "TP-Link WR841N - Vulnerability Analysis",
+    "description": "Walkthrough completo: identificazione HW, UART, analisi vulnerabilità, firmware dump SPI",
+    "createdAt": "2026-03-13T23:00:00.000Z",
+    "updatedAt": "2026-03-13T23:03:10.156Z"
+  },
+  "exerciseConfig": {
+    "pcbImage": "/images/preset-vuln-wr841n-mmq0k8fjp2z9w.png",
+    "steps": [
+      {
+        "id": "step-va-1",
+        "title": "Identificazione Hardware",
+        "description": "Osserva la PCB del router TP-Link WR841N e identifica i componenti principali. Utilizza la lente di ingrandimento per ispezionare i chip e leggere le sigle stampate sui componenti.",
+        "expectedFlag": "flag{QCA9533_W25Q32}",
+        "availableTools": [
+          "pointer",
+          "magnifier"
+        ],
+        "objectives": [
+          {
+            "id": "obj-va-hw-cpu",
+            "name": "QCA9533",
+            "type": "component",
+            "componentId": "comp-va-cpu",
+            "instruction": "Individua il processore principale (SoC) della board. È il chip più grande e gestisce tutte le operazioni di rete del router.",
+            "hint": "Cerca un chip quadrato con la sigla Qualcomm Atheros QCA9533",
+            "flagPart": "QCA9533",
+            "coords": [
+              32.07,
+              49.91,
+              10.98,
+              16.11
+            ]
+          },
+          {
+            "id": "obj-va-hw-flash",
+            "name": "W25Q32",
+            "type": "component",
+            "componentId": "comp-va-flash",
+            "instruction": "Individua il chip di memoria flash NOR SPI che contiene il firmware (bootloader + kernel + rootfs). È un chip SOP-8 (8 pin).",
+            "hint": "Cerca un chip rettangolare più piccolo con la sigla Winbond W25Q32",
+            "flagPart": "_W25Q32",
+            "coords": [
+              60.43,
+              51.07,
+              11.11,
+              28.24
+            ]
+          }
+        ]
+      },
+      {
+        "id": "step-va-2",
+        "title": "Connessione UART e Analisi Vulnerabilità",
+        "description": "Identifica i pin UART sulla board usando il multimetro per misurare tensione e resistenza. Collega l'adattatore UART per accedere alla console seriale. Esplora il bootloader U-Boot, ottieni accesso root, analizza credenziali e cerca vulnerabilità nel sistema.",
+        "expectedFlag": "flag{UART}",
+        "availableTools": [
+          "pointer",
+          "magnifier",
+          "multimeter",
+          "probes"
+        ],
+        "objectives": [
+          {
+            "id": "obj-mmpi2thw759gu",
+            "name": "UART Connection & Vulnerability Analysis",
+            "type": "pin",
+            "instruction": "Collega l'adattatore UART ai pin corretti: TX del dispositivo va a RX dell'adattatore, RX a TX, GND a GND. Usa il multimetro per identificare i pin dalla tensione.",
+            "hint": "Il pin TX idles a ~3.3V (dati in uscita). Il GND è a 0V con resistenza ~0Ω.",
+            "flagPart": "UART",
+            "coords": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "pinConditions": [
+              {
+                "pinId": "pin-m-2",
+                "terminal": "adapter-tx"
+              },
+              {
+                "pinId": "pin-m-1",
+                "terminal": "adapter-rx"
+              },
+              {
+                "pinId": "pin-m-3",
+                "terminal": "adapter-gnd"
+              }
+            ],
+            "pinLogic": "AND"
+          }
+        ]
+      },
+      {
+        "id": "step-va-3",
+        "title": "Dump Firmware SPI",
+        "description": "Collega le sonde SPI ai pin del chip flash Winbond W25Q32 per effettuare il dump del firmware. Questo simula l'utilizzo di un programmatore SPI (es. CH341A) con test clip SOIC-8.",
+        "expectedFlag": "flag{SPI_DUMP}",
+        "availableTools": [
+          "pointer",
+          "magnifier",
+          "firmware-dump"
+        ],
+        "objectives": [
+          {
+            "id": "obj-va-spi",
+            "name": "SPI Firmware Dump",
+            "type": "pin",
+            "instruction": "Collega tutte le 6 sonde SPI ai pin corrispondenti del chip flash: VCC, GND, CS, CLK, MOSI, MISO.",
+            "hint": "I pin del chip SOP-8: Pin1=CS (top-left), Pin2=MISO, Pin4=GND, Pin5=MOSI, Pin6=CLK, Pin8=VCC (top-right)",
+            "flagPart": "SPI_DUMP",
+            "coords": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "pinConditions": [
+              {
+                "pinId": "pin-spi-cs",
+                "terminal": "fw-probe:fw-probe-va-cs"
+              },
+              {
+                "pinId": "pin-spi-miso",
+                "terminal": "fw-probe:fw-probe-va-miso"
+              },
+              {
+                "pinId": "pin-spi-gnd",
+                "terminal": "fw-probe:fw-probe-va-gnd"
+              },
+              {
+                "pinId": "pin-spi-mosi",
+                "terminal": "fw-probe:fw-probe-va-mosi"
+              },
+              {
+                "pinId": "pin-spi-clk",
+                "terminal": "fw-probe:fw-probe-va-clk"
+              },
+              {
+                "pinId": "pin-spi-vcc",
+                "terminal": "fw-probe:fw-probe-va-vcc"
+              }
+            ],
+            "pinLogic": "AND"
+          }
+        ]
+      }
+    ],
+    "components": [
+      {
+        "id": "comp-va-cpu",
+        "name": "QCA9533",
+        "instruction": "",
+        "hint": "",
+        "flagPart": "QCA9533",
+        "coords": [
+          32.07,
+          49.91,
+          10.98,
+          16.11
+        ]
+      },
+      {
+        "id": "comp-va-flash",
+        "name": "W25Q32",
+        "instruction": "",
+        "hint": "",
+        "flagPart": "W25Q32",
+        "coords": [
+          60.43,
+          51.07,
+          11.11,
+          28.24
+        ]
+      },
+      {
+        "id": "obj-va-hw-cpu",
+        "name": "QCA9533",
+        "instruction": "Individua il processore principale (SoC) della board. È il chip più grande e gestisce tutte le operazioni di rete del router.",
+        "hint": "Cerca un chip quadrato con la sigla Qualcomm Atheros QCA9533",
+        "flagPart": "QCA9533",
+        "coords": [
+          32.07,
+          49.91,
+          10.98,
+          16.11
+        ]
+      },
+      {
+        "id": "obj-va-hw-flash",
+        "name": "W25Q32",
+        "instruction": "Individua il chip di memoria flash NOR SPI che contiene il firmware (bootloader + kernel + rootfs). È un chip SOP-8 (8 pin).",
+        "hint": "Cerca un chip rettangolare più piccolo con la sigla Winbond W25Q32",
+        "flagPart": "_W25Q32",
+        "coords": [
+          60.43,
+          51.07,
+          11.11,
+          28.24
+        ]
+      }
+    ],
+    "pins": [
+      {
+        "id": "pin-m-1",
+        "valueV": 3.3,
+        "valueOhm": 89,
+        "coords": [
+          3.0600000000000005,
+          42.93,
+          2,
+          2
+        ]
+      },
+      {
+        "id": "pin-m-2",
+        "valueV": 0,
+        "valueOhm": 10000,
+        "coords": [
+          2.94,
+          46.25,
+          2,
+          2
+        ]
+      },
+      {
+        "id": "pin-m-3",
+        "valueV": 0,
+        "valueOhm": 0,
+        "coords": [
+          2.94,
+          50.07,
+          2,
+          2
+        ]
+      },
+      {
+        "id": "pin-m-4",
+        "valueV": 3.3,
+        "valueOhm": 10000,
+        "coords": [
+          59.5,
+          53,
+          1.5,
+          1.5
+        ]
+      },
+      {
+        "id": "pin-m-5",
+        "valueV": 0,
+        "valueOhm": 100,
+        "coords": [
+          59.5,
+          60,
+          1.5,
+          1.5
+        ]
+      },
+      {
+        "id": "pin-m-6",
+        "valueV": 0,
+        "valueOhm": 0,
+        "coords": [
+          59.5,
+          67,
+          1.5,
+          1.5
+        ]
+      },
+      {
+        "id": "pin-m-7",
+        "valueV": 0,
+        "valueOhm": 100,
+        "coords": [
+          70,
+          67,
+          1.5,
+          1.5
+        ]
+      },
+      {
+        "id": "pin-m-8",
+        "valueV": 0,
+        "valueOhm": 100,
+        "coords": [
+          70,
+          60,
+          1.5,
+          1.5
+        ]
+      },
+      {
+        "id": "pin-m-9",
+        "valueV": 3.3,
+        "valueOhm": 1000,
+        "coords": [
+          70,
+          53,
+          1.5,
+          1.5
+        ]
+      }
+    ],
+    "uartPins": [],
+    "initialFlag": "flag{??????????????}",
+    "firmwarePath": "/uploads/firmware-1773421451122-fw_test.bin",
+    "toolGroups": [
+      {
+        "id": "tg-va-main",
+        "name": "Main Tools",
+        "toolIds": [
+          "pointer",
+          "magnifier",
+          "multimeter",
+          "probes",
+          "firmware-dump"
+        ]
+      }
+    ],
+    "toolConfig": {
+      "magnifier": {
+        "defaultRadius": 90,
+        "defaultZoomLevel": 2.5
+      },
+      "uartConnector": {
+        "persistAfterConnection": true,
+        "visibleInSteps": [
+          "step-va-2"
+        ],
+        "terminalComponentId": "tc-mmphr01kod10t"
+      },
+      "terminal": {
+        "requiresUart": false,
+        "persistent": true,
+        "bootStageConditions": []
+      },
+      "firmwareDump": {
+        "probes": [
+          {
+            "id": "fw-probe-va-vcc",
+            "role": "vcc",
+            "label": "VCC",
+            "color": "#EF4444"
+          },
+          {
+            "id": "fw-probe-va-gnd",
+            "role": "gnd",
+            "label": "GND",
+            "color": "#6B7280"
+          },
+          {
+            "id": "fw-probe-va-cs",
+            "role": "cs",
+            "label": "CS",
+            "color": "#A855F7"
+          },
+          {
+            "id": "fw-probe-va-clk",
+            "role": "clk",
+            "label": "CLK",
+            "color": "#3B82F6"
+          },
+          {
+            "id": "fw-probe-va-mosi",
+            "role": "mosi",
+            "label": "MOSI",
+            "color": "#22C55E"
+          },
+          {
+            "id": "fw-probe-va-miso",
+            "role": "miso",
+            "label": "MISO",
+            "color": "#FACC15"
+          }
+        ],
+        "requiredConnections": [
+          {
+            "probeId": "fw-probe-va-vcc",
+            "pinId": "pin-spi-vcc"
+          },
+          {
+            "probeId": "fw-probe-va-gnd",
+            "pinId": "pin-spi-gnd"
+          },
+          {
+            "probeId": "fw-probe-va-cs",
+            "pinId": "pin-spi-cs"
+          },
+          {
+            "probeId": "fw-probe-va-clk",
+            "pinId": "pin-spi-clk"
+          },
+          {
+            "probeId": "fw-probe-va-mosi",
+            "pinId": "pin-spi-mosi"
+          },
+          {
+            "probeId": "fw-probe-va-miso",
+            "pinId": "pin-spi-miso"
+          }
+        ],
+        "filePath": "/uploads/firmware-1773421451122-fw_test.bin",
+        "fileName": "firmware_wr841n.bin",
+        "dumpDurationSec": 5
+      }
+    },
+    "completionDialog": {
+      "title": "Analisi Completata!",
+      "description": "Congratulazioni! Hai completato l'analisi di vulnerabilità del TP-Link WR841N. Hai identificato l'hardware, ottenuto accesso alla console seriale, scoperto credenziali, vulnerabilità di command injection (CVE-2023-33538), una backdoor reverse shell, e dumpato il firmware via SPI.",
+      "redirectUrl": "",
+      "redirectLabel": "",
+      "downloadFilePath": "",
+      "downloadLabel": "",
+      "downloadFileName": "",
+      "showCopyFlag": true
+    }
+  },
+  "terminalConfig": [
+    {
+      "id": "tc-mmphr01kod10t",
+      "name": "Terminal Configuration",
+      "config": {
+        "metadata": {
+          "version": "1.0.0",
+          "name": "Terminal Configuration",
+          "description": ""
+        },
+        "tabs": []
+      }
+    }
+  ]
+}

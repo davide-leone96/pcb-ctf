@@ -19,5 +19,12 @@
     "description": "TP-LINK",
     "createdAt": "2026-03-06T22:10:23.396Z",
     "updatedAt": "2026-03-13T21:53:47.054Z"
+  },
+  {
+    "id": "vuln-wr841n-mmq0k8fjp2z9w",
+    "name": "TP-Link WR841N - Vulnerability Analysis",
+    "description": "Walkthrough completo: identificazione HW, UART, analisi vulnerabilità, firmware dump SPI",
+    "createdAt": "2026-03-13T23:00:00.000Z",
+    "updatedAt": "2026-03-13T23:03:10.156Z"
   }
 ]
