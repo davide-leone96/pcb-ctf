@@ -4,7 +4,7 @@
     "name": "CTF-1",
     "description": "TP-LINK",
     "createdAt": "2026-03-06T22:10:23.396Z",
-    "updatedAt": "2026-03-13T15:04:27.717Z"
+    "updatedAt": "2026-03-13T21:53:47.054Z"
   },
   "exerciseConfig": {
     "pcbImage": "/images/preset-ctf-1-mmfg76ska98m.png",
@@ -13,7 +13,7 @@
         "id": "step-mm40vunlva7cg",
         "title": "Hardware Analysis",
         "description": "Indentificare i componenti sulla boardIndentificare i componenti sulla boardIndentificare i componenti sulla boardIndentificare i componenti sulla boardIndentificare i componenti sulla boardIndentificare i componenti sulla boardIndentificare i componenti sulla boardIndentificare i componenti sulla boardIndentificare i componenti sulla boardIndentificare i componenti sulla boardIndentificare i componenti sulla boardIndentificare i componenti sulla board",
-        "expectedFlag": "flag{CPU-123EPROM}",
+        "expectedFlag": "flag{CPU-123EPROMDUMP}",
         "availableTools": [
           "pointer",
           "custom",
@@ -51,6 +51,31 @@
               11.105150032777743,
               28.238549886874658
             ]
+          },
+          {
+            "id": "obj-mmpfobhnvpaq3",
+            "name": "DUMP",
+            "type": "pin",
+            "instruction": "",
+            "hint": "",
+            "flagPart": "DUMP",
+            "coords": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "pinConditions": [
+              {
+                "pinId": "pin-m-2",
+                "terminal": "fw-probe:fw-probe-mmjef2sm"
+              },
+              {
+                "pinId": "pin-m-1",
+                "terminal": "fw-probe:fw-probe-mmjef1rq"
+              }
+            ],
+            "pinLogic": "AND"
           }
         ]
       },
@@ -187,7 +212,7 @@
       }
     ],
     "uartPins": [],
-    "initialFlag": "flag{????????????}",
+    "initialFlag": "flag{????????????????}",
     "firmwarePath": "/uploads/firmware-1772839791936-fw_test.bin",
     "toolGroups": [
       {
@@ -254,9 +279,9 @@
             "pinId": "pin-m-2"
           }
         ],
-        "filePath": "/uploads/firmware-1773248195947-fw_test.bin",
+        "filePath": "/uploads/firmware-1773421451122-fw_test.bin",
         "fileName": "fw_test.bin",
-        "dumpDurationSec": 3,
+        "dumpDurationSec": 1,
         "terminalComponentId": "tc-mmm04zg597p7z"
       }
     },

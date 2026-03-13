@@ -137,6 +137,8 @@ interface ExerciseActions {
   setFirmwareDumpPosition: (position: MousePosition | null) => void;
   startFirmwareDump: () => void;
   completeFirmwareDump: () => void;
+  /** Called after user confirms/dismisses the download dialog — launches terminal if configured */
+  dismissFirmwareDumpDownload: () => void;
 }
 
 type ExerciseStore = ExerciseState & ExerciseActions;
@@ -642,25 +644,20 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
         }
       }
 
-      // Se le condizioni coinvolgono firmware dump probes, auto-launch terminale dal tool config
+      // For fw-probe conditions, defer completion to dismissFirmwareDumpDownload()
+      // so the user can go through the dump → download → continue flow first.
       const hasFwProbeConditions = conditions.some(c =>
         c.terminal.startsWith('fw-probe:')
       );
       if (hasFwProbeConditions) {
-        const fwConfig = data?.toolConfig?.firmwareDump;
-        if (fwConfig?.terminalComponentId && !get().activeTerminalComponentId) {
-          set({
-            activeTerminalComponentId: fwConfig.terminalComponentId,
-            activeTerminalDefaultTab: fwConfig.terminalDefaultTab ?? null,
-          });
-        }
+        // Don't complete — will be handled by dismissFirmwareDumpDownload()
+        return;
       }
 
       // Se è stato lanciato un terminale → NON completare ora,
       // sarà completato da addTerminalDiscovery quando tutti i flag terminale sono scoperti.
       // Se NON c'è un terminale → completa direttamente.
       const termId = get().activeTerminalComponentId;
-      console.log('[_checkPinConditions] satisfied, activeTerminalComponentId:', termId);
       if (!termId) {
         get()._completeCurrentObjective();
       }
@@ -732,9 +729,22 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   // ===         TERMINAL CHALLENGE COMPLETION                            ===
   // =========================================================================
   completeTerminalChallenge: () => {
-    const { stepMode, activeTerminalComponentId } = get();
+    const { stepMode, activeTerminalComponentId, exerciseData: data, currentStepIndex, currentObjectiveIndex } = get();
     if (stepMode !== 'active' || !activeTerminalComponentId) return;
     set({ terminalChallengeCompleted: true });
+
+    // For pin objectives with fw-probe conditions: close terminal, go back to PCBViewer
+    // so user can perform the firmware dump. Objective will be completed by dismissFirmwareDumpDownload.
+    const currentStep = data?.steps?.[currentStepIndex];
+    const currentObj = currentStep?.objectives?.[currentObjectiveIndex];
+    const isPinObjWithFwProbe = currentObj?.type === 'pin' &&
+      currentObj.pinConditions?.some((c: { terminal: string }) => c.terminal.startsWith('fw-probe:'));
+
+    if (isPinObjWithFwProbe) {
+      set({ activeTerminalComponentId: null, activeTerminalDefaultTab: null });
+      return;
+    }
+
     get()._completeCurrentObjective({ fromTerminal: true });
   },
 
@@ -778,19 +788,31 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
       c.probeId === activeFirmwareProbeId ? { ...c, pinId: firmwareDumpSnapTarget } : c
     );
 
-    // Validate firmware dump connections: role-based (like UART)
-    // Each probe has a role (SpiRole), each FirmwareDumpPin has a role.
-    // All probes must be connected and each probe's role must match the pin's role.
+    // Validate firmware dump connections:
+    // 1. If requiredConnections is defined, use exact probe→pin mapping
+    // 2. Otherwise, fall back to role-based validation using firmwareDumpPins
     const fwConfig = data.toolConfig?.firmwareDump;
     const fwProbes = fwConfig?.probes ?? [];
-    const allRequiredConnected = fwProbes.length > 0 && updated.every(conn => {
-      if (!conn.pinId) return false;
-      const probeConfig = fwProbes.find(p => p.id === conn.probeId);
-      if (!probeConfig) return false;
-      const pin = data.firmwareDumpPins?.find(p => p.id === conn.pinId);
-      if (!pin) return false;
-      return pin.role === probeConfig.role;
-    });
+    const requiredConns = fwConfig?.requiredConnections;
+
+    let allRequiredConnected = false;
+    if (fwProbes.length > 0 && updated.every(c => c.pinId !== null)) {
+      if (requiredConns && requiredConns.length > 0) {
+        // Exact mapping: each probe must be connected to its required pin
+        allRequiredConnected = requiredConns.every(req =>
+          updated.some(c => c.probeId === req.probeId && c.pinId === req.pinId)
+        );
+      } else {
+        // Role-based: probe role must match firmwareDumpPin role
+        allRequiredConnected = updated.every(conn => {
+          const probeConfig = fwProbes.find(p => p.id === conn.probeId);
+          if (!probeConfig) return false;
+          const pin = data.firmwareDumpPins?.find(p => p.id === conn.pinId);
+          if (!pin) return false;
+          return pin.role === probeConfig.role;
+        });
+      }
+    }
 
     const newState: Partial<ExerciseState> = {
       firmwareDumpConnections: updated,
@@ -799,22 +821,12 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
       firmwareDumpConnected: allRequiredConnected,
     };
 
+    // Auto-launch terminal when probes are connected (user needs to type commands first)
     if (allRequiredConnected) {
-      // Auto-launch terminal from toolConfig (firmware dump configuration)
       const fwConfigTerminal = data?.toolConfig?.firmwareDump;
       if (fwConfigTerminal?.terminalComponentId && !get().activeTerminalComponentId) {
         newState.activeTerminalComponentId = fwConfigTerminal.terminalComponentId;
         newState.activeTerminalDefaultTab = fwConfigTerminal.terminalDefaultTab ?? null;
-      }
-
-      // Auto-launch terminal from objective if configured
-      const { stepMode, currentStepIndex, currentObjectiveIndex } = get();
-      if (stepMode === 'active') {
-        const currentStep = data?.steps?.[currentStepIndex];
-        const currentObj = currentStep?.objectives?.[currentObjectiveIndex];
-        if (currentObj?.terminalComponentId) {
-          newState.activeTerminalComponentId = currentObj.terminalComponentId;
-        }
       }
     }
 
@@ -837,13 +849,32 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   startFirmwareDump: () => set({ firmwareDumpStatus: 'dumping' }),
 
   completeFirmwareDump: () => {
+    // Only mark as complete — terminal auto-launch is deferred to dismissFirmwareDumpDownload()
+    // so the user can see the download dialog first.
     set({ firmwareDumpStatus: 'complete' });
-    // Complete firmware-dump objective if active
+  },
+
+  dismissFirmwareDumpDownload: () => {
     const { stepMode, exerciseData: data, currentStepIndex, currentObjectiveIndex } = get();
+    if (stepMode !== 'active') return;
     const currentStep = data?.steps?.[currentStepIndex];
     const currentObj = currentStep?.objectives?.[currentObjectiveIndex];
+    if (!currentObj) return;
 
-    // Auto-launch terminal from toolConfig (firmware dump configuration)
+    const isFirmwareDumpObj = currentObj.type === 'firmware-dump';
+    const isPinObjWithFwProbe = currentObj.type === 'pin' &&
+      currentObj.pinConditions?.some((c: { terminal: string }) => c.terminal.startsWith('fw-probe:'));
+
+    if (!isFirmwareDumpObj && !isPinObjWithFwProbe) return;
+
+    // If terminal challenge already completed (commands typed before dump),
+    // just complete the objective directly — no need to re-launch terminal.
+    if (get().terminalChallengeCompleted) {
+      get()._completeCurrentObjective();
+      return;
+    }
+
+    // Otherwise, launch terminal for objectives that need terminal after dump
     const fwConfig = data?.toolConfig?.firmwareDump;
     if (fwConfig?.terminalComponentId && !get().activeTerminalComponentId) {
       set({
@@ -851,17 +882,11 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
         activeTerminalDefaultTab: fwConfig.terminalDefaultTab ?? null,
       });
     }
-
-    if (stepMode === 'active' && currentObj?.type === 'firmware-dump') {
-      // Auto-launch terminal if the objective specifies a terminal component (overrides toolConfig)
-      if (currentObj.terminalComponentId) {
-        set({ activeTerminalComponentId: currentObj.terminalComponentId });
-      }
-      // Se è stato lanciato un terminale → NON completare ora,
-      // sarà completato da addTerminalDiscovery quando tutti i flag terminale sono scoperti.
-      if (!get().activeTerminalComponentId) {
-        get()._completeCurrentObjective();
-      }
+    if (currentObj.terminalComponentId) {
+      set({ activeTerminalComponentId: currentObj.terminalComponentId });
+    }
+    if (!get().activeTerminalComponentId) {
+      get()._completeCurrentObjective();
     }
   },
 
@@ -889,23 +914,63 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   },
 
   startStep: () => {
-    const { exerciseData: data, currentStepIndex, activeTool } = get();
+    const { exerciseData: data, currentStepIndex } = get();
     const currentStep = data?.steps?.[currentStepIndex];
-    const availableTools = currentStep?.availableTools;
+    const fwProbes = data?.toolConfig?.firmwareDump?.probes ?? [];
 
-    // Se il tool attivo non è tra quelli disponibili per lo step, switch al primo disponibile
-    const updates: Partial<ExerciseState> = {
+    set({
       stepMode: 'active',
       isSimulatorEnabled: true,
       foundComponents: [],
+      currentObjectiveIndex: 0,
       flag: computeBlankFlag(currentStep),
-    };
 
-    if (availableTools?.length && !availableTools.includes(activeTool)) {
-      updates.activeTool = availableTools[0];
-    }
+      // Reset sidebar / tool selection
+      activeTool: 'pointer',
+      activeTools: ['pointer'],
 
-    set(updates);
+      // Reset multimeter probes
+      activeProbe: null,
+      probe1: { hookedTo: null },
+      probe2: { hookedTo: null },
+      snapTarget: null,
+      measuredComponentId: null,
+      multimeterPosition: null,
+
+      // Reset UART
+      uartConnections: [
+        { adapterPin: 'adapter-tx', pcbPinId: null },
+        { adapterPin: 'adapter-rx', pcbPinId: null },
+        { adapterPin: 'adapter-gnd', pcbPinId: null },
+      ],
+      activeAdapterPin: null,
+      uartSnapTarget: null,
+      uartConnected: false,
+      uartAdapterPosition: null,
+
+      // Reset firmware dump
+      firmwareDumpConnections: fwProbes.map(p => ({ probeId: p.id, pinId: null })),
+      activeFirmwareProbeId: null,
+      firmwareDumpSnapTarget: null,
+      firmwareDumpPosition: null,
+      firmwareDumpStatus: 'idle',
+      firmwareDumpConnected: false,
+
+      // Reset terminal
+      activeTerminalComponentId: null,
+      activeTerminalDefaultTab: null,
+      terminalCurrentFlag: '',
+      terminalCompleteFlag: '',
+      terminalChallengeCompleted: false,
+      terminalDiscoveries: [],
+      terminalObjectiveDescription: '',
+      terminalObjectiveHint: '',
+
+      // Reset lens
+      lensVisible: false,
+      lensIsAnchored: false,
+      lensAnchorPosition: null,
+    });
   },
 
   validateAndCompleteStep: (inputFlag) => {
@@ -930,18 +995,50 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
       // Tutti gli step completati
       set({ isFinished: true });
     } else {
-      // Passa allo step successivo
+      const nextStep = data.steps[currentStepIndex + 1];
+      const fwProbes = data?.toolConfig?.firmwareDump?.probes ?? [];
+
+      // Passa allo step successivo — reset completo di tool e sidebar
       set({
         currentStepIndex: currentStepIndex + 1,
         currentObjectiveIndex: 0,
         stepMode: 'education',
         isSimulatorEnabled: false,
         foundComponents: [],
-        flag: computeBlankFlag(data.steps[currentStepIndex + 1]),
-        lensVisible: false,
-        lensIsAnchored: false,
-        lensAnchorPosition: null,
-        // Reset terminal state for new step
+        flag: computeBlankFlag(nextStep),
+
+        // Reset sidebar / tool selection
+        activeTool: 'pointer',
+        activeTools: ['pointer'],
+
+        // Reset multimeter probes
+        activeProbe: null,
+        probe1: { hookedTo: null },
+        probe2: { hookedTo: null },
+        snapTarget: null,
+        measuredComponentId: null,
+        multimeterPosition: null,
+
+        // Reset UART
+        uartConnections: [
+          { adapterPin: 'adapter-tx', pcbPinId: null },
+          { adapterPin: 'adapter-rx', pcbPinId: null },
+          { adapterPin: 'adapter-gnd', pcbPinId: null },
+        ],
+        activeAdapterPin: null,
+        uartSnapTarget: null,
+        uartConnected: false,
+        uartAdapterPosition: null,
+
+        // Reset firmware dump
+        firmwareDumpConnections: fwProbes.map(p => ({ probeId: p.id, pinId: null })),
+        activeFirmwareProbeId: null,
+        firmwareDumpSnapTarget: null,
+        firmwareDumpPosition: null,
+        firmwareDumpStatus: 'idle',
+        firmwareDumpConnected: false,
+
+        // Reset terminal
         activeTerminalComponentId: null,
         activeTerminalDefaultTab: null,
         terminalCurrentFlag: '',
@@ -950,6 +1047,11 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
         terminalDiscoveries: [],
         terminalObjectiveDescription: '',
         terminalObjectiveHint: '',
+
+        // Reset lens
+        lensVisible: false,
+        lensIsAnchored: false,
+        lensAnchorPosition: null,
       });
     }
 
