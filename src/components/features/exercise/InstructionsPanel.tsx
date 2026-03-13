@@ -14,6 +14,8 @@ interface InstructionsPanelProps {
   hintText: string;
   onStartStep: () => void;
   onNextStep: () => void;
+  /** True quando l'intero esercizio è finito (nessun next step disponibile) */
+  isExerciseFinished?: boolean;
 }
 
 const InstructionsPanel = ({
@@ -25,6 +27,7 @@ const InstructionsPanel = ({
   hintText,
   onStartStep,
   onNextStep,
+  isExerciseFinished = false,
 }: InstructionsPanelProps) => {
   const [showMoreDialog, setShowMoreDialog] = useState(false);
   const [hasOverflow, setHasOverflow] = useState(false);
@@ -99,24 +102,36 @@ const InstructionsPanel = ({
     return (
       <div className="rounded-lg bg-gray-800 p-4 text-white h-full flex flex-col">
         <h3 className="text-lg font-bold text-green-400 mb-3">
-          {stepTitle} — Completed!
+          {isExerciseFinished
+            ? 'Challenge Completed!'
+            : `${stepTitle} — Completed!`}
         </h3>
         <div className="text-gray-300 flex-grow">
-          <p className="leading-relaxed mb-4">
-            Congratulations! You have completed all objectives for this step.
-          </p>
-          <p className="leading-relaxed">
-            Copy the flag from the panel on the right and click &quot;Next&quot; to proceed to the next step.
-          </p>
+          {isExerciseFinished ? (
+            <p className="leading-relaxed">
+              Congratulations! You have successfully completed the entire challenge.
+            </p>
+          ) : (
+            <>
+              <p className="leading-relaxed mb-4">
+                Congratulations! You have completed all objectives for this step.
+              </p>
+              <p className="leading-relaxed">
+                Copy the flag from the panel on the right and click &quot;Next&quot; to proceed to the next step.
+              </p>
+            </>
+          )}
         </div>
-        <div className="mt-4">
-          <Button
-            onClick={onNextStep}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold"
-          >
-            Next
-          </Button>
-        </div>
+        {!isExerciseFinished && (
+          <div className="mt-4">
+            <Button
+              onClick={onNextStep}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+            >
+              Next
+            </Button>
+          </div>
+        )}
       </div>
     );
   }

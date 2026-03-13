@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import {
   BoxSelect, MapPin, Pencil, Trash2, Check, Save,
   Plus, ChevronDown, ChevronRight, ArrowUp, ArrowDown,
-  Hand, Search, Wrench, Cable, TerminalSquare, RotateCcw, HardDrive, type LucideIcon,
+  Hand, Search, Wrench, Cable, TerminalSquare, RotateCcw, HardDrive, PartyPopper, ToggleLeft, ToggleRight, type LucideIcon,
 } from 'lucide-react';
 import TerminalSettingsPanel from './TerminalSettingsPanel';
 import ToolConfigPanel from './ToolConfigPanel';
@@ -80,6 +80,7 @@ const SettingsSidebar = () => {
     pins, editPin, deletePin,
     firmwareDumpPins, addFirmwareDumpPin, updateFirmwareDumpPin, deleteFirmwareDumpPin,
     saveToFile, resetAllConfig, resetInitComponents,
+    completionDialogEnabled, toggleCompletionDialog,
   } = useSettingsStore();
 
   const [applied, setApplied] = useState(false);
@@ -331,6 +332,31 @@ const SettingsSidebar = () => {
                   />
                 ))}
               </div>
+            </div>
+
+            {/* Completion Dialog toggle */}
+            <div className="mt-4 border border-dashed border-gray-600 rounded-lg p-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <PartyPopper className="h-4 w-4 text-yellow-400" />
+                  <span className="text-sm text-gray-300">Completion Dialog</span>
+                </div>
+                <button
+                  onClick={toggleCompletionDialog}
+                  className="text-gray-400 hover:text-white transition-colors"
+                  title={completionDialogEnabled ? 'Disable completion dialog' : 'Enable completion dialog'}
+                >
+                  {completionDialogEnabled
+                    ? <ToggleRight className="h-6 w-6 text-green-400" />
+                    : <ToggleLeft className="h-6 w-6 text-gray-500" />
+                  }
+                </button>
+              </div>
+              {completionDialogEnabled && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Configure in Init &rarr; Tools &rarr; Completion Dialog
+                </p>
+              )}
             </div>
 
           </>

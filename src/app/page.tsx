@@ -5,7 +5,6 @@ import FlagDisplay from '@/components/features/exercise/FlagDisplay';
 import InstructionsPanel from '@/components/features/exercise/InstructionsPanel';
 import PCBViewer from '@/components/features/exercise/PCBViewer';
 import Sidebar from '@/components/layout/Sidebar';
-import { buildTerminalFlag } from '@/data/terminalData';
 import { useExerciseStore } from '@/store/exerciseStore';
 import CompletionDialog from '@/components/features/exercise/CompletionDialog';
 import StepCompletionDialog from '@/components/features/exercise/StepCompletionDialog';
@@ -33,6 +32,12 @@ export default function Home() {
     validateAndCompleteStep,
     setExerciseData,
     activeTerminalComponentId,
+    activeTerminalDefaultTab,
+    terminalCurrentFlag,
+    terminalCompleteFlag,
+    terminalChallengeCompleted,
+    terminalObjectiveDescription,
+    terminalObjectiveHint,
   } = useExerciseStore();
 
   useEffect(() => {
@@ -63,6 +68,27 @@ export default function Home() {
   const currentStep = exerciseData.steps[currentStepIndex];
   const currentObjective = currentStep?.objectives?.[currentObjectiveIndex];
 
+  // Build combined progressive flag when terminal is active
+  const buildDisplayFlag = (): string => {
+    // When step is completed, show the final exercise flag (includes terminal part)
+    if (stepMode !== 'active' || !activeTerminalComponentId) return flag;
+
+    // During active step with terminal: combine objective flagParts + terminal progress
+    // The objective flagParts are known because pin conditions were satisfied (terminal opened)
+    let objectiveParts = '';
+    for (let i = 0; i <= currentObjectiveIndex; i++) {
+      objectiveParts += currentStep?.objectives?.[i]?.flagPart || '';
+    }
+
+    const terminalPart = terminalChallengeCompleted
+      ? terminalCompleteFlag
+      : '?'.repeat(terminalCompleteFlag.length || 4);
+
+    return terminalCompleteFlag
+      ? `flag{${objectiveParts}_${terminalPart}}`
+      : flag;
+  };
+
   const handleNextStep = () => {
     setShowStepCompletionDialog(true);
   };
@@ -77,7 +103,9 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center bg-gray-900 p-6 lg:p-12">
-      <CompletionDialog isOpen={isFinished} flag={flag} onReset={resetExercise} config={exerciseData.completionDialog} />
+      {exerciseData.completionDialog && (
+        <CompletionDialog isOpen={isFinished} flag={flag} onReset={resetExercise} config={exerciseData.completionDialog} />
+      )}
 
       <StepCompletionDialog
         isOpen={showStepCompletionDialog}
@@ -114,21 +142,28 @@ export default function Home() {
                 stepMode={stepMode}
                 stepTitle={currentStep?.title || ''}
                 stepDescription={currentStep?.description || ''}
-                objectiveName={currentObjective?.name || ''}
-                objectiveInstruction={currentObjective?.instruction || ''}
-                hintText={currentObjective?.hint || ''}
+                objectiveName={
+                  activeTerminalComponentId && terminalObjectiveDescription
+                    ? 'Terminal Challenge'
+                    : (currentObjective?.name || '')
+                }
+                objectiveInstruction={
+                  activeTerminalComponentId && terminalObjectiveDescription
+                    ? terminalObjectiveDescription
+                    : (currentObjective?.instruction || '')
+                }
+                hintText={
+                  activeTerminalComponentId && terminalObjectiveHint
+                    ? terminalObjectiveHint
+                    : (currentObjective?.hint || '')
+                }
                 onStartStep={startStep}
                 onNextStep={handleNextStep}
+                isExerciseFinished={isFinished}
               />
             </div>
             <div className="md:col-span-1">
-              <FlagDisplay
-                flag={
-                  activeTerminalComponentId
-                    ? buildTerminalFlag(terminalDiscoveries)
-                    : flag
-                }
-              />
+              <FlagDisplay flag={buildDisplayFlag()} />
             </div>
           </div>
 
@@ -140,7 +175,7 @@ export default function Home() {
           {/* Row 2, Col 2: contenuto principale */}
           <div className="col-start-2 row-start-2 border-2 border-dashed border-gray-500 rounded-lg p-4 relative">
             {activeTerminalComponentId ? (
-              <Terminal terminalComponentId={activeTerminalComponentId} />
+              <Terminal terminalComponentId={activeTerminalComponentId} defaultTab={activeTerminalDefaultTab ?? undefined} />
             ) : (
               <PCBViewer />
             )}

@@ -492,6 +492,9 @@ const PCBViewer = () => {
                 lensViewport={lensViewport}
                 containerDims={containerDims}
                 activeTool={activeTool}
+                activeTools={activeTools}
+                showUartOverlay={showUartOverlay}
+                showFirmwareDumpOverlay={showFirmwareDumpOverlay}
                 probe1Pos={probe1Pos}
                 probe2Pos={probe2Pos}
                 activeProbePos={activeProbePos}

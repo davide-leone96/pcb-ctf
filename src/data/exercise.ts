@@ -105,6 +105,8 @@ export interface FirmwareDumpToolConfig {
   dumpDurationSec: number;
   /** Terminal component da avviare automaticamente dopo firmware dump completato */
   terminalComponentId?: string;
+  /** Tab del terminale da attivare automaticamente (es. 'uart', 'local'). Se omesso, usa il primo tab. */
+  terminalDefaultTab?: string;
 }
 
 /**
@@ -128,6 +130,8 @@ export interface UartConnectorConfig {
   visibleInSteps: string[];
   /** Terminal component da avviare automaticamente dopo connessione UART corretta */
   terminalComponentId?: string;
+  /** Tab del terminale da attivare automaticamente (es. 'uart', 'local'). Se omesso, usa il primo tab. */
+  terminalDefaultTab?: string;
 }
 
 export interface TerminalToolConfig {
