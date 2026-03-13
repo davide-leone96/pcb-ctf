@@ -1040,6 +1040,26 @@ export const useTerminalSettingsStore = create<TerminalSettingsState>()(
           } : tc
         );
       }
+    } else {
+      // Component ID provided — ensure it exists in the array
+      const existing = updatedComponents.find(tc => tc.id === cid);
+      if (existing) {
+        updatedComponents = updatedComponents.map(tc =>
+          tc.id === cid ? {
+            ...tc,
+            name: config.metadata?.name || tc.name,
+            description: config.metadata?.description || tc.description,
+            completeFlag: config.flags?.completeFlag || '',
+          } : tc
+        );
+      } else {
+        updatedComponents = [...updatedComponents, {
+          id: cid,
+          name: config.metadata?.name || 'Terminal Configuration',
+          description: config.metadata?.description || '',
+          completeFlag: config.flags?.completeFlag || '',
+        }];
+      }
     }
 
     // Remove old data for this component

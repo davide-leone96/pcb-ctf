@@ -123,16 +123,18 @@ export const usePresetStore = create<PresetState>((set, get) => {
         useSettingsStore.getState().loadFromStorage();
         // Handle both old single-config and new bundle format
         const tc = preset.terminalConfig;
+        const tStore = useTerminalSettingsStore.getState();
         if (Array.isArray(tc)) {
           // New bundle format: [{id, name, config}]
-          const tStore = useTerminalSettingsStore.getState();
           tStore.resetAll();
           for (const entry of tc) {
             tStore.loadFromTerminalConfig(entry.config, entry.id);
           }
         } else {
-          useTerminalSettingsStore.getState().loadFromTerminalConfig(tc);
+          tStore.loadFromTerminalConfig(tc);
         }
+        // Sync terminal config to localStorage so the simulator can read it
+        tStore.applyTerminalConfig();
 
         localStorage.setItem(ACTIVE_PRESET_STORAGE_KEY, id);
         set({ activePresetId: id, isDirty: false });
