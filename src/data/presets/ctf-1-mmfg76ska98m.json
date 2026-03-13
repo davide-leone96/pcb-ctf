@@ -4,7 +4,7 @@
     "name": "CTF-1",
     "description": "TP-LINK",
     "createdAt": "2026-03-06T22:10:23.396Z",
-    "updatedAt": "2026-03-13T12:32:30.521Z"
+    "updatedAt": "2026-03-13T15:04:27.717Z"
   },
   "exerciseConfig": {
     "pcbImage": "/images/preset-ctf-1-mmfg76ska98m.png",
@@ -221,7 +221,8 @@
         "visibleInSteps": [
           "step-mm5hzst08lpuk",
           "step-mmfg4aupwth6w"
-        ]
+        ],
+        "terminalComponentId": "tc-mmm04zg597p7z"
       },
       "terminal": {
         "requiresUart": false,

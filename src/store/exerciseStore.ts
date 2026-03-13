@@ -67,6 +67,7 @@ interface ExerciseState {
   firmwareDumpSnapTarget: string | null;
   firmwareDumpPosition: MousePosition | null;
   firmwareDumpStatus: FirmwareDumpStatus;
+  firmwareDumpConnected: boolean;
 
   // Terminal auto-launch (set by UART/firmware-dump completion)
   activeTerminalComponentId: string | null;
@@ -190,6 +191,7 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   firmwareDumpSnapTarget: null,
   firmwareDumpPosition: null,
   firmwareDumpStatus: 'idle',
+  firmwareDumpConnected: false,
 
   // Terminal auto-launch
   activeTerminalComponentId: null,
@@ -244,6 +246,7 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
       firmwareDumpSnapTarget: null,
       firmwareDumpPosition: null,
       firmwareDumpStatus: 'idle',
+      firmwareDumpConnected: false,
       // Terminal auto-launch reset
       activeTerminalComponentId: null,
       activeTerminalDefaultTab: null,
@@ -594,7 +597,14 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
     const logic = currentObj.pinLogic || 'AND';
     if (!conditions || conditions.length === 0) return;
 
+    const { firmwareDumpConnections } = get();
+
     const isConditionMet = (cond: PinCondition) => {
+      // Firmware dump probe conditions: "fw-probe:<probeId>"
+      if (cond.terminal.startsWith('fw-probe:')) {
+        const probeId = cond.terminal.slice('fw-probe:'.length);
+        return firmwareDumpConnections.find(c => c.probeId === probeId)?.pinId === cond.pinId;
+      }
       switch (cond.terminal) {
         case 'probe1': return probe1.hookedTo === cond.pinId;
         case 'probe2': return probe2.hookedTo === cond.pinId;
@@ -629,6 +639,20 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
         // Auto-launch terminal from objective
         if (currentObj.terminalComponentId && !get().activeTerminalComponentId) {
           set({ activeTerminalComponentId: currentObj.terminalComponentId });
+        }
+      }
+
+      // Se le condizioni coinvolgono firmware dump probes, auto-launch terminale dal tool config
+      const hasFwProbeConditions = conditions.some(c =>
+        c.terminal.startsWith('fw-probe:')
+      );
+      if (hasFwProbeConditions) {
+        const fwConfig = data?.toolConfig?.firmwareDump;
+        if (fwConfig?.terminalComponentId && !get().activeTerminalComponentId) {
+          set({
+            activeTerminalComponentId: fwConfig.terminalComponentId,
+            activeTerminalDefaultTab: fwConfig.terminalDefaultTab ?? null,
+          });
         }
       }
 
@@ -741,8 +765,8 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
   setFirmwareDumpSnapTarget: (pinId) => set({ firmwareDumpSnapTarget: pinId }),
 
   hookFirmwareProbe: () => {
-    const { activeFirmwareProbeId, firmwareDumpSnapTarget, firmwareDumpConnections } = get();
-    if (!activeFirmwareProbeId || !firmwareDumpSnapTarget) return;
+    const { activeFirmwareProbeId, firmwareDumpSnapTarget, firmwareDumpConnections, exerciseData: data } = get();
+    if (!activeFirmwareProbeId || !firmwareDumpSnapTarget || !data) return;
 
     // Prevent connecting two probes to the same pin
     const alreadyUsed = firmwareDumpConnections.find(
@@ -753,11 +777,51 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
     const updated = firmwareDumpConnections.map(c =>
       c.probeId === activeFirmwareProbeId ? { ...c, pinId: firmwareDumpSnapTarget } : c
     );
-    set({
+
+    // Validate firmware dump connections: role-based (like UART)
+    // Each probe has a role (SpiRole), each FirmwareDumpPin has a role.
+    // All probes must be connected and each probe's role must match the pin's role.
+    const fwConfig = data.toolConfig?.firmwareDump;
+    const fwProbes = fwConfig?.probes ?? [];
+    const allRequiredConnected = fwProbes.length > 0 && updated.every(conn => {
+      if (!conn.pinId) return false;
+      const probeConfig = fwProbes.find(p => p.id === conn.probeId);
+      if (!probeConfig) return false;
+      const pin = data.firmwareDumpPins?.find(p => p.id === conn.pinId);
+      if (!pin) return false;
+      return pin.role === probeConfig.role;
+    });
+
+    const newState: Partial<ExerciseState> = {
       firmwareDumpConnections: updated,
       activeFirmwareProbeId: null,
       firmwareDumpSnapTarget: null,
-    });
+      firmwareDumpConnected: allRequiredConnected,
+    };
+
+    if (allRequiredConnected) {
+      // Auto-launch terminal from toolConfig (firmware dump configuration)
+      const fwConfigTerminal = data?.toolConfig?.firmwareDump;
+      if (fwConfigTerminal?.terminalComponentId && !get().activeTerminalComponentId) {
+        newState.activeTerminalComponentId = fwConfigTerminal.terminalComponentId;
+        newState.activeTerminalDefaultTab = fwConfigTerminal.terminalDefaultTab ?? null;
+      }
+
+      // Auto-launch terminal from objective if configured
+      const { stepMode, currentStepIndex, currentObjectiveIndex } = get();
+      if (stepMode === 'active') {
+        const currentStep = data?.steps?.[currentStepIndex];
+        const currentObj = currentStep?.objectives?.[currentObjectiveIndex];
+        if (currentObj?.terminalComponentId) {
+          newState.activeTerminalComponentId = currentObj.terminalComponentId;
+        }
+      }
+    }
+
+    set(newState);
+
+    // Check pin conditions after each firmware dump connection
+    get()._checkPinConditions();
   },
 
   unhookFirmwareProbe: (probeId) => {
@@ -765,7 +829,7 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
     const updated = firmwareDumpConnections.map(c =>
       c.probeId === probeId ? { ...c, pinId: null } : c
     );
-    set({ firmwareDumpConnections: updated });
+    set({ firmwareDumpConnections: updated, firmwareDumpConnected: false });
   },
 
   setFirmwareDumpPosition: (position) => set({ firmwareDumpPosition: position }),

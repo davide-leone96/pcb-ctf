@@ -79,7 +79,7 @@ const FirmwareDumpObjectivePopup = ({ objective, containerDims }: FirmwareDumpOb
         {hasConfig ? (
           <div className="text-xs bg-gray-700/50 rounded p-2 space-y-1">
             <div className="text-gray-400">SPI Flash Reader configured:</div>
-            <div className="text-gray-300">{fwConfig!.probes.length} probes, {fwConfig!.requiredConnections.length} required connections</div>
+            <div className="text-gray-300">{fwConfig!.probes.length} probes (role-based validation)</div>
             {fwConfig!.fileName && <div className="text-gray-300 font-mono">{fwConfig!.fileName}</div>}
           </div>
         ) : (
