@@ -45,6 +45,7 @@ interface LensContentLayerProps {
   // Firmware dump
   firmwareDumpConnections?: FirmwareDumpConnection[];
   activeFirmwareProbeId?: string | null;
+  activeFirmwareProbePos?: Point | null;
   firmwareDumpSnapTargetPos?: Point | null;
   dumperPosition?: Point | null;
   firmwareDumpProbes?: Array<{ id: string; role: SpiRole; color: string }>;
@@ -99,6 +100,7 @@ const LensContentLayer: React.FC<LensContentLayerProps> = ({
   uartSnapTargetPos,
   firmwareDumpConnections,
   activeFirmwareProbeId,
+  activeFirmwareProbePos,
   firmwareDumpSnapTargetPos,
   dumperPosition,
   firmwareDumpProbes,
@@ -315,6 +317,21 @@ const LensContentLayer: React.FC<LensContentLayerProps> = ({
         }
       });
 
+      // Cavo firmware dump attivo (in movimento)
+      if (activeFirmwareProbeId && activeFirmwareProbePos) {
+        const wireOrigin = getFirmwareDumpWireOrigin(activeFirmwareProbeId);
+        if (wireOrigin) {
+          const probe = firmwareDumpProbes?.find(p => p.id === activeFirmwareProbeId);
+          const color = probe ? (SPI_WIRE_COLORS[probe.role] || probe.color) : '#A855F7';
+          const pathD = getCurvePath(wireOrigin, activeFirmwareProbePos);
+          const points = extractPathPoints(pathD);
+          if (points && isBezierCurveIntersectingLens(points.start, points.control, points.end, lensViewport)) {
+            elements.push({ type: 'wire', color, pathD, strokeWidth: 4 });
+          }
+        }
+      }
+
+      // Snap indicator firmware dump
       if (firmwareDumpSnapTargetPos && activeFirmwareProbeId && isPointInLens(firmwareDumpSnapTargetPos, lensViewport)) {
         const probe = firmwareDumpProbes?.find(p => p.id === activeFirmwareProbeId);
         const color = probe ? (SPI_WIRE_COLORS[probe.role] || probe.color) : '#A855F7';
@@ -343,6 +360,7 @@ const LensContentLayer: React.FC<LensContentLayerProps> = ({
     uartSnapTargetPos,
     firmwareDumpConnections,
     activeFirmwareProbeId,
+    activeFirmwareProbePos,
     firmwareDumpSnapTargetPos,
     dumperPosition,
     firmwareDumpProbes,

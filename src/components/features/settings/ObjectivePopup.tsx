@@ -2,12 +2,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { useSettingsStore, type DraftObjective, type PinCondition } from '@/store/settingsStore';
-import { useTerminalSettingsStore } from '@/store/terminalSettingsStore';
 import { Button } from '@/components/ui/button';
-import { TerminalSquare } from 'lucide-react';
 
-const TERMINAL_OPTIONS = [
+const BASE_TERMINAL_OPTIONS = [
   { value: '', label: 'Select terminal...' },
   { value: 'probe1', label: 'Multimeter - Probe 1' },
   { value: 'probe2', label: 'Multimeter - Probe 2' },
@@ -27,8 +26,20 @@ interface ObjectivePopupProps {
 }
 
 const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
-  const { saveObjective, updateObjective, cancelObjectiveEdit, pins } = useSettingsStore();
-  const { terminalComponents } = useTerminalSettingsStore();
+  const { saveObjective, updateObjective, cancelObjectiveEdit, pins, toolConfig } = useSettingsStore();
+
+  // Build terminal options: base + firmware dump probes (if configured)
+  const terminalOptions = useMemo(() => {
+    const fwProbes = toolConfig.firmwareDump?.probes ?? [];
+    if (fwProbes.length === 0) return BASE_TERMINAL_OPTIONS;
+    return [
+      ...BASE_TERMINAL_OPTIONS,
+      ...fwProbes.map(p => ({
+        value: `fw-probe:${p.id}`,
+        label: `FW Dump - ${p.label} (${p.role.toUpperCase()})`,
+      })),
+    ];
+  }, [toolConfig.firmwareDump?.probes]);
 
   const isNew = objective.instruction === '' && objective.hint === '' && objective.flagPart === '';
   const [name, setName] = useState(objective.name);
@@ -37,11 +48,6 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
   const [flagPart, setFlagPart] = useState(objective.flagPart);
   const [conditions, setConditions] = useState<PinCondition[]>(objective.pinConditions);
   const [pinLogic, setPinLogic] = useState<'AND' | 'OR'>(objective.pinLogic);
-  const [terminalComponentId, setTerminalComponentId] = useState(objective.terminalComponentId || '');
-
-  // Show terminal selector for uart and pin objectives (terminal launches on completion)
-  const showTerminalSelector = (objective.type === 'uart' || objective.type === 'pin') && terminalComponents.length > 0;
-
   useEffect(() => {
     setName(objective.name);
     setInstruction(objective.instruction);
@@ -49,7 +55,6 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
     setFlagPart(objective.flagPart);
     setConditions(objective.pinConditions);
     setPinLogic(objective.pinLogic);
-    setTerminalComponentId(objective.terminalComponentId || '');
   }, [objective]);
 
   const updateConditionTerminal = (pinId: string, terminal: string) => {
@@ -65,7 +70,7 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
       hint,
       flagPart: flagPart || name.toUpperCase().replace(/\s+/g, '_'),
       customToolId: '',
-      terminalComponentId,
+      terminalComponentId: '',
       bootStageConditions: [],
       requiresUart: false,
       terminalPersistent: false,
@@ -169,7 +174,7 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
                       onChange={(e) => updateConditionTerminal(cond.pinId, e.target.value)}
                       className="flex-1 bg-gray-700/50 border border-gray-600 rounded px-1.5 py-1 text-xs text-white focus:outline-none focus:border-cyan-500 transition-colors"
                     >
-                      {TERMINAL_OPTIONS.map(opt => (
+                      {terminalOptions.map(opt => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
                       ))}
                     </select>
@@ -178,26 +183,6 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
               );
             })}
           </div>
-        </div>
-      )}
-
-      {/* Terminal to launch on completion */}
-      {showTerminalSelector && (
-        <div className="mb-3">
-          <label className="block text-xs text-gray-400 mb-1 flex items-center gap-1">
-            <TerminalSquare className="h-3 w-3" />
-            Terminal to launch on completion
-          </label>
-          <select
-            value={terminalComponentId}
-            onChange={(e) => setTerminalComponentId(e.target.value)}
-            className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors"
-          >
-            <option value="">-- None --</option>
-            {terminalComponents.map(tc => (
-              <option key={tc.id} value={tc.id}>{tc.name}</option>
-            ))}
-          </select>
         </div>
       )}
 

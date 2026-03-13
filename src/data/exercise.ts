@@ -99,7 +99,8 @@ export interface FirmwareDumpProbeConfig {
 
 export interface FirmwareDumpToolConfig {
   probes: FirmwareDumpProbeConfig[];
-  requiredConnections: Array<{ probeId: string; pinId: string }>;
+  /** @deprecated Validation is now role-based (probe.role must match pin.role). Kept for backward compat. */
+  requiredConnections?: Array<{ probeId: string; pinId: string }>;
   filePath: string;
   fileName: string;
   dumpDurationSec: number;

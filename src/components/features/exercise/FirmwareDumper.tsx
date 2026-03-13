@@ -24,7 +24,7 @@ export const SPI_WIRE_COLORS: Record<SpiRole, string> = {
 const FirmwareDumper = ({ onPositionChange, bounds }: FirmwareDumperProps) => {
   const {
     exerciseData,
-    firmwareDumpConnections, activeFirmwareProbeId, firmwareDumpStatus,
+    firmwareDumpConnections, activeFirmwareProbeId, firmwareDumpStatus, firmwareDumpConnected,
     selectFirmwareProbe, unhookFirmwareProbe,
     firmwareDumpPosition, setFirmwareDumpPosition,
     startFirmwareDump, completeFirmwareDump,
@@ -37,16 +37,10 @@ const FirmwareDumper = ({ onPositionChange, bounds }: FirmwareDumperProps) => {
 
   const fwConfig = exerciseData?.toolConfig?.firmwareDump;
   const probes = fwConfig?.probes ?? [];
-  const requiredConnections = fwConfig?.requiredConnections ?? [];
   const dumpDuration = (fwConfig?.dumpDurationSec ?? 3) * 1000;
 
-  // Check if all required connections are satisfied
-  const allRequiredConnected = requiredConnections.length > 0 && requiredConnections.every(req => {
-    const conn = firmwareDumpConnections.find(c => c.probeId === req.probeId);
-    return conn?.pinId === req.pinId;
-  });
-
   const connectedCount = firmwareDumpConnections.filter(c => c.pinId !== null).length;
+  const hasWrongConnections = connectedCount === probes.length && !firmwareDumpConnected;
 
   // Initial positioning
   useEffect(() => {
@@ -103,7 +97,7 @@ const FirmwareDumper = ({ onPositionChange, bounds }: FirmwareDumperProps) => {
 
   // Dump progress animation
   const handleStartDump = useCallback(() => {
-    if (!allRequiredConnected || firmwareDumpStatus !== 'idle') return;
+    if (!firmwareDumpConnected || firmwareDumpStatus !== 'idle') return;
     startFirmwareDump();
     setDumpProgress(0);
     const startTime = Date.now();
@@ -116,7 +110,7 @@ const FirmwareDumper = ({ onPositionChange, bounds }: FirmwareDumperProps) => {
         completeFirmwareDump();
       }
     }, 50);
-  }, [allRequiredConnected, firmwareDumpStatus, dumpDuration, startFirmwareDump, completeFirmwareDump]);
+  }, [firmwareDumpConnected, firmwareDumpStatus, dumpDuration, startFirmwareDump, completeFirmwareDump]);
 
   const handleDownload = () => {
     if (!fwConfig?.filePath) return;
@@ -194,10 +188,10 @@ const FirmwareDumper = ({ onPositionChange, bounds }: FirmwareDumperProps) => {
       {firmwareDumpStatus === 'idle' && (
         <button
           onClick={(e) => { e.stopPropagation(); handleStartDump(); }}
-          disabled={!allRequiredConnected}
+          disabled={!firmwareDumpConnected}
           className={cn(
             'w-full py-2 rounded text-sm font-semibold transition-colors mb-2',
-            allRequiredConnected
+            firmwareDumpConnected
               ? 'bg-orange-600 hover:bg-orange-500 text-white cursor-pointer'
               : 'bg-gray-700 text-gray-500 cursor-not-allowed'
           )}
@@ -239,15 +233,20 @@ const FirmwareDumper = ({ onPositionChange, bounds }: FirmwareDumperProps) => {
       <div className={cn(
         'text-xs p-2 rounded text-center transition-colors',
         firmwareDumpStatus === 'complete' ? 'bg-green-900/40 text-green-400' :
-        allRequiredConnected ? 'bg-orange-900/40 text-orange-400' :
+        firmwareDumpConnected ? 'bg-orange-900/40 text-orange-400' :
+        hasWrongConnections ? 'bg-red-900/40 text-red-400' :
         'bg-gray-700/30 text-gray-400'
       )}>
         {firmwareDumpStatus === 'complete' ? (
           <span className="flex items-center justify-center gap-1">
             <Check className="h-3 w-3" /> Dump complete!
           </span>
-        ) : allRequiredConnected ? (
+        ) : firmwareDumpConnected ? (
           'All connected — ready to dump'
+        ) : hasWrongConnections ? (
+          <span className="flex items-center justify-center gap-1">
+            Check probe connections
+          </span>
         ) : (
           `${connectedCount}/${probes.length} connected`
         )}

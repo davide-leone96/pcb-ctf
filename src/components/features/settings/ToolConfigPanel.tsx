@@ -10,18 +10,11 @@ import { cn } from '@/lib/utils';
 
 const ToolConfigPanel = () => {
   const {
-    toolConfig, pins,
+    toolConfig,
     updateMagnifierConfig, updateUartConnectorConfig, updateFirmwareDumpToolConfig,
     toolGroups, addToolGroup, updateToolGroup, deleteToolGroup, toggleToolInGroup,
     completionDialog, updateCompletionDialog,
-    firmwareDumpPins,
   } = useSettingsStore();
-
-  // All pins available as firmware dump targets (all pin types + dedicated firmware dump pins)
-  const allAvailablePins = [
-    ...pins.map(p => ({ id: p.id, role: p.pinType, label: p.label || p.pinType.toUpperCase() })),
-    ...firmwareDumpPins.map(p => ({ id: p.id, role: p.role, label: p.label })),
-  ];
 
   const { terminalComponents } = useTerminalSettingsStore();
 
@@ -186,7 +179,6 @@ const ToolConfigPanel = () => {
       >
         <FirmwareDumpConfigSection
           config={toolConfig.firmwareDump}
-          availablePins={allAvailablePins}
           terminalComponents={terminalComponents}
           onUpdate={updateFirmwareDumpToolConfig}
         />
@@ -435,17 +427,14 @@ const SPI_ROLE_COLORS: Record<SpiRole, string> = {
 
 const FirmwareDumpConfigSection = ({
   config,
-  availablePins,
   terminalComponents,
   onUpdate,
 }: {
   config: import('@/data/exercise').FirmwareDumpToolConfig | undefined;
-  availablePins: Array<{ id: string; role: string; label: string }>;
   terminalComponents: Array<{ id: string; name: string }>;
   onUpdate: (updates: Partial<import('@/data/exercise').FirmwareDumpToolConfig>) => void;
 }) => {
   const probes = config?.probes ?? [];
-  const requiredConnections = config?.requiredConnections ?? [];
   const [isUploading, setIsUploading] = useState(false);
 
   const addProbe = (role: SpiRole) => {
@@ -460,16 +449,7 @@ const FirmwareDumpConfigSection = ({
   const removeProbe = (probeId: string) => {
     onUpdate({
       probes: probes.filter(p => p.id !== probeId),
-      requiredConnections: requiredConnections.filter(c => c.probeId !== probeId),
     });
-  };
-
-  const updateRequiredConnection = (probeId: string, pinId: string) => {
-    const existing = requiredConnections.filter(c => c.probeId !== probeId);
-    if (pinId) {
-      existing.push({ probeId, pinId });
-    }
-    onUpdate({ requiredConnections: existing });
   };
 
   const handleFirmwareUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -496,28 +476,15 @@ const FirmwareDumpConfigSection = ({
       <div>
         <label className="text-xs text-gray-400 mb-1 block">SPI Probes</label>
         <div className="space-y-1.5">
-          {probes.map(probe => {
-            const connPinId = requiredConnections.find(c => c.probeId === probe.id)?.pinId ?? '';
-            return (
-              <div key={probe.id} className="flex items-center gap-2 bg-gray-700/30 rounded p-1.5">
-                <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: SPI_ROLE_COLORS[probe.role] }} />
-                <span className="text-xs font-mono text-gray-300 w-10">{probe.label}</span>
-                <select
-                  value={connPinId}
-                  onChange={e => updateRequiredConnection(probe.id, e.target.value)}
-                  className="flex-1 bg-gray-700/50 border border-gray-600 rounded px-1.5 py-0.5 text-xs text-white focus:outline-none focus:border-orange-500"
-                >
-                  <option value="">— no pin —</option>
-                  {availablePins.map(p => (
-                    <option key={p.id} value={p.id}>{p.label} ({p.role.toUpperCase()})</option>
-                  ))}
-                </select>
-                <button onClick={() => removeProbe(probe.id)} className="text-gray-500 hover:text-red-400 p-0.5">
-                  <Trash2 className="h-3 w-3" />
-                </button>
-              </div>
-            );
-          })}
+          {probes.map(probe => (
+            <div key={probe.id} className="flex items-center gap-2 bg-gray-700/30 rounded p-1.5">
+              <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: SPI_ROLE_COLORS[probe.role] }} />
+              <span className="text-xs font-mono text-gray-300 flex-1">{probe.label} ({probe.role.toUpperCase()})</span>
+              <button onClick={() => removeProbe(probe.id)} className="text-gray-500 hover:text-red-400 p-0.5">
+                <Trash2 className="h-3 w-3" />
+              </button>
+            </div>
+          ))}
         </div>
         {probes.length < 6 && (
           <div className="flex flex-wrap gap-1 mt-1.5">
@@ -597,11 +564,9 @@ const FirmwareDumpConfigSection = ({
         )}
       </div>
 
-      {availablePins.length === 0 && (
-        <p className="text-[10px] text-orange-400/80 italic">
-          Place pins on the PCB (Init tab → Pin) to configure probe-to-pin mappings.
-        </p>
-      )}
+      <p className="text-[10px] text-gray-500 italic">
+        Connection validation is role-based: each probe must connect to a PCB pin with the matching SPI role.
+      </p>
     </div>
   );
 };

@@ -131,7 +131,8 @@ const PCBViewer = () => {
     // - probes attivo con tutte e 3 le connessioni fatte
     const isMultimeterComplete = activeTools.includes('multimeter') && probe1.hookedTo && probe2.hookedTo;
     const isUartComplete = activeTools.includes('probes') && uartConnections.every(c => c.pcbPinId !== null);
-    const canAnchorLens = activeTools.includes('pointer') || isMultimeterComplete || isUartComplete;
+    const isFirmwareDumpComplete = activeTools.includes('firmware-dump') && firmwareDumpConnections.every(c => c.pinId !== null);
+    const canAnchorLens = activeTools.includes('pointer') || isMultimeterComplete || isUartComplete || isFirmwareDumpComplete;
 
     if (lensVisible && canAnchorLens && mousePosition && !isDraggingLens && !lensIsAnchored) {
       toggleLensAnchor();
@@ -199,7 +200,7 @@ const PCBViewer = () => {
     }
     if (activeTool === 'firmware-dump' && activeFirmwareProbeId) {
       updateMousePosition({ x: mouseX, y: mouseY });
-      const closest = findClosestPin(mouseX, mouseY, 'firmware-dump-only');
+      const closest = findClosestPin(mouseX, mouseY, 'all');
       if (firmwareDumpSnapTarget !== closest) setFirmwareDumpSnapTarget(closest);
     } else if (activeTool === 'firmware-dump' && firmwareDumpSnapTarget) {
       setFirmwareDumpSnapTarget(null);
@@ -307,6 +308,18 @@ const PCBViewer = () => {
 
   // Firmware dump overlay visibility
   const showFirmwareDumpOverlay = activeTools.includes('firmware-dump');
+
+  // Posizione del cavo firmware dump attivo: usa snap target se disponibile, altrimenti mouse
+  let activeFirmwareProbePos = mousePosition;
+  if (firmwareDumpSnapTarget && activeFirmwareProbeId) {
+    const snapPos = getPinPosition(firmwareDumpSnapTarget);
+    if (snapPos) activeFirmwareProbePos = snapPos;
+  }
+  // Fallback: se mouse non disponibile ma probe attiva, usa posizione dumper
+  if (!activeFirmwareProbePos && activeFirmwareProbeId && dumperPosition) {
+    const wireOrigin = getFirmwareDumpWireOrigin(activeFirmwareProbeId);
+    if (wireOrigin) activeFirmwareProbePos = wireOrigin;
+  }
 
   // Posizione del cavo UART attivo: usa snap target se disponibile, altrimenti mouse
   let activeUartProbePos = mousePosition;
@@ -509,6 +522,7 @@ const PCBViewer = () => {
                 uartSnapTargetPos={uartSnapTargetPos}
                 firmwareDumpConnections={firmwareDumpConnections}
                 activeFirmwareProbeId={activeFirmwareProbeId}
+                activeFirmwareProbePos={activeFirmwareProbePos}
                 firmwareDumpSnapTargetPos={firmwareDumpSnapTarget ? getPinPosition(firmwareDumpSnapTarget) : null}
                 dumperPosition={dumperPosition}
                 firmwareDumpProbes={exerciseData?.toolConfig?.firmwareDump?.probes}
