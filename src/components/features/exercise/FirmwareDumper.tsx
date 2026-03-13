@@ -27,7 +27,8 @@ const FirmwareDumper = ({ onPositionChange, bounds }: FirmwareDumperProps) => {
     firmwareDumpConnections, activeFirmwareProbeId, firmwareDumpStatus, firmwareDumpConnected,
     selectFirmwareProbe, unhookFirmwareProbe,
     firmwareDumpPosition, setFirmwareDumpPosition,
-    startFirmwareDump, completeFirmwareDump,
+    startFirmwareDump, completeFirmwareDump, dismissFirmwareDumpDownload,
+    terminalChallengeCompleted,
   } = useExerciseStore();
 
   const dumperRef = useRef<HTMLDivElement>(null);
@@ -38,6 +39,10 @@ const FirmwareDumper = ({ onPositionChange, bounds }: FirmwareDumperProps) => {
   const fwConfig = exerciseData?.toolConfig?.firmwareDump;
   const probes = fwConfig?.probes ?? [];
   const dumpDuration = (fwConfig?.dumpDurationSec ?? 3) * 1000;
+  const hasTerminalConfig = !!fwConfig?.terminalComponentId;
+
+  // Dump is ready when probes are connected AND (no terminal configured OR terminal challenge completed)
+  const canDump = firmwareDumpConnected && (!hasTerminalConfig || terminalChallengeCompleted);
 
   const connectedCount = firmwareDumpConnections.filter(c => c.pinId !== null).length;
   const hasWrongConnections = connectedCount === probes.length && !firmwareDumpConnected;
@@ -97,7 +102,7 @@ const FirmwareDumper = ({ onPositionChange, bounds }: FirmwareDumperProps) => {
 
   // Dump progress animation
   const handleStartDump = useCallback(() => {
-    if (!firmwareDumpConnected || firmwareDumpStatus !== 'idle') return;
+    if (!canDump || firmwareDumpStatus !== 'idle') return;
     startFirmwareDump();
     setDumpProgress(0);
     const startTime = Date.now();
@@ -110,7 +115,7 @@ const FirmwareDumper = ({ onPositionChange, bounds }: FirmwareDumperProps) => {
         completeFirmwareDump();
       }
     }, 50);
-  }, [firmwareDumpConnected, firmwareDumpStatus, dumpDuration, startFirmwareDump, completeFirmwareDump]);
+  }, [canDump, firmwareDumpStatus, dumpDuration, startFirmwareDump, completeFirmwareDump]);
 
   const handleDownload = () => {
     if (!fwConfig?.filePath) return;
@@ -186,18 +191,25 @@ const FirmwareDumper = ({ onPositionChange, bounds }: FirmwareDumperProps) => {
 
       {/* Dump button / Progress / Download */}
       {firmwareDumpStatus === 'idle' && (
-        <button
-          onClick={(e) => { e.stopPropagation(); handleStartDump(); }}
-          disabled={!firmwareDumpConnected}
-          className={cn(
-            'w-full py-2 rounded text-sm font-semibold transition-colors mb-2',
-            firmwareDumpConnected
-              ? 'bg-orange-600 hover:bg-orange-500 text-white cursor-pointer'
-              : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+        <>
+          <button
+            onClick={(e) => { e.stopPropagation(); handleStartDump(); }}
+            disabled={!canDump}
+            className={cn(
+              'w-full py-2 rounded text-sm font-semibold transition-colors mb-2',
+              canDump
+                ? 'bg-orange-600 hover:bg-orange-500 text-white cursor-pointer'
+                : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+            )}
+          >
+            DUMP FIRMWARE
+          </button>
+          {firmwareDumpConnected && hasTerminalConfig && !terminalChallengeCompleted && (
+            <div className="text-[10px] text-yellow-400/80 text-center mb-2">
+              Complete terminal commands first
+            </div>
           )}
-        >
-          DUMP FIRMWARE
-        </button>
+        </>
       )}
 
       {firmwareDumpStatus === 'dumping' && (
@@ -220,13 +232,19 @@ const FirmwareDumper = ({ onPositionChange, bounds }: FirmwareDumperProps) => {
       )}
 
       {firmwareDumpStatus === 'complete' && (
-        <button
-          onClick={(e) => { e.stopPropagation(); handleDownload(); }}
-          className="w-full py-2 rounded text-sm font-semibold bg-green-700 hover:bg-green-600 text-white flex items-center justify-center gap-2 mb-2 cursor-pointer"
-        >
-          <Download className="h-4 w-4" />
-          Download {fwConfig?.fileName || 'firmware.bin'}
-        </button>
+        <div className="mb-2 space-y-2">
+          <div className="bg-green-900/30 border border-green-700/50 rounded-lg p-3 text-center">
+            <p className="text-xs text-green-300 mb-2">Firmware extracted successfully!</p>
+            <p className="text-[10px] text-gray-400">Download the firmware file to analyze it.</p>
+          </div>
+          <button
+            onClick={(e) => { e.stopPropagation(); handleDownload(); dismissFirmwareDumpDownload(); }}
+            className="w-full py-2 rounded text-sm font-semibold bg-green-700 hover:bg-green-600 text-white flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <Download className="h-4 w-4" />
+            Download {fwConfig?.fileName || 'firmware.bin'}
+          </button>
+        </div>
       )}
 
       {/* Status bar */}
@@ -241,8 +259,10 @@ const FirmwareDumper = ({ onPositionChange, bounds }: FirmwareDumperProps) => {
           <span className="flex items-center justify-center gap-1">
             <Check className="h-3 w-3" /> Dump complete!
           </span>
-        ) : firmwareDumpConnected ? (
+        ) : canDump ? (
           'All connected — ready to dump'
+        ) : firmwareDumpConnected && hasTerminalConfig && !terminalChallengeCompleted ? (
+          'Probes connected — complete terminal first'
         ) : hasWrongConnections ? (
           <span className="flex items-center justify-center gap-1">
             Check probe connections
