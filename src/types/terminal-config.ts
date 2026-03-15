@@ -230,6 +230,9 @@ export interface BootStage {
   duration?: number; // ms
   nextStage?: string;
   prompt?: string;
+  /** Auto-progress to nextStage after this many ms of inactivity.
+   *  Any user input cancels the timer. */
+  autoProgressTimeout?: number;
 }
 
 export interface BootSequence {

@@ -1,0 +1,1912 @@
+{
+  "metadata": {
+    "id": "dump-fw-mmrzfuwt1zfy",
+    "name": "dump-fw",
+    "description": "",
+    "createdAt": "2026-03-15T16:42:14.717Z",
+    "updatedAt": "2026-03-15T16:42:14.717Z"
+  },
+  "exerciseConfig": {
+    "pcbImage": "/images/preset-dump-fw-mmrzfuwt1zfy.png",
+    "steps": [
+      {
+        "id": "step-va-3",
+        "title": "Dump Firmware SPI (CH341A)",
+        "description": "Collega le sonde SPI del programmatore CH341A ai pin del chip flash Winbond W25Q32 tramite test clip SOIC-8. Dopo il collegamento e il dump, usa flashrom nel terminale per identificare il chip e leggere il firmware.",
+        "expectedFlag": "flag{SPI_DUMP_FW_DUMPED}",
+        "availableTools": [
+          "pointer",
+          "magnifier",
+          "firmware-dump"
+        ],
+        "objectives": [
+          {
+            "id": "obj-mmrykiukbovlm",
+            "name": "Collega le 6 sonde SPI del CH341A ai pin del W25Q32. Dopo il collegamento, usa flashrom nel terminale per identificare il chip e dumpare il firmware.",
+            "type": "pin",
+            "instruction": "Collega le 6 sonde SPI del CH341A ai pin del W25Q32. Dopo il collegamento, usa flashrom nel terminale per identificare il chip e dumpare il firmware.",
+            "hint": "Pinout SOIC-8 W25Q32: Pin1=/CS, Pin2=MISO/DO, Pin4=GND, Pin5=MOSI/DI, Pin6=CLK, Pin8=VCC. Poi 'sudo flashrom -p ch341a_spi' per probe e dump.",
+            "flagPart": "SPI_DUMP_FW_DUMPED",
+            "coords": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "pinConditions": [
+              {
+                "pinId": "pin-spi-cs",
+                "terminal": "fw-probe:fw-probe-mmrwej42"
+              },
+              {
+                "pinId": "pin-spi-miso",
+                "terminal": "fw-probe:fw-probe-mmrwemv3"
+              },
+              {
+                "pinId": "pin-spi-mosi",
+                "terminal": "fw-probe:fw-probe-mmrwelj4"
+              },
+              {
+                "pinId": "pin-spi-clk",
+                "terminal": "fw-probe:fw-probe-mmrwekvu"
+              },
+              {
+                "pinId": "pin-mmryjh0jstd3v",
+                "terminal": "fw-probe:fw-probe-mmrwek3e"
+              },
+              {
+                "pinId": "pin-mmryjzz23p0e0",
+                "terminal": "fw-probe:fw-probe-mmrweid6"
+              }
+            ],
+            "pinLogic": "AND"
+          }
+        ]
+      }
+    ],
+    "components": [
+      {
+        "id": "comp-va-cpu",
+        "name": "QCA9533",
+        "instruction": "",
+        "hint": "",
+        "flagPart": "QCA9533",
+        "coords": [
+          32.07,
+          49.91,
+          10.98,
+          16.11
+        ]
+      },
+      {
+        "id": "comp-va-flash",
+        "name": "W25Q32",
+        "instruction": "",
+        "hint": "",
+        "flagPart": "W25Q32",
+        "coords": [
+          60.43,
+          51.07,
+          11.11,
+          28.24
+        ]
+      },
+      {
+        "id": "comp-mmrxwtlzpg1qb",
+        "name": "FLASH",
+        "instruction": "",
+        "hint": "",
+        "flagPart": "FLASH",
+        "coords": [
+          63.966350269999275,
+          31.637922108051036,
+          4.699876254009389,
+          4.809259151855102
+        ]
+      },
+      {
+        "id": "comp-mmrxx3y929ack",
+        "name": "PORTA UART",
+        "instruction": "",
+        "hint": "",
+        "flagPart": "PORTA_UART",
+        "coords": [
+          2.2654107301837243,
+          45.40235347370529,
+          3.3742701310836622,
+          11.774393095921099
+        ]
+      }
+    ],
+    "pins": [],
+    "uartPins": [
+      {
+        "id": "pin-u-3",
+        "role": "tx",
+        "label": "TX",
+        "coords": [
+          2.952545795725556,
+          53.523362209982196,
+          2,
+          2
+        ]
+      },
+      {
+        "id": "pin-u-4",
+        "role": "rx",
+        "label": "RX",
+        "coords": [
+          2.8320361481868535,
+          50.0407952379492,
+          2,
+          2
+        ]
+      },
+      {
+        "id": "pin-u-5",
+        "role": "gnd",
+        "label": "GND-uart",
+        "coords": [
+          2.8320361481868535,
+          46.39239174343843,
+          2,
+          2
+        ]
+      },
+      {
+        "id": "pin-mmryjh0jstd3v",
+        "role": "gnd",
+        "label": "GND-dump",
+        "coords": [
+          61.88176344215095,
+          35.28134473742837,
+          2,
+          2
+        ]
+      },
+      {
+        "id": "pin-mmryjzz23p0e0",
+        "role": "vcc",
+        "label": "VCC-dump",
+        "coords": [
+          68.75081335185699,
+          28.647883838317895,
+          2,
+          2
+        ]
+      }
+    ],
+    "initialFlag": "flag{??????????????????}",
+    "firmwarePath": "/uploads/firmware-1773421451122-fw_test.bin",
+    "firmwareDumpPins": [
+      {
+        "id": "pin-mmryjh0jstd3v",
+        "role": "gnd",
+        "label": "GND-dump",
+        "coords": [
+          61.88176344215095,
+          35.28134473742837,
+          2,
+          2
+        ]
+      },
+      {
+        "id": "pin-mmryjzz23p0e0",
+        "role": "vcc",
+        "label": "VCC-dump",
+        "coords": [
+          68.75081335185699,
+          28.647883838317895,
+          2,
+          2
+        ]
+      },
+      {
+        "id": "pin-spi-cs",
+        "role": "cs",
+        "label": "/CS (Pin 1)",
+        "coords": [
+          62.03070259831275,
+          30.446232943024356,
+          1.5,
+          1.5
+        ]
+      },
+      {
+        "id": "pin-spi-miso",
+        "role": "miso",
+        "label": "MISO/DO (Pin 2)",
+        "coords": [
+          62.15121224585145,
+          32.802810313647036,
+          1.5,
+          1.5
+        ]
+      },
+      {
+        "id": "pin-spi-mosi",
+        "role": "mosi",
+        "label": "MOSI/DI (Pin 5)",
+        "coords": [
+          69.1564324672291,
+          35.49106072922521,
+          1.5,
+          1.5
+        ]
+      },
+      {
+        "id": "pin-spi-clk",
+        "role": "clk",
+        "label": "CLK (Pin 6)",
+        "coords": [
+          69.1564324672291,
+          33.134483358602544,
+          1.5,
+          1.5
+        ]
+      }
+    ],
+    "toolGroups": [
+      {
+        "id": "tg-va-main",
+        "name": "Main Tools",
+        "toolIds": [
+          "pointer",
+          "magnifier",
+          "multimeter",
+          "probes",
+          "firmware-dump"
+        ]
+      }
+    ],
+    "toolConfig": {
+      "magnifier": {
+        "defaultRadius": 90,
+        "defaultZoomLevel": 2.5
+      },
+      "uartConnector": {
+        "persistAfterConnection": true,
+        "visibleInSteps": [
+          "step-va-2"
+        ],
+        "terminalComponentId": "tc-mmphr01kod10t"
+      },
+      "terminal": {
+        "requiresUart": false,
+        "persistent": true,
+        "bootStageConditions": []
+      },
+      "firmwareDump": {
+        "probes": [
+          {
+            "id": "fw-probe-mmrweid6",
+            "role": "vcc",
+            "label": "VCC",
+            "color": "#EF4444"
+          },
+          {
+            "id": "fw-probe-mmrwej42",
+            "role": "cs",
+            "label": "CS",
+            "color": "#A855F7"
+          },
+          {
+            "id": "fw-probe-mmrwek3e",
+            "role": "gnd",
+            "label": "GND",
+            "color": "#6B7280"
+          },
+          {
+            "id": "fw-probe-mmrwekvu",
+            "role": "clk",
+            "label": "CLK",
+            "color": "#3B82F6"
+          },
+          {
+            "id": "fw-probe-mmrwelj4",
+            "role": "mosi",
+            "label": "MOSI",
+            "color": "#22C55E"
+          },
+          {
+            "id": "fw-probe-mmrwemv3",
+            "role": "miso",
+            "label": "MISO",
+            "color": "#FACC15"
+          }
+        ],
+        "filePath": "/uploads/firmware-1773421451122-fw_test.bin",
+        "fileName": "firmware_wr841n.bin",
+        "dumpDurationSec": 8,
+        "terminalComponentId": "tc-dump",
+        "terminalDefaultTab": "tab-ch341a"
+      }
+    },
+    "completionDialog": {
+      "title": "Firmware Dump Completato!",
+      "description": "Congratulazioni! Hai completato il walkthrough di analisi hardware e dump firmware del TP-Link WR841N. Hai identificato il SoC QCA9533 e il chip flash Winbond W25Q32, collegato la UART, connesso il programmatore CH341A via SPI e dumpato il firmware con flashrom.",
+      "redirectUrl": "",
+      "redirectLabel": "",
+      "downloadFilePath": "/uploads/firmware-1773421451122-fw_test.bin",
+      "downloadLabel": "Scarica firmware.bin",
+      "downloadFileName": "firmware_wr841n.bin",
+      "showCopyFlag": true
+    }
+  },
+  "terminalConfig": [
+    {
+      "id": "tc-mmphr01kod10t",
+      "name": "TP-Link WR841N - UART Terminal",
+      "config": {
+        "metadata": {
+          "version": "1.0.0",
+          "name": "TP-Link WR841N - UART Terminal",
+          "description": "Terminale UART per penetration test su router TP-Link WR841N con accesso U-Boot, shell root e analisi vulnerabilità"
+        },
+        "tabs": [
+          {
+            "id": "tab-uart",
+            "name": "UART Console",
+            "initialPath": "/",
+            "filesystem": {
+              "tree": {
+                "bin": {
+                  "busybox": "",
+                  "cat": "",
+                  "chmod": "",
+                  "date": "",
+                  "df": "",
+                  "echo": "",
+                  "false": "",
+                  "hostname": "",
+                  "ip": "",
+                  "iptables-xml": "",
+                  "kill": "",
+                  "ln": "",
+                  "login": "",
+                  "ls": "",
+                  "mount": "",
+                  "msh": "",
+                  "ping": "",
+                  "ps": "",
+                  "rm": "",
+                  "sh": "",
+                  "sleep": "",
+                  "true": "",
+                  "umount": ""
+                },
+                "dev": {
+                  "console": "",
+                  "mtdblock0": "[MTD block device - u-boot]",
+                  "mtdblock1": "[MTD block device - kernel]",
+                  "mtdblock2": "[MTD block device - rootfs]",
+                  "mtdblock3": "[MTD block device - config]",
+                  "mtdblock4": "[MTD block device - art]",
+                  "null": "",
+                  "ttyS0": ""
+                },
+                "etc": {
+                  "passwd": "root::0:0:root:/root:/bin/sh\nnobody:*:65534:65534:nobody:/var:/bin/false",
+                  "shadow": "root:$1$GTN.gpri$DlSyKvZKMR9A9Uj9e9wR3/:15502:0:99999:7:::",
+                  "group": "root:x:0:",
+                  "inittab": "::sysinit:/etc/rc.d/rcS\n::respawn:/sbin/getty ttyS0 115200\n::shutdown:/bin/umount -a",
+                  "fstab": "# /etc/fstab: static file system information\nproc    /proc    proc    defaults    0    0\ndevpts  /dev/pts devpts  defaults    0    0",
+                  "host.conf": "order hosts,bind\nmulti on",
+                  "issue": "",
+                  "resolv.conf": "nameserver 192.168.0.1",
+                  "services": "",
+                  "securetty": "ttyS0",
+                  "rc.d": {
+                    "rcS": "#!/bin/sh\n\n# Mount filesystems\nmount -a\nmount -t proc proc /proc\nmount -t devpts devpts /dev/pts\nmount -t ramfs none /tmp\nmount -t ramfs none /var\nmkdir -p /var/run\n\n# Load kernel modules\ninsmod /lib/modules/2.6.31/kernel/ip_tables.ko\ninsmod /lib/modules/2.6.31/kernel/nf_conntrack.ko\ninsmod /lib/modules/2.6.31/kernel/iptable_filter.ko\ninsmod /lib/modules/2.6.31/kernel/iptable_nat.ko\n\n# Network initialization\nifconfig lo 127.0.0.1\nifconfig br0 192.168.0.1 netmask 255.255.255.0 up\nroute add default gw 192.168.0.1\n\n# Start services\n/usr/bin/httpd &\n/usr/bin/lld2d br0 &\n\n# Start backdoor\n/usr/bin/backdoorTest &",
+                    "iptables-stop": "#!/bin/sh\niptables -F\niptables -X",
+                    "rc.modules": "",
+                    "rc.wlan": ""
+                  },
+                  "wpa2": {
+                    "hostapd.eap_user": ""
+                  }
+                },
+                "lib": {
+                  "ld-uClibc.so.0": "",
+                  "libc.so.0": "",
+                  "libcrypt.so.0": "",
+                  "libgcc_s.so.1": "",
+                  "libpthread.so.0": "",
+                  "modules": {
+                    "2.6.31": {
+                      "kernel": {}
+                    }
+                  }
+                },
+                "proc": {
+                  "mtd": "dev:    size   erasesize  name\nmtd0: 00020000 00010000 \"u-boot\"\nmtd1: 00100000 00010000 \"kernel\"\nmtd2: 002c0000 00010000 \"rootfs\"\nmtd3: 00010000 00010000 \"config\"\nmtd4: 00010000 00010000 \"art\"",
+                  "mounts": "/dev/mtdblock2 / squashfs ro,relatime 0 0\nproc /proc proc rw,relatime 0 0\ndevpts /dev/pts devpts rw,relatime,mode=622 0 0\nnone /tmp ramfs rw,relatime 0 0\nnone /var ramfs rw,relatime 0 0",
+                  "cpuinfo": "system type             : QCA953x\nprocessor               : 0\ncpu model               : MIPS 24Kc V7.4\nBogoMIPS                : 433.15\nwait instruction        : yes\nhardware watchpoint     : 1\nTLB entries             : 16",
+                  "version": "Linux version 2.6.31 (tomcat@buildserver) (gcc version 4.3.3 (GCC) ) #61 Tue Jun 16 14:17:33 CST 2015"
+                },
+                "sbin": {
+                  "init": "",
+                  "ifconfig": "",
+                  "insmod": "",
+                  "iptables": "",
+                  "iwconfig": "",
+                  "iwlist": "",
+                  "reboot": "",
+                  "route": "",
+                  "brctl": "",
+                  "getty": "",
+                  "hostapd": "",
+                  "klogd": "",
+                  "logread": "",
+                  "lsmod": "",
+                  "rmmod": "",
+                  "syslogd": "",
+                  "wlanconfig": "",
+                  "wpa_supplicant": ""
+                },
+                "usr": {
+                  "bin": {
+                    "httpd": "[ELF 32-bit MSB executable, MIPS, MIPS32 rel2, dynamically linked]",
+                    "backdoorTest": "[ELF 32-bit MSB executable, MIPS, MIPS32 rel2, statically linked, not stripped]",
+                    "dropbear": "",
+                    "dropbearkey": "",
+                    "dropbearconvert": "",
+                    "dbclient": "",
+                    "scp": "",
+                    "tftp": "",
+                    "lld2d": "",
+                    "logger": "",
+                    "arping": "",
+                    "test": "",
+                    "[": ""
+                  },
+                  "sbin": {
+                    "udhcpd": "",
+                    "pppd": "",
+                    "dhcp6c": "",
+                    "dhcp6s": "",
+                    "xl2tpd": "",
+                    "radvd": "",
+                    "dropbearmulti": "",
+                    "bpalogin": "",
+                    "ping6": ""
+                  }
+                },
+                "tmp": {},
+                "var": {
+                  "run": {}
+                },
+                "root": {},
+                "web": {
+                  "userRpm": {
+                    "LoginRpm.htm": "",
+                    "StatusRpm.htm": "",
+                    "WlanNetworkRpm.htm": "",
+                    "WlanSecurityRpm.htm": ""
+                  },
+                  "login": {
+                    "loginbg.png": ""
+                  }
+                }
+              },
+              "directories": {},
+              "files": {},
+              "fileDefaults": {
+                "permissions": "-rw-r--r--",
+                "owner": "root"
+              }
+            },
+            "commands": {
+              "tpl": {
+                "name": "tpl",
+                "description": "Stop autoboot",
+                "handler": "custom",
+                "constraints": {
+                  "state": {
+                    "bootStage": "uboot"
+                  }
+                },
+                "output": {
+                  "type": "static",
+                  "lines": [
+                    "Autoboot stopped.",
+                    "Type 'help' for available U-Boot commands.",
+                    ""
+                  ]
+                }
+              },
+              "printenv": {
+                "name": "printenv",
+                "description": "Print U-Boot environment variables",
+                "handler": "custom",
+                "constraints": {
+                  "state": {
+                    "bootStage": "uboot"
+                  }
+                },
+                "output": {
+                  "type": "static",
+                  "lines": [
+                    "bootargs=console=ttyS0,115200 root=31:02 rootfstype=jffs2 init=/sbin/init mtdparts=ath-nor0:32k(u-boot1),32k(u-boot2),3008k(rootfs),896k(uImage),64k(mib0),64k(ART)",
+                    "bootcmd=bootm 0x9f020000",
+                    "bootdelay=1",
+                    "baudrate=115200",
+                    "ethaddr=ba:be:fa:ce:08:41",
+                    "ipaddr=192.168.1.1",
+                    "serverip=192.168.1.100",
+                    "stdin=serial",
+                    "stdout=serial",
+                    "stderr=serial",
+                    "",
+                    "Environment size: 291/65532 bytes",
+                    "",
+                    "*** NOTE: bootargs says rootfstype=jffs2, but kernel boots with squashfs ***",
+                    "*** This inconsistency may indicate unauthorized bootloader modification ***"
+                  ]
+                },
+                "sideEffects": {
+                  "unlockFlags": [
+                    "flag-boot"
+                  ]
+                }
+              },
+              "boot": {
+                "name": "boot",
+                "description": "Boot the kernel",
+                "handler": "custom",
+                "constraints": {
+                  "state": {
+                    "bootStage": "uboot"
+                  }
+                },
+                "output": {
+                  "type": "static",
+                  "lines": [
+                    ""
+                  ]
+                },
+                "sideEffects": {
+                  "setState": {
+                    "bootStage": "kernel-boot"
+                  }
+                }
+              },
+              "version": {
+                "name": "version",
+                "description": "Show U-Boot version",
+                "handler": "custom",
+                "constraints": {
+                  "state": {
+                    "bootStage": "uboot"
+                  }
+                },
+                "output": {
+                  "type": "static",
+                  "lines": [
+                    "",
+                    "U-Boot 1.1.4 (Jun 16 2015 - 14:12:19)",
+                    ""
+                  ]
+                }
+              },
+              "reset": {
+                "name": "reset",
+                "description": "Reset the board",
+                "handler": "custom",
+                "constraints": {
+                  "state": {
+                    "bootStage": "uboot"
+                  }
+                },
+                "output": {
+                  "type": "static",
+                  "lines": [
+                    "Resetting..."
+                  ]
+                },
+                "sideEffects": {
+                  "setState": {
+                    "bootStage": "uboot-init"
+                  }
+                }
+              },
+              "root": {
+                "name": "root",
+                "description": "Login username",
+                "handler": "custom",
+                "constraints": {
+                  "state": {
+                    "bootStage": "login"
+                  }
+                },
+                "sideEffects": {
+                  "setState": {
+                    "bootStage": "password"
+                  }
+                }
+              },
+              "sohoadmin": {
+                "name": "sohoadmin",
+                "description": "Login password",
+                "handler": "custom",
+                "constraints": {
+                  "state": {
+                    "bootStage": "password"
+                  }
+                },
+                "sideEffects": {
+                  "unlockFlags": [
+                    "flag-root"
+                  ],
+                  "setState": {
+                    "bootStage": "shell"
+                  }
+                }
+              },
+              "ls": {
+                "name": "ls",
+                "description": "List directory contents",
+                "handler": "builtin",
+                "builtinType": "ls",
+                "constraints": {
+                  "state": {
+                    "bootStage": "shell"
+                  }
+                }
+              },
+              "cd": {
+                "name": "cd",
+                "description": "Change directory",
+                "handler": "builtin",
+                "builtinType": "cd",
+                "constraints": {
+                  "state": {
+                    "bootStage": "shell"
+                  }
+                }
+              },
+              "cat": {
+                "name": "cat",
+                "description": "Display file contents",
+                "handler": "builtin",
+                "builtinType": "cat",
+                "constraints": {
+                  "state": {
+                    "bootStage": "shell"
+                  }
+                }
+              },
+              "pwd": {
+                "name": "pwd",
+                "description": "Print working directory",
+                "handler": "builtin",
+                "builtinType": "pwd",
+                "constraints": {
+                  "state": {
+                    "bootStage": "shell"
+                  }
+                }
+              },
+              "grep": {
+                "name": "grep",
+                "description": "Search for patterns in files",
+                "handler": "builtin",
+                "builtinType": "grep",
+                "constraints": {
+                  "state": {
+                    "bootStage": "shell"
+                  }
+                }
+              },
+              "find": {
+                "name": "find",
+                "description": "Search for files",
+                "handler": "builtin",
+                "builtinType": "find",
+                "constraints": {
+                  "state": {
+                    "bootStage": "shell"
+                  }
+                }
+              },
+              "clear": {
+                "name": "clear",
+                "description": "Clear terminal",
+                "handler": "builtin",
+                "builtinType": "clear"
+              },
+              "strings": {
+                "name": "strings",
+                "description": "Extract printable strings from binary files",
+                "handler": "custom",
+                "constraints": {
+                  "state": {
+                    "bootStage": "shell"
+                  }
+                },
+                "output": {
+                  "type": "lookup",
+                  "argIndex": 0,
+                  "matchType": "contains",
+                  "table": {
+                    "mtdblock3": [
+                      "...",
+                      "default",
+                      "TP-LINK_807C",
+                      "admin21232f297a57a5a743894a0e4a801fc3",
+                      "97928270",
+                      "MyW1F1P@ssw0rd!",
+                      "192.168.0.1",
+                      "255.255.255.0",
+                      "TP-LINK TECHNOLOGIES CO.,LTD.",
+                      "WR841N",
+                      "...",
+                      "",
+                      "*** Credenziali pannello web: admin / MD5(admin) = 21232f297a57a5a743894a0e4a801fc3 ***",
+                      "*** Password WiFi WPA2 in chiaro: MyW1F1P@ssw0rd! ***",
+                      "*** SSID: TP-LINK_807C ***"
+                    ],
+                    "httpd": [
+                      "/usr/bin/httpd",
+                      "libpthread.so.0",
+                      "libc.so.0",
+                      "ld-uClibc.so.0",
+                      "socket",
+                      "bind",
+                      "listen",
+                      "accept",
+                      "recv",
+                      "send",
+                      "fork",
+                      "execFormatCmd",
+                      "iwconfig %s essid %s",
+                      "ifname",
+                      "user_ssid",
+                      "httpGetEnv",
+                      "ssid",
+                      "pCfg->ssid",
+                      "wlSSIDSet",
+                      "wlanSSID",
+                      "Content-Type: text/html",
+                      "HTTP/1.1 200 OK",
+                      "WlanNetworkRpm.htm",
+                      "...",
+                      "",
+                      "*** CRITICAL: execFormatCmd(\"iwconfig %s essid %s\", ifname, user_ssid) ***",
+                      "*** No input sanitization on user_ssid -> Command Injection (CVE-2023-33538) ***"
+                    ],
+                    "backdoorTest": [
+                      "/usr/bin/backdoorTest",
+                      "socket",
+                      "connect",
+                      "dup2",
+                      "execl",
+                      "/bin/sh",
+                      "192.168.0.100",
+                      "4444",
+                      "AF_INET",
+                      "SOCK_STREAM",
+                      "htons",
+                      "inet_addr",
+                      "connect failed: %s, retrying (%d left)",
+                      "All connection attempts failed",
+                      "stdin",
+                      "stdout",
+                      "stderr",
+                      "...",
+                      "",
+                      "*** BACKDOOR: Reverse shell to 192.168.0.100:4444 ***",
+                      "*** Pattern: socket -> connect -> dup2(stdin/stdout/stderr) -> execl(/bin/sh) ***"
+                    ],
+                    "/etc/shadow": [
+                      "root:$1$GTN.gpri$DlSyKvZKMR9A9Uj9e9wR3/:15502:0:99999:7:::"
+                    ]
+                  },
+                  "default": {
+                    "type": "static",
+                    "lines": [
+                      "Usage: strings <file>"
+                    ]
+                  }
+                },
+                "sideEffects": {
+                  "unlockFlags": [
+                    {
+                      "id": "flag-leak",
+                      "condition": {
+                        "type": "argument",
+                        "index": 0,
+                        "contains": "mtdblock3"
+                      }
+                    },
+                    {
+                      "id": "flag-inject",
+                      "condition": {
+                        "type": "argument",
+                        "index": 0,
+                        "contains": "httpd"
+                      }
+                    },
+                    {
+                      "id": "flag-shell",
+                      "condition": {
+                        "type": "argument",
+                        "index": 0,
+                        "contains": "backdoorTest"
+                      }
+                    }
+                  ]
+                }
+              },
+              "file": {
+                "name": "file",
+                "description": "Determine file type",
+                "handler": "custom",
+                "constraints": {
+                  "state": {
+                    "bootStage": "shell"
+                  }
+                },
+                "output": {
+                  "type": "lookup",
+                  "argIndex": 0,
+                  "matchType": "contains",
+                  "table": {
+                    "backdoorTest": [
+                      "/usr/bin/backdoorTest: ELF 32-bit MSB executable, MIPS, MIPS32 rel2 version 1 (SYSV), statically linked, not stripped"
+                    ],
+                    "httpd": [
+                      "/usr/bin/httpd: ELF 32-bit MSB executable, MIPS, MIPS32 rel2 version 1 (SYSV), dynamically linked, interpreter /lib/ld-uClibc.so.0, stripped"
+                    ],
+                    "busybox": [
+                      "/bin/busybox: ELF 32-bit MSB executable, MIPS, MIPS32 rel2 version 1 (SYSV), dynamically linked, interpreter /lib/ld-uClibc.so.0, no section header"
+                    ]
+                  },
+                  "default": {
+                    "type": "static",
+                    "lines": [
+                      "Usage: file <filename>"
+                    ]
+                  }
+                }
+              },
+              "ps": {
+                "name": "ps",
+                "description": "Show running processes",
+                "handler": "custom",
+                "constraints": {
+                  "state": {
+                    "bootStage": "shell"
+                  }
+                },
+                "output": {
+                  "type": "static",
+                  "lines": [
+                    "  PID  Uid     VmSize Stat Command",
+                    "    1 root        336 S   init",
+                    "    2 root            SW  [kthreadd]",
+                    "    3 root            SW  [ksoftirqd/0]",
+                    "   42 root        260 S   /sbin/syslogd",
+                    "   44 root        252 S   /sbin/klogd",
+                    "   87 root        256 S   /sbin/getty ttyS0 115200",
+                    "  139 root       1028 S   /usr/bin/httpd",
+                    "  142 root        380 S   /usr/bin/backdoorTest",
+                    "  145 root        316 S   /usr/bin/lld2d br0",
+                    "  203 root        428 S   /usr/bin/dropbear",
+                    "  267 root        340 S   -sh",
+                    "  289 root        244 R   ps"
+                  ]
+                }
+              },
+              "mount": {
+                "name": "mount",
+                "description": "Show mounted filesystems",
+                "handler": "custom",
+                "constraints": {
+                  "state": {
+                    "bootStage": "shell"
+                  }
+                },
+                "output": {
+                  "type": "static",
+                  "lines": [
+                    "/dev/mtdblock2 on / type squashfs (ro,relatime)",
+                    "/proc on /proc type proc (rw,relatime)",
+                    "devpts on /dev/pts type devpts (rw,relatime,mode=622)",
+                    "none on /tmp type ramfs (rw,relatime)",
+                    "none on /var type ramfs (rw,relatime)"
+                  ]
+                }
+              },
+              "uname": {
+                "name": "uname",
+                "description": "Show system information",
+                "handler": "custom",
+                "constraints": {
+                  "state": {
+                    "bootStage": "shell"
+                  }
+                },
+                "output": {
+                  "type": "conditional",
+                  "conditions": [
+                    {
+                      "if": {
+                        "type": "argument",
+                        "index": 0,
+                        "equals": "-a"
+                      },
+                      "then": {
+                        "type": "static",
+                        "lines": [
+                          "Linux (none) 2.6.31 #61 Tue Jun 16 14:17:33 CST 2015 mips GNU/Linux"
+                        ]
+                      }
+                    }
+                  ],
+                  "default": {
+                    "type": "static",
+                    "lines": [
+                      "Linux"
+                    ]
+                  }
+                }
+              },
+              "ifconfig": {
+                "name": "ifconfig",
+                "description": "Show network interfaces",
+                "handler": "custom",
+                "constraints": {
+                  "state": {
+                    "bootStage": "shell"
+                  }
+                },
+                "output": {
+                  "type": "static",
+                  "lines": [
+                    "br0       Link encap:Ethernet  HWaddr BA:BE:FA:CE:08:41",
+                    "          inet addr:192.168.0.1  Bcast:192.168.0.255  Mask:255.255.255.0",
+                    "          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1",
+                    "",
+                    "eth0      Link encap:Ethernet  HWaddr BA:BE:FA:CE:08:41",
+                    "          UP BROADCAST RUNNING PROMISC MULTICAST  MTU:1500  Metric:1",
+                    "",
+                    "lo        Link encap:Local Loopback",
+                    "          inet addr:127.0.0.1  Mask:255.0.0.0",
+                    "          UP LOOPBACK RUNNING  MTU:16436  Metric:1"
+                  ]
+                }
+              },
+              "help": {
+                "name": "help",
+                "description": "Show available commands",
+                "handler": "custom",
+                "output": {
+                  "type": "conditional",
+                  "conditions": [
+                    {
+                      "if": {
+                        "type": "argument",
+                        "index": 0,
+                        "regex": ""
+                      },
+                      "then": {
+                        "type": "static",
+                        "lines": [
+                          "U-Boot commands:",
+                          "  printenv  - Print environment variables",
+                          "  boot     - Boot the kernel",
+                          "  version  - Show U-Boot version",
+                          "  reset    - Reset the board",
+                          "  help     - Show this help"
+                        ]
+                      }
+                    }
+                  ],
+                  "default": {
+                    "type": "static",
+                    "lines": [
+                      "Available commands:",
+                      "  ls [-la] [path]         List directory contents",
+                      "  cd <path>               Change directory",
+                      "  cat <file>              Read file contents",
+                      "  strings <file>          Extract strings from binaries",
+                      "  file <file>             Identify file type",
+                      "  grep <pattern> <file>   Search for patterns",
+                      "  find <path> -name <pat> Search for files",
+                      "  ps                      Show running processes",
+                      "  mount                   Show mounted filesystems",
+                      "  uname -a                Show system information",
+                      "  ifconfig                Show network interfaces",
+                      "  pwd                     Print working directory",
+                      "  clear                   Clear terminal"
+                    ]
+                  }
+                }
+              }
+            },
+            "bootSequence": {
+              "initialStage": "uboot-init",
+              "stages": [
+                {
+                  "id": "uboot-init",
+                  "name": "U-Boot Initialization",
+                  "lines": [
+                    "",
+                    "U-Boot 1.1.4 (Jun 16 2015 - 14:12:19)",
+                    "",
+                    "ap143-2.0 - Honey Bee 2.0",
+                    "",
+                    "DRAM:  32 MB",
+                    "Flash Manuf Id 0xef, DeviceId0 0x40, DeviceId1 0x16",
+                    "flash size 4MB, sector count = 64",
+                    "Flash:  4 MB",
+                    "Using default environment",
+                    "",
+                    "In:    serial",
+                    "Out:   serial",
+                    "Err:   serial",
+                    "Net:   ath_gmac_enet_initialize...",
+                    "eth0: ba:be:fa:ce:08:41",
+                    "eth0 up",
+                    "eth1: ba:be:fa:ce:08:41",
+                    "eth1 up",
+                    "Setting 0x181162c0 to 0x60c1a100",
+                    "is_auto_upload_firmware=0",
+                    "Autobooting in 1 seconds",
+                    "",
+                    ">>> Type 'tpl' to stop autoboot and enter U-Boot console <<<"
+                  ],
+                  "duration": 2500,
+                  "nextStage": "uboot"
+                },
+                {
+                  "id": "uboot",
+                  "name": "U-Boot Console",
+                  "lines": [],
+                  "nextStage": "kernel-boot",
+                  "prompt": "ar7100> "
+                },
+                {
+                  "id": "kernel-boot",
+                  "name": "Kernel Boot",
+                  "lines": [
+                    "## Booting image at 9f020000 ...",
+                    "   Uncompressing Kernel Image ... OK",
+                    "",
+                    "Starting kernel ...",
+                    "",
+                    "Booting QCA953x",
+                    " Linux version 2.6.31 (tomcat@buildserver) (gcc version 4.3.3 (GCC) ) #61 Tue Jun 16 14:17:33 CST 2015",
+                    "Ram size passed from bootloader =32M",
+                    "flash_size passed from bootloader = 4",
+                    "CPU revision is: 00019374 (MIPS 24Kc)",
+                    "Determined physical RAM map:",
+                    " memory: 02000000 @ 00000000 (usable)",
+                    "Kernel command line: console=ttyS0,115200 root=31:2 rootfstype=squashfs init=/sbin/init mtdparts=ath-nor0:128k(u-boot),1024k(kernel),2816k(rootfs),64k(config),64k(art) mem=32M",
+                    "Memory: 25844k/32768k available (1868k kernel code, 6924k reserved, 448k data, 120k init)",
+                    "NET: Registered protocol family 16",
+                    "squashfs: version 4.0 (2009/01/31) Phillip Lougher",
+                    "Serial: 8250/16550 driver, 1 ports, IRQ sharing disabled",
+                    "serial8250.0: ttyS0 at MMIO 0xb8020000 (irq = 19) is a 16550A",
+                    "console [ttyS0] enabled",
+                    "5 cmdlinepart partitions found on MTD device ath-nor0",
+                    "Creating 5 MTD partitions on \"ath-nor0\":",
+                    "0x000000000000-0x000000020000 : \"u-boot\"",
+                    "0x000000020000-0x000000120000 : \"kernel\"",
+                    "0x000000120000-0x0000003e0000 : \"rootfs\"",
+                    "0x0000003e0000-0x0000003f0000 : \"config\"",
+                    "0x0000003f0000-0x000000400000 : \"art\"",
+                    "VFS: Mounted root (squashfs filesystem) readonly on device 31:2.",
+                    "Freeing unused kernel memory: 120k freed",
+                    "init started:  BusyBox v1.01 (2015.06.16-06:24+0000) multi-call binary",
+                    "",
+                    "DES SSID SET=TP-LINK_807C",
+                    "====>>>>wlanBootupAll ok",
+                    ""
+                  ],
+                  "duration": 3000,
+                  "nextStage": "login"
+                },
+                {
+                  "id": "login",
+                  "name": "Login",
+                  "lines": [],
+                  "prompt": "(none) login: "
+                },
+                {
+                  "id": "password",
+                  "name": "Password",
+                  "lines": [],
+                  "prompt": "Password: "
+                },
+                {
+                  "id": "shell",
+                  "name": "Root Shell",
+                  "lines": [
+                    "",
+                    "BusyBox v1.01 (2015.06.16-06:24+0000) Built-in shell (msh)",
+                    "Enter 'help' for a list of built-in commands.",
+                    ""
+                  ],
+                  "prompt": "/ # "
+                }
+              ]
+            },
+            "environment": {
+              "USER": "root",
+              "HOSTNAME": "(none)",
+              "HOME": "/root",
+              "PATH": "/bin:/sbin:/usr/bin:/usr/sbin",
+              "TERM": "vt100"
+            }
+          },
+          {
+            "id": "tab-local",
+            "name": "Local Machine",
+            "initialPath": "/home/kali/Desktop",
+            "filesystem": {
+              "tree": {
+                "home": {
+                  "kali": {
+                    "Desktop": {
+                      "shadow.txt": "root:$1$GTN.gpri$DlSyKvZKMR9A9Uj9e9wR3/:15502:0:99999:7:::"
+                    },
+                    ".bashrc": ""
+                  }
+                },
+                "usr": {
+                  "share": {
+                    "wordlists": {
+                      "rockyou.txt": "[wordlist - 14344391 entries]"
+                    }
+                  }
+                }
+              },
+              "directories": {},
+              "files": {},
+              "fileDefaults": {
+                "permissions": "-rw-r--r--",
+                "owner": "kali"
+              }
+            },
+            "commands": {
+              "hashcat": {
+                "name": "hashcat",
+                "description": "Advanced password recovery utility",
+                "handler": "custom",
+                "output": {
+                  "type": "conditional",
+                  "conditions": [
+                    {
+                      "if": {
+                        "type": "argument",
+                        "index": 0,
+                        "contains": "$1$GTN"
+                      },
+                      "then": {
+                        "type": "static",
+                        "lines": [
+                          "hashcat (v6.2.6) starting...",
+                          "",
+                          "OpenCL API (OpenCL 3.0) - Platform #1 [Intel(R) Corporation]",
+                          "================================================================",
+                          "* Device #1: Intel(R) Core(TM) i7, 4096/8192 MB (2048 MB allocatable)",
+                          "",
+                          "Minimum password length supported by kernel: 0",
+                          "Maximum password length supported by kernel: 256",
+                          "",
+                          "Hash-mode was not specified with -m. Attempting to auto-detect hash mode.",
+                          "The following mode was auto-detected as the only one matching your input hash:",
+                          "",
+                          "500 | md5crypt, MD5 (Unix), Cisco-IOS $1$ (MD5) | Operating System",
+                          "",
+                          "Hashes: 1 digests; 1 unique digests, 1 unique salts",
+                          "Bitmaps: 16 bits, 65536 entries, 0x0000ffff mask, 262144 bytes, 5/13 rotates",
+                          "",
+                          "Approaching final keyspace - workload adjusted.",
+                          "",
+                          "$1$GTN.gpri$DlSyKvZKMR9A9Uj9e9wR3/:sohoadmin",
+                          "",
+                          "Session..........: hashcat",
+                          "Status...........: Cracked",
+                          "Hash.Mode........: 500 (md5crypt, MD5 (Unix))",
+                          "Hash.Target......: $1$GTN.gpri$DlSyKvZKMR9A9Uj9e9wR3/",
+                          "Time.Started.....: Mon Mar 15 10:00:00 2026",
+                          "Time.Estimated...: Mon Mar 15 10:00:03 2026 (0 secs)",
+                          "Recovered........: 1/1 (100.00%) Digests",
+                          "Progress.........: 38912/14344384 (0.27%)",
+                          "Speed.#1.........:    12846 H/s (8.72ms)",
+                          "",
+                          "Started: Mon Mar 15 10:00:00 2026",
+                          "Stopped: Mon Mar 15 10:00:04 2026",
+                          "",
+                          "*** Password cracked: sohoadmin ***",
+                          "*** Algorithm: MD5-Crypt ($1$) with salt GTN.gpri ***"
+                        ]
+                      }
+                    }
+                  ],
+                  "default": {
+                    "type": "static",
+                    "lines": [
+                      "hashcat (v6.2.6) starting...",
+                      "",
+                      "Usage: hashcat [options] <hash|hashfile> [dictionary|mask]",
+                      "",
+                      "Options:",
+                      "  -m <num>    Hash-type (500=md5crypt, 1800=sha512crypt, 0=MD5)",
+                      "  -a <num>    Attack-mode (0=dictionary, 3=brute-force)",
+                      "  --show      Show cracked passwords",
+                      "",
+                      "Example: hashcat '$1$GTN.gpri$DlSyKvZKMR9A9Uj9e9wR3/' /usr/share/wordlists/rockyou.txt"
+                    ]
+                  }
+                },
+                "sideEffects": {
+                  "unlockFlags": [
+                    {
+                      "id": "flag-hash",
+                      "condition": {
+                        "type": "argument",
+                        "index": 0,
+                        "contains": "$1$GTN"
+                      }
+                    }
+                  ]
+                }
+              },
+              "john": {
+                "name": "john",
+                "description": "John the Ripper password cracker",
+                "handler": "custom",
+                "output": {
+                  "type": "conditional",
+                  "conditions": [
+                    {
+                      "if": {
+                        "type": "argument",
+                        "index": 0,
+                        "contains": "shadow"
+                      },
+                      "then": {
+                        "type": "static",
+                        "lines": [
+                          "Using default input encoding: UTF-8",
+                          "Loaded 1 password hash (md5crypt, crypt(3) $1$ (and target specific versions) [MD5 128/128 AVX 4x3])",
+                          "Press 'q' or Ctrl-C to abort, almost any other key for status",
+                          "sohoadmin       (root)",
+                          "1g 0:00:00:03 DONE (2026-03-15 10:00) 0.3125g/s 11520p/s 11520c/s 11520C/s soccer5..sohoadmin",
+                          "Session completed.",
+                          "",
+                          "*** Password cracked: sohoadmin ***"
+                        ]
+                      }
+                    }
+                  ],
+                  "default": {
+                    "type": "static",
+                    "lines": [
+                      "John the Ripper 1.9.0-jumbo-1",
+                      "Usage: john [options] [password-files]",
+                      "",
+                      "Example: john shadow.txt"
+                    ]
+                  }
+                },
+                "sideEffects": {
+                  "unlockFlags": [
+                    {
+                      "id": "flag-hash",
+                      "condition": {
+                        "type": "argument",
+                        "index": 0,
+                        "contains": "shadow"
+                      }
+                    }
+                  ]
+                }
+              },
+              "nc": {
+                "name": "nc",
+                "description": "Netcat - network utility",
+                "handler": "custom",
+                "aliases": [
+                  "netcat",
+                  "ncat"
+                ],
+                "output": {
+                  "type": "conditional",
+                  "conditions": [
+                    {
+                      "if": {
+                        "type": "argument",
+                        "index": 0,
+                        "equals": "-lvp"
+                      },
+                      "then": {
+                        "type": "static",
+                        "lines": [
+                          "listening on [any] 4444 ...",
+                          "connect to [192.168.0.100] from 192.168.0.1:48732",
+                          "",
+                          "# whoami",
+                          "root",
+                          "# hostname",
+                          "(none)",
+                          "",
+                          "*** Reverse shell received from TP-Link WR841N (192.168.0.1) ***",
+                          "*** backdoorTest connected on port 4444 ***"
+                        ]
+                      }
+                    }
+                  ],
+                  "default": {
+                    "type": "static",
+                    "lines": [
+                      "usage: nc [-lvp] <port>",
+                      "",
+                      "Example: nc -lvp 4444  (listen on port 4444)"
+                    ]
+                  }
+                }
+              },
+              "md5sum": {
+                "name": "md5sum",
+                "description": "Compute and check MD5 message digest",
+                "handler": "custom",
+                "output": {
+                  "type": "lookup",
+                  "argIndex": 0,
+                  "matchType": "contains",
+                  "table": {
+                    "21232f297a57a5a743894a0e4a801fc3": [
+                      "MD5 reverse lookup: 21232f297a57a5a743894a0e4a801fc3 = \"admin\""
+                    ],
+                    "e10adc3949ba59abbe56e057f20f883e": [
+                      "MD5 reverse lookup: e10adc3949ba59abbe56e057f20f883e = \"123456\""
+                    ]
+                  },
+                  "default": {
+                    "type": "static",
+                    "lines": [
+                      "Usage: md5sum <hash>  (reverse lookup)"
+                    ]
+                  }
+                }
+              },
+              "ls": {
+                "name": "ls",
+                "description": "List directory contents",
+                "handler": "builtin",
+                "builtinType": "ls"
+              },
+              "cd": {
+                "name": "cd",
+                "description": "Change directory",
+                "handler": "builtin",
+                "builtinType": "cd"
+              },
+              "cat": {
+                "name": "cat",
+                "description": "Display file contents",
+                "handler": "builtin",
+                "builtinType": "cat"
+              },
+              "pwd": {
+                "name": "pwd",
+                "description": "Print working directory",
+                "handler": "builtin",
+                "builtinType": "pwd"
+              },
+              "clear": {
+                "name": "clear",
+                "description": "Clear terminal",
+                "handler": "builtin",
+                "builtinType": "clear"
+              },
+              "help": {
+                "name": "help",
+                "description": "Show available commands",
+                "handler": "custom",
+                "output": {
+                  "type": "static",
+                  "lines": [
+                    "Local Machine (Kali Linux) - Available commands:",
+                    "",
+                    "  hashcat <hash> <wordlist>  Crack password hashes",
+                    "  john <hashfile>            John the Ripper password cracker",
+                    "  nc -lvp <port>             Netcat listener",
+                    "  md5sum <hash>              MD5 reverse lookup",
+                    "  ls, cd, cat, pwd           Filesystem navigation",
+                    "  clear                      Clear terminal",
+                    "",
+                    "Files:",
+                    "  ~/Desktop/shadow.txt       Root password hash from target",
+                    "  /usr/share/wordlists/      Wordlists for cracking"
+                  ]
+                }
+              }
+            },
+            "environment": {
+              "USER": "kali",
+              "HOSTNAME": "kali",
+              "HOME": "/home/kali",
+              "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+            }
+          }
+        ],
+        "flags": {
+          "parts": [
+            {
+              "id": "flag-boot",
+              "part": "b00t",
+              "description": "U-Boot bootargs inconsistency",
+              "hint": "Usa printenv nel prompt U-Boot per scoprire l'inconsistenza jffs2/squashfs"
+            },
+            {
+              "id": "flag-root",
+              "part": "_r00t",
+              "description": "Root shell access",
+              "hint": "Effettua login con root:sohoadmin"
+            },
+            {
+              "id": "flag-hash",
+              "part": "_h4sh",
+              "description": "Password hash cracking",
+              "hint": "Usa hashcat o john nel tab Local Machine per crackare l'hash MD5-crypt"
+            },
+            {
+              "id": "flag-leak",
+              "part": "_l34k",
+              "description": "Config partition credential leak",
+              "hint": "Usa strings /dev/mtdblock3 per estrarre credenziali dalla partizione config"
+            },
+            {
+              "id": "flag-inject",
+              "part": "_1nj3ct",
+              "description": "CVE-2023-33538 command injection",
+              "hint": "Usa strings /usr/bin/httpd e cerca la funzione execFormatCmd"
+            },
+            {
+              "id": "flag-shell",
+              "part": "_sh3ll",
+              "description": "Backdoor reverse shell",
+              "hint": "Usa strings /usr/bin/backdoorTest per trovare la reverse shell"
+            }
+          ],
+          "completeFlag": "flag{b00t_r00t_h4sh_l34k_1nj3ct_sh3ll}",
+          "showProgress": true
+        }
+      }
+    },
+    {
+      "id": "tc-dump",
+      "name": "Dump - CH341A Firmware Dumper",
+      "config": {
+        "metadata": {
+          "version": "1.0.0",
+          "name": "Dump - CH341A Firmware Dumper",
+          "description": "Simulazione del processo di dump firmware via programmatore SPI CH341A con flashrom su chip Winbond W25Q32"
+        },
+        "tabs": [
+          {
+            "id": "tab-ch341a",
+            "name": "CH341A",
+            "initialPath": "/home/user/Desktop",
+            "filesystem": {
+              "tree": {
+                "home": {
+                  "user": {
+                    "Desktop": {},
+                    ".bashrc": "# ~/.bashrc\nexport PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+                  }
+                },
+                "usr": {
+                  "local": {
+                    "bin": {
+                      "flashrom": "#!/bin/sh\n# flashrom v1.2 - Flash ROM programmer utility"
+                    }
+                  }
+                }
+              },
+              "directories": {},
+              "files": {},
+              "fileDefaults": {
+                "permissions": "-rw-r--r--",
+                "owner": "user"
+              }
+            },
+            "commands": {
+              "flashrom": {
+                "name": "flashrom",
+                "description": "Flash ROM programmer utility (flashrom v1.2)",
+                "handler": "custom",
+                "output": {
+                  "type": "conditional",
+                  "conditions": [
+                    {
+                      "if": {
+                        "type": "argument",
+                        "index": 2,
+                        "equals": "-r"
+                      },
+                      "then": {
+                        "type": "static",
+                        "lines": [
+                          "flashrom v1.2 on Linux 5.15.0-56-generic (x86_64)",
+                          "flashrom is free software, get the source code at https://flashrom.org",
+                          "",
+                          "flashrom was built with libpci 3.7.0, GCC 11.2.0, little endian",
+                          "Command line (7 args): flashrom -p ch341a_spi -r firmware.bin -VV -c W25Q32.V",
+                          "Using clock_gettime for delay loops (clk_id: 1, resolution: 1ns).",
+                          "Initializing ch341a_spi programmer",
+                          "Device revision is 3.0.4",
+                          "The following protocols are supported: SPI.",
+                          "Probing for Winbond W25Q32.V, 4096 kB: probe_spi_rdid_generic: id1 0xef, id2 0x4016",
+                          "Found Winbond flash chip \"W25Q32.V\" (4096 kB, SPI) on ch341a_spi.",
+                          "Chip status register is 0x00.",
+                          "This chip may contain one-time programmable memory. flashrom cannot read",
+                          "and may never be able to write it, hence it may not be able to completely",
+                          "clone the contents of this chip (see man page for details).",
+                          "Block protection is disabled.",
+                          "Reading flash... done.",
+                          "",
+                          "Firmware saved to firmware.bin (4096 kB)"
+                        ]
+                      }
+                    },
+                    {
+                      "if": {
+                        "type": "argument",
+                        "index": 0,
+                        "equals": "-p"
+                      },
+                      "then": {
+                        "type": "static",
+                        "lines": [
+                          "flashrom v1.2 on Linux 5.15.0-56-generic (x86_64)",
+                          "flashrom is free software, get the source code at https://flashrom.org",
+                          "",
+                          "Using clock_gettime for delay loops (clk_id: 1, resolution: 1ns).",
+                          "Found Winbond flash chip \"W25Q32.V\" (4096 kB, SPI) on ch341a_spi.",
+                          "No operations were specified."
+                        ]
+                      }
+                    }
+                  ],
+                  "default": {
+                    "type": "static",
+                    "lines": [
+                      "flashrom v1.2 on Linux 5.15.0-56-generic (x86_64)",
+                      "flashrom is free software, get the source code at https://flashrom.org",
+                      "",
+                      "Usage: flashrom [-h|-R|-L|-p <programmername>[:<parameters>]]",
+                      "               [-E|-r <file>|-w <file>|-v <file>]",
+                      "               [-c <chipname>] [-l <layoutfile>|-i <imagename>] [-n] [-f]",
+                      "               [-V[V[V]]] [-o <logfile>]",
+                      "",
+                      "Please specify a programmer with '-p <programmer>'.",
+                      "",
+                      "Supported programmers: ch341a_spi, linux_spi, buspirate_spi, ft2232_spi"
+                    ]
+                  }
+                },
+                "sideEffects": {
+                  "unlockFlags": [
+                    {
+                      "id": "flag-chip-id",
+                      "condition": {
+                        "type": "argument",
+                        "index": 0,
+                        "equals": "-p"
+                      }
+                    },
+                    {
+                      "id": "flag-fw-dump",
+                      "condition": {
+                        "type": "argument",
+                        "index": 2,
+                        "equals": "-r"
+                      }
+                    }
+                  ]
+                }
+              },
+              "sudo": {
+                "name": "sudo",
+                "description": "Execute a command as superuser",
+                "handler": "custom",
+                "output": {
+                  "type": "conditional",
+                  "conditions": [
+                    {
+                      "if": {
+                        "type": "argument",
+                        "index": 3,
+                        "equals": "-r"
+                      },
+                      "then": {
+                        "type": "static",
+                        "lines": [
+                          "flashrom v1.2 on Linux 5.15.0-56-generic (x86_64)",
+                          "flashrom is free software, get the source code at https://flashrom.org",
+                          "",
+                          "flashrom was built with libpci 3.7.0, GCC 11.2.0, little endian",
+                          "Command line (7 args): flashrom -p ch341a_spi -r firmware.bin -VV -c W25Q32.V",
+                          "Using clock_gettime for delay loops (clk_id: 1, resolution: 1ns).",
+                          "Initializing ch341a_spi programmer",
+                          "Device revision is 3.0.4",
+                          "The following protocols are supported: SPI.",
+                          "Probing for Winbond W25Q32.V, 4096 kB: probe_spi_rdid_generic: id1 0xef, id2 0x4016",
+                          "Found Winbond flash chip \"W25Q32.V\" (4096 kB, SPI) on ch341a_spi.",
+                          "Chip status register is 0x00.",
+                          "This chip may contain one-time programmable memory. flashrom cannot read",
+                          "and may never be able to write it, hence it may not be able to completely",
+                          "clone the contents of this chip (see man page for details).",
+                          "Block protection is disabled.",
+                          "Reading flash... done.",
+                          "",
+                          "Firmware saved to firmware.bin (4096 kB)"
+                        ]
+                      }
+                    },
+                    {
+                      "if": {
+                        "type": "argument",
+                        "index": 1,
+                        "equals": "-p"
+                      },
+                      "then": {
+                        "type": "static",
+                        "lines": [
+                          "flashrom v1.2 on Linux 5.15.0-56-generic (x86_64)",
+                          "flashrom is free software, get the source code at https://flashrom.org",
+                          "",
+                          "Using clock_gettime for delay loops (clk_id: 1, resolution: 1ns).",
+                          "Found Winbond flash chip \"W25Q32.V\" (4096 kB, SPI) on ch341a_spi.",
+                          "No operations were specified."
+                        ]
+                      }
+                    },
+                    {
+                      "if": {
+                        "type": "argument",
+                        "index": 0,
+                        "equals": "flashrom"
+                      },
+                      "then": {
+                        "type": "static",
+                        "lines": [
+                          "flashrom v1.2 on Linux 5.15.0-56-generic (x86_64)",
+                          "flashrom is free software, get the source code at https://flashrom.org",
+                          "",
+                          "Usage: flashrom [-h|-R|-L|-p <programmername>[:<parameters>]]",
+                          "               [-E|-r <file>|-w <file>|-v <file>]",
+                          "               [-c <chipname>] [-l <layoutfile>|-i <imagename>] [-n] [-f]",
+                          "               [-V[V[V]]] [-o <logfile>]",
+                          "",
+                          "Please specify a programmer with '-p <programmer>'."
+                        ]
+                      }
+                    }
+                  ],
+                  "default": {
+                    "type": "static",
+                    "lines": [
+                      "usage: sudo <command> [args...]",
+                      "Available commands: flashrom, ls, cat, cd, pwd"
+                    ]
+                  }
+                },
+                "sideEffects": {
+                  "unlockFlags": [
+                    {
+                      "id": "flag-chip-id",
+                      "condition": {
+                        "type": "argument",
+                        "index": 1,
+                        "equals": "-p"
+                      }
+                    },
+                    {
+                      "id": "flag-fw-dump",
+                      "condition": {
+                        "type": "argument",
+                        "index": 3,
+                        "equals": "-r"
+                      }
+                    }
+                  ]
+                }
+              },
+              "ls": {
+                "name": "ls",
+                "description": "List directory contents",
+                "handler": "builtin",
+                "builtinType": "ls"
+              },
+              "cat": {
+                "name": "cat",
+                "description": "Display file contents",
+                "handler": "builtin",
+                "builtinType": "cat"
+              },
+              "cd": {
+                "name": "cd",
+                "description": "Change directory",
+                "handler": "builtin",
+                "builtinType": "cd"
+              },
+              "pwd": {
+                "name": "pwd",
+                "description": "Print working directory",
+                "handler": "builtin",
+                "builtinType": "pwd"
+              },
+              "clear": {
+                "name": "clear",
+                "description": "Clear terminal screen",
+                "handler": "builtin",
+                "builtinType": "clear"
+              },
+              "help": {
+                "name": "help",
+                "description": "Show available commands",
+                "handler": "custom",
+                "output": {
+                  "type": "static",
+                  "lines": [
+                    "CH341A SPI Firmware Dumper - Available commands:",
+                    "",
+                    "  flashrom            Flash ROM programmer utility",
+                    "    -p <programmer>   Specify programmer (es: ch341a_spi)",
+                    "    -r <file>         Read flash content into file",
+                    "    -c <chipname>     Force specific chip (es: W25Q32.V)",
+                    "    -VV               Extra verbose output",
+                    "",
+                    "  sudo <cmd>          Execute command as superuser",
+                    "  ls                  List directory contents",
+                    "  cat <file>          Display file contents",
+                    "  cd <dir>            Change directory",
+                    "  pwd                 Print working directory",
+                    "  clear               Clear terminal",
+                    "",
+                    "Example workflow:",
+                    "  1. sudo flashrom -p ch341a_spi",
+                    "     (Probe: identify the flash chip)",
+                    "  2. sudo flashrom -p ch341a_spi -r firmware.bin -VV -c W25Q32.V",
+                    "     (Dump: read the full firmware into firmware.bin)"
+                  ]
+                }
+              },
+              "file": {
+                "name": "file",
+                "description": "Determine file type",
+                "handler": "custom",
+                "output": {
+                  "type": "conditional",
+                  "conditions": [
+                    {
+                      "if": {
+                        "type": "argument",
+                        "index": 0,
+                        "contains": "firmware"
+                      },
+                      "then": {
+                        "type": "static",
+                        "lines": [
+                          "firmware.bin: data",
+                          "  - Flash image: Winbond W25Q32.V (4096 kB)",
+                          "  - Contains: U-Boot bootloader + Linux kernel + SquashFS rootfs",
+                          "  - Architecture: MIPS 32-bit big-endian"
+                        ]
+                      }
+                    }
+                  ],
+                  "default": {
+                    "type": "static",
+                    "lines": [
+                      "Usage: file <filename>"
+                    ]
+                  }
+                }
+              },
+              "hexdump": {
+                "name": "hexdump",
+                "description": "Display file hex dump",
+                "handler": "custom",
+                "output": {
+                  "type": "conditional",
+                  "conditions": [
+                    {
+                      "if": {
+                        "type": "argument",
+                        "index": 0,
+                        "contains": "firmware"
+                      },
+                      "then": {
+                        "type": "static",
+                        "lines": [
+                          "00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|",
+                          "*",
+                          "00003270  55 2d 42 6f 6f 74 20 31  2e 31 2e 34 20 28 4a 75  |U-Boot 1.1.4 (Ju|",
+                          "00003280  6e 20 31 36 20 32 30 31  35 20 2d 20 31 34 3a 31  |n 16 2015 - 14:1|",
+                          "00003290  32 3a 32 33 29 00 00 00  00 00 00 00 00 00 00 00  |2:23)...........|",
+                          "...",
+                          "00020000  00 00 00 03 00 00 00 00  00 00 00 00 08 3f 51 91  |.............?Q.|",
+                          "  [TP-Link firmware header at offset 0x20000]",
+                          "...",
+                          "00120000  68 73 71 73 04 00 00 00  af d6 2b 00 00 00 00 00  |hsqs......+.....|",
+                          "  [SquashFS filesystem at offset 0x120000]"
+                        ]
+                      }
+                    }
+                  ],
+                  "default": {
+                    "type": "static",
+                    "lines": [
+                      "Usage: hexdump <filename>"
+                    ]
+                  }
+                }
+              }
+            },
+            "bootSequence": {
+              "initialStage": "init",
+              "stages": [
+                {
+                  "id": "init",
+                  "name": "CH341A Detection",
+                  "lines": [
+                    "[USB] Detecting programmer device...",
+                    "[USB] Device found: 1a86:5512 (QinHeng Electronics CH341A)",
+                    "[CH341A] Device revision: 3.0.4",
+                    "[CH341A] Supported protocols: SPI",
+                    "[CH341A] Programmer ready.",
+                    "",
+                    "CH341A SPI programmer connected.",
+                    "Use 'flashrom' to interact with the flash chip.",
+                    "Type 'help' for available commands.",
+                    ""
+                  ],
+                  "duration": 1500,
+                  "nextStage": "ready"
+                },
+                {
+                  "id": "ready",
+                  "name": "Ready",
+                  "lines": [],
+                  "prompt": "user@lubuntu:~/Desktop$ "
+                }
+              ]
+            },
+            "environment": {
+              "USER": "user",
+              "HOSTNAME": "lubuntu",
+              "HOME": "/home/user"
+            }
+          }
+        ],
+        "flags": {
+          "parts": [
+            {
+              "id": "flag-chip-id",
+              "part": "W25Q32",
+              "description": "Chip flash identificato",
+              "hint": "Esegui flashrom con -p ch341a_spi per rilevare il chip"
+            },
+            {
+              "id": "flag-fw-dump",
+              "part": "_DUMPED",
+              "description": "Firmware dump completato",
+              "hint": "Esegui flashrom con -r firmware.bin per dumpare il firmware"
+            }
+          ],
+          "completeFlag": "flag{W25Q32_DUMPED}",
+          "showProgress": true
+        }
+      }
+    }
+  ]
+}

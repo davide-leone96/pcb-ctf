@@ -471,13 +471,31 @@ export function getPinCoords(pinId: string, data: Exercise): [number, number, nu
   return null;
 }
 
-/** Tutti i pin combinati per iterazione (snap detection, overlay). */
+/** Tutti i pin combinati per iterazione (snap detection, overlay).
+ *  Deduplicated by ID: pins appearing in both uartPins and firmwareDumpPins
+ *  (shared GND/VCC) are included once, marked as both UART and firmware-dump. */
 export function getAllPins(data: Exercise): { id: string; coords: [number, number, number, number]; isUart: boolean; isFirmwareDump: boolean; role?: UartRole | SpiRole; label?: string }[] {
-  return [
-    ...data.pins.map(p => ({ id: p.id, coords: p.coords, isUart: false as const, isFirmwareDump: false as const })),
-    ...data.uartPins.map(p => ({ id: p.id, coords: p.coords, isUart: true as const, isFirmwareDump: false as const, role: p.role, label: p.label })),
-    ...(data.firmwareDumpPins ?? []).map(p => ({ id: p.id, coords: p.coords, isUart: false as const, isFirmwareDump: true as const, role: p.role, label: p.label })),
-  ];
+  const result: { id: string; coords: [number, number, number, number]; isUart: boolean; isFirmwareDump: boolean; role?: UartRole | SpiRole; label?: string }[] = [];
+  const seen = new Set<string>();
+
+  for (const p of data.pins) {
+    if (!seen.has(p.id)) { seen.add(p.id); result.push({ id: p.id, coords: p.coords, isUart: false, isFirmwareDump: false }); }
+  }
+  for (const p of data.uartPins) {
+    if (!seen.has(p.id)) { seen.add(p.id); result.push({ id: p.id, coords: p.coords, isUart: true, isFirmwareDump: false, role: p.role, label: p.label }); }
+  }
+  for (const p of (data.firmwareDumpPins ?? [])) {
+    if (seen.has(p.id)) {
+      // Mark existing entry as also firmware-dump (for snap detection filtering)
+      const existing = result.find(r => r.id === p.id);
+      if (existing) existing.isFirmwareDump = true;
+    } else {
+      seen.add(p.id);
+      result.push({ id: p.id, coords: p.coords, isUart: false, isFirmwareDump: true, role: p.role, label: p.label });
+    }
+  }
+
+  return result;
 }
 
 /*

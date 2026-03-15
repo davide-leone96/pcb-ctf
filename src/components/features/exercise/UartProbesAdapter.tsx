@@ -108,14 +108,7 @@ const UartProbesAdapter = ({ onPositionChange, bounds, readOnly = false }: UartP
       </div>
 
       {/* Pin slots */}
-      <div className="grid grid-cols-4 gap-2 mb-3">
-        {/* VCC - disabilitato */}
-        <div className="flex flex-col items-center p-2 rounded bg-gray-700/30 opacity-40">
-          <div className="w-5 h-5 rounded-full border-2 border-red-400 bg-red-400/20" />
-          <span className="text-xs mt-1 text-red-300 font-mono">VCC</span>
-          <span className="text-[10px] text-gray-500">N/C</span>
-        </div>
-
+      <div className="grid grid-cols-3 gap-2 mb-3">
         {/* TX, RX, GND */}
         {ADAPTER_PINS.map(({ pin, label }) => {
           const conn = uartConnections.find(c => c.adapterPin === pin);

@@ -76,7 +76,7 @@ const SettingsSidebar = () => {
     components, editComponent, deleteComponent,
     steps, activeStepId, selectStep,
     addStep, deleteStep, reorderStep, updateStep, toggleStepTool,
-    addObjective, addPinObjective, addTerminalObjective, addFirmwareDumpObjective, deleteObjective, reorderObjective, editObjective,
+    addObjective, addPinObjective, addTerminalObjective, deleteObjective, reorderObjective, editObjective,
     pins, editPin, deletePin,
     firmwareDumpPins, addFirmwareDumpPin, updateFirmwareDumpPin, deleteFirmwareDumpPin,
     saveToFile, resetAllConfig, resetInitComponents,
@@ -322,7 +322,6 @@ const SettingsSidebar = () => {
                     onAddObjective={(componentId) => addObjective(step.id, componentId)}
                     onAddPinObjective={(pinIds, logic) => addPinObjective(step.id, pinIds, logic)}
                     onAddTerminalObjective={(tcId) => addTerminalObjective(step.id, tcId)}
-                    onAddFirmwareDumpObjective={() => addFirmwareDumpObjective(step.id)}
                     availableComponents={components}
                     availablePins={pins}
                     availableTerminalComponents={terminalStore.terminalComponents}
@@ -425,7 +424,7 @@ const SettingsSidebar = () => {
 const StepItem = ({
   step, index, isExpanded, isFirst, isLast,
   onToggle, onDelete, onReorder, onUpdateStep, onToggleTool,
-  onAddObjective, onAddPinObjective, onAddTerminalObjective, onAddFirmwareDumpObjective, onDeleteObjective, onReorderObjective, onEditObjective,
+  onAddObjective, onAddPinObjective, onAddTerminalObjective, onDeleteObjective, onReorderObjective, onEditObjective,
   availableComponents, availablePins, availableTerminalComponents,
 }: {
   step: DraftStep;
@@ -441,7 +440,6 @@ const StepItem = ({
   onAddObjective: (componentId: string) => void;
   onAddPinObjective: (pinIds: string[], logic: PinLogic) => void;
   onAddTerminalObjective: (terminalComponentId?: string) => void;
-  onAddFirmwareDumpObjective: () => void;
   onDeleteObjective: (objId: string) => void;
   onReorderObjective: (objId: string, dir: 'up' | 'down') => void;
   onEditObjective: (objId: string) => void;
@@ -586,13 +584,6 @@ const StepItem = ({
                           {availableTerminalComponents.length > 1 && (
                             <ChevronRight className="h-3 w-3 text-gray-400 ml-auto" />
                           )}
-                        </button>
-                        <button
-                          onClick={() => { onAddFirmwareDumpObjective(); setShowAddMenu(null); }}
-                          className="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-600 transition-colors flex items-center gap-2"
-                        >
-                          <HardDrive className="h-3 w-3 text-orange-400" />
-                          <span className="text-white">Firmware Dump</span>
                         </button>
                       </>
                     )}

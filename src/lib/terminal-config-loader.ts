@@ -348,7 +348,7 @@ export class TerminalConfigLoader {
     const flagParts = parts.map((fp) =>
       discoveredFlags.includes(fp.id) ? fp.part : '?'.repeat(fp.part.length)
     );
-    return `flag{${flagParts.join('_')}}`;
+    return `flag{${flagParts.join('')}}`;
   }
 
   /**

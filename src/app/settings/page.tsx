@@ -1,11 +1,12 @@
 // src/app/settings/page.tsx
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { notFound } from 'next/navigation';
 import { isDev } from '@/config/env';
 import { useSettingsStore } from '@/store/settingsStore';
 import { usePresetStore } from '@/store/presetStore';
+import { useTerminalSettingsStore } from '@/store/terminalSettingsStore';
 import SettingsSidebar from '@/components/features/settings/SettingsSidebar';
 import SettingsCanvas from '@/components/features/settings/SettingsCanvas';
 import CanvasToolbar from '@/components/features/settings/CanvasToolbar';
@@ -18,11 +19,29 @@ export default function SettingsPage() {
   const loadFromStorage = useSettingsStore(s => s.loadFromStorage);
   const activeTool = useSettingsStore(s => s.activeTool);
   const fetchPresets = usePresetStore(s => s.fetchPresets);
+  const loadPreset = usePresetStore(s => s.loadPreset);
+  const terminalInitialized = useTerminalSettingsStore(s => s.initialized);
+  const terminalComponentsCount = useTerminalSettingsStore(s => s.terminalComponents.length);
+  const autoLoadAttempted = useRef(false);
+
   // Always load saved configuration on startup + preset list
   useEffect(() => {
     loadFromStorage();
     fetchPresets();
   }, [loadFromStorage, fetchPresets]);
+
+  // Auto-load active preset's terminal config when terminal store is empty
+  useEffect(() => {
+    if (autoLoadAttempted.current) return;
+    if (!terminalInitialized || terminalComponentsCount === 0) {
+      const activeId = usePresetStore.getState().activePresetId
+        || localStorage.getItem('pcb-ctf-active-preset');
+      if (activeId) {
+        autoLoadAttempted.current = true;
+        loadPreset(activeId);
+      }
+    }
+  }, [terminalInitialized, terminalComponentsCount, loadPreset]);
 
   return (
     <main className="flex min-h-screen flex-col items-center bg-gray-900 p-6 lg:p-12">
