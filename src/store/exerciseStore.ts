@@ -12,6 +12,15 @@ function computeBlankFlag(step?: { objectives?: Array<{ flagPart?: string }> }):
   const total = step?.objectives?.reduce((acc, o) => acc + (o.flagPart?.length ?? 0), 0) ?? 0;
   return total > 0 ? `flag{${'?'.repeat(total)}}` : 'flag{????}';
 }
+
+/**
+ * Returns true if an objective is "informational" — visible on the PCB and measurable
+ * with the multimeter but NOT required for step completion.
+ * Currently: pin-type objectives with no pinConditions are informational.
+ */
+function isInformationalObjective(obj: { type?: string; pinConditions?: Array<unknown> }): boolean {
+  return obj.type === 'pin' && (!obj.pinConditions || obj.pinConditions.length === 0);
+}
 export type AdapterPin = 'adapter-tx' | 'adapter-rx' | 'adapter-gnd';
 export type StepMode = 'education' | 'active' | 'completed';
 
@@ -560,14 +569,25 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
     }
     const newFlag = `flag{${flagContent}}`;
 
-    const isLastObjective = currentObjectiveIndex === currentStep.objectives.length - 1;
+    // Skip informational objectives (pin without conditions) — they don't block completion
+    // Find next actionable objective index after current
+    let nextObjIdx = currentObjectiveIndex + 1;
+    while (nextObjIdx < currentStep.objectives.length && isInformationalObjective(currentStep.objectives[nextObjIdx])) {
+      // Auto-mark informational objectives as found so they don't block validateAndCompleteStep
+      if (!newFoundComponents.includes(currentStep.objectives[nextObjIdx].id)) {
+        newFoundComponents.push(currentStep.objectives[nextObjIdx].id);
+      }
+      nextObjIdx++;
+    }
 
-    // Verifica che TUTTI gli obiettivi precedenti siano stati completati
+    const isLastActionable = nextObjIdx >= currentStep.objectives.length;
+
+    // Verifica che TUTTI gli obiettivi precedenti (non informativi) siano stati completati
     const allPriorCompleted = currentStep.objectives
       .slice(0, currentObjectiveIndex)
-      .every(obj => newFoundComponents.includes(obj.id));
+      .every(obj => isInformationalObjective(obj) || newFoundComponents.includes(obj.id));
 
-    if (isLastObjective && allPriorCompleted) {
+    if (isLastActionable && allPriorCompleted) {
       set({
         foundComponents: newFoundComponents,
         flag: newFlag,
@@ -581,7 +601,7 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
       set({
         foundComponents: newFoundComponents,
         flag: newFlag,
-        currentObjectiveIndex: currentObjectiveIndex + 1,
+        currentObjectiveIndex: nextObjIdx,
       });
     }
   },
@@ -938,11 +958,21 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
     const currentStep = data?.steps?.[currentStepIndex];
     const fwProbes = data?.toolConfig?.firmwareDump?.probes ?? [];
 
+    // Skip leading informational objectives (pin without conditions)
+    let firstActionableIdx = 0;
+    const autoFoundComponents: string[] = [];
+    if (currentStep?.objectives) {
+      while (firstActionableIdx < currentStep.objectives.length && isInformationalObjective(currentStep.objectives[firstActionableIdx])) {
+        autoFoundComponents.push(currentStep.objectives[firstActionableIdx].id);
+        firstActionableIdx++;
+      }
+    }
+
     set({
       stepMode: 'active',
       isSimulatorEnabled: true,
-      foundComponents: [],
-      currentObjectiveIndex: 0,
+      foundComponents: autoFoundComponents,
+      currentObjectiveIndex: firstActionableIdx,
       flag: computeBlankFlag(currentStep),
 
       // Reset sidebar / tool selection
@@ -999,9 +1029,10 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
 
     const currentStep = data.steps[currentStepIndex];
 
-    // Verifica che TUTTI gli obiettivi dello step siano stati completati
+    // Verifica che TUTTI gli obiettivi actionable dello step siano stati completati
+    // (pin objectives without conditions are informational and don't block completion)
     const allObjectivesCompleted = currentStep.objectives.every(
-      obj => foundComponents.includes(obj.id)
+      obj => isInformationalObjective(obj) || foundComponents.includes(obj.id)
     );
     if (!allObjectivesCompleted) return false;
 
