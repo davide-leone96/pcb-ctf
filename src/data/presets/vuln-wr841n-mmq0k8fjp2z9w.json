@@ -1166,7 +1166,8 @@
                   "name": "U-Boot Console",
                   "lines": [],
                   "nextStage": "kernel-boot",
-                  "prompt": "ar7100> "
+                  "prompt": "ar7100> ",
+                  "autoProgressTimeout": 3000
                 },
                 {
                   "id": "kernel-boot",
