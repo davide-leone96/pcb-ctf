@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import FlagDisplay from '@/components/features/exercise/FlagDisplay';
 import InstructionsPanel from '@/components/features/exercise/InstructionsPanel';
 import PCBViewer from '@/components/features/exercise/PCBViewer';
@@ -10,6 +10,7 @@ import CompletionDialog from '@/components/features/exercise/CompletionDialog';
 import StepCompletionDialog from '@/components/features/exercise/StepCompletionDialog';
 import Terminal from '@/components/features/exercise/Terminal';
 import { useExerciseConfig } from '@/hooks/useExerciseConfig';
+import { TERMINAL_STORAGE_KEY } from '@/store/terminalSettingsStore';
 
 export default function Home() {
   const { config: exerciseData, isLoading } = useExerciseConfig();
@@ -46,6 +47,30 @@ export default function Home() {
     }
   }, [isLoading, exerciseData, setExerciseData]);
 
+  // Auto-sync terminal config from active preset on mount.
+  // This ensures file-level edits to presets are reflected in the simulator
+  // without requiring a manual reload from the Settings UI.
+  const presetSynced = useRef(false);
+  useEffect(() => {
+    if (presetSynced.current) return;
+    const activePresetId = localStorage.getItem('pcb-ctf-active-preset');
+    if (!activePresetId) return;
+    presetSynced.current = true;
+    fetch(`/api/presets/${activePresetId}`)
+      .then(r => r.json())
+      .then(result => {
+        if (!result.success) return;
+        const tc = result.data.terminalConfig;
+        if (tc) {
+          localStorage.setItem(TERMINAL_STORAGE_KEY, JSON.stringify(
+            Array.isArray(tc) ? tc : [{ id: 'default', name: 'Terminal', config: tc }]
+          ));
+          window.dispatchEvent(new Event('terminal-config-updated'));
+        }
+      })
+      .catch(() => { /* ignore */ });
+  }, []);
+
   if (isLoading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-gray-900">
@@ -68,24 +93,38 @@ export default function Home() {
   const currentStep = exerciseData.steps[currentStepIndex];
   const currentObjective = currentStep?.objectives?.[currentObjectiveIndex];
 
-  // Build combined progressive flag when terminal is active
+  // Build combined progressive flag when terminal is active or was recently completed
   const buildDisplayFlag = (): string => {
     // When step is completed, show the final exercise flag (includes terminal part)
-    if (stepMode !== 'active' || !activeTerminalComponentId) return flag;
+    if (stepMode !== 'active') return flag;
+
+    // If no terminal involved, show the store flag directly
+    if (!activeTerminalComponentId && !terminalCompleteFlag) return flag;
+
+    // If terminal was completed and closed (fw-probe flow), the store flag
+    // was already updated by completeTerminalChallenge — use it directly
+    if (!activeTerminalComponentId && terminalChallengeCompleted) return flag;
 
     // During active step with terminal: combine objective flagParts + terminal progress
-    // The objective flagParts are known because pin conditions were satisfied (terminal opened)
     let objectiveParts = '';
     for (let i = 0; i <= currentObjectiveIndex; i++) {
       objectiveParts += currentStep?.objectives?.[i]?.flagPart || '';
     }
 
-    const terminalPart = terminalChallengeCompleted
-      ? terminalCompleteFlag
-      : '?'.repeat(terminalCompleteFlag.length || 4);
+    // Show progressive terminal flag (discovered parts shown, rest as ?)
+    let terminalInner = '';
+    if (terminalChallengeCompleted) {
+      const completeMatch = terminalCompleteFlag.match(/^flag\{(.+)\}$/);
+      terminalInner = completeMatch ? completeMatch[1] : terminalCompleteFlag;
+    } else if (terminalCurrentFlag) {
+      const match = terminalCurrentFlag.match(/^flag\{(.+)\}$/);
+      terminalInner = match ? match[1] : terminalCurrentFlag;
+    } else {
+      terminalInner = '?'.repeat(terminalCompleteFlag.length || 4);
+    }
 
     return terminalCompleteFlag
-      ? `flag{${objectiveParts}_${terminalPart}}`
+      ? `flag{${objectiveParts}_${terminalInner}}`
       : flag;
   };
 

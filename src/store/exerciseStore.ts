@@ -553,7 +553,10 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
     // Se il terminale ha una completeFlag, aggiungila come parte della flag dello step
     const { terminalCompleteFlag } = get();
     if (terminalCompleteFlag) {
-      flagContent += '_' + terminalCompleteFlag;
+      // Strip flag{...} wrapper if present
+      const match = terminalCompleteFlag.match(/^flag\{(.+)\}$/);
+      const inner = match ? match[1] : terminalCompleteFlag;
+      flagContent += '_' + inner;
     }
     const newFlag = `flag{${flagContent}}`;
 
@@ -741,7 +744,24 @@ export const useExerciseStore = create<ExerciseStore>((set, get) => ({
       currentObj.pinConditions?.some((c: { terminal: string }) => c.terminal.startsWith('fw-probe:'));
 
     if (isPinObjWithFwProbe) {
-      set({ activeTerminalComponentId: null, activeTerminalDefaultTab: null });
+      // Update the display flag to show terminal progress before closing the terminal.
+      // Without this, the flag reverts to blank because buildDisplayFlag falls back
+      // to the store's `flag` when activeTerminalComponentId is null.
+      const { terminalCompleteFlag } = get();
+      let flagContent = '';
+      for (let i = 0; i <= currentObjectiveIndex; i++) {
+        flagContent += currentStep?.objectives?.[i]?.flagPart || '';
+      }
+      if (terminalCompleteFlag) {
+        const match = terminalCompleteFlag.match(/^flag\{(.+)\}$/);
+        const inner = match ? match[1] : terminalCompleteFlag;
+        flagContent += '_' + inner;
+      }
+      set({
+        activeTerminalComponentId: null,
+        activeTerminalDefaultTab: null,
+        flag: `flag{${flagContent}}`,
+      });
       return;
     }
 

@@ -53,20 +53,25 @@ function parseStoredConfig(raw: string): { configs: Map<string, TerminalConfig>;
  *   If not provided, returns the first (or only) config.
  */
 export function useTerminalConfig(terminalComponentId?: string): { config: TerminalConfig; isCustom: boolean } {
-  const [config, setConfig] = useState<TerminalConfig>(staticTerminalConfig);
-  const [isCustom, setIsCustom] = useState(false);
-
-  useEffect(() => {
+  // Read localStorage synchronously on first render to avoid a flash of empty config.
+  // useEffect would cause Terminal to mount with staticTerminalConfig (tabs: []) for one
+  // render cycle, which means no commands/flags are available and boot sequences break.
+  const [config, setConfig] = useState<TerminalConfig>(() => {
+    if (typeof window === 'undefined') return staticTerminalConfig;
     const saved = localStorage.getItem(TERMINAL_STORAGE_KEY);
     if (saved) {
       const result = parseStoredConfig(saved);
       if (result) {
-        const chosen = (terminalComponentId && result.configs.get(terminalComponentId)) || result.defaultConfig;
-        setConfig(chosen);
-        setIsCustom(true);
+        return (terminalComponentId && result.configs.get(terminalComponentId)) || result.defaultConfig;
       }
     }
-  }, [terminalComponentId]);
+    return staticTerminalConfig;
+  });
+  const [isCustom, setIsCustom] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const saved = localStorage.getItem(TERMINAL_STORAGE_KEY);
+    return saved ? !!parseStoredConfig(saved) : false;
+  });
 
   // Listen for storage changes (cross-tab via StorageEvent, same-tab via custom event)
   useEffect(() => {

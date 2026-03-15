@@ -1197,10 +1197,12 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       coords: c.coords,
     }));
 
-    // Retrocompatibilità: anche component objectives dagli step
+    // Only add step component-objectives that DON'T reference an existing init component
+    // (objectives with componentId already point to an initComponent — no need to duplicate)
+    const initIds = new Set(initComponents.map(c => c.id));
     const stepComponents: HardwareComponent[] = steps.flatMap(s =>
       s.objectives
-        .filter(o => o.type === 'component')
+        .filter(o => o.type === 'component' && !o.componentId && !initIds.has(o.id))
         .map(o => ({
           id: o.id,
           name: o.name,
@@ -1223,7 +1225,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       }));
 
     const UART_PIN_TYPES = ['tx', 'rx', 'gnd', 'vcc'];
-    const SPI_PIN_TYPES = ['cs', 'clk', 'mosi', 'miso'];
+    const SPI_PIN_TYPES = ['cs', 'clk', 'mosi', 'miso', 'gnd', 'vcc'];
 
     const uartPins: UartPin[] = pins
       .filter(p => UART_PIN_TYPES.includes(p.pinType))
@@ -1234,9 +1236,21 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         coords: [p.coords[0] - p.size / 2, p.coords[1] - p.size / 2, p.size, p.size] as [number, number, number, number],
       }));
 
-    // Export SPI pins from DraftPin system (pins with SPI pin types)
+    // Collect pin IDs referenced by firmware-dump pinConditions (fw-probe:*)
+    const fwPinIds = new Set<string>();
+    for (const s of steps) {
+      for (const o of s.objectives) {
+        if (o.pinConditions) {
+          for (const c of o.pinConditions) {
+            if (c.terminal.startsWith('fw-probe:')) fwPinIds.add(c.pinId);
+          }
+        }
+      }
+    }
+
+    // Export only pins actually referenced by firmware dump objectives
     const spiPinsFromDraft: FirmwareDumpPin[] = pins
-      .filter(p => SPI_PIN_TYPES.includes(p.pinType))
+      .filter(p => fwPinIds.has(p.id))
       .map(p => ({
         id: p.id,
         role: p.pinType as SpiRole,
@@ -1442,9 +1456,10 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         }];
       }
 
-      // Converti pin
+      // Converti pin — preserve original IDs from the preset so that
+      // pinConditions (which reference these IDs) remain valid after import.
       const mPins: DraftPin[] = (exercise.pins || []).map((p, i) => {
-        const id = `pin-m-${i + 1}`;
+        const id = p.id || `pin-m-${i + 1}`;
         const [left, top, width, height] = p.coords;
         return {
           id, pinType: 'custom' as const, label: p.id,
@@ -1457,7 +1472,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       });
 
       const uPins: DraftPin[] = (exercise.uartPins || []).map((p, i) => {
-        const id = `pin-u-${i + 1}`;
+        const id = p.id || `pin-u-${i + 1}`;
         const [left, top, width, height] = p.coords;
         const uartDefaults: Record<string, { v: number; r: number }> = {
           vcc: { v: 5.0, r: 0 }, tx: { v: 3.3, r: 50 }, rx: { v: 3.3, r: 10000 }, gnd: { v: 0, r: 0 },
@@ -1473,7 +1488,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         };
       });
 
-      // Converti firmwareDumpPins → DraftFirmwareDumpPin[]
+      // Converti firmwareDumpPins → DraftFirmwareDumpPin[] (legacy) + DraftPin[] (unified)
       const draftFwPins: DraftFirmwareDumpPin[] = (exercise.firmwareDumpPins ?? []).map((p, i) => {
         const [left, top, width, height] = p.coords;
         return {
@@ -1482,6 +1497,26 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
           label: p.label,
           size: Math.max(width, height),
           coords: [left + width / 2, top + height / 2] as [number, number],
+        };
+      });
+
+      // Also import firmwareDumpPins into the unified DraftPin system (like UART pins)
+      const SPI_DEFAULTS: Record<string, { v: number; r: number }> = {
+        vcc: { v: 3.3, r: 0 }, gnd: { v: 0, r: 0 },
+        cs: { v: 3.3, r: 10000 }, clk: { v: 0, r: 50 },
+        mosi: { v: 0, r: 50 }, miso: { v: 0, r: 50 },
+      };
+      const spiPins: DraftPin[] = (exercise.firmwareDumpPins ?? []).map((p, i) => {
+        const id = p.id || `pin-spi-${i + 1}`;
+        const [left, top, width, height] = p.coords;
+        const d = SPI_DEFAULTS[p.role] || { v: 0, r: 0 };
+        return {
+          id, pinType: p.role as PinType, label: p.label,
+          shape: 'circle' as const, size: Math.max(width, height),
+          coords: [left + width / 2, top + height / 2] as [number, number],
+          voltageMode: 'fixed' as const, voltageFixed: d.v, voltageMin: 0, voltageMax: 5,
+          resistanceMode: 'fixed' as const, resistanceFixed: d.r, resistanceMin: 10, resistanceMax: 1000,
+          description: '', hint: '',
         };
       });
 
@@ -1521,7 +1556,12 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         steps: draftSteps,
         activeStepId: draftSteps[0]?.id ?? null,
         activeObjectiveId: null,
-        pins: [...mPins, ...uPins],
+        pins: (() => {
+          // Deduplicate: UART pins take precedence over SPI pins with the same ID
+          // (GND/VCC pins can appear in both uartPins and firmwareDumpPins)
+          const seen = new Set([...mPins, ...uPins].map(p => p.id));
+          return [...mPins, ...uPins, ...spiPins.filter(p => !seen.has(p.id))];
+        })(),
         activePinId: null,
         pendingPinCoords: null,
         dragState: null,

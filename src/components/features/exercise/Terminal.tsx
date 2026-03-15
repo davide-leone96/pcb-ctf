@@ -25,17 +25,37 @@ type HistoryLine = {
 };
 
 // ============================================
-// MODULE-LEVEL PERSISTED STATE (PRIMARY / SECONDARY)
+// MODULE-LEVEL PERSISTED STATE (keyed by terminal component ID)
 // ============================================
 
-let persistedPrimaryHistory: HistoryLine[] | null = null;
-let persistedStage: string | null = null;
-let persistedPrimaryPath = '/';
-let persistedPrimaryCmdHistory: string[] = [];
+interface PersistedTerminalState {
+  primaryHistory: HistoryLine[] | null;
+  stage: string | null;
+  primaryPath: string;
+  primaryCmdHistory: string[];
+  secondaryHistory: HistoryLine[] | null;
+  secondaryPath: string;
+  secondaryCmdHistory: string[];
+}
 
-let persistedSecondaryHistory: HistoryLine[] | null = null;
-let persistedSecondaryPath = '/home/kali';
-let persistedSecondaryCmdHistory: string[] = [];
+const persistedStateMap = new Map<string, PersistedTerminalState>();
+
+function getPersistedState(componentId: string | undefined): PersistedTerminalState {
+  const key = componentId || '__default__';
+  return persistedStateMap.get(key) || {
+    primaryHistory: null,
+    stage: null,
+    primaryPath: '/',
+    primaryCmdHistory: [],
+    secondaryHistory: null,
+    secondaryPath: '/home/kali',
+    secondaryCmdHistory: [],
+  };
+}
+
+function setPersistedState(componentId: string | undefined, state: PersistedTerminalState) {
+  persistedStateMap.set(componentId || '__default__', state);
+}
 
 // ============================================
 // COMPONENT
@@ -103,26 +123,29 @@ export default function Terminal({ terminalComponentId, defaultTab }: TerminalPr
   /** The actual config tab ID for the currently active slot */
   const activeTabId = tabIdMap[activeSlot];
 
+  // Retrieve persisted state for this specific terminal component
+  const persisted = useMemo(() => getPersistedState(terminalComponentId), [terminalComponentId]);
+
   // PRIMARY state
   const [primaryHistory, setPrimaryHistory] = useState<HistoryLine[]>(
-    persistedPrimaryHistory || []
+    persisted.primaryHistory || []
   );
   const [stage, setStage] = useState<string>(
-    persistedStage || configLoader.getInitialBootStage(tabIdMap.primary) || 'connecting'
+    persisted.stage || configLoader.getInitialBootStage(tabIdMap.primary) || 'connecting'
   );
   const [primaryPath, setPrimaryPath] = useState(
-    persistedPrimaryPath !== '/' ? persistedPrimaryPath : (configLoader.getInitialPath(tabIdMap.primary) || '/')
+    persisted.primaryPath !== '/' ? persisted.primaryPath : (configLoader.getInitialPath(tabIdMap.primary) || '/')
   );
-  const [primaryCmdHistory, setPrimaryCmdHistory] = useState<string[]>(persistedPrimaryCmdHistory);
+  const [primaryCmdHistory, setPrimaryCmdHistory] = useState<string[]>(persisted.primaryCmdHistory);
 
   // SECONDARY state
   const [secondaryHistory, setSecondaryHistory] = useState<HistoryLine[]>(
-    persistedSecondaryHistory || []
+    persisted.secondaryHistory || []
   );
   const [secondaryPath, setSecondaryPath] = useState(
-    persistedSecondaryPath !== '/home/kali' ? persistedSecondaryPath : (configLoader.getInitialPath(tabIdMap.secondary) || '/home/kali')
+    persisted.secondaryPath !== '/home/kali' ? persisted.secondaryPath : (configLoader.getInitialPath(tabIdMap.secondary) || '/home/kali')
   );
-  const [secondaryCmdHistory, setSecondaryCmdHistory] = useState<string[]>(persistedSecondaryCmdHistory);
+  const [secondaryCmdHistory, setSecondaryCmdHistory] = useState<string[]>(persisted.secondaryCmdHistory);
 
   // Input state
   const [currentInput, setCurrentInput] = useState('');
@@ -141,6 +164,30 @@ export default function Terminal({ terminalComponentId, defaultTab }: TerminalPr
   const history = isPrimary ? primaryHistory : secondaryHistory;
   const setHistory = isPrimary ? setPrimaryHistory : setSecondaryHistory;
 
+  // Reset boot stage when configLoader changes (e.g., config loaded async from localStorage).
+  // useTerminalConfig loads asynchronously via useEffect, so on the first render configLoader
+  // is built from the static fallback (no boot stages) and stage defaults to 'connecting'.
+  // When the real config arrives, configLoader changes but stage is stuck on the stale value.
+  // Fix: if the current stage doesn't exist in the new config's boot sequence, reset it.
+  const configLoaderRef = useRef(configLoader);
+  useEffect(() => {
+    if (configLoaderRef.current !== configLoader) {
+      configLoaderRef.current = configLoader;
+      const primaryTabId = tabIdMap.primary;
+      const bootSeq = configLoader.getBootSequence(primaryTabId);
+      if (bootSeq) {
+        const currentStageExists = configLoader.getBootStage(primaryTabId, stage);
+        if (!currentStageExists) {
+          // Current stage is invalid for this config — reset to initial
+          const initialStage = configLoader.getInitialBootStage(primaryTabId);
+          if (initialStage) {
+            setStage(initialStage);
+          }
+        }
+      }
+    }
+  }, [configLoader, tabIdMap.primary, stage]);
+
   // Auto-scroll to bottom when history changes
   useEffect(() => {
     if (scrollRef.current) {
@@ -148,19 +195,18 @@ export default function Terminal({ terminalComponentId, defaultTab }: TerminalPr
     }
   }, [history]);
 
-  // Persist state
+  // Persist state (keyed by terminal component ID)
   useEffect(() => {
-    persistedPrimaryHistory = primaryHistory;
-    persistedStage = stage;
-    persistedPrimaryPath = primaryPath;
-    persistedPrimaryCmdHistory = primaryCmdHistory;
-  }, [primaryHistory, stage, primaryPath, primaryCmdHistory]);
-
-  useEffect(() => {
-    persistedSecondaryHistory = secondaryHistory;
-    persistedSecondaryPath = secondaryPath;
-    persistedSecondaryCmdHistory = secondaryCmdHistory;
-  }, [secondaryHistory, secondaryPath, secondaryCmdHistory]);
+    setPersistedState(terminalComponentId, {
+      primaryHistory,
+      stage,
+      primaryPath,
+      primaryCmdHistory,
+      secondaryHistory,
+      secondaryPath,
+      secondaryCmdHistory,
+    });
+  }, [terminalComponentId, primaryHistory, stage, primaryPath, primaryCmdHistory, secondaryHistory, secondaryPath, secondaryCmdHistory]);
 
   // Focus input on mount and tab switch
   useEffect(() => {
@@ -261,6 +307,40 @@ export default function Terminal({ terminalComponentId, defaultTab }: TerminalPr
     }
   }, [stage, activeSlot, configLoader, tabIdMap.primary]);
 
+  // Auto-progress timer: if a stage has autoProgressTimeout and nextStage,
+  // auto-transition after timeout unless user provides input.
+  const autoProgressRef = useRef<NodeJS.Timeout | null>(null);
+  useEffect(() => {
+    if (activeSlot !== 'primary') return;
+    const primaryTabId = tabIdMap.primary;
+    const currentStage = configLoader.getBootStage(primaryTabId, stage);
+    if (!currentStage?.autoProgressTimeout || !currentStage.nextStage) return;
+
+    autoProgressRef.current = setTimeout(() => {
+      // Auto-transition: animate next stage boot lines if any
+      const nextStageObj = configLoader.getBootStage(primaryTabId, currentStage.nextStage!);
+      if (nextStageObj?.lines && nextStageObj.lines.length > 0 && !nextStageObj.prompt) {
+        // Next stage is an animation stage — just transition and let the boot effect handle it
+      }
+      setStage(currentStage.nextStage!);
+    }, currentStage.autoProgressTimeout);
+
+    return () => {
+      if (autoProgressRef.current) {
+        clearTimeout(autoProgressRef.current);
+        autoProgressRef.current = null;
+      }
+    };
+  }, [stage, activeSlot, configLoader, tabIdMap.primary]);
+
+  // Cancel auto-progress when user types anything
+  const cancelAutoProgress = () => {
+    if (autoProgressRef.current) {
+      clearTimeout(autoProgressRef.current);
+      autoProgressRef.current = null;
+    }
+  };
+
   // ============================================
   // COMMAND EXECUTION
   // ============================================
@@ -268,6 +348,7 @@ export default function Terminal({ terminalComponentId, defaultTab }: TerminalPr
   function executeCommand(input: string) {
     const trimmed = input.trim();
     if (!trimmed) return;
+    cancelAutoProgress();
 
     const currentSetHistory = isPrimary ? setPrimaryHistory : setSecondaryHistory;
 
@@ -408,62 +489,83 @@ export default function Terminal({ terminalComponentId, defaultTab }: TerminalPr
     if (e.key === 'Enter') {
       e.preventDefault();
 
-      // Handle special boot stages (primary tab only)
-      if (isPrimary) {
-        if (stage === 'uboot_wait') {
-          setStage('uboot_shell');
-          setPrimaryHistory(prev => [...prev, { type: 'output', content: '' }]);
-          setCurrentInput('');
-          return;
-        }
+      // Handle special boot stages (primary tab only) — config-driven.
+      // Login/password stages are identified by their prompt content.
+      // The actual username/password are registered as commands in the config
+      // with sideEffects.setState.bootStage to transition to the next stage.
+      if (isPrimary && hasBootSequence) {
+        const stageObj = configLoader.getBootStage(tabIdMap.primary, stage);
+        const stagePrompt = stageObj?.prompt?.toLowerCase() || '';
+        const isLoginStage = stagePrompt.includes('login');
+        const isPasswordStage = stagePrompt.includes('password');
 
-        if (stage === 'login') {
+        if (isLoginStage || isPasswordStage) {
+          cancelAutoProgress();
           const trimmed = currentInput.trim();
+          const displayContent = isPasswordStage ? '********' : trimmed;
           setPrimaryHistory(prev => [
             ...prev,
-            { type: 'input', content: trimmed, prompt: '(none) login: ' },
+            { type: 'input', content: displayContent, prompt: stageObj!.prompt! },
           ]);
 
-          if (trimmed.toLowerCase() === 'root') {
-            setStage('password');
-          } else {
-            setPrimaryHistory(prev => [
-              ...prev,
-              { type: 'output', content: 'Login incorrect' },
-              { type: 'output', content: '' },
-            ]);
-          }
-
-          setCurrentInput('');
-          return;
-        }
-
-        if (stage === 'password') {
-          const trimmed = currentInput.trim();
-          setPrimaryHistory(prev => [
-            ...prev,
-            { type: 'input', content: '********', prompt: 'Password: ' },
-          ]);
-
-          if (trimmed === 'sohoadmin') {
-            const primaryTabId = tabIdMap.primary;
-            const shellStage = configLoader.getBootStage(primaryTabId, 'shell');
-            if (shellStage?.lines) {
-              setPrimaryHistory(prev => [
-                ...prev,
-                ...shellStage.lines.map(l => ({ type: 'output' as const, content: l })),
-              ]);
+          // Check if the input matches a command in the config (e.g., 'root', 'sohoadmin')
+          const commandDef = configLoader.getCommand(tabIdMap.primary, trimmed);
+          if (commandDef) {
+            // Execute the command — it will apply setState.bootStage and unlockFlags
+            const filesystem = configLoader.getFilesystem(tabIdMap.primary);
+            const environment = configLoader.getEnvironment(tabIdMap.primary);
+            if (filesystem) {
+              const context: CommandContext = {
+                command: trimmed,
+                args: [],
+                currentPath: primaryPath,
+                filesystem,
+                environment: environment || {},
+                bootStage: stage,
+                discoveredFlags: terminalDiscoveries,
+                history: primaryCmdHistory,
+                state: {},
+                tab: tabIdMap.primary,
+              };
+              try {
+                const result = executor.executeCommand(commandDef, context);
+                if (result.output) {
+                  setPrimaryHistory(prev => [
+                    ...prev,
+                    ...result.output.map((l: string) => ({ type: 'output' as const, content: l })),
+                  ]);
+                }
+                if (result.sideEffects) {
+                  if (result.sideEffects.newFlags) {
+                    result.sideEffects.newFlags.forEach((flagId: string) => {
+                      discoverFlag(flagId);
+                    });
+                  }
+                  if (result.sideEffects.stateChanges?.bootStage) {
+                    const newStageId = result.sideEffects.stateChanges.bootStage;
+                    // Show boot lines of the new stage (if any, e.g., shell welcome message)
+                    const newStageObj = configLoader.getBootStage(tabIdMap.primary, newStageId);
+                    if (newStageObj?.lines && newStageObj.lines.length > 0) {
+                      setPrimaryHistory(prev => [
+                        ...prev,
+                        ...newStageObj.lines.map((l: string) => ({ type: 'output' as const, content: l })),
+                      ]);
+                    }
+                    setStage(newStageId);
+                    if (newStageObj?.prompt?.includes('#') || newStageObj?.prompt?.includes('$')) {
+                      setPrimaryPath(configLoader.getInitialPath(tabIdMap.primary) || '/');
+                    }
+                  }
+                }
+              } catch { /* ignore */ }
             }
-            setStage('shell');
-            setPrimaryPath('/');
-            discoverFlag('root');
           } else {
+            // Unknown login/password — show error
             setPrimaryHistory(prev => [
               ...prev,
               { type: 'output', content: 'Login incorrect' },
               { type: 'output', content: '' },
             ]);
-            setStage('login');
           }
 
           setCurrentInput('');
@@ -550,33 +652,32 @@ export default function Terminal({ terminalComponentId, defaultTab }: TerminalPr
     }
 
     // Primary tab prompts - check if boot sequence exists
-    const hasBootSequence = !!configLoader.getBootSequence(tabIdMap.primary);
+    const bootSeq = configLoader.getBootSequence(tabIdMap.primary);
 
-    if (!hasBootSequence) {
+    if (!bootSeq) {
       // No boot sequence: show a simple shell prompt
       return `${primaryPath} $ `;
     }
 
-    // Boot sequence prompts
-    if (stage === 'shell') {
-      return `${primaryPath} # `;
+    // Config-driven prompt: read from stage definition
+    const currentStage = configLoader.getBootStage(tabIdMap.primary, stage);
+    if (currentStage?.prompt) {
+      // Support {path} placeholder in prompt
+      return currentStage.prompt.replace('{path}', primaryPath);
     }
 
-    switch (stage) {
-      case 'uboot_wait': return '';
-      case 'uboot_shell': return 'ar7100> ';
-      case 'login': return '(none) login: ';
-      case 'password': return 'Password: ';
-      default: return '';
-    }
+    // Stage is animating (no prompt defined) — no input allowed
+    return '';
   }
 
-  // Input visibility: always visible for secondary tab and for primary without boot sequence
+  // Input visibility: always visible for secondary tab and for primary without boot sequence.
+  // For primary with boot sequence: show input only when the current stage has a prompt defined.
   const hasBootSequence = !!configLoader.getBootSequence(tabIdMap.primary);
+  const currentBootStage = isPrimary ? configLoader.getBootStage(tabIdMap.primary, stage) : null;
   const isInputVisible =
     !isPrimary ||
     !hasBootSequence ||
-    (isPrimary && ['uboot_wait', 'uboot_shell', 'login', 'password', 'shell'].includes(stage));
+    (isPrimary && !!currentBootStage?.prompt);
 
   const discoveredCount = terminalDiscoveries.length;
   const flagParts = configLoader.getFlagParts();

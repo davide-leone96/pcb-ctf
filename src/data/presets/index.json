@@ -1,30 +1,16 @@
 [
   {
-    "id": "t-mm40w7avqt9a",
-    "name": "t",
-    "description": "",
-    "createdAt": "2026-02-26T22:16:28.663Z",
-    "updatedAt": "2026-02-28T19:43:36.304Z"
-  },
-  {
-    "id": "g4-mm40ww9kgk4r",
-    "name": "g4",
-    "description": "",
-    "createdAt": "2026-02-26T22:17:01.016Z",
-    "updatedAt": "2026-03-04T21:41:10.890Z"
-  },
-  {
-    "id": "ctf-1-mmfg76ska98m",
-    "name": "CTF-1",
-    "description": "TP-LINK",
-    "createdAt": "2026-03-06T22:10:23.396Z",
-    "updatedAt": "2026-03-13T21:53:47.054Z"
-  },
-  {
     "id": "vuln-wr841n-mmq0k8fjp2z9w",
     "name": "TP-Link WR841N - Vulnerability Analysis",
-    "description": "Walkthrough completo: identificazione HW, UART, analisi vulnerabilità, firmware dump SPI",
+    "description": "Walkthrough completo: identificazione HW, UART, analisi vulnerabilità, firmware dump SPI via CH341A con simulazione flashrom",
     "createdAt": "2026-03-13T23:00:00.000Z",
-    "updatedAt": "2026-03-13T23:03:10.156Z"
+    "updatedAt": "2026-03-15T16:34:48.458Z"
+  },
+  {
+    "id": "dump-fw-mmrzfuwt1zfy",
+    "name": "dump-fw",
+    "description": "",
+    "createdAt": "2026-03-15T16:42:14.717Z",
+    "updatedAt": "2026-03-15T16:42:14.717Z"
   }
 ]

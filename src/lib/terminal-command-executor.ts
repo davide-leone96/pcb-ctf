@@ -367,12 +367,28 @@ export class CommandExecutor {
   private checkCondition(condition: ConditionCheck, context: CommandContext): boolean {
     switch (condition.type) {
       case 'argument': {
-        const arg = context.args[condition.index || 0];
-        if (!arg) return false;
-        if (condition.equals !== undefined) return arg === condition.equals;
-        if (condition.contains !== undefined) return arg.includes(condition.contains);
-        if (condition.regex !== undefined) return new RegExp(condition.regex).test(arg);
-        return true;
+        // If index is specified, try that specific argument first;
+        // if it doesn't match, fall through to search ALL arguments.
+        // This handles cases where the configurator saves index:0 but
+        // the target value is at a different position (e.g. hashcat -m 500 '$1$...')
+        if (condition.index !== undefined) {
+          const arg = context.args[condition.index];
+          if (arg) {
+            if (condition.equals !== undefined && arg === condition.equals) return true;
+            if (condition.contains !== undefined && arg.includes(condition.contains)) return true;
+            if (condition.regex !== undefined && new RegExp(condition.regex).test(arg)) return true;
+          }
+          // Specific index didn't match — fall through to search all args
+        }
+        // Search across all arguments
+        const allArgs = context.args;
+        if (allArgs.length === 0) return false;
+        for (const arg of allArgs) {
+          if (condition.equals !== undefined && arg === condition.equals) return true;
+          if (condition.contains !== undefined && arg.includes(condition.contains)) return true;
+          if (condition.regex !== undefined && new RegExp(condition.regex).test(arg)) return true;
+        }
+        return false;
       }
 
       case 'path':
