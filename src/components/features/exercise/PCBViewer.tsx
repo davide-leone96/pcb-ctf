@@ -622,11 +622,14 @@ const PCBViewer = () => {
             )}
           </>
         )}
-        {/* Hotspot componenti: invisibili, solo click handler - mostra solo gli obiettivi dello step corrente */}
-        {activeTools.includes('pointer') && stepMode === 'active' && currentStepObjectives.map((objective) => {
-          const [left, top, width, height] = objective.coords;
-          return <div key={objective.id} onClick={(e) => { e.stopPropagation(); selectComponent(objective.id); }} className="absolute pointer-events-auto cursor-pointer rounded-md" style={{ left: `${left}%`, top: `${top}%`, width: `${width}%`, height: `${height}%`}}/>
-        })}
+        {/* Hotspot componenti: invisibili, solo click handler - mostra solo gli obiettivi component dello step corrente */}
+        {/* Renderizzati SOLO quando il tool attivo è il pointer, così le sonde possono interagire con i pin sovrapposti */}
+        {activeTool === 'pointer' && stepMode === 'active' && currentStepObjectives
+          .filter((obj) => !obj.type || obj.type === 'component')
+          .map((objective) => {
+            const [left, top, width, height] = objective.coords;
+            return <div key={objective.id} onClick={(e) => { e.stopPropagation(); selectComponent(objective.id); }} className="absolute pointer-events-auto cursor-pointer rounded-md" style={{ left: `${left}%`, top: `${top}%`, width: `${width}%`, height: `${height}%`}}/>
+          })}
       </div>
       {/* Chiusura wrapper relativo all'immagine */}
       </div>
