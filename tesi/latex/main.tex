@@ -1,0 +1,156 @@
+\documentclass[a4paper,12pt,oneside]{book}
+
+% ── Encoding e lingua ────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+
+% ── Geometria della pagina ───────────────────────────────────────────
+\usepackage[top=3cm, bottom=3cm, left=3.5cm, right=2.5cm]{geometry}
+
+% ── Font ─────────────────────────────────────────────────────────────
+\usepackage{lmodern}
+
+% ── Pacchetti grafici e tabelle ──────────────────────────────────────
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{tabularx}
+
+% ── Codice sorgente ──────────────────────────────────────────────────
+\usepackage{listings}
+\usepackage{xcolor}
+
+\definecolor{codebg}{RGB}{245,245,245}
+\definecolor{codeframe}{RGB}{200,200,200}
+\definecolor{codestring}{RGB}{163,21,21}
+\definecolor{codecomment}{RGB}{0,128,0}
+\definecolor{codekeyword}{RGB}{0,0,255}
+
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{codeframe},
+  breaklines=true,
+  breakatwhitespace=false,
+  tabsize=2,
+  showstringspaces=false,
+  keywordstyle=\color{codekeyword},
+  commentstyle=\color{codecomment}\itshape,
+  stringstyle=\color{codestring},
+  numbers=none,
+  xleftmargin=1em,
+  xrightmargin=1em,
+  aboveskip=1em,
+  belowskip=1em,
+}
+
+\lstdefinelanguage{json}{
+  morestring=[b]",
+  morecomment=[l]{//},
+  literate=
+    *{:}{{{\color{codekeyword}{:}}}}{1}
+    {,}{{{\color{codekeyword}{,}}}}{1}
+    {\{}{{{\color{codekeyword}{\{}}}}{1}
+    {\}}{{{\color{codekeyword}{\}}}}}{1}
+    {[}{{{\color{codekeyword}{[}}}}{1}
+    {]}{{{\color{codekeyword}{]}}}}{1},
+}
+
+% ── Hyperlink ────────────────────────────────────────────────────────
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  citecolor=black,
+  urlcolor=blue,
+  pdfauthor={Davide Leone},
+  pdftitle={PCB-CTF: Piattaforma Web per la Formazione sulla Sicurezza Hardware},
+}
+
+% ── Spaziatura ───────────────────────────────────────────────────────
+\usepackage{setspace}
+\onehalfspacing
+
+% ── Caption ──────────────────────────────────────────────────────────
+\usepackage[font=small,labelfont=bf]{caption}
+
+% ── Placeholder per figure ───────────────────────────────────────────
+\newcommand{\figurePlaceholder}[2]{%
+  \begin{figure}[H]
+    \centering
+    \fbox{\parbox{0.8\textwidth}{\centering\vspace{2cm}\textit{Screenshot da inserire}\vspace{2cm}}}
+    \caption{#2}
+    \label{fig:#1}
+  \end{figure}
+}
+
+% ══════════════════════════════════════════════════════════════════════
+% DOCUMENTO
+% ══════════════════════════════════════════════════════════════════════
+
+\begin{document}
+
+% ── Frontespizio ─────────────────────────────────────────────────────
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+
+  {\Large\textsc{Università degli Studi di ...}}\\[0.5cm]
+  {\large Dipartimento di ...}\\[0.3cm]
+  {\large Corso di Laurea in ...}\\[3cm]
+
+  {\LARGE\bfseries PCB-CTF}\\[0.4cm]
+  {\Large Piattaforma Web Interattiva per la Formazione\\sulla Sicurezza Hardware in Formato CTF}\\[3cm]
+
+  \begin{minipage}{0.45\textwidth}
+    \begin{flushleft}
+      \textbf{Relatore}\\
+      Prof. ...
+    \end{flushleft}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.45\textwidth}
+    \begin{flushright}
+      \textbf{Candidato}\\
+      Davide Leone\\
+      Matricola: ...
+    \end{flushright}
+  \end{minipage}
+
+  \vfill
+  {\large Anno Accademico 2025/2026}
+\end{titlepage}
+
+% ── Indice ───────────────────────────────────────────────────────────
+\frontmatter
+\tableofcontents
+
+% ── Corpo ────────────────────────────────────────────────────────────
+\mainmatter
+
+\input{introduzione}
+
+% Capitolo 1 — Stato dell'arte (da scrivere)
+% \input{capitolo-1}
+
+\input{capitolo-2}
+\input{capitolo-3}
+\input{capitolo-4}
+\input{capitolo-5}
+\input{capitolo-6}
+\input{conclusioni}
+
+% ── Bibliografia ─────────────────────────────────────────────────────
+% \bibliographystyle{plain}
+% \bibliography{bibliografia}
+
+% ── Appendici ────────────────────────────────────────────────────────
+\appendix
+\input{appendice-a}
+\input{appendice-b}
+
+\end{document}

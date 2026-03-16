@@ -1,0 +1,163 @@
+# Capitolo 2 — Analisi dei requisiti
+
+## 2.1 Contesto operativo e attori del sistema
+
+Prima di procedere con l'elicitazione dei requisiti, è necessario definire con chiarezza il contesto d'uso della piattaforma e gli attori coinvolti.
+
+La piattaforma PCB-CTF è concepita per l'uso in ambito accademico e formativo, dove un docente — o più in generale un autore di contenuti — predispone un esercizio di analisi hardware che uno o più studenti dovranno risolvere. I due attori principali operano in momenti e modalità distinte:
+
+- Lo **studente** accede al simulatore via browser, visualizza il circuito stampato, utilizza gli strumenti virtuali messi a disposizione e risolve progressivamente gli obiettivi proposti. Il suo percorso è guidato da istruzioni testuali e suggerimenti, e il completamento di ciascuna fase è attestato dalla scoperta di un frammento della flag finale.
+
+- L'**autore** (docente, tutor, o progettista dell'esercizio) accede al pannello di configurazione, dove dispone i componenti sulla fotografia del PCB, definisce i punti di misura, configura il comportamento del terminale e struttura la sequenza didattica in step e obiettivi. Il suo lavoro produce una configurazione JSON che il simulatore consumerà.
+
+Non è previsto, nella versione attuale, un terzo attore con ruolo amministrativo: l'autore ha pieno controllo su tutte le funzionalità di configurazione. Questa semplificazione riflette lo scenario d'uso primario, dove il docente opera in autonomia sulla propria istanza della piattaforma.
+
+
+## 2.2 Requisiti funzionali
+
+I requisiti funzionali sono stati organizzati per area tematica, riflettendo le macro-funzionalità della piattaforma.
+
+### 2.2.1 Simulazione del circuito stampato
+
+**RF-01 — Visualizzazione del PCB.** Il sistema deve consentire la visualizzazione di una fotografia ad alta risoluzione di un circuito stampato, sulla quale vengono sovrapposti elementi interattivi (componenti cliccabili, pin, overlay degli strumenti). L'interfaccia deve adattarsi alle dimensioni della finestra del browser mantenendo le proporzioni degli elementi.
+
+**RF-02 — Identificazione dei componenti.** Lo studente deve poter individuare e selezionare componenti hardware sul PCB attraverso il click su aree predefinite dall'autore. Il sistema deve fornire feedback visivo per distinguere componenti già identificati da quelli ancora da scoprire.
+
+**RF-03 — Strumento di ingrandimento.** Il sistema deve fornire una lente di ingrandimento virtuale che consenta di esaminare i dettagli del PCB con un livello di zoom configurabile. La lente deve poter essere ancorata in una posizione fissa per liberare il cursore.
+
+### 2.2.2 Strumenti di misura
+
+**RF-04 — Multimetro digitale.** Il sistema deve simulare un multimetro digitale con due sonde (rossa e nera), modalità tensione e modalità resistenza. Il multimetro deve visualizzare valori realistici con rumore digitale simulato. Le letture devono rispettare le regole fisiche: in modalità tensione con due sonde, il display mostra la differenza di potenziale; in modalità resistenza, la somma delle resistenze.
+
+**RF-05 — Adattatore UART.** Il sistema deve simulare un adattatore USB-to-serial con pin TX, RX e GND trascinabili. Il collegamento deve rispettare la logica del protocollo UART, in particolare la corrispondenza incrociata tra TX e RX. Il sistema deve validare in tempo reale la correttezza dei collegamenti senza rivelare esplicitamente la soluzione.
+
+**RF-06 — Strumento di firmware dump SPI.** Il sistema deve simulare un programmatore SPI con sei sonde corrispondenti ai segnali del bus (VCC, GND, CS, CLK, MOSI, MISO). Ogni sonda deve poter essere collegata solo al pin con il ruolo corrispondente. Al completamento delle connessioni, il sistema deve simulare il trasferimento del firmware con una barra di progresso e offrire il download di un file binario reale.
+
+**RF-07 — Connessione delle sonde.** Tutti gli strumenti con sonde trascinabili devono implementare un meccanismo di aggancio automatico (snap) che faciliti il collegamento ai pin vicini al cursore. Il raggio di aggancio deve essere sufficientemente ampio da rendere l'interazione confortevole ma non così ampio da generare ambiguità quando i pin sono ravvicinati.
+
+### 2.2.3 Terminale simulato
+
+**RF-08 — Emulazione del terminale.** Il sistema deve fornire un terminale testuale interattivo che simuli un ambiente a riga di comando, senza eseguire effettivamente comandi sul server. Il terminale deve supportare comandi built-in (ls, cd, cat, pwd, grep, find, clear) e comandi personalizzati definiti dall'autore.
+
+**RF-09 — Filesystem simulato.** Il terminale deve operare su un filesystem virtuale configurabile, con supporto per directory, file con contenuto testuale, permessi e proprietari. Il filesystem deve essere navigabile tramite i comandi standard.
+
+**RF-10 — Sequenza di boot.** Il terminale deve poter simulare una sequenza di avvio del dispositivo, con stadi animati che riproducono il flusso di un boot reale (bootloader, kernel, login). Alcuni stadi devono prevedere interazione da parte dell'utente (inserimento credenziali).
+
+**RF-11 — Sistema di flag terminale.** Il terminale deve implementare un meccanismo di scoperta progressiva delle flag: l'esecuzione di determinati comandi sblocca frammenti della flag, e l'interfaccia mostra in tempo reale il progresso raggiunto.
+
+**RF-12 — Tab multipli.** Il terminale deve supportare tab multipli, ciascuno con il proprio contesto di esecuzione (filesystem, percorso corrente, cronologia). Questo consente di simulare scenari realistici in cui lo studente opera simultaneamente sul dispositivo target (via UART) e sulla propria macchina di analisi.
+
+**RF-13 — Vincoli sui comandi.** Il sistema deve consentire all'autore di definire vincoli sull'esecuzione dei comandi: disponibilità limitata a specifiche directory, requisito di permessi, prerequisiti (comandi già eseguiti o flag già scoperte), e restrizione a specifici stadi di boot.
+
+### 2.2.4 Struttura dell'esercizio
+
+**RF-14 — Organizzazione in step e obiettivi.** L'esercizio deve essere strutturato in step sequenziali, ciascuno con uno o più obiettivi. Lo studente affronta gli step in ordine; all'interno di ogni step, gli obiettivi possono essere risolti nella sequenza prevista dall'autore.
+
+**RF-15 — Tipologie di obiettivi.** Il sistema deve supportare almeno cinque tipologie di obiettivi: identificazione di componenti (click), condizioni su pin (valori di misura), connessione UART, interazione con il terminale (scoperta di flag), ed estrazione firmware SPI.
+
+**RF-16 — Flag progressiva.** Il completamento di ogni step e obiettivo deve contribuire alla costruzione progressiva della flag finale dell'esercizio. L'interfaccia deve mostrare in tempo reale la flag parziale, con indicazione chiara dei frammenti ancora da scoprire.
+
+**RF-17 — Dialogo di completamento.** Al termine dell'esercizio, il sistema deve mostrare un dialogo configurabile che può includere: la flag completa con possibilità di copia, un pulsante di redirect verso una piattaforma esterna, e un pulsante per il download di un file.
+
+### 2.2.5 Authoring e configurazione
+
+**RF-18 — Editor visuale del PCB.** L'autore deve poter posizionare componenti e pin sulla fotografia del PCB tramite interazione diretta (drag-and-drop), con supporto per zoom, rotazione e traslazione della vista.
+
+**RF-19 — Editor del terminale.** Il sistema deve fornire un editor strutturato per la configurazione del terminale: definizione dei comandi (tipo, output, vincoli, effetti collaterali), organizzazione del filesystem ad albero, configurazione della sequenza di boot, e definizione delle parti della flag.
+
+**RF-20 — Anteprima del terminale.** L'autore deve poter testare il terminale configurato direttamente dal pannello di authoring, senza necessità di passare al simulatore.
+
+**RF-21 — Sistema di preset.** Il sistema deve consentire il salvataggio e il caricamento di configurazioni complete (esercizio + terminale) come preset riutilizzabili. Ogni preset deve essere autocontenuto, includendo una copia dell'immagine del PCB.
+
+**RF-22 — Configurazione degli strumenti built-in.** L'autore deve poter configurare i parametri degli strumenti built-in: raggio e livello di zoom della lente, comportamento dell'adattatore UART (persistenza, associazione con il terminale), parametri del firmware dump (sonde, durata, file binario).
+
+**RF-23 — Gruppi di strumenti.** L'autore deve poter definire gruppi di strumenti attivabili contemporaneamente, superando il vincolo predefinito di mutua esclusività.
+
+### 2.2.6 Lancio automatico del terminale
+
+**RF-24 — Auto-lancio del terminale.** Il terminale deve poter essere attivato automaticamente in risposta a eventi specifici: completamento di una connessione UART, completamento di un dump firmware, o attivazione di un obiettivo di tipo terminale. Il componente terminale da lanciare e il tab iniziale devono essere configurabili.
+
+### 2.2.7 Allegati agli hint
+
+**RF-25 — File allegati ai suggerimenti.** L'autore deve poter associare uno o più file scaricabili al suggerimento di un obiettivo. Lo studente, quando richiede il suggerimento, deve poter visualizzare il testo dell'hint e scaricare i file allegati (ad esempio, datasheet, schemi elettrici, immagini di riferimento). I file devono essere caricabili tramite il pannello di authoring e serviti direttamente dal server.
+
+
+## 2.3 Requisiti non funzionali
+
+### 2.3.1 Accessibilità e distribuzione
+
+**RNF-01 — Zero installazione.** La piattaforma deve funzionare interamente nel browser, senza richiedere l'installazione di software aggiuntivo, plugin o estensioni lato studente. L'unico prerequisito deve essere un browser moderno con supporto JavaScript.
+
+**RNF-02 — Deployment semplificato.** Il sistema deve produrre un artefatto di deployment autocontenuto (standalone), deployabile in ambienti containerizzati (Docker) senza dipendenze runtime esterne. Non deve essere richiesto un database o servizi esterni.
+
+### 2.3.2 Usabilità
+
+**RNF-03 — Guidabilità.** Ogni obiettivo deve essere accompagnato da un'istruzione testuale e da un suggerimento opzionale, in modo che lo studente possa procedere anche senza conoscenze pregresse specifiche sull'hardware in esame.
+
+**RNF-04 — Feedback visivo.** Il sistema deve fornire feedback visivo immediato per tutte le interazioni: evidenziazione dei pin nell'area di snap, animazione dei fili durante il trascinamento, indicazione cromatica dello stato delle connessioni, barra di progresso durante il dump firmware.
+
+**RNF-05 — Responsività.** L'interfaccia deve adattarsi a diverse risoluzioni e dimensioni dello schermo senza compromettere la funzionalità. Il sistema di coordinate normalizzate deve garantire il corretto posizionamento degli elementi interattivi indipendentemente dalla dimensione della finestra.
+
+### 2.3.3 Prestazioni
+
+**RNF-06 — Esecuzione lato client.** Tutte le interazioni dello studente — misurazione con il multimetro, connessione delle sonde, esecuzione dei comandi nel terminale — devono essere elaborate lato client, senza round-trip al server, per garantire latenza minima e responsività immediata.
+
+**RNF-07 — Indipendenza dal server durante la simulazione.** Una volta caricata la configurazione iniziale, il simulatore deve funzionare senza ulteriori chiamate al server. La perdita di connettività non deve interrompere la sessione in corso.
+
+### 2.3.4 Manutenibilità e estensibilità
+
+**RNF-08 — Tipizzazione statica.** Il modello dati deve essere integralmente tipizzato con TypeScript, in modo da intercettare errori di struttura in fase di compilazione.
+
+**RNF-09 — Modularità del terminale.** Il sistema terminale deve supportare la definizione di più componenti terminale indipendenti all'interno di un singolo esercizio, per consentire scenari con dispositivi multipli o con ambienti di analisi separati.
+
+**RNF-10 — Configurazione dichiarativa.** Il comportamento del terminale — comandi, vincoli, output, effetti collaterali — deve essere definibile in modo dichiarativo tramite configurazione JSON, senza richiedere modifiche al codice sorgente per la creazione di nuovi esercizi.
+
+### 2.3.5 Sicurezza
+
+**RNF-11 — Nessuna esecuzione server-side di comandi.** Il terminale simulato non deve mai eseguire comandi reali sul sistema operativo del server. Ogni interazione deve essere gestita dal motore di esecuzione lato client, operando esclusivamente sulle strutture dati in memoria.
+
+**RNF-12 — Isolamento delle sessioni.** Lo stato della sessione di uno studente deve essere completamente indipendente e non deve interferire con le sessioni di altri studenti o con la configurazione dell'autore.
+
+
+## 2.4 Casi d'uso principali
+
+Si descrivono di seguito i casi d'uso più rilevanti, organizzati per attore.
+
+### 2.4.1 Casi d'uso dello studente
+
+**CU-01 — Esplorazione del PCB.** Lo studente apre il simulatore, visualizza il circuito stampato e utilizza la lente di ingrandimento per esaminare i dettagli. Identifica i componenti hardware cliccando sulle aree corrispondenti. Al completamento di ogni identificazione, riceve un frammento della flag.
+
+**CU-02 — Misurazione elettrica.** Lo studente seleziona il multimetro dalla sidebar e trascina le sonde sui punti di test del circuito. Il display mostra i valori di tensione o resistenza. L'obiettivo viene completato quando le sonde sono posizionate sui pin che soddisfano le condizioni definite dall'autore.
+
+**CU-03 — Connessione UART.** Lo studente seleziona lo strumento delle sonde UART e collega i pin dell'adattatore ai pin del circuito, rispettando la logica di crossover del protocollo. Al completamento della connessione corretta, il terminale si apre automaticamente simulando una sessione seriale.
+
+**CU-04 — Estrazione firmware.** Lo studente seleziona lo strumento di firmware dump e collega le sonde SPI ai pin corrispondenti sul PCB. Una volta completate le connessioni richieste, avvia il dump e scarica il file firmware al termine del trasferimento simulato.
+
+**CU-05 — Esplorazione del terminale.** Lo studente interagisce con il terminale simulato: esplora il filesystem, esegue comandi, analizza file di configurazione, scopre credenziali e vulnerabilità. Ogni scoperta significativa sblocca un frammento della flag terminale.
+
+**CU-06 — Completamento dell'esercizio.** Lo studente completa tutti gli step dell'esercizio, inserisce la flag finale nel dialogo di validazione, e riceve conferma del completamento. Il dialogo finale può offrire opzioni di redirect o download.
+
+### 2.4.2 Casi d'uso dell'autore
+
+**CU-07 — Configurazione del PCB.** L'autore carica la fotografia del circuito, posiziona i componenti cliccabili e definisce i pin di misura (con valori elettrici), i pin UART (con ruoli) e i pin SPI (con ruoli). Utilizza il canvas interattivo per il posizionamento preciso.
+
+**CU-08 — Definizione dell'esercizio.** L'autore crea step sequenziali, ciascuno con obiettivi tipizzati. Per ogni obiettivo definisce istruzioni, suggerimenti, frammento di flag e condizioni di completamento specifiche per il tipo (click su componente, condizioni su pin, flag terminale, connessione UART, dump firmware).
+
+**CU-09 — Configurazione del terminale.** L'autore crea uno o più componenti terminale, ciascuno con tab, comandi, filesystem, sequenza di boot e flag. Utilizza l'editor strutturato per definire il comportamento di ogni comando e l'anteprima integrata per verificare il risultato.
+
+**CU-10 — Gestione dei preset.** L'autore salva la configurazione corrente come preset, la carica da un preset esistente, o aggiorna un preset precedentemente salvato. Il sistema traccia le modifiche non salvate rispetto al preset attivo.
+
+
+## 2.5 Vincoli e assunzioni
+
+La progettazione ha tenuto conto di un insieme di vincoli e assunzioni derivanti dal contesto d'uso:
+
+**V-01 — Singolo utente simultaneo per istanza.** La piattaforma è progettata per un uso single-user per istanza. Non è prevista la gestione di sessioni concorrenti con autenticazione: ogni studente opera sulla propria copia dell'applicazione, o su un'istanza condivisa dove le sessioni sono indipendenti e non persistenti.
+
+**V-02 — Sessioni non persistenti.** Il progresso dello studente nel simulatore non viene salvato tra le sessioni. Ogni caricamento della pagina riparte dallo stato iniziale dell'esercizio. Questa scelta è coerente con l'uso in contesto laboratoriale, dove la sessione ha una durata definita e il completamento avviene tipicamente in un'unica seduta.
+
+**V-03 — Connettività richiesta solo al caricamento.** La connessione di rete è necessaria per il caricamento iniziale dell'applicazione e della configurazione. Una volta caricata, la simulazione opera interamente lato client e non richiede ulteriori comunicazioni con il server.
+
+**V-04 — Browser moderno.** Si assume che gli studenti utilizzino un browser moderno (Chrome, Firefox, Edge, Safari nelle versioni correnti) con supporto completo per ES2017+, CSS Grid, e le API Web standard (localStorage, Fetch, DOM Events).
+
+**V-05 — Conoscenze tecniche dell'autore.** Si assume che l'autore abbia familiarità con i concetti di sicurezza hardware trattati (UART, SPI, analisi firmware) e con la struttura logica di un sistema embedded. Il pannello di configurazione non fornisce spiegazioni didattiche sui protocolli, ma offre un'interfaccia strutturata per la loro configurazione.

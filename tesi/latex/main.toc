@@ -1,0 +1,182 @@
+\babel@toc {italian}{}\relax 
+\babel@toc {italian}{}\relax 
+\contentsline {chapter}{Introduzione}{1}{chapter*.2}%
+\contentsline {chapter}{\numberline {1}Analisi dei requisiti}{4}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Contesto operativo e attori del sistema}{4}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Requisiti funzionali}{5}{section.1.2}%
+\contentsline {subsection}{\numberline {1.2.1}Simulazione del circuito stampato}{5}{subsection.1.2.1}%
+\contentsline {paragraph}{RF-01 --- Visualizzazione del PCB.}{5}{section*.8}%
+\contentsline {paragraph}{RF-02 --- Identificazione dei componenti.}{5}{section*.9}%
+\contentsline {paragraph}{RF-03 --- Strumento di ingrandimento.}{5}{section*.10}%
+\contentsline {subsection}{\numberline {1.2.2}Strumenti di misura}{5}{subsection.1.2.2}%
+\contentsline {paragraph}{RF-04 --- Multimetro digitale.}{5}{section*.11}%
+\contentsline {paragraph}{RF-05 --- Adattatore UART.}{5}{section*.12}%
+\contentsline {paragraph}{RF-06 --- Strumento di firmware dump SPI.}{5}{section*.13}%
+\contentsline {paragraph}{RF-07 --- Connessione delle sonde.}{6}{section*.14}%
+\contentsline {subsection}{\numberline {1.2.3}Terminale simulato}{6}{subsection.1.2.3}%
+\contentsline {paragraph}{RF-08 --- Emulazione del terminale.}{6}{section*.15}%
+\contentsline {paragraph}{RF-09 --- Filesystem simulato.}{6}{section*.16}%
+\contentsline {paragraph}{RF-10 --- Sequenza di boot.}{6}{section*.17}%
+\contentsline {paragraph}{RF-11 --- Sistema di flag terminale.}{6}{section*.18}%
+\contentsline {paragraph}{RF-12 --- Tab multipli.}{6}{section*.19}%
+\contentsline {paragraph}{RF-13 --- Vincoli sui comandi.}{6}{section*.20}%
+\contentsline {subsection}{\numberline {1.2.4}Strumenti personalizzati}{7}{subsection.1.2.4}%
+\contentsline {paragraph}{RF-14 --- Definizione di strumenti custom.}{7}{section*.21}%
+\contentsline {paragraph}{RF-15 --- Integrazione nel simulatore.}{7}{section*.22}%
+\contentsline {subsection}{\numberline {1.2.5}Struttura dell'esercizio}{7}{subsection.1.2.5}%
+\contentsline {paragraph}{RF-16 --- Organizzazione in step e obiettivi.}{7}{section*.23}%
+\contentsline {paragraph}{RF-17 --- Tipologie di obiettivi.}{7}{section*.24}%
+\contentsline {paragraph}{RF-18 --- Flag progressiva.}{7}{section*.25}%
+\contentsline {paragraph}{RF-19 --- Dialogo di completamento.}{7}{section*.26}%
+\contentsline {subsection}{\numberline {1.2.6}Authoring e configurazione}{8}{subsection.1.2.6}%
+\contentsline {paragraph}{RF-20 --- Editor visuale del PCB.}{8}{section*.27}%
+\contentsline {paragraph}{RF-21 --- Editor del terminale.}{8}{section*.28}%
+\contentsline {paragraph}{RF-22 --- Anteprima del terminale.}{8}{section*.29}%
+\contentsline {paragraph}{RF-23 --- Sistema di preset.}{8}{section*.30}%
+\contentsline {paragraph}{RF-24 --- Configurazione degli strumenti built-in.}{8}{section*.31}%
+\contentsline {paragraph}{RF-25 --- Gruppi di strumenti.}{8}{section*.32}%
+\contentsline {subsection}{\numberline {1.2.7}Lancio automatico del terminale}{8}{subsection.1.2.7}%
+\contentsline {paragraph}{RF-26 --- Auto-lancio del terminale.}{8}{section*.33}%
+\contentsline {section}{\numberline {1.3}Requisiti non funzionali}{9}{section.1.3}%
+\contentsline {subsection}{\numberline {1.3.1}Accessibilità e distribuzione}{9}{subsection.1.3.1}%
+\contentsline {paragraph}{RNF-01 --- Zero installazione.}{9}{section*.34}%
+\contentsline {paragraph}{RNF-02 --- Deployment semplificato.}{9}{section*.35}%
+\contentsline {subsection}{\numberline {1.3.2}Usabilità}{9}{subsection.1.3.2}%
+\contentsline {paragraph}{RNF-03 --- Guidabilità.}{9}{section*.36}%
+\contentsline {paragraph}{RNF-04 --- Feedback visivo.}{9}{section*.37}%
+\contentsline {paragraph}{RNF-05 --- Responsività.}{9}{section*.38}%
+\contentsline {subsection}{\numberline {1.3.3}Prestazioni}{9}{subsection.1.3.3}%
+\contentsline {paragraph}{RNF-06 --- Esecuzione lato client.}{9}{section*.39}%
+\contentsline {paragraph}{RNF-07 --- Indipendenza dal server durante la simulazione.}{9}{section*.40}%
+\contentsline {subsection}{\numberline {1.3.4}Manutenibilità e estensibilità}{10}{subsection.1.3.4}%
+\contentsline {paragraph}{RNF-08 --- Tipizzazione statica.}{10}{section*.41}%
+\contentsline {paragraph}{RNF-09 --- Modularità del terminale.}{10}{section*.42}%
+\contentsline {paragraph}{RNF-10 --- Configurazione dichiarativa.}{10}{section*.43}%
+\contentsline {subsection}{\numberline {1.3.5}Sicurezza}{10}{subsection.1.3.5}%
+\contentsline {paragraph}{RNF-11 --- Nessuna esecuzione server-side di comandi.}{10}{section*.44}%
+\contentsline {paragraph}{RNF-12 --- Isolamento delle sessioni.}{10}{section*.45}%
+\contentsline {section}{\numberline {1.4}Casi d'uso principali}{10}{section.1.4}%
+\contentsline {subsection}{\numberline {1.4.1}Casi d'uso dello studente}{10}{subsection.1.4.1}%
+\contentsline {paragraph}{CU-01 --- Esplorazione del PCB.}{10}{section*.46}%
+\contentsline {paragraph}{CU-02 --- Misurazione elettrica.}{11}{section*.47}%
+\contentsline {paragraph}{CU-03 --- Connessione UART.}{11}{section*.48}%
+\contentsline {paragraph}{CU-04 --- Estrazione firmware.}{11}{section*.49}%
+\contentsline {paragraph}{CU-05 --- Esplorazione del terminale.}{11}{section*.50}%
+\contentsline {paragraph}{CU-06 --- Completamento dell'esercizio.}{11}{section*.51}%
+\contentsline {subsection}{\numberline {1.4.2}Casi d'uso dell'autore}{11}{subsection.1.4.2}%
+\contentsline {paragraph}{CU-07 --- Configurazione del PCB.}{11}{section*.52}%
+\contentsline {paragraph}{CU-08 --- Definizione dell'esercizio.}{11}{section*.53}%
+\contentsline {paragraph}{CU-09 --- Configurazione del terminale.}{12}{section*.54}%
+\contentsline {paragraph}{CU-10 --- Gestione dei preset.}{12}{section*.55}%
+\contentsline {paragraph}{CU-11 --- Creazione di strumenti personalizzati.}{12}{section*.56}%
+\contentsline {section}{\numberline {1.5}Vincoli e assunzioni}{12}{section.1.5}%
+\contentsline {paragraph}{V-01 --- Singolo utente simultaneo per istanza.}{12}{section*.57}%
+\contentsline {paragraph}{V-02 --- Sessioni non persistenti.}{12}{section*.58}%
+\contentsline {paragraph}{V-03 --- Connettività richiesta solo al caricamento.}{12}{section*.59}%
+\contentsline {paragraph}{V-04 --- Browser moderno.}{12}{section*.60}%
+\contentsline {paragraph}{V-05 --- Conoscenze tecniche dell'autore.}{13}{section*.61}%
+\contentsline {chapter}{\numberline {2}Progettazione dell'architettura}{14}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Scelte tecnologiche}{14}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Architettura generale del sistema}{15}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Modello dei dati}{16}{section.2.3}%
+\contentsline {subsection}{\numberline {2.3.1}Struttura dell'esercizio}{16}{subsection.2.3.1}%
+\contentsline {subsection}{\numberline {2.3.2}Il sistema unificato dei pin}{17}{subsection.2.3.2}%
+\contentsline {subsection}{\numberline {2.3.3}Il sistema di coordinate}{17}{subsection.2.3.3}%
+\contentsline {section}{\numberline {2.4}Gestione dello stato applicativo}{18}{section.2.4}%
+\contentsline {subsection}{\numberline {2.4.1}Architettura a store indipendenti}{18}{subsection.2.4.1}%
+\contentsline {subsection}{\numberline {2.4.2}Coordinazione tra store}{19}{subsection.2.4.2}%
+\contentsline {subsection}{\numberline {2.4.3}Persistenza dello stato}{19}{subsection.2.4.3}%
+\contentsline {subsection}{\numberline {2.4.4}Migrazione dei dati}{20}{subsection.2.4.4}%
+\contentsline {section}{\numberline {2.5}Progettazione del sistema terminale}{20}{section.2.5}%
+\contentsline {subsection}{\numberline {2.5.1}Principi di progettazione}{20}{subsection.2.5.1}%
+\contentsline {subsection}{\numberline {2.5.2}Architettura modulare}{21}{subsection.2.5.2}%
+\contentsline {subsection}{\numberline {2.5.3}Pipeline di esecuzione dei comandi}{21}{subsection.2.5.3}%
+\contentsline {subsection}{\numberline {2.5.4}Il filesystem simulato}{22}{subsection.2.5.4}%
+\contentsline {subsection}{\numberline {2.5.5}La sequenza di boot}{22}{subsection.2.5.5}%
+\contentsline {subsection}{\numberline {2.5.6}Il sistema di flag}{23}{subsection.2.5.6}%
+\contentsline {section}{\numberline {2.6}Flusso dati tra authoring e simulazione}{23}{section.2.6}%
+\contentsline {subsection}{\numberline {2.6.1}Il sistema di preset}{24}{subsection.2.6.1}%
+\contentsline {chapter}{\numberline {3}Implementazione}{25}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Il visualizzatore PCB interattivo}{25}{section.3.1}%
+\contentsline {subsection}{\numberline {3.1.1}Sistema di overlay e conversione delle coordinate}{25}{subsection.3.1.1}%
+\contentsline {subsection}{\numberline {3.1.2}Meccanismo di snap}{26}{subsection.3.1.2}%
+\contentsline {subsection}{\numberline {3.1.3}Rendering dei fili}{26}{subsection.3.1.3}%
+\contentsline {subsection}{\numberline {3.1.4}La lente di ingrandimento}{27}{subsection.3.1.4}%
+\contentsline {section}{\numberline {3.2}Strumenti di analisi hardware}{28}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}Il multimetro}{28}{subsection.3.2.1}%
+\contentsline {subsection}{\numberline {3.2.2}L'adattatore UART}{28}{subsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.2.3}Il firmware dumper SPI}{29}{subsection.3.2.3}%
+\contentsline {section}{\numberline {3.3}Il terminale simulato}{31}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}Il loader della configurazione}{31}{subsection.3.3.1}%
+\contentsline {subsection}{\numberline {3.3.2}L'esecutore dei comandi}{32}{subsection.3.3.2}%
+\contentsline {subsection}{\numberline {3.3.3}I comandi built-in}{32}{subsection.3.3.3}%
+\contentsline {subsection}{\numberline {3.3.4}La sequenza di boot}{33}{subsection.3.3.4}%
+\contentsline {subsection}{\numberline {3.3.5}Persistenza dello stato del terminale}{34}{subsection.3.3.5}%
+\contentsline {section}{\numberline {3.4}Il sistema di strumenti personalizzati}{34}{section.3.4}%
+\contentsline {subsection}{\numberline {3.4.1}Modello dati}{34}{subsection.3.4.1}%
+\contentsline {subsection}{\numberline {3.4.2}Rendering nel simulatore}{35}{subsection.3.4.2}%
+\contentsline {subsection}{\numberline {3.4.3}Authoring degli strumenti personalizzati}{35}{subsection.3.4.3}%
+\contentsline {section}{\numberline {3.5}Il pannello di authoring}{36}{section.3.5}%
+\contentsline {subsection}{\numberline {3.5.1}Organizzazione dell'interfaccia}{36}{subsection.3.5.1}%
+\contentsline {subsection}{\numberline {3.5.2}Il canvas interattivo}{37}{subsection.3.5.2}%
+\contentsline {subsection}{\numberline {3.5.3}L'editor del terminale}{37}{subsection.3.5.3}%
+\contentsline {section}{\numberline {3.6}API e persistenza dei dati}{38}{section.3.6}%
+\contentsline {subsection}{\numberline {3.6.1}Architettura delle API}{38}{subsection.3.6.1}%
+\contentsline {subsection}{\numberline {3.6.2}Strategia di persistenza}{39}{subsection.3.6.2}%
+\contentsline {subsection}{\numberline {3.6.3}Sincronizzazione real-time}{40}{subsection.3.6.3}%
+\contentsline {section}{\numberline {3.7}Il sistema di completamento dell'esercizio}{40}{section.3.7}%
+\contentsline {subsection}{\numberline {3.7.1}Flussi di completamento degli obiettivi}{40}{subsection.3.7.1}%
+\contentsline {subsection}{\numberline {3.7.2}Reset dello stato alla transizione tra step}{41}{subsection.3.7.2}%
+\contentsline {subsection}{\numberline {3.7.3}Progressione della flag}{42}{subsection.3.7.3}%
+\contentsline {subsection}{\numberline {3.7.4}Il dialogo di completamento}{42}{subsection.3.7.4}%
+\contentsline {chapter}{\numberline {4}Caso di studio}{43}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Progettazione dell'esercizio}{43}{section.4.1}%
+\contentsline {subsection}{\numberline {4.1.1}Struttura dell'esercizio}{43}{subsection.4.1.1}%
+\contentsline {subsection}{\numberline {4.1.2}Configurazione del terminale}{44}{subsection.4.1.2}%
+\contentsline {subsection}{\numberline {4.1.3}Configurazione degli strumenti}{45}{subsection.4.1.3}%
+\contentsline {section}{\numberline {4.2}Walkthrough dello studente}{45}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}Fase 1 --- Ricognizione del PCB}{46}{subsection.4.2.1}%
+\contentsline {subsection}{\numberline {4.2.2}Fase 2 --- Connessione UART}{47}{subsection.4.2.2}%
+\contentsline {subsection}{\numberline {4.2.3}Fase 3 --- Esplorazione del terminale}{47}{subsection.4.2.3}%
+\contentsline {section}{\numberline {4.3}Configurazione lato autore}{49}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}Creazione dell'esercizio}{49}{subsection.4.3.1}%
+\contentsline {subsection}{\numberline {4.3.2}Configurazione del terminale}{49}{subsection.4.3.2}%
+\contentsline {subsection}{\numberline {4.3.3}Salvataggio come preset}{50}{subsection.4.3.3}%
+\contentsline {chapter}{\numberline {5}Validazione e discussione}{51}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Criteri di valutazione}{51}{section.5.1}%
+\contentsline {subsection}{\numberline {5.1.1}Copertura dei concetti didattici}{51}{subsection.5.1.1}%
+\contentsline {subsection}{\numberline {5.1.2}Fedeltà della simulazione}{52}{subsection.5.1.2}%
+\contentsline {subsection}{\numberline {5.1.3}Espressività del sistema di authoring}{53}{subsection.5.1.3}%
+\contentsline {section}{\numberline {5.2}Confronto con soluzioni esistenti}{54}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Limitazioni}{55}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Sviluppi futuri}{55}{section.5.4}%
+\contentsline {chapter}{Conclusioni}{57}{chapter*.80}%
+\contentsline {chapter}{\numberline {A}Struttura JSON di un esercizio completo}{59}{appendix.Alph1}%
+\contentsline {section}{\numberline {A.1}Schema dell'esercizio (\texttt {Exercise})}{59}{section.Alph1.1}%
+\contentsline {section}{\numberline {A.2}Tipi enumerati}{68}{section.Alph1.2}%
+\contentsline {subsection}{\numberline {A.2.1}ObjectiveType}{68}{subsection.Alph1.2.1}%
+\contentsline {subsection}{\numberline {A.2.2}Tool}{68}{subsection.Alph1.2.2}%
+\contentsline {subsection}{\numberline {A.2.3}UartRole}{69}{subsection.Alph1.2.3}%
+\contentsline {subsection}{\numberline {A.2.4}SpiRole}{69}{subsection.Alph1.2.4}%
+\contentsline {section}{\numberline {A.3}Sistema di coordinate}{69}{section.Alph1.3}%
+\contentsline {section}{\numberline {A.4}Esempio completo}{70}{section.Alph1.4}%
+\contentsline {chapter}{\numberline {B}Schema della configurazione terminale}{74}{appendix.Alph2}%
+\contentsline {section}{\numberline {B.1}Struttura principale (\texttt {TerminalConfig})}{74}{section.Alph2.1}%
+\contentsline {section}{\numberline {B.2}Configurazione del tab (\texttt {TabConfig})}{75}{section.Alph2.2}%
+\contentsline {subsection}{\numberline {B.2.1}Stadi speciali della sequenza di boot}{76}{subsection.Alph2.2.1}%
+\contentsline {section}{\numberline {B.3}Definizione di un comando (\texttt {CommandDefinition})}{77}{section.Alph2.3}%
+\contentsline {subsection}{\numberline {B.3.1}Vincoli del comando (\texttt {CommandConstraints})}{79}{subsection.Alph2.3.1}%
+\contentsline {subsection}{\numberline {B.3.2}Tipi di output (\texttt {CommandOutput})}{80}{subsection.Alph2.3.2}%
+\contentsline {subsubsection}{Output statico}{80}{section*.86}%
+\contentsline {subsubsection}{Output condizionale}{81}{section*.87}%
+\contentsline {subsubsection}{Output template}{81}{section*.88}%
+\contentsline {subsubsection}{Output lookup}{82}{section*.89}%
+\contentsline {subsubsection}{Output dinamico}{82}{section*.90}%
+\contentsline {subsubsection}{Output script}{82}{section*.91}%
+\contentsline {subsection}{\numberline {B.3.3}Controllo delle condizioni (\texttt {ConditionCheck})}{82}{subsection.Alph2.3.3}%
+\contentsline {section}{\numberline {B.4}Struttura del filesystem (\texttt {FilesystemStructure})}{83}{section.Alph2.4}%
+\contentsline {subsection}{\numberline {B.4.1}Processo di normalizzazione}{85}{subsection.Alph2.4.1}%
+\contentsline {section}{\numberline {B.5}Sistema di flag (\texttt {FlagSystem})}{85}{section.Alph2.5}%
+\contentsline {section}{\numberline {B.6}Contesto di esecuzione (\texttt {CommandContext})}{86}{section.Alph2.6}%
+\contentsline {section}{\numberline {B.7}Risultato dell'esecuzione (\texttt {CommandExecutionResult})}{86}{section.Alph2.7}%
+\contentsline {section}{\numberline {B.8}Esempio: configurazione del tab UART Console}{87}{section.Alph2.8}%

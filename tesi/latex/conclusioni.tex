@@ -1,0 +1,18 @@
+\chapter*{Conclusioni}
+\addcontentsline{toc}{chapter}{Conclusioni}
+
+Il presente lavoro ha affrontato il problema della formazione sulla sicurezza hardware in contesti dove l'accesso a laboratori fisici è limitato, proponendo una piattaforma web che simula l'intero flusso di lavoro dell'analisi di un dispositivo embedded --- dall'ispezione visiva del circuito stampato fino all'estrazione e all'analisi del firmware --- in un ambiente completamente virtualizzato e accessibile da browser.
+
+La piattaforma PCB-CTF è stata progettata attorno a due principi guida: la \textbf{fedeltà dell'interazione}, per garantire che l'esperienza dello studente sia trasferibile al contesto reale, e la \textbf{configurabilità dichiarativa}, per consentire ai docenti di creare esercizi personalizzati senza modificare il codice sorgente.
+
+Sul piano dell'interazione, gli strumenti simulati --- multimetro con rumore digitale, adattatore UART con validazione incrociata, programmatore SPI con sei sonde role-based --- replicano la logica operativa delle controparti reali. Il terminale, pur operando su dati predefiniti, riproduce in modo convincente il comportamento di un sistema embedded, dalla sequenza di boot del bootloader U-Boot fino all'esplorazione del filesystem Linux. Il meccanismo di coordinate normalizzate e snap automatico delle sonde rende l'interazione fluida e intuitiva, senza sacrificare il realismo.
+
+Sul piano dell'authoring, il pannello di configurazione consente di definire esercizi arbitrariamente complessi attraverso un editor visuale. Il sistema di sei tipi di output del terminale, combinato con i vincoli contestuali sui comandi e il meccanismo di flag progressive, offre un livello di espressività sufficiente a replicare scenari di analisi realistici, come dimostrato dal caso di studio basato sul router TP-Link WR841N.
+
+Le scelte architetturali si sono rivelate adeguate alla complessità del sistema. La gestione dello stato tramite quattro store Zustand indipendenti ha garantito una separazione chiara delle responsabilità, senza i costi di complessità di un sistema centralizzato. L'assenza di un database e l'adozione di file JSON per la persistenza hanno mantenuto il progetto leggero e immediatamente deployabile, coerentemente con la natura didattica dell'applicazione.
+
+Il caso di studio ha dimostrato che la piattaforma è in grado di supportare un percorso formativo completo, dalla ricognizione hardware all'analisi delle vulnerabilità software, in un formato guidato e gamificato. Lo studente attraversa le stesse fasi concettuali di un'analisi reale --- identificare, misurare, connettersi, estrarre, esplorare, scoprire --- acquisendo competenze metodologiche che costituiscono una base solida per il successivo approccio all'hardware fisico.
+
+Le limitazioni individuate --- l'assenza di esecuzione reale nel terminale, il mancato supporto di protocolli come JTAG e I\textsuperscript{2}C, la mancanza di multi-utenza e persistenza del progresso --- indicano chiaramente le direzioni di evoluzione futura. In particolare, l'integrazione con laboratori remoti per un approccio ibrido simulazione-hardware, e l'introduzione di un sistema di scoring per contesti competitivi, rappresentano le estensioni più promettenti.
+
+In definitiva, PCB-CTF colma un vuoto nell'offerta formativa sulla sicurezza hardware, offrendo un'alternativa accessibile e scalabile ai laboratori fisici. Non si propone di sostituire l'esperienza su hardware reale, ma di preparare lo studente ad affrontarla con le competenze concettuali e la metodologia già acquisite, riducendo la barriera d'ingresso a un campo che, per la crescente pervasività dei dispositivi IoT, è destinato a diventare sempre più rilevante.
