@@ -4,7 +4,7 @@
     "name": "TP-Link WR841N - Vulnerability Analysis",
     "description": "Walkthrough completo: identificazione HW, UART, analisi vulnerabilità, firmware dump SPI via CH341A con simulazione flashrom",
     "createdAt": "2026-03-13T23:00:00.000Z",
-    "updatedAt": "2026-03-15T16:57:57.151Z"
+    "updatedAt": "2026-03-16T12:09:53.331Z"
   },
   "exerciseConfig": {
     "pcbImage": "/images/preset-vuln-wr841n-mmq0k8fjp2z9w.png",
@@ -123,10 +123,10 @@
         "objectives": [
           {
             "id": "obj-mmrykiukbovlm",
-            "name": "Collega le 6 sonde SPI del CH341A ai pin del W25Q32. Dopo il collegamento, usa flashrom nel terminale per identificare il chip e dumpare il firmware.",
+            "name": "SPI Flash Dump",
             "type": "pin",
             "instruction": "Collega le 6 sonde SPI del CH341A ai pin del W25Q32. Dopo il collegamento, usa flashrom nel terminale per identificare il chip e dumpare il firmware.",
-            "hint": "Pinout SOIC-8 W25Q32: Pin1=/CS, Pin2=MISO/DO, Pin4=GND, Pin5=MOSI/DI, Pin6=CLK, Pin8=VCC. Poi 'sudo flashrom -p ch341a_spi' per probe e dump.",
+            "hint": "Pinout SOIC-8 W25Q32: Pin1=/CS, Pin2=MISO/DO, Pin4=GND, Pin5=MOSI/DI, Pin6=CLK, Pin8=VCC. Poi 'sudo flashrom -p ch341a_spi' per probe e dump. Analizzare il datasheet",
             "flagPart": "SPI_DUMP_FW_DUMPED",
             "coords": [
               0,
@@ -160,7 +160,10 @@
                 "terminal": "fw-probe:fw-probe-mmrweid6"
               }
             ],
-            "pinLogic": "AND"
+            "pinLogic": "AND",
+            "hintFiles": [
+              "/uploads/hints/hint-1773662795931-spiflash_Winbond-w25q32.pdf"
+            ]
           }
         ]
       }
@@ -416,8 +419,8 @@
             "color": "#FACC15"
           }
         ],
-        "filePath": "/uploads/firmware-1773421451122-fw_test.bin",
-        "fileName": "firmware_wr841n.bin",
+        "filePath": "/uploads/firmware-1773662825137-firmware.bin",
+        "fileName": "firmware.bin",
         "dumpDurationSec": 8,
         "terminalComponentId": "tc-dump",
         "terminalDefaultTab": "tab-ch341a"
@@ -1166,8 +1169,7 @@
                   "name": "U-Boot Console",
                   "lines": [],
                   "nextStage": "kernel-boot",
-                  "prompt": "ar7100> ",
-                  "autoProgressTimeout": 3000
+                  "prompt": "ar7100> "
                 },
                 {
                   "id": "kernel-boot",

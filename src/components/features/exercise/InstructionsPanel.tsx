@@ -12,6 +12,7 @@ interface InstructionsPanelProps {
   objectiveName: string;
   objectiveInstruction: string;
   hintText: string;
+  hintFiles?: string[];
   onStartStep: () => void;
   onNextStep: () => void;
   /** True quando l'intero esercizio è finito (nessun next step disponibile) */
@@ -25,6 +26,7 @@ const InstructionsPanel = ({
   objectiveName,
   objectiveInstruction,
   hintText,
+  hintFiles,
   onStartStep,
   onNextStep,
   isExerciseFinished = false,
@@ -142,7 +144,7 @@ const InstructionsPanel = ({
         <h3 className="text-lg font-bold text-yellow-400">
           {objectiveName}
         </h3>
-        {hintText && <HintButton hintText={hintText} />}
+        {(hintText || (hintFiles && hintFiles.length > 0)) && <HintButton hintText={hintText} hintFiles={hintFiles} />}
       </div>
       <p className="text-gray-300 flex-grow">{objectiveInstruction}</p>
     </div>

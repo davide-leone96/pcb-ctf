@@ -45,6 +45,8 @@ export interface Objective {
   requiresUart?: boolean;
   /** Per type='terminal': se true, il terminale non può essere disattivato dalla toolbar una volta attivato */
   terminalPersistent?: boolean;
+  /** File allegati all'hint, scaricabili dallo studente nel simulatore */
+  hintFiles?: string[];
 }
 
 export interface Step {

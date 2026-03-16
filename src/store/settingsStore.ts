@@ -33,6 +33,7 @@ export interface DraftObjective {
   bootStageConditions: BootStageCondition[];
   requiresUart: boolean;
   terminalPersistent: boolean;
+  hintFiles: string[];
 }
 
 export interface DraftFirmwareDumpConfig {
@@ -812,6 +813,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       bootStageConditions: [],
       requiresUart: false,
       terminalPersistent: false,
+      hintFiles: [],
     };
     set({
       steps: updateStepObjectives(get().steps, stepId, objs => [...objs, newObj]),
@@ -843,6 +845,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       bootStageConditions: [],
       requiresUart: false,
       terminalPersistent: false,
+      hintFiles: [],
     };
     set({
       steps: updateStepObjectives(get().steps, stepId, objs => [...objs, newObj]),
@@ -869,6 +872,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       bootStageConditions: [],
       requiresUart: true,
       terminalPersistent: false,
+      hintFiles: [],
     };
     set({
       steps: updateStepObjectives(get().steps, stepId, objs => [...objs, newObj]),
@@ -895,6 +899,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       bootStageConditions: [],
       requiresUart: false,
       terminalPersistent: false,
+      hintFiles: [],
     };
     set({
       steps: updateStepObjectives(get().steps, stepId, objs => [...objs, newObj]),
@@ -1175,6 +1180,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         ...(o.type === 'terminal' ? { requiresUart: o.requiresUart, terminalPersistent: o.terminalPersistent } : {}),
         ...(o.terminalComponentId ? { terminalComponentId: o.terminalComponentId } : {}),
         ...(o.type === 'firmware-dump' && o.customToolId ? { customToolId: o.customToolId } : {}),
+        ...(o.hintFiles && o.hintFiles.length > 0 ? { hintFiles: o.hintFiles } : {}),
       }));
       const flagParts = objectives.map(o => o.flagPart).join('');
       return {
@@ -1397,6 +1403,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
                 terminalComponentId: (o as any).terminalComponentId || '',
                 requiresUart: (o as any).requiresUart ?? (o.type === 'terminal'),
                 terminalPersistent: (o as any).terminalPersistent ?? false,
+                hintFiles: (o as any).hintFiles || [],
               };
             }),
           };
@@ -1452,6 +1459,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
             bootStageConditions: [],
             requiresUart: false,
             terminalPersistent: false,
+            hintFiles: [],
           })),
         }];
       }

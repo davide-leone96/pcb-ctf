@@ -6,6 +6,7 @@ import { useSettingsStore, type DraftObjective } from '@/store/settingsStore';
 import { useTerminalSettingsStore } from '@/store/terminalSettingsStore';
 import { Button } from '@/components/ui/button';
 import { TerminalSquare, Cable, Lock, Package } from 'lucide-react';
+import HintFilesUpload from './HintFilesUpload';
 
 interface TerminalObjectivePopupProps {
   objective: DraftObjective;
@@ -24,6 +25,7 @@ const TerminalObjectivePopup = ({ objective, containerDims }: TerminalObjectiveP
   const [requiresUart, setRequiresUart] = useState(objective.requiresUart);
   const [terminalPersistent, setTerminalPersistent] = useState(objective.terminalPersistent);
   const [terminalComponentId, setTerminalComponentId] = useState(objective.terminalComponentId || '');
+  const [hintFiles, setHintFiles] = useState<string[]>(objective.hintFiles || []);
 
   useEffect(() => {
     setName(objective.name);
@@ -32,6 +34,7 @@ const TerminalObjectivePopup = ({ objective, containerDims }: TerminalObjectiveP
     setRequiresUart(objective.requiresUart);
     setTerminalPersistent(objective.terminalPersistent);
     setTerminalComponentId(objective.terminalComponentId || '');
+    setHintFiles(objective.hintFiles || []);
   }, [objective]);
 
   const handleConfirm = () => {
@@ -41,6 +44,7 @@ const TerminalObjectivePopup = ({ objective, containerDims }: TerminalObjectiveP
       pinLogic: 'AND' as const,
       instruction,
       hint,
+      hintFiles,
       flagPart: 'TERMINAL',
       customToolId: '',
       terminalComponentId,
@@ -129,6 +133,11 @@ const TerminalObjectivePopup = ({ objective, containerDims }: TerminalObjectiveP
           placeholder="General hint..."
           className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition-colors"
         />
+      </div>
+
+      {/* Hint Files */}
+      <div className="mb-3">
+        <HintFilesUpload files={hintFiles} onChange={setHintFiles} />
       </div>
 
       {/* Requires UART */}

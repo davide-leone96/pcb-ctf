@@ -6,6 +6,7 @@ import { useSettingsStore, type DraftObjective } from '@/store/settingsStore';
 import { useTerminalSettingsStore } from '@/store/terminalSettingsStore';
 import { Button } from '@/components/ui/button';
 import { HardDrive, AlertTriangle, TerminalSquare } from 'lucide-react';
+import HintFilesUpload from './HintFilesUpload';
 
 interface FirmwareDumpObjectivePopupProps {
   objective: DraftObjective;
@@ -23,6 +24,7 @@ const FirmwareDumpObjectivePopup = ({ objective, containerDims }: FirmwareDumpOb
   const [hint, setHint] = useState(objective.hint);
   const [flagPart, setFlagPart] = useState(objective.flagPart);
   const [terminalComponentId, setTerminalComponentId] = useState(objective.terminalComponentId || '');
+  const [hintFiles, setHintFiles] = useState<string[]>(objective.hintFiles || []);
 
   useEffect(() => {
     setName(objective.name);
@@ -30,6 +32,7 @@ const FirmwareDumpObjectivePopup = ({ objective, containerDims }: FirmwareDumpOb
     setHint(objective.hint);
     setFlagPart(objective.flagPart);
     setTerminalComponentId(objective.terminalComponentId || '');
+    setHintFiles(objective.hintFiles || []);
   }, [objective]);
 
   const fwConfig = toolConfig.firmwareDump;
@@ -40,6 +43,7 @@ const FirmwareDumpObjectivePopup = ({ objective, containerDims }: FirmwareDumpOb
       name,
       instruction,
       hint,
+      hintFiles,
       flagPart: flagPart || name.toUpperCase().replace(/\s+/g, '_'),
       customToolId: '',
       terminalComponentId,
@@ -145,6 +149,11 @@ const FirmwareDumpObjectivePopup = ({ objective, containerDims }: FirmwareDumpOb
           placeholder="Hint for the student..."
           className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 transition-colors"
         />
+      </div>
+
+      {/* Hint Files */}
+      <div className="mb-3">
+        <HintFilesUpload files={hintFiles} onChange={setHintFiles} />
       </div>
 
       {/* Flag part */}

@@ -196,6 +196,7 @@ export default function Home() {
                     ? terminalObjectiveHint
                     : (currentObjective?.hint || '')
                 }
+                hintFiles={currentObjective?.hintFiles}
                 onStartStep={startStep}
                 onNextStep={handleNextStep}
                 isExerciseFinished={isFinished}

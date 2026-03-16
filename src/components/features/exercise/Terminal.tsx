@@ -3,7 +3,7 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useExerciseStore } from '@/store/exerciseStore';
-import { Monitor, Wifi } from 'lucide-react';
+import { Monitor, Wifi, RotateCcw } from 'lucide-react';
 import { CommandExecutor } from '@/lib/terminal-command-executor';
 import { TerminalConfigLoader } from '@/lib/terminal-config-loader';
 import { registerBuiltinHandlers, getFileType, getStringsOutput } from '@/lib/terminal-builtin-handlers';
@@ -692,6 +692,34 @@ export default function Terminal({ terminalComponentId, defaultTab }: TerminalPr
     setCmdHistoryIndex(-1);
   }
 
+  function restartTerminal() {
+    // Clear timers
+    if (bootTimerRef.current) { clearTimeout(bootTimerRef.current); bootTimerRef.current = null; }
+    if (bootAnimRef.current) { clearInterval(bootAnimRef.current); bootAnimRef.current = null; }
+    if (autoProgressRef.current) { clearTimeout(autoProgressRef.current); autoProgressRef.current = null; }
+
+    // Reset primary state
+    setPrimaryHistory([]);
+    setPrimaryPath(configLoader.getInitialPath(tabIdMap.primary) || '/');
+    setPrimaryCmdHistory([]);
+    setStage(configLoader.getInitialBootStage(tabIdMap.primary) || 'connecting');
+
+    // Reset secondary state
+    setSecondaryHistory([]);
+    setSecondaryPath(configLoader.getInitialPath(tabIdMap.secondary) || '/home/kali');
+    setSecondaryCmdHistory([]);
+
+    // Reset input
+    setCurrentInput('');
+    setCmdHistoryIndex(-1);
+
+    // Clear persisted state so remount starts fresh too
+    persistedStateMap.delete(terminalComponentId || '__default__');
+
+    // Focus input
+    setTimeout(() => inputRef.current?.focus(), 0);
+  }
+
   // ============================================
   // RENDER
   // ============================================
@@ -747,6 +775,15 @@ export default function Terminal({ terminalComponentId, defaultTab }: TerminalPr
             {discoveredCount}/{flagParts.length}
           </span>
         </div>
+
+        {/* Restart button */}
+        <button
+          onClick={restartTerminal}
+          className="p-1.5 mr-2 text-gray-500 hover:text-gray-300 transition-colors rounded hover:bg-gray-700/50"
+          title="Restart terminal"
+        >
+          <RotateCcw className="h-3.5 w-3.5" />
+        </button>
       </div>
 
       {/* Terminal content */}

@@ -1,10 +1,10 @@
 // src/components/features/settings/ObjectivePopup.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSettingsStore, type DraftObjective, type PinCondition } from '@/store/settingsStore';
 import { Button } from '@/components/ui/button';
+import HintFilesUpload from './HintFilesUpload';
 
 const BASE_TERMINAL_OPTIONS = [
   { value: '', label: 'Select terminal...' },
@@ -48,6 +48,7 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
   const [flagPart, setFlagPart] = useState(objective.flagPart);
   const [conditions, setConditions] = useState<PinCondition[]>(objective.pinConditions);
   const [pinLogic, setPinLogic] = useState<'AND' | 'OR'>(objective.pinLogic);
+  const [hintFiles, setHintFiles] = useState<string[]>(objective.hintFiles || []);
   useEffect(() => {
     setName(objective.name);
     setInstruction(objective.instruction);
@@ -55,6 +56,7 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
     setFlagPart(objective.flagPart);
     setConditions(objective.pinConditions);
     setPinLogic(objective.pinLogic);
+    setHintFiles(objective.hintFiles || []);
   }, [objective]);
 
   const updateConditionTerminal = (pinId: string, terminal: string) => {
@@ -68,6 +70,7 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
       pinLogic,
       instruction,
       hint,
+      hintFiles,
       flagPart: flagPart || name.toUpperCase().replace(/\s+/g, '_'),
       customToolId: '',
       terminalComponentId: '',
@@ -221,6 +224,11 @@ const ObjectivePopup = ({ objective, containerDims }: ObjectivePopupProps) => {
           placeholder="Hint for the student..."
           className="w-full bg-gray-700/50 border border-gray-600 rounded px-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
         />
+      </div>
+
+      {/* Hint Files */}
+      <div className="mb-3">
+        <HintFilesUpload files={hintFiles} onChange={setHintFiles} />
       </div>
 
       {/* Flag Part */}
