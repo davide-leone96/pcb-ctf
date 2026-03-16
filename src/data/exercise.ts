@@ -436,19 +436,19 @@ export const exerciseData: Exercise = loadExerciseData();
 // ===================================================================================
 
 const UART_ELECTRICAL: Record<UartRole, { valueV: number; valueOhm: number }> = {
-  vcc: { valueV: 5.0,  valueOhm: 0 },
-  tx:  { valueV: 3.3,  valueOhm: 50 },
-  rx:  { valueV: 3.3,  valueOhm: 10000 },
+  vcc: { valueV: 3.3,  valueOhm: 0 },      // 3.3V rail (QCA9533 logic level)
+  tx:  { valueV: 3.3,  valueOhm: 65 },     // idles high, low output impedance (~65Ω CMOS driver)
+  rx:  { valueV: 3.3,  valueOhm: 47000 },  // idles high (pull-up), high input impedance (~47kΩ)
   gnd: { valueV: 0,    valueOhm: 0 },
 };
 
 const SPI_ELECTRICAL: Record<SpiRole, { valueV: number; valueOhm: number }> = {
-  vcc:  { valueV: 3.3,  valueOhm: 0 },
+  vcc:  { valueV: 3.3,  valueOhm: 0 },       // 3.3V power rail
   gnd:  { valueV: 0,    valueOhm: 0 },
-  cs:   { valueV: 3.3,  valueOhm: 10000 },
-  clk:  { valueV: 0,    valueOhm: 50 },
-  mosi: { valueV: 0,    valueOhm: 50 },
-  miso: { valueV: 0,    valueOhm: 50 },
+  cs:   { valueV: 3.3,  valueOhm: 10000 },   // pulled high via 10kΩ pull-up
+  clk:  { valueV: 0,    valueOhm: 65 },      // SoC drives low when idle, low impedance
+  mosi: { valueV: 0,    valueOhm: 65 },      // SoC drives low when idle, low impedance
+  miso: { valueV: 0.15, valueOhm: 150000 },  // tri-state (flash /CS high) → floating, shows OL
 };
 
 /** Restituisce tensione e resistenza per qualsiasi pin (measurement, UART o SPI). */

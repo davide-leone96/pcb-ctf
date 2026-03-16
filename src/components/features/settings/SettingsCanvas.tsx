@@ -37,8 +37,9 @@ const RESIZE_HANDLES: Array<{ handle: ResizeHandle; cursor: string; style: React
 
 const SettingsCanvas = () => {
   const {
-    activeTool, components, activeComponentId,
-    steps, pins, dragState, activeStepId, activeObjectiveId, activePinId, pendingPinCoords,
+    activeTool, components, activeComponentId, selectedComponentId,
+    steps, pins, dragState, activeStepId, activeObjectiveId, activePinId, isEditingPin, pendingPinCoords,
+    selectedPinId,
     pcbImagePath,
     startDrag, updateDrag, endDrag,
     placePin, movePinCoords, cancelPinEdit, cancelObjectiveEdit, cancelComponentEdit,
@@ -56,6 +57,9 @@ const SettingsCanvas = () => {
   const [isDragOverImage, setIsDragOverImage] = useState(false);
   // Suppress the click event that follows a mouseDown which already closed a popup.
   const suppressNextClick = useRef(false);
+
+  // Track whether an actual drag movement occurred (to suppress click → popup)
+  const didDrag = useRef(false);
 
   // Dragging state for components/pins
   const [draggingItem, setDraggingItem] = useState<{
@@ -180,6 +184,10 @@ const SettingsCanvas = () => {
       const dx = x - draggingItem.startX;
       const dy = y - draggingItem.startY;
 
+      if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
+        didDrag.current = true;
+      }
+
       if (draggingItem.type === 'component') {
         const [left, top, width, height] = draggingItem.initialCoords as [number, number, number, number];
         const newLeft = Math.max(0, Math.min(100 - width, left + dx));
@@ -303,9 +311,8 @@ const SettingsCanvas = () => {
     let closedPopup = false;
     if (activeComponentId) { cancelComponentEdit(); closedPopup = true; }
     if (activeObjectiveId) { cancelObjectiveEdit(); closedPopup = true; }
-    if (activePinId) {
-      const pin = pins.find(p => p.id === activePinId);
-      if (pin && pin.label !== '') { cancelPinEdit(); closedPopup = true; }
+    if (activePinId && isEditingPin) {
+      cancelPinEdit(); closedPopup = true;
     }
     if (closedPopup) suppressNextClick.current = true;
 
@@ -494,6 +501,7 @@ const SettingsCanvas = () => {
             {components.filter(c => c.coords[2] > 0 && c.coords[3] > 0).map(comp => {
             const [left, top, width, height] = comp.coords;
             const isActive = comp.id === activeComponentId;
+            const isSelected = comp.id === selectedComponentId;
             const isDragging = draggingItem?.type === 'component' && draggingItem?.id === comp.id;
             const isResizing = draggingItem?.type === 'resize' && draggingItem?.id === comp.id;
             return (
@@ -504,7 +512,9 @@ const SettingsCanvas = () => {
                   isDragging ? 'cursor-grabbing' : isResizing ? 'cursor-crosshair' : 'cursor-move',
                   isActive
                     ? 'border-green-400 bg-green-500/30 ring-1 ring-green-400/50'
-                    : 'border-green-400/60 bg-green-500/15 hover:bg-green-500/25',
+                    : isSelected
+                      ? 'border-green-300 bg-green-400/25 ring-2 ring-green-300/60'
+                      : 'border-green-400/60 bg-green-500/15 hover:bg-green-500/25',
                 )}
                 style={{ left: `${left}%`, top: `${top}%`, width: `${width}%`, height: `${height}%` }}
                 onClick={(e) => {
@@ -530,7 +540,10 @@ const SettingsCanvas = () => {
                 title="Drag to move · handles to resize"
               >
                 {comp.name && (
-                  <span className="absolute -top-5 left-0 text-xs text-green-300 whitespace-nowrap bg-black/70 px-1 rounded select-none pointer-events-none">
+                  <span className={cn(
+                    'absolute -top-5 left-0 text-xs text-green-300 whitespace-nowrap bg-black/70 px-1 rounded select-none pointer-events-none transition-opacity',
+                    (isActive || isSelected) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
+                  )}>
                     {comp.name}
                   </span>
                 )}
@@ -573,7 +586,7 @@ const SettingsCanvas = () => {
               <div
                 key={obj.id}
                 className={cn(
-                  'absolute border-2 rounded-sm transition-colors pointer-events-auto cursor-pointer',
+                  'absolute border-2 rounded-sm transition-colors pointer-events-auto cursor-pointer group',
                   isActiveObj
                     ? 'border-blue-400 bg-blue-500/30 ring-1 ring-blue-400/50'
                     : isActiveStep
@@ -591,7 +604,8 @@ const SettingsCanvas = () => {
                 {obj.name && (
                   <span
                     className={cn(
-                      'absolute -top-5 left-0 text-xs whitespace-nowrap px-1 rounded select-none',
+                      'absolute -top-5 left-0 text-xs whitespace-nowrap px-1 rounded select-none transition-opacity',
+                      isActiveObj ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
                       isActiveStep ? 'text-blue-300 bg-black/70' : 'text-gray-400 bg-black/50',
                     )}
                   >
@@ -617,7 +631,7 @@ const SettingsCanvas = () => {
               <div
                 key={`${obj.id}-${pin.id}-${idx}`}
                 className={cn(
-                  'absolute border-2 transition-colors pointer-events-auto cursor-pointer',
+                  'absolute border-2 transition-colors pointer-events-auto cursor-pointer group/objpin',
                   pin.shape === 'circle' ? 'rounded-full' : 'rounded-sm',
                   isActiveObj
                     ? 'border-blue-400 bg-blue-500/30 ring-2 ring-blue-400/50'
@@ -636,7 +650,8 @@ const SettingsCanvas = () => {
                 {pin.label && (
                   <span
                     className={cn(
-                      'absolute -top-5 left-1/2 -translate-x-1/2 text-xs whitespace-nowrap px-1 rounded select-none pointer-events-none',
+                      'absolute -top-5 left-1/2 -translate-x-1/2 text-xs whitespace-nowrap px-1 rounded select-none pointer-events-none transition-opacity',
+                      isActiveObj ? 'opacity-100' : 'opacity-0 group-hover/objpin:opacity-100',
                       isActiveStep ? 'text-blue-300 bg-black/70' : 'text-gray-400 bg-black/50',
                     )}
                   >
@@ -654,6 +669,7 @@ const SettingsCanvas = () => {
           <div className="absolute inset-0 pointer-events-none">
           {pins.map(pin => {
             const isActive = pin.id === activePinId;
+            const isSelected = pin.id === selectedPinId;
             const isDragging = draggingItem?.type === 'pin' && draggingItem?.id === pin.id;
             const color = PIN_TYPE_COLORS[pin.pinType] || PIN_TYPE_COLORS.custom;
             const sizePx = (pin.size / 100) * containerDims.width;
@@ -664,10 +680,11 @@ const SettingsCanvas = () => {
               <div
                 key={pin.id}
                 className={cn(
-                  'absolute border-2 transition-colors pointer-events-auto',
+                  'absolute border-2 transition-colors pointer-events-auto group/pin',
                   isDragging ? 'cursor-grabbing' : 'cursor-move',
                   pin.shape === 'circle' ? 'rounded-full' : 'rounded-sm',
                   isActive ? 'ring-2 ring-white/50' : '',
+                  isSelected ? 'ring-2 ring-white/70 scale-125' : '',
                 )}
                 style={{
                   left: leftPx,
@@ -678,14 +695,17 @@ const SettingsCanvas = () => {
                   backgroundColor: `${color}33`,
                 }}
                 onClick={(e) => {
-                  if (!isDragging) {
-                    e.stopPropagation();
-                    editPin(pin.id);
+                  e.stopPropagation();
+                  if (didDrag.current) {
+                    didDrag.current = false;
+                    return;
                   }
+                  editPin(pin.id);
                 }}
                 onMouseDown={(e) => {
                   e.stopPropagation();
                   if (!imageRef.current) return;
+                  didDrag.current = false;
                   const rect = imageRef.current.getBoundingClientRect();
                   const x = ((e.clientX - rect.left) / rect.width) * 100;
                   const y = ((e.clientY - rect.top) / rect.height) * 100;
@@ -701,7 +721,10 @@ const SettingsCanvas = () => {
               >
                 {pin.label && (
                   <span
-                    className="absolute -top-5 left-1/2 -translate-x-1/2 text-xs whitespace-nowrap bg-black/70 px-1 rounded select-none pointer-events-none"
+                    className={cn(
+                      'absolute -top-5 left-1/2 -translate-x-1/2 text-xs whitespace-nowrap bg-black/70 px-1 rounded select-none pointer-events-none transition-opacity',
+                      (isActive || isSelected) ? 'opacity-100' : 'opacity-0 group-hover/pin:opacity-100',
+                    )}
                     style={{ color }}
                   >
                     {pin.label}
@@ -756,7 +779,7 @@ const SettingsCanvas = () => {
             : <ObjectivePopup objective={activeObjective} containerDims={containerDims} />
         )}
 
-        {activePin && containerDims.width > 0 && (
+        {activePin && isEditingPin && containerDims.width > 0 && (
           <PinPopup pin={activePin} containerDims={containerDims} />
         )}
       </div>

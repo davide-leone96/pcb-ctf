@@ -141,7 +141,12 @@ interface SettingsState {
   activeObjectiveId: string | null;
   pins: DraftPin[];
   activePinId: string | null;
+  /** True when pin popup should be shown (explicit click to edit, not placement). */
+  isEditingPin: boolean;
   pendingPinCoords: [number, number] | null;
+  /** Selected (highlighted) pin/component from sidebar — separate from editing */
+  selectedPinId: string | null;
+  selectedComponentId: string | null;
   dragState: DragState | null;
   pcbImagePath: string;
   canvasZoom: number;
@@ -229,6 +234,8 @@ interface SettingsActions {
   updatePinCoords: (id: string, coords: [number, number]) => void;
   deletePin: (id: string) => void;
   editPin: (id: string) => void;
+  selectPin: (id: string | null) => void;
+  selectComponent: (id: string | null) => void;
 
   // Export, Apply & Load
   exportAsJson: () => string;
@@ -335,7 +342,10 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   activeObjectiveId: null,
   pins: [],
   activePinId: null,
+  isEditingPin: false,
   pendingPinCoords: null,
+  selectedPinId: null,
+  selectedComponentId: null,
   dragState: null,
   pcbImagePath: '',
   canvasZoom: 1,
@@ -1079,6 +1089,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     set({
       pins: [...state.pins, newPin],
       activePinId: id,
+      isEditingPin: false,
       pendingPinCoords: [x, y],
     });
   },
@@ -1100,10 +1111,11 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       set({
         pins: pins.filter(p => p.id !== activePinId),
         activePinId: null,
+        isEditingPin: false,
         pendingPinCoords: null,
       });
     } else {
-      set({ activePinId: null, pendingPinCoords: null });
+      set({ activePinId: null, isEditingPin: false, pendingPinCoords: null });
     }
   },
 
@@ -1113,6 +1125,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     set({
       pins: pins.map(p => p.id === activePinId ? { ...p, ...data } : p),
       activePinId: null,
+      isEditingPin: false,
       pendingPinCoords: null,
     });
   },
@@ -1121,6 +1134,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     set({
       pins: get().pins.map(p => p.id === id ? { ...p, ...data } : p),
       activePinId: null,
+      isEditingPin: false,
       pendingPinCoords: null,
     });
   },
@@ -1149,9 +1163,27 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     if (!pin) return;
     set({
       activePinId: id,
+      isEditingPin: true,
       activeComponentId: null,
       activeObjectiveId: null,
       pendingPinCoords: pin.coords,
+      selectedPinId: null,
+      selectedComponentId: null,
+    });
+  },
+
+  selectPin: (id) => {
+    set({
+      selectedPinId: id,
+      selectedComponentId: null,
+      // Don't touch activePinId/isEditingPin — selection ≠ editing
+    });
+  },
+
+  selectComponent: (id) => {
+    set({
+      selectedComponentId: id,
+      selectedPinId: null,
     });
   },
 
