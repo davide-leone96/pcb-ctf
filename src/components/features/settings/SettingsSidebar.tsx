@@ -30,7 +30,6 @@ const TOOL_ICONS: Record<Tool, LucideIcon> = {
   multimeter: Wrench,
   probes: Cable,
   'firmware-dump': HardDrive,
-  custom: Wrench,
 };
 
 const TOOL_LABELS: Record<Tool, string> = {
@@ -39,7 +38,6 @@ const TOOL_LABELS: Record<Tool, string> = {
   multimeter: 'Multimeter',
   probes: 'UART',
   'firmware-dump': 'FW Dump',
-  custom: 'Custom',
 };
 
 const PIN_TYPE_COLORS: Record<string, string> = {

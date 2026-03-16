@@ -46,7 +46,6 @@ const TerminalObjectivePopup = ({ objective, containerDims }: TerminalObjectiveP
       hint,
       hintFiles,
       flagPart: 'TERMINAL',
-      customToolId: '',
       terminalComponentId,
       bootStageConditions: [],
       requiresUart,
