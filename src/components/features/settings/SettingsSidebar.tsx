@@ -73,11 +73,11 @@ const PIN_TYPE_LABELS: Record<string, string> = {
 const SettingsSidebar = () => {
   const {
     activeTool, setActiveTool,
-    components, editComponent, deleteComponent,
+    components, editComponent, deleteComponent, selectComponent, selectedComponentId,
     steps, activeStepId, selectStep,
     addStep, deleteStep, reorderStep, updateStep, toggleStepTool,
     addObjective, addPinObjective, addTerminalObjective, deleteObjective, reorderObjective, editObjective,
-    pins, editPin, deletePin,
+    pins, editPin, deletePin, selectPin, selectedPinId,
     firmwareDumpPins, addFirmwareDumpPin, updateFirmwareDumpPin, deleteFirmwareDumpPin,
     saveToFile, resetAllConfig, resetInitComponents,
     completionDialogEnabled, toggleCompletionDialog,
@@ -262,7 +262,7 @@ const SettingsSidebar = () => {
                 )}
                 <div className="space-y-1">
                   {components.map(comp => (
-                    <ComponentItem key={comp.id} component={comp} onEdit={editComponent} onDelete={deleteComponent} />
+                    <ComponentItem key={comp.id} component={comp} isSelected={comp.id === selectedComponentId} onSelect={selectComponent} onEdit={editComponent} onDelete={deleteComponent} />
                   ))}
                 </div>
               </div>
@@ -280,7 +280,7 @@ const SettingsSidebar = () => {
                 )}
                 <div className="space-y-1">
                   {pins.map(pin => (
-                    <PinItem key={pin.id} pin={pin} onEdit={editPin} onDelete={deletePin} />
+                    <PinItem key={pin.id} pin={pin} isSelected={pin.id === selectedPinId} onSelect={selectPin} onEdit={editPin} onDelete={deletePin} />
                   ))}
                 </div>
               </div>
@@ -780,16 +780,24 @@ const ObjectiveItem = ({
 // --- Component Item (Init) ---
 
 const ComponentItem = ({
-  component, onEdit, onDelete,
+  component, isSelected, onSelect, onEdit, onDelete,
 }: {
   component: DraftComponent;
+  isSelected: boolean;
+  onSelect: (id: string | null) => void;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
 }) => (
-  <div className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-700/50 group">
+  <div
+    className={cn(
+      'flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer group',
+      isSelected ? 'bg-green-500/20 ring-1 ring-green-400/40' : 'hover:bg-gray-700/50',
+    )}
+    onClick={() => onSelect(isSelected ? null : component.id)}
+  >
     <div className="w-3.5 h-3.5 flex-shrink-0 border-2 border-green-400/60 bg-green-500/15 rounded-sm" />
     <span className="text-sm truncate flex-1">{component.name || 'Unnamed'}</span>
-    <button onClick={() => onEdit(component.id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-white p-0.5">
+    <button onClick={(e) => { e.stopPropagation(); onEdit(component.id); }} className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-white p-0.5">
       <Pencil className="h-3.5 w-3.5" />
     </button>
     <DeleteButton name={component.name || 'questo componente'} onConfirm={() => onDelete(component.id)} />
@@ -799,9 +807,11 @@ const ComponentItem = ({
 // --- Pin Item ---
 
 const PinItem = ({
-  pin, onEdit, onDelete,
+  pin, isSelected, onSelect, onEdit, onDelete,
 }: {
   pin: DraftPin;
+  isSelected: boolean;
+  onSelect: (id: string | null) => void;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
 }) => {
@@ -809,7 +819,13 @@ const PinItem = ({
   const typeLabel = PIN_TYPE_LABELS[pin.pinType] || pin.pinType.toUpperCase();
 
   return (
-    <div className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-700/50 group">
+    <div
+      className={cn(
+        'flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer group',
+        isSelected ? 'bg-blue-500/20 ring-1 ring-blue-400/40' : 'hover:bg-gray-700/50',
+      )}
+      onClick={() => onSelect(isSelected ? null : pin.id)}
+    >
       <div
         className={cn('w-3.5 h-3.5 flex-shrink-0 border-2', pin.shape === 'circle' ? 'rounded-full' : 'rounded-sm')}
         style={{ borderColor: color, backgroundColor: `${color}33` }}
@@ -818,7 +834,7 @@ const PinItem = ({
       <span className="text-[10px] px-1 rounded font-mono" style={{ color, backgroundColor: `${color}1a` }}>
         {typeLabel}
       </span>
-      <button onClick={() => onEdit(pin.id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-white p-0.5">
+      <button onClick={(e) => { e.stopPropagation(); onEdit(pin.id); }} className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-white p-0.5">
         <Pencil className="h-3.5 w-3.5" />
       </button>
       <DeleteButton name={pin.label || 'questo pin'} onConfirm={() => onDelete(pin.id)} />
