@@ -367,7 +367,6 @@ const TOOL_LABELS: Record<Tool, string> = {
   multimeter: 'Multimeter',
   probes: 'UART',
   'firmware-dump': 'FW Dump',
-  custom: 'Custom',
 };
 
 const ToolGroupEditor = ({

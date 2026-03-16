@@ -9,9 +9,6 @@ import type {
   CompletionDialogConfig, FirmwareDumpPin, SpiRole, FirmwareDumpToolConfig,
 } from '@/data/exercise';
 import { SETTINGS_STORAGE_KEY, ALL_TOOLS, type Tool } from '@/data/exercise';
-import type { CustomTool, ProbeConnectivity, ToolOutputType, FirmwareDumpConfig } from '@/types/custom-tool';
-
-export type { ProbeConnectivity, ToolOutputType };
 
 export type { PinCondition, PinLogic, ToolConfig, MagnifierConfig, UartConnectorConfig, TerminalToolConfig, CompletionDialogConfig };
 
@@ -22,7 +19,6 @@ export interface DraftObjective {
   name: string;
   type: ObjectiveType;
   componentId: string;
-  customToolId: string; // per type='firmware-dump': ID del tool collegato
   terminalComponentId: string; // per type='terminal': ID del componente terminale
   pinConditions: PinCondition[];
   pinLogic: PinLogic;
@@ -95,34 +91,6 @@ export interface DraftFirmwareDumpPin {
 
 export type SettingsTool = 'component' | 'pin' | 'objective' | 'terminal-config' | 'tools-config' | 'tool-config';
 
-// --- Custom Tool draft types ---
-
-export interface DraftToolProbe {
-  id: string;
-  label: string;
-  role: string;
-  color: string;
-  connectivity: ProbeConnectivity;
-}
-
-export interface DraftToolMode {
-  id: string;
-  name: string;
-  shortName: string;
-  unit: string;
-}
-
-export interface DraftCustomTool {
-  id: string;
-  name: string;
-  description: string;
-  probes: DraftToolProbe[];
-  outputType: ToolOutputType;
-  outputUnit: string;
-  modes: DraftToolMode[];
-  firmwareDumpConfig: DraftFirmwareDumpConfig;
-}
-
 export interface DragState {
   startX: number;
   startY: number;
@@ -157,9 +125,6 @@ interface SettingsState {
   // Firmware dump pins (SPI pins on the PCB)
   firmwareDumpPins: DraftFirmwareDumpPin[];
   activeFirmwareDumpPinId: string | null;
-  // Custom tools (tab Strumenti)
-  customTools: DraftCustomTool[];
-  activeCustomToolId: string | null;
   // Firmware
   firmwarePath: string;
   firmwareFileName: string;
@@ -246,20 +211,6 @@ interface SettingsActions {
   loadFromFile: () => Promise<{ success: boolean; message?: string; error?: string }>;
   resetAllConfig: () => void;
   resetInitComponents: () => void;
-
-  // Custom tool actions (tab Strumenti)
-  addCustomTool: () => void;
-  updateCustomTool: (id: string, updates: Partial<Omit<DraftCustomTool, 'id' | 'probes' | 'modes'>>) => void;
-  deleteCustomTool: (id: string) => void;
-  selectCustomTool: (id: string | null) => void;
-  addProbeToTool: (toolId: string) => void;
-  updateProbe: (toolId: string, probeId: string, updates: Partial<Omit<DraftToolProbe, 'id'>>) => void;
-  deleteProbe: (toolId: string, probeId: string) => void;
-  addModeToTool: (toolId: string) => void;
-  updateMode: (toolId: string, modeId: string, updates: Partial<Omit<DraftToolMode, 'id'>>) => void;
-  deleteMode: (toolId: string, modeId: string) => void;
-  updateFirmwareDumpConfig: (toolId: string, updates: Partial<DraftFirmwareDumpConfig>) => void;
-  uploadFirmwareFile: (toolId: string, file: File) => Promise<{ success: boolean; path?: string; fileName?: string; error?: string }>;
 
   // Firmware (Init tab)
   uploadFirmware: (file: File) => Promise<{ success: boolean; path?: string; error?: string }>;
@@ -355,8 +306,6 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   canvasPanMode: false,
   firmwareDumpPins: [],
   activeFirmwareDumpPinId: null,
-  customTools: [],
-  activeCustomToolId: null,
   firmwarePath: '',
   firmwareFileName: '',
   toolGroups: [],
@@ -812,7 +761,6 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       name: comp.name,
       type: 'component',
       componentId,
-      customToolId: '',
       terminalComponentId: '',
       pinConditions: [],
       pinLogic: 'AND',
@@ -844,7 +792,6 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       name,
       type: 'pin',
       componentId: '',
-      customToolId: '',
       terminalComponentId: '',
       pinConditions,
       pinLogic: logic,
@@ -871,7 +818,6 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       name: 'Terminale',
       type: 'terminal',
       componentId: '',
-      customToolId: '',
       terminalComponentId: terminalComponentId || '',
       pinConditions: [],
       pinLogic: 'AND',
@@ -898,7 +844,6 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       name: 'Firmware Dump',
       type: 'firmware-dump',
       componentId: '',
-      customToolId: '',
       terminalComponentId: '',
       pinConditions: [],
       pinLogic: 'AND',
@@ -1190,7 +1135,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   // --- Export ---
 
   exportAsJson: () => {
-    const { steps, components, pins, pcbImagePath, customTools } = get();
+    const { steps, components, pins, pcbImagePath } = get();
 
     // Converti step e obiettivi
     const exportSteps = steps.map(s => {
@@ -1211,7 +1156,6 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
           : {}),
         ...(o.type === 'terminal' ? { requiresUart: o.requiresUart, terminalPersistent: o.terminalPersistent } : {}),
         ...(o.terminalComponentId ? { terminalComponentId: o.terminalComponentId } : {}),
-        ...(o.type === 'firmware-dump' && o.customToolId ? { customToolId: o.customToolId } : {}),
         ...(o.hintFiles && o.hintFiles.length > 0 ? { hintFiles: o.hintFiles } : {}),
       }));
       const flagParts = objectives.map(o => o.flagPart).join('');
@@ -1299,24 +1243,6 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     // initialFlag basata sul primo step
     const firstStepFlagLen = exportSteps[0]?.objectives.map(o => o.flagPart).join('').length || 20;
 
-    const exportedCustomTools: CustomTool[] = customTools
-      .filter(t => t.name.trim() !== '')
-      .map(t => ({
-        id: t.id,
-        name: t.name,
-        ...(t.description ? { description: t.description } : {}),
-        probes: t.probes,
-        outputType: t.outputType,
-        ...(t.outputUnit ? { outputUnit: t.outputUnit } : {}),
-        ...(t.modes.length > 0 ? { modes: t.modes } : {}),
-        ...(t.outputType === 'firmware-dump' ? { firmwareDumpConfig: {
-          requiredConnections: t.firmwareDumpConfig.requiredConnections,
-          ...(t.firmwareDumpConfig.filePath ? { filePath: t.firmwareDumpConfig.filePath } : {}),
-          ...(t.firmwareDumpConfig.fileName ? { fileName: t.firmwareDumpConfig.fileName } : {}),
-          dumpDurationSec: t.firmwareDumpConfig.dumpDurationSec,
-        } } : {}),
-      }));
-
     const { firmwarePath, firmwareDumpPins: draftFwPins } = get();
 
     // Export firmware dump pins: merge from dedicated DraftFirmwareDumpPin + SPI DraftPins
@@ -1337,7 +1263,6 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       pins: measurementPins,
       uartPins,
       initialFlag: `flag{${'?'.repeat(firstStepFlagLen)}}`,
-      ...(exportedCustomTools.length > 0 ? { customTools: exportedCustomTools } : {}),
       ...(firmwarePath ? { firmwarePath } : {}),
       ...(fwDumpPins.length > 0 ? { firmwareDumpPins: fwDumpPins } : {}),
       ...(get().toolGroups.length > 0 ? { toolGroups: get().toolGroups } : {}),
@@ -1381,8 +1306,6 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
           canvasPanMode: false,
           firmwareDumpPins: [],
           activeFirmwareDumpPinId: null,
-          customTools: [],
-          activeCustomToolId: null,
           firmwarePath: '',
           firmwareFileName: '',
           toolGroups: [],
@@ -1431,7 +1354,6 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
                 flagPart: o.flagPart || '',
                 coords: o.coords || [0, 0, 0, 0],
                 bootStageConditions: (o as any).bootStageConditions || [],
-                customToolId: (o as any).customToolId || '',
                 terminalComponentId: (o as any).terminalComponentId || '',
                 requiresUart: (o as any).requiresUart ?? (o.type === 'terminal'),
                 terminalPersistent: (o as any).terminalPersistent ?? false,
@@ -1480,7 +1402,6 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
             name: c.name,
             type: 'component' as const,
             componentId: c.id || '',
-            customToolId: '',
             terminalComponentId: '',
             pinConditions: [],
             pinLogic: 'AND' as PinLogic,
@@ -1560,36 +1481,6 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         };
       });
 
-      // Converti customTools salvati → DraftCustomTool[]
-      const draftCustomTools: DraftCustomTool[] = (exercise.customTools ?? []).map(t => ({
-        id: t.id,
-        name: t.name,
-        description: t.description ?? '',
-        firmwareDumpConfig: t.outputType === 'firmware-dump' && (t as any).firmwareDumpConfig
-          ? {
-              requiredConnections: (t as any).firmwareDumpConfig.requiredConnections ?? [],
-              filePath: (t as any).firmwareDumpConfig.filePath ?? '',
-              fileName: (t as any).firmwareDumpConfig.fileName ?? '',
-              dumpDurationSec: (t as any).firmwareDumpConfig.dumpDurationSec ?? 3,
-            }
-          : { requiredConnections: [], filePath: '', fileName: '', dumpDurationSec: 3 },
-        probes: (t.probes ?? []).map(p => ({
-          id: p.id,
-          label: p.label,
-          role: p.role,
-          color: p.color,
-          connectivity: p.connectivity,
-        })),
-        outputType: t.outputType,
-        outputUnit: t.outputUnit ?? '',
-        modes: (t.modes ?? []).map(m => ({
-          id: m.id,
-          name: m.name,
-          shortName: m.shortName,
-          unit: m.unit,
-        })),
-      }));
-
       set({
         components: draftComponents,
         activeComponentId: null,
@@ -1613,8 +1504,6 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         canvasPanMode: false,
         firmwareDumpPins: draftFwPins,
         activeFirmwareDumpPinId: null,
-        customTools: draftCustomTools,
-        activeCustomToolId: null,
         firmwarePath: exercise.firmwarePath || '',
         firmwareFileName: exercise.firmwarePath ? exercise.firmwarePath.split('/').pop() || '' : '',
         toolGroups: exercise.toolGroups ?? [],
@@ -1707,8 +1596,6 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       canvasPanMode: false,
       firmwareDumpPins: [],
       activeFirmwareDumpPinId: null,
-      customTools: [],
-      activeCustomToolId: null,
       firmwarePath: '',
       firmwareFileName: '',
       toolGroups: [],
@@ -1741,134 +1628,6 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       pendingPinCoords: null,
       dragState: null,
     });
-  },
-
-  // --- Custom Tool actions (tab Strumenti) ---
-
-  addCustomTool: () => {
-    const id = generateId('ct');
-    const newTool: DraftCustomTool = {
-      id,
-      name: '',
-      description: '',
-      probes: [],
-      outputType: 'none',
-      outputUnit: '',
-      modes: [],
-      firmwareDumpConfig: { requiredConnections: [], filePath: '', fileName: '', dumpDurationSec: 3 },
-    };
-    set({ customTools: [...get().customTools, newTool], activeCustomToolId: id });
-  },
-
-  updateCustomTool: (id, updates) => {
-    set({
-      customTools: get().customTools.map(t => t.id === id ? { ...t, ...updates } : t),
-    });
-  },
-
-  deleteCustomTool: (id) => {
-    set({
-      customTools: get().customTools.filter(t => t.id !== id),
-      activeCustomToolId: get().activeCustomToolId === id ? null : get().activeCustomToolId,
-    });
-  },
-
-  selectCustomTool: (id) => set({ activeCustomToolId: id }),
-
-  addProbeToTool: (toolId) => {
-    const probeId = generateId('probe');
-    const newProbe: DraftToolProbe = {
-      id: probeId,
-      label: '',
-      role: '',
-      color: '#6B7280',
-      connectivity: 'all',
-    };
-    set({
-      customTools: get().customTools.map(t =>
-        t.id === toolId ? { ...t, probes: [...t.probes, newProbe] } : t
-      ),
-    });
-  },
-
-  updateProbe: (toolId, probeId, updates) => {
-    set({
-      customTools: get().customTools.map(t =>
-        t.id === toolId
-          ? { ...t, probes: t.probes.map(p => p.id === probeId ? { ...p, ...updates } : p) }
-          : t
-      ),
-    });
-  },
-
-  deleteProbe: (toolId, probeId) => {
-    set({
-      customTools: get().customTools.map(t =>
-        t.id === toolId
-          ? { ...t, probes: t.probes.filter(p => p.id !== probeId) }
-          : t
-      ),
-    });
-  },
-
-  addModeToTool: (toolId) => {
-    const modeId = generateId('mode');
-    const newMode: DraftToolMode = { id: modeId, name: '', shortName: '', unit: '' };
-    set({
-      customTools: get().customTools.map(t =>
-        t.id === toolId ? { ...t, modes: [...t.modes, newMode] } : t
-      ),
-    });
-  },
-
-  updateMode: (toolId, modeId, updates) => {
-    set({
-      customTools: get().customTools.map(t =>
-        t.id === toolId
-          ? { ...t, modes: t.modes.map(m => m.id === modeId ? { ...m, ...updates } : m) }
-          : t
-      ),
-    });
-  },
-
-  deleteMode: (toolId, modeId) => {
-    set({
-      customTools: get().customTools.map(t =>
-        t.id === toolId
-          ? { ...t, modes: t.modes.filter(m => m.id !== modeId) }
-          : t
-      ),
-    });
-  },
-
-  updateFirmwareDumpConfig: (toolId, updates) => {
-    set({
-      customTools: get().customTools.map(t =>
-        t.id === toolId ? { ...t, firmwareDumpConfig: { ...t.firmwareDumpConfig, ...updates } } : t
-      ),
-    });
-  },
-
-  uploadFirmwareFile: async (toolId, file) => {
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const response = await fetch('/api/firmware/upload', { method: 'POST', body: formData });
-      const result = await response.json();
-      if (result.success) {
-        set({
-          customTools: get().customTools.map(t =>
-            t.id === toolId
-              ? { ...t, firmwareDumpConfig: { ...t.firmwareDumpConfig, filePath: result.path, fileName: result.fileName } }
-              : t
-          ),
-        });
-      }
-      return result;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Upload failed';
-      return { success: false, error: message };
-    }
   },
 
   // --- Firmware (Init tab) ---
