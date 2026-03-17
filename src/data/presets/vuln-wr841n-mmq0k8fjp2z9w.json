@@ -4,7 +4,7 @@
     "name": "TP-Link WR841N - Vulnerability Analysis",
     "description": "Walkthrough completo: identificazione HW, UART, analisi vulnerabilità, firmware dump SPI via CH341A con simulazione flashrom",
     "createdAt": "2026-03-13T23:00:00.000Z",
-    "updatedAt": "2026-03-16T12:50:53.464Z"
+    "updatedAt": "2026-03-17T12:33:58.850Z"
   },
   "exerciseConfig": {
     "pcbImage": "/images/preset-vuln-wr841n-mmq0k8fjp2z9w.png",
@@ -1169,7 +1169,8 @@
                   "name": "U-Boot Console",
                   "lines": [],
                   "nextStage": "kernel-boot",
-                  "prompt": "ar7100> "
+                  "prompt": "ar7100> ",
+                  "autoProgressTimeout": 2000
                 },
                 {
                   "id": "kernel-boot",
