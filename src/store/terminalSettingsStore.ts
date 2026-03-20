@@ -254,6 +254,7 @@ export interface DraftBootStage {
   duration: number;
   nextStage: string;
   prompt: string;
+  autoProgressTimeout: number;
 }
 
 export interface DraftFilesystemEntry {
@@ -853,7 +854,7 @@ export const useTerminalSettingsStore = create<TerminalSettingsState>()(
   addBootStage: (tabId) => {
     const id = generateId('boot');
     const newStage: DraftBootStage = {
-      id, tabId, name: '', lines: [], duration: 0, nextStage: '', prompt: '',
+      id, tabId, name: '', lines: [], duration: 0, nextStage: '', prompt: '', autoProgressTimeout: 0,
     };
     set({ bootStages: [...get().bootStages, newStage], activeBootStageId: id });
   },
@@ -952,6 +953,7 @@ export const useTerminalSettingsStore = create<TerminalSettingsState>()(
           ...(b.duration > 0 ? { duration: b.duration } : {}),
           ...(b.nextStage ? { nextStage: b.nextStage } : {}),
           ...(b.prompt ? { prompt: b.prompt } : {}),
+          ...(b.autoProgressTimeout > 0 ? { autoProgressTimeout: b.autoProgressTimeout } : {}),
         })),
       } : undefined;
 
@@ -1110,6 +1112,7 @@ export const useTerminalSettingsStore = create<TerminalSettingsState>()(
             duration: stage.duration || 0,
             nextStage: stage.nextStage || '',
             prompt: stage.prompt || '',
+            autoProgressTimeout: stage.autoProgressTimeout || 0,
           });
         }
       }

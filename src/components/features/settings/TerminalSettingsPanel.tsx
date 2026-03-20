@@ -558,6 +558,7 @@ const BootStageItem = ({
             </select>
           </div>
           <FieldInput label="Durata (ms)" value={String(stage.duration)} onChange={(v) => onUpdate({ duration: parseInt(v) || 0 })} mono />
+          <FieldInput label="Auto-progress (ms)" value={String(stage.autoProgressTimeout ?? '')} onChange={(v) => onUpdate({ autoProgressTimeout: parseInt(v) || 0 })} mono placeholder="0 = disabilitato" />
           <FieldInput label="Prompt" value={stage.prompt} onChange={(v) => onUpdate({ prompt: v })} mono placeholder="es: U-Boot>" />
           <div>
             <label className="text-[10px] text-gray-500 block mb-0.5">Lines ({stage.lines.length})</label>

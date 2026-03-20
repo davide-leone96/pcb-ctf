@@ -50,25 +50,51 @@ export default function Home() {
   // Auto-sync terminal config from active preset on mount.
   // This ensures file-level edits to presets are reflected in the simulator
   // without requiring a manual reload from the Settings UI.
+  // Also handles fresh localStorage (e.g. different port) by falling back
+  // to the first available preset.
   const presetSynced = useRef(false);
   useEffect(() => {
     if (presetSynced.current) return;
-    const activePresetId = localStorage.getItem('pcb-ctf-active-preset');
-    if (!activePresetId) return;
     presetSynced.current = true;
-    fetch(`/api/presets/${activePresetId}`)
-      .then(r => r.json())
-      .then(result => {
-        if (!result.success) return;
-        const tc = result.data.terminalConfig;
-        if (tc) {
-          localStorage.setItem(TERMINAL_STORAGE_KEY, JSON.stringify(
-            Array.isArray(tc) ? tc : [{ id: 'default', name: 'Terminal', config: tc }]
-          ));
-          window.dispatchEvent(new Event('terminal-config-updated'));
-        }
-      })
-      .catch(() => { /* ignore */ });
+
+    /** Apply terminal config from a preset response into localStorage */
+    function applyTerminalConfig(tc: unknown) {
+      if (!tc) return;
+      localStorage.setItem(TERMINAL_STORAGE_KEY, JSON.stringify(
+        Array.isArray(tc) ? tc : [{ id: 'default', name: 'Terminal', config: tc }]
+      ));
+      window.dispatchEvent(new Event('terminal-config-updated'));
+    }
+
+    const activePresetId = localStorage.getItem('pcb-ctf-active-preset');
+
+    if (activePresetId) {
+      // Active preset known — fetch it directly
+      fetch(`/api/presets/${activePresetId}`)
+        .then(r => r.json())
+        .then(result => {
+          if (result.success) applyTerminalConfig(result.data.terminalConfig);
+        })
+        .catch(() => { /* ignore */ });
+    } else {
+      // No active preset in localStorage (fresh browser / different port).
+      // Fetch the preset list and use the most recent one.
+      fetch('/api/presets')
+        .then(r => r.json())
+        .then(listResult => {
+          if (!listResult.success || !listResult.data?.length) return;
+          const sorted = [...listResult.data].sort(
+            (a: any, b: any) => (b.updatedAt || '').localeCompare(a.updatedAt || '')
+          );
+          const presetId = sorted[0].id;
+          localStorage.setItem('pcb-ctf-active-preset', presetId);
+          return fetch(`/api/presets/${presetId}`).then(r => r.json());
+        })
+        .then(result => {
+          if (result?.success) applyTerminalConfig(result.data.terminalConfig);
+        })
+        .catch(() => { /* ignore */ });
+    }
   }, []);
 
   if (isLoading) {

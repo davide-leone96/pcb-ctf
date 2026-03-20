@@ -1,7 +1,0 @@
-COMMENTI
-
-backdoorTest.txt: non è un txt, è il binario. ma notion inserisce automaticamente estensione txt
-
-rootsfiles.txt: all files in rootfs
-
-bootlog.txt: boot logs completi
