@@ -1,0 +1,148 @@
+\chapter{State of the Art}\label{chap:stateoftheart}
+
+Hardware security training faces a fundamental tension: the skills that matter most---probing a PCB, identifying debug interfaces, extracting firmware---are inherently physical, yet the platforms best positioned to deliver scalable education are entirely digital. We examine the existing landscape of training solutions, from professional courses and CTF competitions to remote laboratories and cyber ranges, evaluating each not only for what it offers but for what it leaves unaddressed. The gaps that emerge from this analysis directly motivate the design of the \pcbctf{} platform.
+
+% ============================================================================
+\section{Institutional Context}\label{sec:institutional}
+% ============================================================================
+
+This work has been developed within the SERICS (Security and Rights in CyberSpace) national research programme, funded under the Italian National Recovery and Resilience Plan (PNRR). The project falls under Spoke~4, ``Operating Systems and Virtualization Security'', which includes among its objectives the development of accessible training resources for hardware security. The \artic{} (Advanced Research on Testing and Intelligent Cybersecurity) project within Spoke~4 provided the institutional and research context for this thesis.
+
+% ============================================================================
+\section{Hardware Security Training Landscape}\label{sec:training}
+% ============================================================================
+
+\subsection{Professional Conferences and Training}\label{subsec:professional}
+
+Hands-on hardware security training is primarily delivered through professional conferences. Black Hat USA and Europe offer multi-day courses on hardware hacking, embedded device exploitation, and IoT penetration testing, with fees typically between 3{,}000 and 5{,}000~EUR~\cite{genova2025}. The SANS Institute runs specialised courses (e.g., SEC556: IoT Penetration Testing) at 5{,}000--8{,}000~EUR. These courses offer excellent depth and direct access to physical equipment, but their cost and limited scheduling restrict participation to sponsored professionals. University students, independent researchers, and self-learners---precisely the populations that would benefit most from structured hardware security training---are largely excluded.
+
+\subsection{CTF Platforms and Hardware Competitions}\label{subsec:ctf}
+
+Capture The Flag competitions have become the dominant paradigm for practical cybersecurity training. Research by \v{S}v\'{a}bensk\'{y} et al.~\cite{svabensky2020} confirms that CTF-based learning environments effectively develop technical security skills, particularly when challenges are structured progressively and accompanied by pedagogical scaffolding. Software-focused platforms illustrate this well: CTFd~\cite{ctfd} and PicoCTF~\cite{picoctf} provide scalable, browser-accessible challenges spanning web exploitation, binary analysis, cryptography, and network security. Hack The Box~\cite{hackthebox} and TryHackMe~\cite{tryhackme} extend the model with guided learning paths and realistic machine-based scenarios. These platforms demonstrate that gamified, self-paced environments can develop security skills at scale---but they operate entirely in software, with no mechanism for simulating physical hardware interaction.
+
+Hardware-oriented CTF competitions exist but remain far less accessible:
+\begin{itemize}
+    \item \textbf{eCTF} (MITRE): an annual embedded systems CTF requiring teams to develop and attack custom hardware designs on FPGA development boards. The barrier to entry---both in equipment cost and prerequisite expertise---limits participation to well-resourced university teams.
+    \item \textbf{RHme}~\cite{rhme} (Riscure): a hardware CTF series shipping Arduino-based target boards to registered teams. The format is innovative but inherently constrained by physical distribution logistics and per-edition hardware availability.
+    \item \textbf{CSAW ESC}~\cite{csawesc}: an annual academic competition involving embedded security analysis, restricted to university teams with laboratory access.
+    \item \textbf{Microcorruption}~\cite{microcorruption}: a web-based CTF focused on exploiting an MSP430 microcontroller emulator. It provides an outstanding learning experience for low-level exploitation, but targets a single architecture and a single abstraction level---there is no PCB, no multimeter, no physical reconnaissance phase.
+    \item \textbf{OWASP IoTGoat}~\cite{iotgoat}: a deliberately vulnerable firmware image for security testing practice, targeting network-level and application-level vulnerabilities rather than hardware analysis.
+\end{itemize}
+
+A common limitation cuts across all of these: none provides pedagogical scaffolding that guides a student through the complete hardware analysis workflow. Physical CTFs assume participants already know how to use the equipment; software CTFs skip the physical layer entirely. The gap between ``knowing that UART exists'' and ``being able to locate, verify, and connect to a UART header on an unfamiliar board'' remains unaddressed.
+
+\subsection{IoT-Focused Training Resources}\label{subsec:iot-training}
+
+Several standalone resources target IoT and embedded security education, each covering a different slice of the problem. The Damn Vulnerable Router Firmware (DVRF)~\cite{iotgoat} provides a deliberately vulnerable MIPS firmware image that can be emulated in QEMU, allowing students to practise binary exploitation on a realistic target. Its pedagogical limitation is fundamental: DVRF assumes the student has already obtained the firmware. The hardware reconnaissance and extraction phases---where most real-world hardware assessments begin---fall outside its scope.
+
+The Attify Badge packages a UART/JTAG adapter with guided exercises for analysing real IoT devices. While pedagogically effective, it requires purchasing a physical kit ($\sim$40~EUR) and a target device, reintroducing the cost and logistics barriers that web-based solutions aim to eliminate. Scaling to a classroom of 30 students means 30 kits, 30 target devices, and an instructor who can troubleshoot 30 different wiring mistakes simultaneously.
+
+More recently, Hack The Box~\cite{hackthebox} and TryHackMe~\cite{tryhackme} have introduced IoT-themed challenges, but these focus on network-level exploitation---firmware downloaded via HTTP, API vulnerabilities, misconfigured services---rather than physical hardware interaction. The workflow that defines hardware security analysis---probing pins with a multimeter, distinguishing TX from RX by impedance, connecting a serial adapter with correct crossover wiring---remains entirely outside their scope.
+
+The pattern across all these resources is consistent: each excels within its chosen abstraction level but leaves a gap at the boundary between physical hardware and digital analysis. No existing platform bridges this boundary in a browser-accessible format.
+
+% ============================================================================
+\section{Remote Laboratories and Cyber Ranges}\label{sec:remote-labs}
+% ============================================================================
+
+Remote laboratories and cyber ranges represent two established approaches to delivering hands-on technical training over the internet, each with structural characteristics that are instructive for our design.
+
+\subsection{Remote Laboratories}\label{subsec:remote-labs-detail}
+
+Remote laboratories allow students to interact with physical instruments over the internet. iLab (MIT)~\cite{ilab2004} provides a middleware layer abstracting instrument access behind web service APIs, enabling remote operation of oscilloscopes and signal generators. WebLab-Deusto~\cite{weblab2005} extends this with FPGA-based experiments, allowing hardware design synthesis on remote boards. VISIR~\cite{visir2006} specialises in analog circuit experiments through a virtual breadboard interface connected to real instruments via a relay switching matrix.
+
+These systems deliver authentic experimental experiences, but they share three fundamental limitations for hardware security training. First, infrastructure cost scales linearly with concurrent users---each session requires exclusive access to physical instruments. A university course with 60 students and a two-hour lab window needs either 60 instrument sets or strict time-slotting that limits hands-on time per student. Second, available experiments are fixed by the laboratory administrator; instructors cannot easily reconfigure them for new training scenarios. Third, the focus is electronics and circuit design, not security analysis---the instruments measure signals but do not contextualise them as attack vectors.
+
+\subsection{Cyber Ranges}\label{subsec:cyber-ranges}
+
+Cyber ranges simulate entire network and system infrastructures for security training. KYPO~\cite{kypo2017} provides a cloud-based platform for multi-stage network security scenarios involving virtual machines, firewalls, and vulnerable services. CyRIS~\cite{cyris2017} automates scenario instantiation from YAML-based specifications. The DETER testbed~\cite{deter2004} at USC/ISI provides shared infrastructure for network security research with real traffic at scale.
+
+These platforms have proven effective for network security and incident response training, and they represent the closest existing analogue to what we propose---both architecturally (web-based scenario delivery) and pedagogically (multi-step guided exercises). KYPO in particular shares several design principles with the \pcbctf{} platform: declarative scenario specification, automated environment provisioning, and progressive difficulty. The key difference is one of abstraction level. A KYPO scenario can simulate a compromised IoT device at the network layer---an SSH session into a vulnerable router, a network capture showing anomalous traffic---but it cannot simulate the physical process of discovering that the device has an exposed UART header in the first place. The analyst's workflow begins well before the first SSH session: it begins when she opens the device enclosure and examines the PCB. This is precisely the layer that cyber ranges leave unaddressed and that the \pcbctf{} platform targets.
+
+It is worth noting that the technologies underlying cyber ranges---containerised scenario deployment, YAML-based configuration, web-based frontends---are mature and well-documented. The \pcbctf{} platform benefits indirectly from this maturity: the Next.js framework, Docker containerisation, and JSON-based configuration patterns we adopt are proven in similar contexts, reducing implementation risk.
+
+\subsection{Circuit Simulators}\label{subsec:circuit-sims}
+
+Circuit simulation tools approach the problem from the electronics education side. Falstad's simulator~\cite{falstad} provides real-time interactive simulation of analog and digital circuits in the browser, with animated current flow. Tinkercad Circuits extends this with Arduino simulation. Wokwi~\cite{wokwi} supports a broader range of microcontrollers (ESP32, STM32, Raspberry Pi Pico) with realistic peripheral simulation.
+
+These tools are valuable for understanding how embedded hardware works at the electrical level, but they incorporate no security concepts, no CTF mechanics, and no vulnerability analysis workflows. A student can simulate an SPI bus in Wokwi but cannot practise the skill of identifying an SPI flash chip on an unfamiliar PCB and extracting its contents.
+
+\subsection{Firmware Emulation Frameworks}\label{subsec:firmware-emu}
+
+Firmware emulation operates at yet another abstraction level. Firmadyne~\cite{firmadyne2016} automatically unpacks Linux-based firmware images, configures a QEMU virtual machine with the appropriate kernel, and starts network services for dynamic analysis. FirmAE~\cite{firmae2020} improves emulation success rates through better kernel matching and NVRAM handling. The Avatar framework bridges emulation and real hardware by forwarding I/O from QEMU to a physical device.
+
+These tools are powerful for advanced firmware analysis, but they assume the firmware has already been obtained. The earlier phases---hardware identification, electrical measurement, interface connection---that are central to a complete hardware security workflow fall outside their design. Our platform targets precisely these earlier phases.
+
+% ============================================================================
+\section{Gap Analysis}\label{sec:gaps}
+% ============================================================================
+
+The survey above reveals that existing solutions cluster around distinct abstraction levels, each leaving characteristic gaps. Professional conferences offer depth but not scale. Software CTF platforms offer scale but not hardware. Physical CTFs offer hardware but not accessibility. Remote laboratories offer real instruments but not security context. Cyber ranges offer security scenarios but not physical interaction. Firmware emulation frameworks offer analysis depth but skip the extraction workflow.
+
+From this analysis, five structural gaps emerge:
+
+\begin{enumerate}
+    \item \textbf{No browser-based PCB-level simulation.} No existing platform provides interactive, browser-accessible simulation of hardware analysis at the PCB level---visual inspection, electrical measurement, protocol-level instrument interaction---in a unified environment.
+
+    \item \textbf{High cost and logistical barriers.} Professional courses require budgets of thousands of euros. Physical CTFs require hardware distribution. Remote laboratories require server infrastructure with limited concurrent capacity. The cost barrier is particularly acute for the student and self-learner populations that the exploitability factors identified in Section~\ref{subsec:exploitability} suggest would benefit most from hands-on training.
+
+    \item \textbf{Architecture-specific scope.} Platforms like Microcorruption~\cite{microcorruption} are tied to a single processor architecture (MSP430), limiting the breadth of skills developed. Modern IoT devices span ARM, MIPS, RISC-V, and proprietary architectures. A training platform should be device-agnostic, configurable for any target.
+
+    \item \textbf{Absence of no-code exercise authoring.} Existing hardware CTF platforms offer no visual, code-free tools for instructors to create new exercises. Content creation requires programming expertise and familiarity with platform internals---a bottleneck that limits the supply of training material.
+
+    \item \textbf{No integration across abstraction levels.} The most significant gap is not within any single category but between them. No existing solution connects physical board inspection to serial communication to firmware analysis to vulnerability discovery in a single, coherent learning experience. Students must assemble their own toolchain across multiple disconnected platforms, losing the pedagogical thread that ties the hardware analysis methodology together.
+\end{enumerate}
+
+% ============================================================================
+\section{Positioning of This Work}\label{sec:positioning}
+% ============================================================================
+
+Table~\ref{tab:comparison-soa} positions the \pcbctf{} platform relative to existing solutions across the dimensions identified above.
+
+\begin{table}[H]
+\centering
+\caption{Comparison of existing platforms and the proposed \pcbctf{} system.}
+\label{tab:comparison-soa}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+\textbf{Feature} & \textbf{CTFd} & \textbf{RHme} & \textbf{Microcorr.} & \textbf{Rem.\ Labs} & \textbf{Cyber R.} & \textbf{\pcbctf{}} \\
+\midrule
+HW simulation       & No      & No (real) & MCU emu.    & Partial  & No      & Yes \\
+PCB interaction      & No      & Physical  & No          & Webcam   & No      & Virtual \\
+Instruments          & No      & No (real) & No          & Real     & No      & Simulated \\
+Terminal             & No      & No        & Yes         & SSH      & SSH     & Simulated \\
+Browser access       & Yes     & No        & Yes         & Partial  & Partial & Yes \\
+Cost / student       & 0       & 50+ EUR   & 0           & Infra.   & Infra.  & 0 \\
+Scalability          & High    & Low       & High        & Low      & Medium  & High \\
+No-code authoring    & Partial & No        & No          & No       & Partial & Yes \\
+Deterministic        & N/A     & No        & Yes         & No       & No      & Yes \\
+Server risk          & N/A     & N/A       & N/A         & Yes      & Yes     & None \\
+Target audience      & Broad   & Expert    & Interm.     & Students & Prof.   & All \\
+Pedagogical support  & Minimal & None      & Minimal     & Guides   & Scenario& Guided \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Several patterns emerge from the comparison. First, no existing platform combines PCB-level visual interaction with simulated instruments and an embedded terminal in a single browser-based environment. CTFd and PicoCTF---the most mature and widely deployed platforms---are content-management frameworks for software CTFs; they provide flag submission and scoring infrastructure but no hardware simulation capability whatsoever. Adding hardware challenges to these platforms would require building the simulation layer from scratch, which is precisely what the \pcbctf{} platform provides.
+
+Second, the platforms that do involve real hardware face inherent scalability limitations. RHme ships custom Arduino-based boards to registered participants, limiting each competition edition to a few hundred teams. The CSAW Embedded Security Challenge follows a similar model. Remote laboratories (iLab, WebLab-Deusto, VISIR) provide genuine instrument access but require one physical setup per concurrent session---a cost that scales linearly with class size. These are excellent tools for institutions that can afford the infrastructure investment, but they are not viable paths toward democratising hardware security education.
+
+Third, the existing browser-accessible options leave critical phases of the hardware analysis workflow unaddressed. Microcorruption~\cite{microcorruption} provides an elegant web-based debugger for MSP430 exploitation, but its scope begins after firmware has been loaded into the emulator. There is no physical board, no pin probing, no serial connection, and no firmware extraction step. The student learns to exploit a running binary but not how to obtain it in the first place---a skill that, in practice, constitutes the larger part of a hardware security engagement. Cyber ranges like KYPO~\cite{kypo2017} and CyRIS~\cite{cyris2017} operate at the network layer: students interact via SSH with virtual machines, not with PCB images or instrument widgets.
+
+Fourth, pedagogical support varies dramatically across platforms. Most CTF frameworks provide only a challenge description and a flag submission box; the student receives no guidance on methodology, no intermediate feedback, and no progressive disclosure of concepts. The \pcbctf{} platform takes a different approach: exercises are structured as guided sequences of steps with contextual instructions, hint systems, and progressive flag fragments that reward each intermediate discovery. This design is informed by evidence that scaffolded learning environments produce better outcomes than unstructured exploration, particularly for novice learners~\cite{svabensky2020}.
+
+Finally, none of the surveyed platforms offers a no-code authoring interface for hardware security exercises. CTFd supports challenge creation through a web form, but this covers only flag submission metadata---there is no tool for configuring instrument simulations, virtual filesystems, or boot sequences. The content creation barrier is therefore a fundamental bottleneck: even when the platform infrastructure exists, the difficulty of producing new exercises limits the breadth and freshness of available training material.
+
+The design of the \pcbctf{} platform navigates a three-way trade-off between \emph{accessibility}, \emph{realism}, and \emph{reproducibility}:
+
+\begin{itemize}
+    \item \textbf{Accessibility vs.\ realism.} Physical laboratories maximise realism---real signals, real noise, real failure modes---but restrict access to those who can be physically present with funded equipment. We sacrifice electrical fidelity (no capacitance, inductance, or signal integrity simulation) in exchange for zero-cost, zero-installation browser access. The exploitability factors described in Section~\ref{subsec:exploitability}---exposed debug interfaces, unencrypted flash, hardcoded credentials---can be faithfully represented without analogue simulation, because they are fundamentally digital properties of the device's configuration and firmware.
+
+    \item \textbf{Realism vs.\ reproducibility.} Physical devices exhibit unit-to-unit variation, component aging, and wiring mistakes that make each student's experience slightly different. For assessment and demonstration, this is a liability. The \pcbctf{} platform is fully deterministic: every student encounters identical pin voltages, identical firmware contents, and identical terminal responses, enabling fair grading and reproducible classroom demonstrations.
+
+    \item \textbf{Reproducibility vs.\ content creation.} Deterministic, configurable exercises require an authoring workflow. Existing platforms either hard-code their content or require programming expertise to extend. The \pcbctf{} no-code configurator allows instructors with hardware security expertise but without web development skills to create, modify, and share exercises---addressing the content bottleneck that limits hardware security education at scale.
+\end{itemize}
+
+It is important to state clearly what the platform does \emph{not} claim to provide. It does not simulate full electrical complexity. It does not support arbitrary code execution on a real embedded target. It does not cover advanced techniques such as side-channel analysis, fault injection, or hardware trojan detection, which require specialised instrumentation beyond what browser-based simulation can meaningfully reproduce. These boundaries are deliberate: the platform targets the foundational skills that constitute the bulk of a hardware security analyst's daily practice---board inspection, interface identification, serial communication, firmware analysis, and common vulnerability patterns---skills that the exploitability factors of Section~\ref{subsec:exploitability} confirm are both the most prevalent in real devices and the most underserved by existing training solutions.

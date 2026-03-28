@@ -1,0 +1,300 @@
+\chapter{System Architecture}\label{chap:architecture}
+
+This chapter describes the architectural design of the \pcbctf{} platform. We present the technology stack and the rationale behind each choice, then examine the overall system structure, the data model, the state management strategy, and the design of the terminal simulation subsystem. The focus throughout is on \emph{design decisions}---the \emph{what} and the \emph{why}---while Chapter~\ref{chap:implementation} addresses the concrete implementation of each component.
+
+% ============================================================================
+\section{Technology Stack}\label{sec:techstack}
+% ============================================================================
+
+Two constraints dominate the technology selection: all simulation logic must execute in the browser (RNF-06), and the platform must be deployable as a single artifact (RNF-02). Together, these constraints favour a unified JavaScript/TypeScript stack that serves both the frontend application and the backend API from a single process.
+
+\begin{itemize}
+    \item \textbf{\nextjs{} 15} (App Router, standalone output mode). Next.js provides server-side rendering, file-system-based routing, and built-in API route handlers within a single project. The App Router architecture organises pages and API endpoints as filesystem conventions (\texttt{src/app/page.tsx} for pages, \texttt{src/app/api/*/route.ts} for API handlers), eliminating the need for manual routing configuration. The standalone output mode produces a self-contained Node.js server that includes only the runtime dependencies needed for production, making it directly suitable for Docker deployment without a separate backend service or a \texttt{node\_modules} directory.
+
+    \item \textbf{\reactjs{} 19}. The component model of React enables a declarative, composable UI architecture well-suited to the interactive nature of the platform. React~19 introduces performance improvements relevant to this project, including automatic batching of state updates and concurrent rendering features that help maintain smooth interaction during complex operations such as probe dragging and lens rendering.
+
+    \item \textbf{\typescript{} 5}. Static typing enforces data model consistency across the codebase, which is particularly valuable given the complexity of the terminal configuration schema (over 30 interface definitions) and the exercise data structures. The \texttt{strict: true} compiler flag activates all strictness checks, including null safety and implicit type prevention, serving as a form of static application security testing (Section~\ref{subsec:sec-sast}).
+
+    \item \textbf{\tailwind{} 4} and \textbf{\radixui{}}. Tailwind CSS provides utility-first styling without a component library lock-in. Radix UI supplies accessible, unstyled primitive components (dialogs, tooltips, alert dialogs) that comply with WAI-ARIA patterns and integrate with Tailwind through the \texttt{class-variance-authority} composition library.
+
+    \item \textbf{\zustand{} 5}. A lightweight state management library chosen over Redux for its minimal boilerplate and direct API. Zustand stores are plain JavaScript objects with actions, avoiding the ceremony of reducers, action creators, and middleware configuration. The library's subscription mechanism supports inter-store communication (dirty tracking in the preset store) and its \texttt{persist} middleware provides automatic \texttt{localStorage} synchronisation for the terminal settings store.
+
+    \item \textbf{JSON file persistence}. Exercise and terminal configurations are stored as JSON files on the server filesystem (\texttt{src/data/}), avoiding the operational complexity of a database. This is appropriate given the single-user deployment model and has the additional benefit of making exercise configurations human-readable and version-controllable through Git.
+\end{itemize}
+
+% ============================================================================
+\section{General System Architecture}\label{sec:sysarch}
+% ============================================================================
+
+The platform exposes two routes, corresponding to its two user roles. The root path~(\texttt{/}) serves the \emph{simulator}, where students interact with the exercise (satisfies RF-01 through RF-17). The \texttt{/settings} path serves the \emph{authoring panel}, where instructors configure exercises (satisfies RF-18 through RF-23). The authoring panel is accessible only when the environment variable \texttt{NEXT\_PUBLIC\_DEV\_MODE} is set to \texttt{true}; in production deployments it returns a~404, ensuring that students cannot access configuration internals.
+
+The simulator presents a three-panel layout: a sidebar for tool selection, a central canvas for PCB or terminal interaction, and a top bar for instructions and flag progress. The PCB viewer and the terminal are mutually exclusive---when a terminal-type objective is active, the central panel switches from the PCB image to the terminal emulator.
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[
+        layer/.style={rectangle, draw, minimum width=11cm, minimum height=1.6cm, align=center},
+        comp/.style={rectangle, draw, fill=white, minimum width=2.2cm, minimum height=0.7cm, align=center, font=\footnotesize},
+        font=\small
+    ]
+    % Browser layer
+    \node[layer, fill=blue!8] (browser) at (0, 3.5) {};
+    \node[font=\small\bfseries, anchor=north west] at ([xshift=3pt, yshift=-2pt]browser.north west) {Browser};
+    \node[comp] (sim) at (-2.5, 3.5) {Simulator (\texttt{/})};
+    \node[comp] (set) at (2.5, 3.5) {Settings (\texttt{/settings})};
+    % API layer
+    \node[layer, fill=orange!10] (api) at (0, 1.5) {};
+    \node[font=\small\bfseries, anchor=north west] at ([xshift=3pt, yshift=-2pt]api.north west) {Next.js API Routes};
+    \node[comp, font=\footnotesize] (capi) at (-3.5, 1.5) {\texttt{/api/config}};
+    \node[comp, font=\footnotesize] (papi) at (-0.5, 1.5) {\texttt{/api/presets}};
+    \node[comp, font=\footnotesize] (mapi) at (2.8, 1.5) {\texttt{/api/images,fw}};
+    % Storage layer
+    \node[layer, fill=green!10] (storage) at (0, -0.2) {};
+    \node[font=\small\bfseries, anchor=north west] at ([xshift=3pt, yshift=-2pt]storage.north west) {File System};
+    \node[comp, font=\footnotesize] (data) at (-2.5, -0.2) {\texttt{src/data/*.json}};
+    \node[comp, font=\footnotesize] (pub) at (2.5, -0.2) {\texttt{public/images,uploads}};
+    % Arrows (no shorten — layers are large rectangles, arrows connect border to border)
+    \draw[{Stealth[length=2.5mm]}-{Stealth[length=2.5mm]}, thick] (browser.south) -- node[right, font=\footnotesize]{HTTP} (api.north);
+    \draw[{Stealth[length=2.5mm]}-{Stealth[length=2.5mm]}, thick] (api.south) -- node[right, font=\footnotesize]{read/write} (storage.north);
+    \end{tikzpicture}
+    \caption{High-level system architecture. The browser hosts the simulator and the authoring panel; the Next.js server provides API routes for configuration persistence. All simulation logic executes client-side.}
+    \label{fig:sys-arch}
+\end{figure}
+
+The backend consists exclusively of Next.js API routes whose sole responsibility is configuration persistence. These routes handle exercise and terminal configuration read/write operations~(\texttt{/api/config/*}, \texttt{/api/terminal-config/*}), CRUD operations on exercise presets~(\texttt{/api/presets/*}), and file upload and deletion for PCB images, firmware binaries, and hint attachments~(\texttt{/api/images/*}, \texttt{/api/firmware/*}, \texttt{/api/hints/*}). No simulation logic resides on the server (RNF-06), and no user-supplied input is ever executed as code (RNF-10).
+
+% ============================================================================
+\section{Data Model}\label{sec:datamodel}
+% ============================================================================
+
+The platform operates on two principal data structures: the \emph{Exercise} configuration and the \emph{TerminalConfig} configuration. A \emph{Preset} bundles both into a single distributable unit. This section describes the conceptual model; the concrete type definitions and their validation logic are detailed in Chapter~\ref{chap:implementation}.
+
+\subsection{Exercise Configuration}\label{subsec:exercise-model}
+
+The \texttt{Exercise} type captures the complete structure of a training scenario. At its core, the configuration specifies a PCB image path and an ordered sequence of exercise steps, where each step contains a title, a description, the expected flag string, the set of available tools, and one or more objectives. Surrounding this step sequence are the spatial definitions that make the simulation interactive: hardware components visible on the PCB (with names, coordinates, and flag fragments), measurement pins with voltage and resistance values, UART interface pins with role assignments (TX, RX, GND, VCC), and SPI interface pins for firmware extraction scenarios (VCC, GND, CS, CLK, MOSI, MISO). The configuration also includes tool-level parameters (magnifier settings, UART connector behaviour, firmware dumper layout) and an optional completion dialog specification.
+
+Each objective carries a \texttt{type} field that determines its completion semantics. A \texttt{component} objective is completed when the student clicks the correct PCB region. A \texttt{pin} objective requires probes to be connected to pins satisfying specified electrical conditions. A \texttt{uart} objective is satisfied when the adapter is correctly wired with the TX/RX crossover. A \texttt{terminal} objective requires that all specified terminal flags have been discovered. A \texttt{firmware-dump} objective completes when the SPI probes are correctly placed and the dump file is downloaded.
+
+\subsection{Coordinate System}\label{subsec:coords}
+
+All spatial coordinates are stored as normalised percentages: a four-element tuple \texttt{[left\%, top\%, width\%, height\%]} relative to the PCB image dimensions. This percentage-based representation makes the overlay system intrinsically responsive---coordinates remain valid regardless of the rendering resolution or the image file's native dimensions, and the same snap-detection algorithm operates uniformly across measurement, UART, and SPI pin types. The conversion between percentages and pixel coordinates occurs at render time using the image container's bounding rectangle.
+
+Objectives that are not spatially bound to the PCB---such as UART connection objectives (which depend on probe-to-pin wiring) or terminal objectives (which take place entirely in the terminal view)---use the placeholder coordinates \texttt{[0, 0, 0, 0]} and are exempt from spatial validation.
+
+\subsection{Terminal Configuration}\label{subsec:terminal-model}
+
+The \texttt{TerminalConfig} type defines the behaviour of the simulated terminal. It contains metadata (version, name, description), an array of tab configurations, a progressive flag system, and an optional set of global commands shared across all tabs. Each tab configuration specifies its own virtual filesystem, command definitions, and optional boot sequence, making tabs fully independent environments within the same exercise. This multi-tab design supports scenarios such as a UART console running alongside a local analysis workstation~(satisfies RF-12).
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[
+        entity/.style={rectangle, draw, fill=blue!10, minimum width=1.8cm, minimum height=0.6cm, align=center, font=\small\bfseries},
+        attr/.style={rectangle, draw, fill=white, minimum width=1.4cm, minimum height=0.5cm, align=center, font=\scriptsize},
+        arr/.style={-{Stealth[length=2mm]}, thick}
+    ]
+    % Exercise side
+    \node[entity] (ex) at (0,0) {Exercise};
+    \node[attr] (steps) at (-1.8, -1.2) {Steps};
+    \node[attr] (comp) at (0, -1.2) {Components};
+    \node[attr] (pins) at (1.8, -1.2) {Pins};
+    \node[attr] (obj) at (-1.8, -2.2) {Objectives};
+    \draw[arr] (ex) -- (steps);
+    \draw[arr] (ex) -- (comp);
+    \draw[arr] (ex) -- (pins);
+    \draw[arr] (steps) -- (obj);
+    % TerminalConfig side
+    \node[entity] (tc) at (6,0) {TerminalConfig};
+    \node[attr] (tabs) at (4.2, -1.2) {Tabs};
+    \node[attr] (flags) at (6, -1.2) {Flags};
+    \node[attr] (gcmd) at (7.8, -1.2) {GlobalCmds};
+    \node[attr] (fs) at (3.2, -2.4) {Filesystem};
+    \node[attr] (boot) at (4.7, -2.4) {BootSeq};
+    \node[attr] (cmds) at (6.2, -2.4) {Commands};
+    \draw[arr] (tc) -- (tabs);
+    \draw[arr] (tc) -- (flags);
+    \draw[arr] (tc) -- (gcmd);
+    \draw[arr] (tabs) -- (fs);
+    \draw[arr] (tabs) -- (boot);
+    \draw[arr] (tabs) -- (cmds);
+    % Preset
+    \node[entity, fill=orange!15] (preset) at (3, 1.5) {Preset};
+    \draw[arr] (preset) -- (ex);
+    \draw[arr] (preset) -- (tc);
+    \end{tikzpicture}
+    \caption{Entity-relationship diagram of the main data structures: \texttt{Exercise} (steps, objectives, pins, components) and \texttt{TerminalConfig} (tabs, commands, filesystem, boot stages, flags). A \texttt{Preset} bundles both configurations.}
+    \label{fig:data-model}
+\end{figure}
+
+% ============================================================================
+\section{State Management}\label{sec:state}
+% ============================================================================
+
+The application state is distributed across four \zustand{} stores, each responsible for a distinct concern. This separation reflects the platform's dual-mode nature: the simulator and the authoring panel operate on different state shapes and have different persistence needs.
+
+The \textbf{\texttt{exerciseStore}} holds the runtime simulator state: current step and objective indices, tool selection, probe connections, flag progress, terminal discovery tracking, and firmware dump status. This store is transient---its state is not persisted across page reloads, since each simulation session starts fresh. The \textbf{\texttt{settingsStore}} manages the authoring panel state: draft components, pins, steps, objectives, canvas transforms (zoom, pan, rotation), and image references. Its state is persisted both to \texttt{localStorage} and to the server filesystem via API calls. The \textbf{\texttt{terminalSettingsStore}} holds the terminal configuration being edited, including tabs, commands, filesystem entries, boot stages, and flag parts; it uses \zustand{}'s \texttt{persist} middleware for automatic \texttt{localStorage} synchronisation (satisfies RNF-09). Finally, the \textbf{\texttt{presetStore}} manages the list of available presets, the active preset identifier, loading state, and dirty tracking. It coordinates with the other three stores to capture and restore complete configuration snapshots~(satisfies RF-21).
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[
+        store/.style={rectangle, draw, fill=#1, minimum width=3.2cm, minimum height=1cm, align=center, font=\small},
+        store/.default={blue!10},
+        arr/.style={-{Stealth[length=2.5mm]}, thick, shorten >=2pt, shorten <=2pt},
+        sub/.style={-{Stealth[length=2.5mm]}, thick, dashed, red!60!black, shorten >=2pt, shorten <=2pt},
+        node distance=1.5cm and 2.5cm
+    ]
+    \node[store=blue!10] (ex) {exerciseStore\\{\footnotesize runtime state}};
+    \node[store=green!12, right=of ex] (set) {settingsStore\\{\footnotesize authoring state}};
+    \node[store=green!12, below=of set] (term) {terminalSettingsStore\\{\footnotesize terminal config}};
+    \node[store=orange!15, below=of ex] (pre) {presetStore\\{\footnotesize preset management}};
+    % Subscriptions (dirty tracking)
+    \draw[sub] (pre) -- node[below, font=\footnotesize, sloped]{subscribe} (set);
+    \draw[sub] (pre) -- node[above, font=\footnotesize, sloped]{subscribe} (term);
+    % Capture config
+    \draw[arr] (pre.north) -- node[left, font=\footnotesize]{load config} (ex.south);
+    % Labels
+    \node[font=\footnotesize, gray, above=0.2cm of ex] {transient};
+    \node[font=\footnotesize, gray, above=0.2cm of set] {persisted};
+    \end{tikzpicture}
+    \caption{Zustand store architecture and inter-store relationships. Dashed arrows indicate subscriptions for dirty tracking; solid arrows indicate data flow.}
+    \label{fig:stores}
+\end{figure}
+
+\subsection{Dirty Tracking}\label{subsec:dirty}
+
+The preset store implements automatic dirty tracking through \zustand{} subscriptions. It monitors a predefined set of content-significant fields in both the settings store and the terminal settings store, using reference comparison---guaranteed by \zustand{}'s immutability contract---rather than deep object comparison. This approach is both efficient and reliable: reference equality holds as long as no mutation has occurred, and fails the instant any content field is updated through a store action. UI-only fields such as canvas zoom, active selection, and drag state are explicitly excluded from the dirty check, so that navigating the canvas does not mark a preset as modified. A guard flag (\texttt{isLoading}) prevents the preset load operation itself from triggering a false dirty state.
+
+\subsection{Persistence Strategy}\label{subsec:persistence}
+
+The platform employs a three-level persistence strategy. The in-memory \zustand{} store is the authoritative source during a session. The \texttt{localStorage} layer acts as a client-side cache, ensuring that state survives page reloads without a server round-trip. The server filesystem, accessed through JSON file operations via the API routes, provides canonical storage that persists across browsers and machines.
+
+The terminal configuration follows an additional synchronisation path that merits detailed explanation, as it is the mechanism that enables the live preview workflow central to exercise authoring. When a preset is loaded or the terminal settings are applied, the terminal configuration is serialised to JSON and written to a well-known \texttt{localStorage} key (\texttt{pcb-ctf-terminal-config}). The simulator page reads this key through a custom React hook (\texttt{useTerminalConfig}) that listens for two distinct event types: the browser-native \texttt{StorageEvent}, which fires when \texttt{localStorage} is modified from a \emph{different} tab, and a custom DOM event (\texttt{terminal-config-updated}), which fires when the modification happens in the \emph{same} tab. This dual-listener pattern is necessary because the \texttt{StorageEvent} specification explicitly excludes the originating tab---a nuance that, if overlooked, would break same-tab live preview.
+
+The practical benefit is that an instructor can open the authoring panel in one browser tab and the simulator in another, modify a command's output or add a new boot stage, click ``Apply'', and immediately see the change reflected in the simulator without reloading either page. This tight feedback loop reduces the iteration time for exercise authoring from minutes (save, reload, navigate to the relevant step) to seconds (apply, observe), a difference that proved significant during the case study exercise development (Section~\ref{sec:authoring-workflow}).
+
+The three-level architecture also provides a natural recovery mechanism. If the server becomes temporarily unavailable (e.g., during a Docker restart), the \texttt{localStorage} layer ensures that the most recent configuration remains accessible. When the server recovers, the next explicit save operation reconciles the local and server-side state. No conflict resolution is needed because the platform operates in a single-author model: there is at most one active editor at any time.
+
+% ============================================================================
+\section{Terminal Simulation Design}\label{sec:terminal-design}
+% ============================================================================
+
+The terminal subsystem is the most architecturally complex component of the platform. Its design is driven by two competing requirements: the simulation must feel sufficiently realistic to be pedagogically useful---boot sequences, login prompts, filesystem navigation---yet it must execute entirely in the browser without any server-side process (satisfies RF-08 through RF-13, RNF-06, RNF-10).
+
+\subsection{Design Principles}\label{subsec:terminal-principles}
+
+Three principles guide the terminal's architecture. First, \emph{client-side execution}: all command parsing, constraint validation, output generation, and side effects run synchronously in the browser, eliminating server security concerns and ensuring deterministic behaviour. Second, \emph{configuration-driven behaviour}: the terminal's behaviour is entirely determined by its declarative configuration, with no game logic hardcoded in the rendering layer. A new exercise can introduce new commands, new filesystem structures, and new flag unlock conditions without modifying platform code. Third, \emph{modularity}: each exercise can define multiple independent terminal environments (e.g., a UART console and a local analysis workstation), each with its own filesystem, command set, and boot sequence, composed as tabs within the same interface.
+
+\subsection{Command Execution Pipeline}\label{subsec:cmd-pipeline}
+
+Command execution follows a four-stage synchronous pipeline. The input string is first \emph{parsed} by splitting on whitespace into a command name and an argument array. The system then performs \emph{constraint validation}, evaluating the command's constraints in a fixed order---path, permissions, prerequisites, arguments, state---and terminating with an error message at the first unmet constraint. If all constraints are satisfied, the \emph{output generation} stage produces the command's response according to one of six supported output types: \emph{static} (a fixed array of lines), \emph{conditional} (an if-then-else chain evaluated against the execution context), \emph{template} (a string with \texttt{\{\{variable\}\}} placeholders resolved at execution time), \emph{lookup} (a table indexed by a command argument, supporting substring, exact, or regex matching), \emph{dynamic} (a call to a registered function), and \emph{script} (a variant of dynamic with a different invocation signature). Finally, the \emph{side effect} stage processes any consequences of the command: flag unlocks (unconditional or condition-gated), state variable changes, and boot stage transitions.
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[
+        stage/.style={rectangle, draw, fill=#1, minimum width=2.2cm, minimum height=1.2cm, align=center, font=\footnotesize},
+        stage/.default={blue!8},
+        arr/.style={-{Stealth[length=2.5mm]}, thick, shorten >=2pt, shorten <=2pt},
+        sub/.style={font=\scriptsize, align=center, text width=2.2cm},
+        node distance=0.6cm
+    ]
+    \node[stage=yellow!15] (parse) {1. Parsing};
+    \node[stage=orange!12, right=of parse] (constr) {2. Constraint\\Validation};
+    \node[stage=blue!10, right=of constr] (output) {3. Output\\Generation};
+    \node[stage=green!12, right=of output] (side) {4. Side\\Effects};
+    % Arrows
+    \draw[arr] (parse) -- (constr);
+    \draw[arr] (constr) -- (output);
+    \draw[arr] (output) -- (side);
+    % Sub-labels
+    \node[sub, below=0.3cm of constr] {path $\to$ perms $\to$\\prereqs $\to$ args $\to$ state};
+    \node[sub, below=0.3cm of output] {static, conditional,\\template, lookup,\\dynamic, script};
+    \node[sub, below=0.3cm of side] {flag unlocks,\\state changes,\\stage transitions};
+    \end{tikzpicture}
+    \caption{The four-stage command execution pipeline. Input is parsed, constraints are validated in fixed order, output is generated according to the command's type, and side effects are applied.}
+    \label{fig:cmd-pipeline}
+\end{figure}
+
+\subsection{Filesystem Abstraction}\label{subsec:filesystem}
+
+The virtual filesystem is represented conceptually as two parallel dictionaries: a directory map (path $\rightarrow$ list of entry names) and a file map (path $\rightarrow$ content or metadata). Authors specify the filesystem in a nested tree notation that mirrors a real directory hierarchy. The configuration loader then flattens this tree into the two-dictionary representation, computing directory entries from file paths. This dual representation---intuitive tree for authoring, flat dictionaries for runtime---balances ergonomics with lookup efficiency.
+
+\subsection{Boot Sequence System}\label{subsec:boot-sequence}
+
+Boot sequences model the startup behaviour of embedded devices, a critical aspect of realistic hardware security training~(satisfies RF-10). Each boot sequence is defined as a chain of stages. A stage specifies output lines, a display duration, an optional prompt, and a reference to the next stage. Special stage types handle U-Boot-style countdown interrupts, username prompts, and password entry with masked input.
+
+Stage transitions can be automatic (after a timeout or after all lines have been displayed) or user-triggered (by entering a command whose side effects include a stage change). An auto-progress timeout allows stages to advance after a configurable period of inactivity, simulating the behaviour of a bootloader that proceeds to kernel boot if no key is pressed.
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[
+        state/.style={rectangle, rounded corners=4pt, draw, fill=blue!8, minimum width=1.3cm, minimum height=0.6cm, align=center, font=\scriptsize},
+        special/.style={rectangle, rounded corners=4pt, draw, fill=orange!15, minimum width=1.3cm, minimum height=0.6cm, align=center, font=\scriptsize},
+        lbl/.style={font=\scriptsize, above=4pt},
+        arr/.style={-{Stealth[length=2mm]}, thick},
+        user/.style={-{Stealth[length=2mm]}, thick, dashed}
+    ]
+    \node[special] (init) {uboot-init};
+    \node[state, right=1cm of init] (uboot) {uboot};
+    \node[state, right=1cm of uboot] (kboot) {kernel-boot};
+    \node[special, right=1cm of kboot] (login) {login};
+    \node[special, right=0.8cm of login] (pass) {password};
+    \node[state, right=0.8cm of pass] (sh) {shell};
+    % Auto transitions
+    \draw[arr] (init) -- node[lbl]{auto} (uboot);
+    \draw[arr] (uboot) -- node[lbl]{boot cmd} (kboot);
+    \draw[arr] (kboot) -- (login);
+    % User transitions
+    \draw[user] (login) -- node[lbl]{username} (pass);
+    \draw[user] (pass) -- node[lbl]{password} (sh);
+    % Legend
+    \node[font=\scriptsize, anchor=north west] at (init.south west |- 0,-1) {
+        \tikz{\draw[-{Stealth[length=2mm]}, thick] (0,0) -- (0.8,0);} automatic \quad
+        \tikz{\draw[-{Stealth[length=2mm]}, thick, dashed] (0,0) -- (0.8,0);} user-triggered
+    };
+    \end{tikzpicture}
+    \caption{Boot sequence state machine for the case study exercise. Solid arrows indicate automatic transitions; dashed arrows indicate user-triggered transitions.}
+    \label{fig:boot-fsm}
+\end{figure}
+
+\subsection{Progressive Flag System}\label{subsec:flag-system}
+
+The flag system divides the complete exercise flag into independently discoverable parts, each with an identifier, a text fragment, a description, and an optional hint~(satisfies RF-11, RF-16). Parts are unlocked through command-level side effects: when a command executes successfully, its configuration can specify which flag identifiers are revealed, optionally gated by a runtime condition. This design ties flag discovery directly to the learning objectives---a student discovers flag fragments not by guessing, but by performing the correct analysis steps in the terminal. The terminal UI displays a progress indicator showing discovered and pending parts, providing continuous feedback as the student advances.
+
+% ============================================================================
+\section{Data Flow Between Authoring and Simulation}\label{sec:dataflow}
+% ============================================================================
+
+The configuration lifecycle follows three phases. During \emph{authoring}, the instructor manipulates draft objects in the settings and terminal settings stores through the visual editor. On \emph{persistence}, the stores export their state as JSON objects, which are written to server-side files via API calls and simultaneously cached in \texttt{localStorage}. During \emph{simulation}, the simulator page loads the exercise configuration through the \texttt{useExerciseConfig} hook (which fetches from the API) and the terminal configuration through the \texttt{useTerminalConfig} hook (which reads from \texttt{localStorage}). Changes propagated via storage events enable live preview without page reload.
+
+The preset system adds a snapshot mechanism on top of this flow: saving a preset captures the current state of both the exercise and terminal configurations as an immutable bundle. Each preset maintains an independent copy of the PCB image, ensuring that subsequent uploads or transformations do not affect previously saved configurations.
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[
+        box/.style={rectangle, draw, fill=#1, minimum width=2cm, minimum height=0.7cm, align=center, font=\scriptsize},
+        box/.default={blue!8},
+        arr/.style={-{Stealth[length=2mm]}, thick},
+        darr/.style={{Stealth[length=2mm]}-{Stealth[length=2mm]}, thick}
+    ]
+    % Author side — use explicit coordinates for control
+    \node[box=green!12] (author) at (0, 0) {Author (UI)};
+    \node[box=blue!10]  (store)  at (2.6, 0) {Zustand Stores};
+    \node[box=yellow!15](ls)     at (5.2, 0) {localStorage};
+    \node[box=orange!12](api)    at (7.8, 0) {API Routes};
+    \node[box=red!8]    (fs)     at (10.2, 0) {Server Files};
+    % Simulator side — centered below, with more vertical space
+    \node[box=green!12] (sim)    at (5.2, -2) {Simulator};
+    % Top row arrows
+    \draw[arr] (author) -- (store);
+    \draw[arr] (store) -- node[above, font=\scriptsize]{export} (ls);
+    \draw[arr] (api) -- node[above, font=\scriptsize]{write} (fs);
+    % POST arrow goes above to avoid overlap with "export"
+    \draw[arr] (store.north) -- ++(0,0.4) -| node[near start, above, font=\scriptsize]{POST} (api.north);
+    % Simulator reads
+    \draw[arr] (ls) -- node[left, font=\scriptsize, xshift=-2pt]{terminal cfg} (sim);
+    \draw[arr] (api.south) |- node[near end, above, font=\scriptsize]{exercise cfg} (sim.east);
+    % Storage event
+    \draw[darr, dashed, gray] (ls.south east) -- node[right, font=\scriptsize, gray]{StorageEvent} (sim.north east);
+    \end{tikzpicture}
+    \caption{Data flow between the authoring panel and the simulator. Configuration changes propagate through three persistence levels and are synchronised via storage events.}
+    \label{fig:dataflow}
+\end{figure}

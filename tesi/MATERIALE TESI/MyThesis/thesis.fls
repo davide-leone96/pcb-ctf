@@ -1,0 +1,1777 @@
+PWD /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis
+INPUT /etc/texmf/web2c/texmf.cnf
+INPUT /usr/share/texmf/web2c/texmf.cnf
+INPUT /var/lib/texmf/web2c/pdftex/pdflatex.fmt
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.tex
+OUTPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.log
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/preamble.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/preamble.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/preamble.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/preamble.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/preamble.tex
+OUTPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/preamble.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/preamble.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/preamble.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/preamble.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/preamble.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/preamble.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/preamble.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/preamble.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/preamble.tex
+INPUT /usr/share/texmf/tex/latex/base/report.cls
+INPUT /usr/share/texmf/tex/latex/base/report.cls
+INPUT /usr/share/texmf/tex/latex/base/report.cls
+INPUT /usr/share/texmf/tex/latex/base/report.cls
+INPUT /usr/share/texmf/tex/latex/base/report.cls
+INPUT /usr/share/texmf/tex/latex/base/report.cls
+INPUT /usr/share/texmf/tex/latex/base/report.cls
+INPUT /usr/share/texmf/tex/latex/base/report.cls
+INPUT /usr/share/texmf/tex/latex/base/report.cls
+INPUT /usr/share/texmf/tex/latex/base/report.cls
+INPUT /usr/share/texmf/tex/latex/base/report.cls
+INPUT /usr/share/texmf/tex/latex/base/size11.clo
+INPUT /usr/share/texmf/tex/latex/base/size11.clo
+INPUT /usr/share/texmf/tex/latex/base/size11.clo
+INPUT /usr/share/texmf/tex/latex/base/size11.clo
+INPUT /usr/share/texmf/fonts/map/fontname/texfonts.map
+INPUT /usr/share/texmf/fonts/tfm/public/cm/cmr10.tfm
+INPUT /usr/share/texmf/tex/latex/geometry/geometry.sty
+INPUT /usr/share/texmf/tex/latex/geometry/geometry.sty
+INPUT /usr/share/texmf/tex/latex/geometry/geometry.sty
+INPUT /usr/share/texmf/tex/latex/geometry/geometry.sty
+INPUT /usr/share/texmf/tex/latex/geometry/geometry.sty
+INPUT /usr/share/texmf/tex/latex/geometry/geometry.sty
+INPUT /usr/share/texmf/tex/latex/geometry/geometry.sty
+INPUT /usr/share/texmf/tex/latex/geometry/geometry.sty
+INPUT /usr/share/texmf/tex/latex/geometry/geometry.sty
+INPUT /usr/share/texmf/tex/latex/geometry/geometry.sty
+INPUT /usr/share/texmf/tex/latex/geometry/geometry.sty
+INPUT /usr/share/texmf/tex/latex/graphics/keyval.sty
+INPUT /usr/share/texmf/tex/latex/graphics/keyval.sty
+INPUT /usr/share/texmf/tex/latex/graphics/keyval.sty
+INPUT /usr/share/texmf/tex/latex/graphics/keyval.sty
+INPUT /usr/share/texmf/tex/latex/graphics/keyval.sty
+INPUT /usr/share/texmf/tex/latex/graphics/keyval.sty
+INPUT /usr/share/texmf/tex/latex/graphics/keyval.sty
+INPUT /usr/share/texmf/tex/latex/graphics/keyval.sty
+INPUT /usr/share/texmf/tex/latex/graphics/keyval.sty
+INPUT /usr/share/texmf/tex/latex/graphics/keyval.sty
+INPUT /usr/share/texmf/tex/latex/graphics/keyval.sty
+INPUT /usr/share/texmf/tex/generic/iftex/ifvtex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/ifvtex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/ifvtex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/ifvtex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/ifvtex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/ifvtex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/ifvtex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/ifvtex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/ifvtex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/ifvtex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/ifvtex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/iftex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/iftex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/iftex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/iftex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/iftex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/iftex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/iftex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/iftex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/iftex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/iftex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/iftex.sty
+INPUT /usr/share/texmf/tex/latex/base/inputenc.sty
+INPUT /usr/share/texmf/tex/latex/base/inputenc.sty
+INPUT /usr/share/texmf/tex/latex/base/inputenc.sty
+INPUT /usr/share/texmf/tex/latex/base/inputenc.sty
+INPUT /usr/share/texmf/tex/latex/base/inputenc.sty
+INPUT /usr/share/texmf/tex/latex/base/inputenc.sty
+INPUT /usr/share/texmf/tex/latex/base/inputenc.sty
+INPUT /usr/share/texmf/tex/latex/base/inputenc.sty
+INPUT /usr/share/texmf/tex/latex/base/inputenc.sty
+INPUT /usr/share/texmf/tex/latex/base/inputenc.sty
+INPUT /usr/share/texmf/tex/latex/base/inputenc.sty
+INPUT /usr/share/texmf/tex/latex/base/fontenc.sty
+INPUT /usr/share/texmf/tex/latex/base/fontenc.sty
+INPUT /usr/share/texmf/tex/latex/base/fontenc.sty
+INPUT /usr/share/texmf/tex/latex/base/fontenc.sty
+INPUT /usr/share/texmf/tex/latex/base/fontenc.sty
+INPUT /usr/share/texmf/tex/latex/base/fontenc.sty
+INPUT /usr/share/texmf/tex/latex/base/fontenc.sty
+INPUT /usr/share/texmf/tex/latex/base/fontenc.sty
+INPUT /usr/share/texmf/tex/latex/base/fontenc.sty
+INPUT /usr/share/texmf/tex/latex/base/fontenc.sty
+INPUT /usr/share/texmf/tex/latex/base/fontenc.sty
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/ecrm1095.tfm
+INPUT /usr/share/texmf/tex/generic/babel/babel.sty
+INPUT /usr/share/texmf/tex/generic/babel/babel.sty
+INPUT /usr/share/texmf/tex/generic/babel/babel.sty
+INPUT /usr/share/texmf/tex/generic/babel/babel.sty
+INPUT /usr/share/texmf/tex/generic/babel/babel.sty
+INPUT /usr/share/texmf/tex/generic/babel/babel.sty
+INPUT /usr/share/texmf/tex/generic/babel/babel.sty
+INPUT /usr/share/texmf/tex/generic/babel/babel.sty
+INPUT /usr/share/texmf/tex/generic/babel/babel.sty
+INPUT /usr/share/texmf/tex/generic/babel/babel.sty
+INPUT /usr/share/texmf/tex/generic/babel/babel.sty
+INPUT /usr/share/texmf/tex/generic/babel/babel.def
+INPUT /usr/share/texmf/tex/generic/babel/txtbabel.def
+INPUT /usr/share/texmf/tex/generic/babel-english/english.ldf
+INPUT /usr/share/texmf/tex/generic/babel-english/english.ldf
+INPUT /usr/share/texmf/tex/generic/babel-english/english.ldf
+INPUT /usr/share/texmf/tex/generic/babel-english/english.ldf
+INPUT /usr/share/texmf/tex/latex/microtype/microtype.sty
+INPUT /usr/share/texmf/tex/latex/microtype/microtype.sty
+INPUT /usr/share/texmf/tex/latex/microtype/microtype.sty
+INPUT /usr/share/texmf/tex/latex/microtype/microtype.sty
+INPUT /usr/share/texmf/tex/latex/microtype/microtype.sty
+INPUT /usr/share/texmf/tex/latex/microtype/microtype.sty
+INPUT /usr/share/texmf/tex/latex/microtype/microtype.sty
+INPUT /usr/share/texmf/tex/latex/microtype/microtype.sty
+INPUT /usr/share/texmf/tex/latex/microtype/microtype.sty
+INPUT /usr/share/texmf/tex/latex/microtype/microtype.sty
+INPUT /usr/share/texmf/tex/latex/microtype/microtype.sty
+INPUT /usr/share/texmf/tex/latex/graphics/keyval.sty
+INPUT /usr/share/texmf/tex/latex/microtype/microtype-pdftex.def
+INPUT /usr/share/texmf/tex/latex/microtype/microtype-pdftex.def
+INPUT /usr/share/texmf/tex/latex/microtype/microtype-pdftex.def
+INPUT /usr/share/texmf/tex/latex/microtype/microtype-pdftex.def
+INPUT /usr/share/texmf/tex/latex/microtype/microtype.cfg
+INPUT /usr/share/texmf/tex/latex/microtype/microtype.cfg
+INPUT /usr/share/texmf/tex/latex/microtype/microtype.cfg
+INPUT /usr/share/texmf/tex/latex/microtype/microtype.cfg
+INPUT /usr/share/texmf/tex/latex/microtype/microtype.cfg
+INPUT /usr/share/texmf/tex/latex/microtype/microtype.cfg
+INPUT /usr/share/texmf/tex/latex/hyperref/hyperref.sty
+INPUT /usr/share/texmf/tex/latex/hyperref/hyperref.sty
+INPUT /usr/share/texmf/tex/latex/hyperref/hyperref.sty
+INPUT /usr/share/texmf/tex/latex/hyperref/hyperref.sty
+INPUT /usr/share/texmf/tex/latex/hyperref/hyperref.sty
+INPUT /usr/share/texmf/tex/latex/hyperref/hyperref.sty
+INPUT /usr/share/texmf/tex/latex/hyperref/hyperref.sty
+INPUT /usr/share/texmf/tex/latex/hyperref/hyperref.sty
+INPUT /usr/share/texmf/tex/latex/hyperref/hyperref.sty
+INPUT /usr/share/texmf/tex/latex/hyperref/hyperref.sty
+INPUT /usr/share/texmf/tex/latex/hyperref/hyperref.sty
+INPUT /usr/share/texmf/tex/generic/ltxcmds/ltxcmds.sty
+INPUT /usr/share/texmf/tex/generic/ltxcmds/ltxcmds.sty
+INPUT /usr/share/texmf/tex/generic/ltxcmds/ltxcmds.sty
+INPUT /usr/share/texmf/tex/generic/ltxcmds/ltxcmds.sty
+INPUT /usr/share/texmf/tex/generic/ltxcmds/ltxcmds.sty
+INPUT /usr/share/texmf/tex/generic/ltxcmds/ltxcmds.sty
+INPUT /usr/share/texmf/tex/generic/ltxcmds/ltxcmds.sty
+INPUT /usr/share/texmf/tex/generic/ltxcmds/ltxcmds.sty
+INPUT /usr/share/texmf/tex/generic/ltxcmds/ltxcmds.sty
+INPUT /usr/share/texmf/tex/generic/ltxcmds/ltxcmds.sty
+INPUT /usr/share/texmf/tex/generic/ltxcmds/ltxcmds.sty
+INPUT /usr/share/texmf/tex/generic/iftex/iftex.sty
+INPUT /usr/share/texmf/tex/generic/pdftexcmds/pdftexcmds.sty
+INPUT /usr/share/texmf/tex/generic/pdftexcmds/pdftexcmds.sty
+INPUT /usr/share/texmf/tex/generic/pdftexcmds/pdftexcmds.sty
+INPUT /usr/share/texmf/tex/generic/pdftexcmds/pdftexcmds.sty
+INPUT /usr/share/texmf/tex/generic/pdftexcmds/pdftexcmds.sty
+INPUT /usr/share/texmf/tex/generic/pdftexcmds/pdftexcmds.sty
+INPUT /usr/share/texmf/tex/generic/pdftexcmds/pdftexcmds.sty
+INPUT /usr/share/texmf/tex/generic/pdftexcmds/pdftexcmds.sty
+INPUT /usr/share/texmf/tex/generic/pdftexcmds/pdftexcmds.sty
+INPUT /usr/share/texmf/tex/generic/pdftexcmds/pdftexcmds.sty
+INPUT /usr/share/texmf/tex/generic/pdftexcmds/pdftexcmds.sty
+INPUT /usr/share/texmf/tex/generic/infwarerr/infwarerr.sty
+INPUT /usr/share/texmf/tex/generic/infwarerr/infwarerr.sty
+INPUT /usr/share/texmf/tex/generic/infwarerr/infwarerr.sty
+INPUT /usr/share/texmf/tex/generic/infwarerr/infwarerr.sty
+INPUT /usr/share/texmf/tex/generic/infwarerr/infwarerr.sty
+INPUT /usr/share/texmf/tex/generic/infwarerr/infwarerr.sty
+INPUT /usr/share/texmf/tex/generic/infwarerr/infwarerr.sty
+INPUT /usr/share/texmf/tex/generic/infwarerr/infwarerr.sty
+INPUT /usr/share/texmf/tex/generic/infwarerr/infwarerr.sty
+INPUT /usr/share/texmf/tex/generic/infwarerr/infwarerr.sty
+INPUT /usr/share/texmf/tex/generic/infwarerr/infwarerr.sty
+INPUT /usr/share/texmf/tex/generic/iftex/iftex.sty
+INPUT /usr/share/texmf/tex/generic/ltxcmds/ltxcmds.sty
+INPUT /usr/share/texmf/tex/generic/infwarerr/infwarerr.sty
+INPUT /usr/share/texmf/tex/latex/graphics/keyval.sty
+INPUT /usr/share/texmf/tex/generic/kvsetkeys/kvsetkeys.sty
+INPUT /usr/share/texmf/tex/generic/kvsetkeys/kvsetkeys.sty
+INPUT /usr/share/texmf/tex/generic/kvsetkeys/kvsetkeys.sty
+INPUT /usr/share/texmf/tex/generic/kvsetkeys/kvsetkeys.sty
+INPUT /usr/share/texmf/tex/generic/kvsetkeys/kvsetkeys.sty
+INPUT /usr/share/texmf/tex/generic/kvsetkeys/kvsetkeys.sty
+INPUT /usr/share/texmf/tex/generic/kvsetkeys/kvsetkeys.sty
+INPUT /usr/share/texmf/tex/generic/kvsetkeys/kvsetkeys.sty
+INPUT /usr/share/texmf/tex/generic/kvsetkeys/kvsetkeys.sty
+INPUT /usr/share/texmf/tex/generic/kvsetkeys/kvsetkeys.sty
+INPUT /usr/share/texmf/tex/generic/kvsetkeys/kvsetkeys.sty
+INPUT /usr/share/texmf/tex/generic/kvdefinekeys/kvdefinekeys.sty
+INPUT /usr/share/texmf/tex/generic/kvdefinekeys/kvdefinekeys.sty
+INPUT /usr/share/texmf/tex/generic/kvdefinekeys/kvdefinekeys.sty
+INPUT /usr/share/texmf/tex/generic/kvdefinekeys/kvdefinekeys.sty
+INPUT /usr/share/texmf/tex/generic/kvdefinekeys/kvdefinekeys.sty
+INPUT /usr/share/texmf/tex/generic/kvdefinekeys/kvdefinekeys.sty
+INPUT /usr/share/texmf/tex/generic/kvdefinekeys/kvdefinekeys.sty
+INPUT /usr/share/texmf/tex/generic/kvdefinekeys/kvdefinekeys.sty
+INPUT /usr/share/texmf/tex/generic/kvdefinekeys/kvdefinekeys.sty
+INPUT /usr/share/texmf/tex/generic/kvdefinekeys/kvdefinekeys.sty
+INPUT /usr/share/texmf/tex/generic/kvdefinekeys/kvdefinekeys.sty
+INPUT /usr/share/texmf/tex/generic/pdfescape/pdfescape.sty
+INPUT /usr/share/texmf/tex/generic/pdfescape/pdfescape.sty
+INPUT /usr/share/texmf/tex/generic/pdfescape/pdfescape.sty
+INPUT /usr/share/texmf/tex/generic/pdfescape/pdfescape.sty
+INPUT /usr/share/texmf/tex/generic/pdfescape/pdfescape.sty
+INPUT /usr/share/texmf/tex/generic/pdfescape/pdfescape.sty
+INPUT /usr/share/texmf/tex/generic/pdfescape/pdfescape.sty
+INPUT /usr/share/texmf/tex/generic/pdfescape/pdfescape.sty
+INPUT /usr/share/texmf/tex/generic/pdfescape/pdfescape.sty
+INPUT /usr/share/texmf/tex/generic/pdfescape/pdfescape.sty
+INPUT /usr/share/texmf/tex/generic/pdfescape/pdfescape.sty
+INPUT /usr/share/texmf/tex/generic/ltxcmds/ltxcmds.sty
+INPUT /usr/share/texmf/tex/generic/pdftexcmds/pdftexcmds.sty
+INPUT /usr/share/texmf/tex/latex/hycolor/hycolor.sty
+INPUT /usr/share/texmf/tex/latex/hycolor/hycolor.sty
+INPUT /usr/share/texmf/tex/latex/hycolor/hycolor.sty
+INPUT /usr/share/texmf/tex/latex/hycolor/hycolor.sty
+INPUT /usr/share/texmf/tex/latex/hycolor/hycolor.sty
+INPUT /usr/share/texmf/tex/latex/hycolor/hycolor.sty
+INPUT /usr/share/texmf/tex/latex/hycolor/hycolor.sty
+INPUT /usr/share/texmf/tex/latex/hycolor/hycolor.sty
+INPUT /usr/share/texmf/tex/latex/hycolor/hycolor.sty
+INPUT /usr/share/texmf/tex/latex/hycolor/hycolor.sty
+INPUT /usr/share/texmf/tex/latex/hycolor/hycolor.sty
+INPUT /usr/share/texmf/tex/latex/letltxmacro/letltxmacro.sty
+INPUT /usr/share/texmf/tex/latex/letltxmacro/letltxmacro.sty
+INPUT /usr/share/texmf/tex/latex/letltxmacro/letltxmacro.sty
+INPUT /usr/share/texmf/tex/latex/letltxmacro/letltxmacro.sty
+INPUT /usr/share/texmf/tex/latex/letltxmacro/letltxmacro.sty
+INPUT /usr/share/texmf/tex/latex/letltxmacro/letltxmacro.sty
+INPUT /usr/share/texmf/tex/latex/letltxmacro/letltxmacro.sty
+INPUT /usr/share/texmf/tex/latex/letltxmacro/letltxmacro.sty
+INPUT /usr/share/texmf/tex/latex/letltxmacro/letltxmacro.sty
+INPUT /usr/share/texmf/tex/latex/letltxmacro/letltxmacro.sty
+INPUT /usr/share/texmf/tex/latex/letltxmacro/letltxmacro.sty
+INPUT /usr/share/texmf/tex/latex/auxhook/auxhook.sty
+INPUT /usr/share/texmf/tex/latex/auxhook/auxhook.sty
+INPUT /usr/share/texmf/tex/latex/auxhook/auxhook.sty
+INPUT /usr/share/texmf/tex/latex/auxhook/auxhook.sty
+INPUT /usr/share/texmf/tex/latex/auxhook/auxhook.sty
+INPUT /usr/share/texmf/tex/latex/auxhook/auxhook.sty
+INPUT /usr/share/texmf/tex/latex/auxhook/auxhook.sty
+INPUT /usr/share/texmf/tex/latex/auxhook/auxhook.sty
+INPUT /usr/share/texmf/tex/latex/auxhook/auxhook.sty
+INPUT /usr/share/texmf/tex/latex/auxhook/auxhook.sty
+INPUT /usr/share/texmf/tex/latex/auxhook/auxhook.sty
+INPUT /usr/share/texmf/tex/latex/kvoptions/kvoptions.sty
+INPUT /usr/share/texmf/tex/latex/kvoptions/kvoptions.sty
+INPUT /usr/share/texmf/tex/latex/kvoptions/kvoptions.sty
+INPUT /usr/share/texmf/tex/latex/kvoptions/kvoptions.sty
+INPUT /usr/share/texmf/tex/latex/kvoptions/kvoptions.sty
+INPUT /usr/share/texmf/tex/latex/kvoptions/kvoptions.sty
+INPUT /usr/share/texmf/tex/latex/kvoptions/kvoptions.sty
+INPUT /usr/share/texmf/tex/latex/kvoptions/kvoptions.sty
+INPUT /usr/share/texmf/tex/latex/kvoptions/kvoptions.sty
+INPUT /usr/share/texmf/tex/latex/kvoptions/kvoptions.sty
+INPUT /usr/share/texmf/tex/latex/kvoptions/kvoptions.sty
+INPUT /usr/share/texmf/tex/generic/ltxcmds/ltxcmds.sty
+INPUT /usr/share/texmf/tex/generic/kvsetkeys/kvsetkeys.sty
+INPUT /usr/share/texmf/tex/latex/hyperref/pd1enc.def
+INPUT /usr/share/texmf/tex/latex/hyperref/pd1enc.def
+INPUT /usr/share/texmf/tex/latex/hyperref/pd1enc.def
+INPUT /usr/share/texmf/tex/latex/hyperref/pd1enc.def
+INPUT /usr/share/texmf/tex/latex/hyperref/hyperref-langpatches.def
+INPUT /usr/share/texmf/tex/latex/hyperref/hyperref-langpatches.def
+INPUT /usr/share/texmf/tex/latex/hyperref/hyperref-langpatches.def
+INPUT /usr/share/texmf/tex/latex/hyperref/hyperref-langpatches.def
+INPUT /usr/share/texmf/tex/generic/intcalc/intcalc.sty
+INPUT /usr/share/texmf/tex/generic/intcalc/intcalc.sty
+INPUT /usr/share/texmf/tex/generic/intcalc/intcalc.sty
+INPUT /usr/share/texmf/tex/generic/intcalc/intcalc.sty
+INPUT /usr/share/texmf/tex/generic/intcalc/intcalc.sty
+INPUT /usr/share/texmf/tex/generic/intcalc/intcalc.sty
+INPUT /usr/share/texmf/tex/generic/intcalc/intcalc.sty
+INPUT /usr/share/texmf/tex/generic/intcalc/intcalc.sty
+INPUT /usr/share/texmf/tex/generic/intcalc/intcalc.sty
+INPUT /usr/share/texmf/tex/generic/intcalc/intcalc.sty
+INPUT /usr/share/texmf/tex/generic/intcalc/intcalc.sty
+INPUT /usr/share/texmf/tex/generic/etexcmds/etexcmds.sty
+INPUT /usr/share/texmf/tex/generic/etexcmds/etexcmds.sty
+INPUT /usr/share/texmf/tex/generic/etexcmds/etexcmds.sty
+INPUT /usr/share/texmf/tex/generic/etexcmds/etexcmds.sty
+INPUT /usr/share/texmf/tex/generic/etexcmds/etexcmds.sty
+INPUT /usr/share/texmf/tex/generic/etexcmds/etexcmds.sty
+INPUT /usr/share/texmf/tex/generic/etexcmds/etexcmds.sty
+INPUT /usr/share/texmf/tex/generic/etexcmds/etexcmds.sty
+INPUT /usr/share/texmf/tex/generic/etexcmds/etexcmds.sty
+INPUT /usr/share/texmf/tex/generic/etexcmds/etexcmds.sty
+INPUT /usr/share/texmf/tex/generic/etexcmds/etexcmds.sty
+INPUT /usr/share/texmf/tex/generic/infwarerr/infwarerr.sty
+INPUT /usr/share/texmf/tex/generic/iftex/iftex.sty
+INPUT /usr/share/texmf/tex/latex/hyperref/puenc.def
+INPUT /usr/share/texmf/tex/latex/hyperref/puenc.def
+INPUT /usr/share/texmf/tex/latex/hyperref/puenc.def
+INPUT /usr/share/texmf/tex/latex/hyperref/puenc.def
+INPUT /usr/share/texmf/tex/latex/url/url.sty
+INPUT /usr/share/texmf/tex/latex/url/url.sty
+INPUT /usr/share/texmf/tex/latex/url/url.sty
+INPUT /usr/share/texmf/tex/latex/url/url.sty
+INPUT /usr/share/texmf/tex/latex/url/url.sty
+INPUT /usr/share/texmf/tex/latex/url/url.sty
+INPUT /usr/share/texmf/tex/latex/url/url.sty
+INPUT /usr/share/texmf/tex/latex/url/url.sty
+INPUT /usr/share/texmf/tex/latex/url/url.sty
+INPUT /usr/share/texmf/tex/latex/url/url.sty
+INPUT /usr/share/texmf/tex/latex/url/url.sty
+INPUT /usr/share/texmf/tex/generic/bitset/bitset.sty
+INPUT /usr/share/texmf/tex/generic/bitset/bitset.sty
+INPUT /usr/share/texmf/tex/generic/bitset/bitset.sty
+INPUT /usr/share/texmf/tex/generic/bitset/bitset.sty
+INPUT /usr/share/texmf/tex/generic/bitset/bitset.sty
+INPUT /usr/share/texmf/tex/generic/bitset/bitset.sty
+INPUT /usr/share/texmf/tex/generic/bitset/bitset.sty
+INPUT /usr/share/texmf/tex/generic/bitset/bitset.sty
+INPUT /usr/share/texmf/tex/generic/bitset/bitset.sty
+INPUT /usr/share/texmf/tex/generic/bitset/bitset.sty
+INPUT /usr/share/texmf/tex/generic/bitset/bitset.sty
+INPUT /usr/share/texmf/tex/generic/infwarerr/infwarerr.sty
+INPUT /usr/share/texmf/tex/generic/intcalc/intcalc.sty
+INPUT /usr/share/texmf/tex/generic/bigintcalc/bigintcalc.sty
+INPUT /usr/share/texmf/tex/generic/bigintcalc/bigintcalc.sty
+INPUT /usr/share/texmf/tex/generic/bigintcalc/bigintcalc.sty
+INPUT /usr/share/texmf/tex/generic/bigintcalc/bigintcalc.sty
+INPUT /usr/share/texmf/tex/generic/bigintcalc/bigintcalc.sty
+INPUT /usr/share/texmf/tex/generic/bigintcalc/bigintcalc.sty
+INPUT /usr/share/texmf/tex/generic/bigintcalc/bigintcalc.sty
+INPUT /usr/share/texmf/tex/generic/bigintcalc/bigintcalc.sty
+INPUT /usr/share/texmf/tex/generic/bigintcalc/bigintcalc.sty
+INPUT /usr/share/texmf/tex/generic/bigintcalc/bigintcalc.sty
+INPUT /usr/share/texmf/tex/generic/bigintcalc/bigintcalc.sty
+INPUT /usr/share/texmf/tex/generic/pdftexcmds/pdftexcmds.sty
+INPUT /usr/share/texmf/tex/generic/atbegshi/atbegshi.sty
+INPUT /usr/share/texmf/tex/generic/atbegshi/atbegshi.sty
+INPUT /usr/share/texmf/tex/generic/atbegshi/atbegshi.sty
+INPUT /usr/share/texmf/tex/latex/base/atbegshi-ltx.sty
+INPUT /usr/share/texmf/tex/generic/atbegshi/atbegshi.sty
+INPUT /usr/share/texmf/tex/generic/atbegshi/atbegshi.sty
+INPUT /usr/share/texmf/tex/latex/base/atbegshi-ltx.sty
+INPUT /usr/share/texmf/tex/generic/atbegshi/atbegshi.sty
+INPUT /usr/share/texmf/tex/latex/base/atbegshi-ltx.sty
+INPUT /usr/share/texmf/tex/latex/base/atbegshi-ltx.sty
+INPUT /usr/share/texmf/tex/generic/atbegshi/atbegshi.sty
+INPUT /usr/share/texmf/tex/generic/atbegshi/atbegshi.sty
+INPUT /usr/share/texmf/tex/latex/base/atbegshi-ltx.sty
+INPUT /usr/share/texmf/tex/latex/base/atbegshi-ltx.sty
+INPUT /usr/share/texmf/tex/generic/atbegshi/atbegshi.sty
+INPUT /usr/share/texmf/tex/latex/base/atbegshi-ltx.sty
+INPUT /usr/share/texmf/tex/latex/hyperref/hpdftex.def
+INPUT /usr/share/texmf/tex/latex/hyperref/hpdftex.def
+INPUT /usr/share/texmf/tex/latex/hyperref/hpdftex.def
+INPUT /usr/share/texmf/tex/latex/hyperref/hpdftex.def
+INPUT /usr/share/texmf/tex/latex/atveryend/atveryend.sty
+INPUT /usr/share/texmf/tex/latex/atveryend/atveryend.sty
+INPUT /usr/share/texmf/tex/latex/atveryend/atveryend.sty
+INPUT /usr/share/texmf/tex/latex/base/atveryend-ltx.sty
+INPUT /usr/share/texmf/tex/latex/atveryend/atveryend.sty
+INPUT /usr/share/texmf/tex/latex/atveryend/atveryend.sty
+INPUT /usr/share/texmf/tex/latex/base/atveryend-ltx.sty
+INPUT /usr/share/texmf/tex/latex/atveryend/atveryend.sty
+INPUT /usr/share/texmf/tex/latex/base/atveryend-ltx.sty
+INPUT /usr/share/texmf/tex/latex/base/atveryend-ltx.sty
+INPUT /usr/share/texmf/tex/latex/atveryend/atveryend.sty
+INPUT /usr/share/texmf/tex/latex/atveryend/atveryend.sty
+INPUT /usr/share/texmf/tex/latex/base/atveryend-ltx.sty
+INPUT /usr/share/texmf/tex/latex/base/atveryend-ltx.sty
+INPUT /usr/share/texmf/tex/latex/atveryend/atveryend.sty
+INPUT /usr/share/texmf/tex/latex/base/atveryend-ltx.sty
+INPUT /usr/share/texmf/tex/latex/rerunfilecheck/rerunfilecheck.sty
+INPUT /usr/share/texmf/tex/latex/rerunfilecheck/rerunfilecheck.sty
+INPUT /usr/share/texmf/tex/latex/rerunfilecheck/rerunfilecheck.sty
+INPUT /usr/share/texmf/tex/latex/rerunfilecheck/rerunfilecheck.sty
+INPUT /usr/share/texmf/tex/latex/rerunfilecheck/rerunfilecheck.sty
+INPUT /usr/share/texmf/tex/latex/rerunfilecheck/rerunfilecheck.sty
+INPUT /usr/share/texmf/tex/latex/rerunfilecheck/rerunfilecheck.sty
+INPUT /usr/share/texmf/tex/latex/rerunfilecheck/rerunfilecheck.sty
+INPUT /usr/share/texmf/tex/latex/rerunfilecheck/rerunfilecheck.sty
+INPUT /usr/share/texmf/tex/latex/rerunfilecheck/rerunfilecheck.sty
+INPUT /usr/share/texmf/tex/latex/rerunfilecheck/rerunfilecheck.sty
+INPUT /usr/share/texmf/tex/latex/kvoptions/kvoptions.sty
+INPUT /usr/share/texmf/tex/generic/infwarerr/infwarerr.sty
+INPUT /usr/share/texmf/tex/generic/pdftexcmds/pdftexcmds.sty
+INPUT /usr/share/texmf/tex/latex/atveryend/atveryend.sty
+INPUT /usr/share/texmf/tex/generic/uniquecounter/uniquecounter.sty
+INPUT /usr/share/texmf/tex/generic/uniquecounter/uniquecounter.sty
+INPUT /usr/share/texmf/tex/generic/uniquecounter/uniquecounter.sty
+INPUT /usr/share/texmf/tex/generic/uniquecounter/uniquecounter.sty
+INPUT /usr/share/texmf/tex/generic/uniquecounter/uniquecounter.sty
+INPUT /usr/share/texmf/tex/generic/uniquecounter/uniquecounter.sty
+INPUT /usr/share/texmf/tex/generic/uniquecounter/uniquecounter.sty
+INPUT /usr/share/texmf/tex/generic/uniquecounter/uniquecounter.sty
+INPUT /usr/share/texmf/tex/generic/uniquecounter/uniquecounter.sty
+INPUT /usr/share/texmf/tex/generic/uniquecounter/uniquecounter.sty
+INPUT /usr/share/texmf/tex/generic/uniquecounter/uniquecounter.sty
+INPUT /usr/share/texmf/tex/generic/bigintcalc/bigintcalc.sty
+INPUT /usr/share/texmf/tex/generic/infwarerr/infwarerr.sty
+INPUT /usr/share/texmf/tex/latex/booktabs/booktabs.sty
+INPUT /usr/share/texmf/tex/latex/booktabs/booktabs.sty
+INPUT /usr/share/texmf/tex/latex/booktabs/booktabs.sty
+INPUT /usr/share/texmf/tex/latex/booktabs/booktabs.sty
+INPUT /usr/share/texmf/tex/latex/booktabs/booktabs.sty
+INPUT /usr/share/texmf/tex/latex/booktabs/booktabs.sty
+INPUT /usr/share/texmf/tex/latex/booktabs/booktabs.sty
+INPUT /usr/share/texmf/tex/latex/booktabs/booktabs.sty
+INPUT /usr/share/texmf/tex/latex/booktabs/booktabs.sty
+INPUT /usr/share/texmf/tex/latex/booktabs/booktabs.sty
+INPUT /usr/share/texmf/tex/latex/booktabs/booktabs.sty
+INPUT /usr/share/texmf/tex/latex/listings/listings.sty
+INPUT /usr/share/texmf/tex/latex/listings/listings.sty
+INPUT /usr/share/texmf/tex/latex/listings/listings.sty
+INPUT /usr/share/texmf/tex/latex/listings/listings.sty
+INPUT /usr/share/texmf/tex/latex/listings/listings.sty
+INPUT /usr/share/texmf/tex/latex/listings/listings.sty
+INPUT /usr/share/texmf/tex/latex/listings/listings.sty
+INPUT /usr/share/texmf/tex/latex/listings/listings.sty
+INPUT /usr/share/texmf/tex/latex/listings/listings.sty
+INPUT /usr/share/texmf/tex/latex/listings/listings.sty
+INPUT /usr/share/texmf/tex/latex/listings/listings.sty
+INPUT /usr/share/texmf/tex/latex/graphics/keyval.sty
+INPUT /usr/share/texmf/tex/latex/listings/lstmisc.sty
+INPUT /usr/share/texmf/tex/latex/listings/lstmisc.sty
+INPUT /usr/share/texmf/tex/latex/listings/lstmisc.sty
+INPUT /usr/share/texmf/tex/latex/listings/lstmisc.sty
+INPUT /usr/share/texmf/tex/latex/listings/listings.cfg
+INPUT /usr/share/texmf/tex/latex/listings/listings.cfg
+INPUT /usr/share/texmf/tex/latex/listings/listings.cfg
+INPUT /usr/share/texmf/tex/latex/listings/listings.cfg
+INPUT /usr/share/texmf/tex/latex/csquotes/csquotes.sty
+INPUT /usr/share/texmf/tex/latex/csquotes/csquotes.sty
+INPUT /usr/share/texmf/tex/latex/csquotes/csquotes.sty
+INPUT /usr/share/texmf/tex/latex/csquotes/csquotes.sty
+INPUT /usr/share/texmf/tex/latex/csquotes/csquotes.sty
+INPUT /usr/share/texmf/tex/latex/csquotes/csquotes.sty
+INPUT /usr/share/texmf/tex/latex/csquotes/csquotes.sty
+INPUT /usr/share/texmf/tex/latex/csquotes/csquotes.sty
+INPUT /usr/share/texmf/tex/latex/csquotes/csquotes.sty
+INPUT /usr/share/texmf/tex/latex/csquotes/csquotes.sty
+INPUT /usr/share/texmf/tex/latex/csquotes/csquotes.sty
+INPUT /usr/share/texmf/tex/latex/etoolbox/etoolbox.sty
+INPUT /usr/share/texmf/tex/latex/etoolbox/etoolbox.sty
+INPUT /usr/share/texmf/tex/latex/etoolbox/etoolbox.sty
+INPUT /usr/share/texmf/tex/latex/etoolbox/etoolbox.sty
+INPUT /usr/share/texmf/tex/latex/etoolbox/etoolbox.sty
+INPUT /usr/share/texmf/tex/latex/etoolbox/etoolbox.sty
+INPUT /usr/share/texmf/tex/latex/etoolbox/etoolbox.sty
+INPUT /usr/share/texmf/tex/latex/etoolbox/etoolbox.sty
+INPUT /usr/share/texmf/tex/latex/etoolbox/etoolbox.sty
+INPUT /usr/share/texmf/tex/latex/etoolbox/etoolbox.sty
+INPUT /usr/share/texmf/tex/latex/etoolbox/etoolbox.sty
+INPUT /usr/share/texmf/tex/latex/graphics/keyval.sty
+INPUT /usr/share/texmf/tex/latex/csquotes/csquotes.def
+INPUT /usr/share/texmf/tex/latex/csquotes/csquotes.def
+INPUT /usr/share/texmf/tex/latex/csquotes/csquotes.def
+INPUT /usr/share/texmf/tex/latex/csquotes/csquotes.def
+INPUT /usr/share/texmf/tex/latex/csquotes/csquotes.cfg
+INPUT /usr/share/texmf/tex/latex/csquotes/csquotes.cfg
+INPUT /usr/share/texmf/tex/latex/csquotes/csquotes.cfg
+INPUT /usr/share/texmf/tex/latex/csquotes/csquotes.cfg
+INPUT /usr/share/texmf/tex/latex/multirow/multirow.sty
+INPUT /usr/share/texmf/tex/latex/multirow/multirow.sty
+INPUT /usr/share/texmf/tex/latex/multirow/multirow.sty
+INPUT /usr/share/texmf/tex/latex/multirow/multirow.sty
+INPUT /usr/share/texmf/tex/latex/multirow/multirow.sty
+INPUT /usr/share/texmf/tex/latex/multirow/multirow.sty
+INPUT /usr/share/texmf/tex/latex/multirow/multirow.sty
+INPUT /usr/share/texmf/tex/latex/multirow/multirow.sty
+INPUT /usr/share/texmf/tex/latex/multirow/multirow.sty
+INPUT /usr/share/texmf/tex/latex/multirow/multirow.sty
+INPUT /usr/share/texmf/tex/latex/multirow/multirow.sty
+INPUT /usr/share/texmf/tex/latex/graphics/color.sty
+INPUT /usr/share/texmf/tex/latex/graphics/color.sty
+INPUT /usr/share/texmf/tex/latex/graphics/color.sty
+INPUT /usr/share/texmf/tex/latex/graphics/color.sty
+INPUT /usr/share/texmf/tex/latex/graphics/color.sty
+INPUT /usr/share/texmf/tex/latex/graphics/color.sty
+INPUT /usr/share/texmf/tex/latex/graphics/color.sty
+INPUT /usr/share/texmf/tex/latex/graphics/color.sty
+INPUT /usr/share/texmf/tex/latex/graphics/color.sty
+INPUT /usr/share/texmf/tex/latex/graphics/color.sty
+INPUT /usr/share/texmf/tex/latex/graphics/color.sty
+INPUT /usr/share/texmf/tex/latex/graphics-cfg/color.cfg
+INPUT /usr/share/texmf/tex/latex/graphics-cfg/color.cfg
+INPUT /usr/share/texmf/tex/latex/graphics-cfg/color.cfg
+INPUT /usr/share/texmf/tex/latex/graphics-cfg/color.cfg
+INPUT /usr/share/texmf/tex/latex/graphics-def/pdftex.def
+INPUT /usr/share/texmf/tex/latex/graphics-def/pdftex.def
+INPUT /usr/share/texmf/tex/latex/graphics-def/pdftex.def
+INPUT /usr/share/texmf/tex/latex/graphics-def/pdftex.def
+INPUT /usr/share/texmf/tex/latex/xcolor/xcolor.sty
+INPUT /usr/share/texmf/tex/latex/xcolor/xcolor.sty
+INPUT /usr/share/texmf/tex/latex/xcolor/xcolor.sty
+INPUT /usr/share/texmf/tex/latex/xcolor/xcolor.sty
+INPUT /usr/share/texmf/tex/latex/xcolor/xcolor.sty
+INPUT /usr/share/texmf/tex/latex/xcolor/xcolor.sty
+INPUT /usr/share/texmf/tex/latex/xcolor/xcolor.sty
+INPUT /usr/share/texmf/tex/latex/xcolor/xcolor.sty
+INPUT /usr/share/texmf/tex/latex/xcolor/xcolor.sty
+INPUT /usr/share/texmf/tex/latex/xcolor/xcolor.sty
+INPUT /usr/share/texmf/tex/latex/xcolor/xcolor.sty
+INPUT /usr/share/texmf/tex/latex/graphics-cfg/color.cfg
+INPUT /usr/share/texmf/tex/latex/graphics-cfg/color.cfg
+INPUT /usr/share/texmf/tex/latex/graphics-cfg/color.cfg
+INPUT /usr/share/texmf/tex/latex/graphics-cfg/color.cfg
+INPUT /usr/share/texmf/tex/latex/graphics/graphicx.sty
+INPUT /usr/share/texmf/tex/latex/graphics/graphicx.sty
+INPUT /usr/share/texmf/tex/latex/graphics/graphicx.sty
+INPUT /usr/share/texmf/tex/latex/graphics/graphicx.sty
+INPUT /usr/share/texmf/tex/latex/graphics/graphicx.sty
+INPUT /usr/share/texmf/tex/latex/graphics/graphicx.sty
+INPUT /usr/share/texmf/tex/latex/graphics/graphicx.sty
+INPUT /usr/share/texmf/tex/latex/graphics/graphicx.sty
+INPUT /usr/share/texmf/tex/latex/graphics/graphicx.sty
+INPUT /usr/share/texmf/tex/latex/graphics/graphicx.sty
+INPUT /usr/share/texmf/tex/latex/graphics/graphicx.sty
+INPUT /usr/share/texmf/tex/latex/graphics/keyval.sty
+INPUT /usr/share/texmf/tex/latex/graphics/graphics.sty
+INPUT /usr/share/texmf/tex/latex/graphics/graphics.sty
+INPUT /usr/share/texmf/tex/latex/graphics/graphics.sty
+INPUT /usr/share/texmf/tex/latex/graphics/graphics.sty
+INPUT /usr/share/texmf/tex/latex/graphics/graphics.sty
+INPUT /usr/share/texmf/tex/latex/graphics/graphics.sty
+INPUT /usr/share/texmf/tex/latex/graphics/graphics.sty
+INPUT /usr/share/texmf/tex/latex/graphics/graphics.sty
+INPUT /usr/share/texmf/tex/latex/graphics/graphics.sty
+INPUT /usr/share/texmf/tex/latex/graphics/graphics.sty
+INPUT /usr/share/texmf/tex/latex/graphics/graphics.sty
+INPUT /usr/share/texmf/tex/latex/graphics/trig.sty
+INPUT /usr/share/texmf/tex/latex/graphics/trig.sty
+INPUT /usr/share/texmf/tex/latex/graphics/trig.sty
+INPUT /usr/share/texmf/tex/latex/graphics/trig.sty
+INPUT /usr/share/texmf/tex/latex/graphics/trig.sty
+INPUT /usr/share/texmf/tex/latex/graphics/trig.sty
+INPUT /usr/share/texmf/tex/latex/graphics/trig.sty
+INPUT /usr/share/texmf/tex/latex/graphics/trig.sty
+INPUT /usr/share/texmf/tex/latex/graphics/trig.sty
+INPUT /usr/share/texmf/tex/latex/graphics/trig.sty
+INPUT /usr/share/texmf/tex/latex/graphics/trig.sty
+INPUT /usr/share/texmf/tex/latex/graphics-cfg/graphics.cfg
+INPUT /usr/share/texmf/tex/latex/graphics-cfg/graphics.cfg
+INPUT /usr/share/texmf/tex/latex/graphics-cfg/graphics.cfg
+INPUT /usr/share/texmf/tex/latex/graphics-cfg/graphics.cfg
+INPUT /usr/share/texmf/tex/latex/wrapfig/wrapfig.sty
+INPUT /usr/share/texmf/tex/latex/wrapfig/wrapfig.sty
+INPUT /usr/share/texmf/tex/latex/wrapfig/wrapfig.sty
+INPUT /usr/share/texmf/tex/latex/wrapfig/wrapfig.sty
+INPUT /usr/share/texmf/tex/latex/wrapfig/wrapfig.sty
+INPUT /usr/share/texmf/tex/latex/wrapfig/wrapfig.sty
+INPUT /usr/share/texmf/tex/latex/wrapfig/wrapfig.sty
+INPUT /usr/share/texmf/tex/latex/wrapfig/wrapfig.sty
+INPUT /usr/share/texmf/tex/latex/wrapfig/wrapfig.sty
+INPUT /usr/share/texmf/tex/latex/wrapfig/wrapfig.sty
+INPUT /usr/share/texmf/tex/latex/wrapfig/wrapfig.sty
+INPUT /usr/share/texmf/tex/latex/minted/minted.sty
+INPUT /usr/share/texmf/tex/latex/minted/minted.sty
+INPUT /usr/share/texmf/tex/latex/minted/minted.sty
+INPUT /usr/share/texmf/tex/latex/minted/minted.sty
+INPUT /usr/share/texmf/tex/latex/minted/minted.sty
+INPUT /usr/share/texmf/tex/latex/minted/minted.sty
+INPUT /usr/share/texmf/tex/latex/minted/minted.sty
+INPUT /usr/share/texmf/tex/latex/minted/minted.sty
+INPUT /usr/share/texmf/tex/latex/minted/minted.sty
+INPUT /usr/share/texmf/tex/latex/minted/minted.sty
+INPUT /usr/share/texmf/tex/latex/minted/minted.sty
+INPUT /usr/share/texmf/tex/latex/graphics/keyval.sty
+INPUT /usr/share/texmf/tex/latex/kvoptions/kvoptions.sty
+INPUT /usr/share/texmf/tex/latex/fvextra/fvextra.sty
+INPUT /usr/share/texmf/tex/latex/fvextra/fvextra.sty
+INPUT /usr/share/texmf/tex/latex/fvextra/fvextra.sty
+INPUT /usr/share/texmf/tex/latex/fvextra/fvextra.sty
+INPUT /usr/share/texmf/tex/latex/fvextra/fvextra.sty
+INPUT /usr/share/texmf/tex/latex/fvextra/fvextra.sty
+INPUT /usr/share/texmf/tex/latex/fvextra/fvextra.sty
+INPUT /usr/share/texmf/tex/latex/fvextra/fvextra.sty
+INPUT /usr/share/texmf/tex/latex/fvextra/fvextra.sty
+INPUT /usr/share/texmf/tex/latex/fvextra/fvextra.sty
+INPUT /usr/share/texmf/tex/latex/fvextra/fvextra.sty
+INPUT /usr/share/texmf/tex/latex/base/ifthen.sty
+INPUT /usr/share/texmf/tex/latex/base/ifthen.sty
+INPUT /usr/share/texmf/tex/latex/base/ifthen.sty
+INPUT /usr/share/texmf/tex/latex/base/ifthen.sty
+INPUT /usr/share/texmf/tex/latex/base/ifthen.sty
+INPUT /usr/share/texmf/tex/latex/base/ifthen.sty
+INPUT /usr/share/texmf/tex/latex/base/ifthen.sty
+INPUT /usr/share/texmf/tex/latex/base/ifthen.sty
+INPUT /usr/share/texmf/tex/latex/base/ifthen.sty
+INPUT /usr/share/texmf/tex/latex/base/ifthen.sty
+INPUT /usr/share/texmf/tex/latex/base/ifthen.sty
+INPUT /usr/share/texmf/tex/latex/etoolbox/etoolbox.sty
+INPUT /usr/share/texmf/tex/latex/fancyvrb/fancyvrb.sty
+INPUT /usr/share/texmf/tex/latex/fancyvrb/fancyvrb.sty
+INPUT /usr/share/texmf/tex/latex/fancyvrb/fancyvrb.sty
+INPUT /usr/share/texmf/tex/latex/fancyvrb/fancyvrb.sty
+INPUT /usr/share/texmf/tex/latex/fancyvrb/fancyvrb.sty
+INPUT /usr/share/texmf/tex/latex/fancyvrb/fancyvrb.sty
+INPUT /usr/share/texmf/tex/latex/fancyvrb/fancyvrb.sty
+INPUT /usr/share/texmf/tex/latex/fancyvrb/fancyvrb.sty
+INPUT /usr/share/texmf/tex/latex/fancyvrb/fancyvrb.sty
+INPUT /usr/share/texmf/tex/latex/fancyvrb/fancyvrb.sty
+INPUT /usr/share/texmf/tex/latex/fancyvrb/fancyvrb.sty
+INPUT /usr/share/texmf/tex/latex/graphics/keyval.sty
+INPUT /usr/share/texmf/tex/latex/upquote/upquote.sty
+INPUT /usr/share/texmf/tex/latex/upquote/upquote.sty
+INPUT /usr/share/texmf/tex/latex/upquote/upquote.sty
+INPUT /usr/share/texmf/tex/latex/upquote/upquote.sty
+INPUT /usr/share/texmf/tex/latex/upquote/upquote.sty
+INPUT /usr/share/texmf/tex/latex/upquote/upquote.sty
+INPUT /usr/share/texmf/tex/latex/upquote/upquote.sty
+INPUT /usr/share/texmf/tex/latex/upquote/upquote.sty
+INPUT /usr/share/texmf/tex/latex/upquote/upquote.sty
+INPUT /usr/share/texmf/tex/latex/upquote/upquote.sty
+INPUT /usr/share/texmf/tex/latex/upquote/upquote.sty
+INPUT /usr/share/texmf/tex/latex/base/textcomp.sty
+INPUT /usr/share/texmf/tex/latex/base/textcomp.sty
+INPUT /usr/share/texmf/tex/latex/base/textcomp.sty
+INPUT /usr/share/texmf/tex/latex/base/textcomp.sty
+INPUT /usr/share/texmf/tex/latex/base/textcomp.sty
+INPUT /usr/share/texmf/tex/latex/base/textcomp.sty
+INPUT /usr/share/texmf/tex/latex/base/textcomp.sty
+INPUT /usr/share/texmf/tex/latex/base/textcomp.sty
+INPUT /usr/share/texmf/tex/latex/base/textcomp.sty
+INPUT /usr/share/texmf/tex/latex/base/textcomp.sty
+INPUT /usr/share/texmf/tex/latex/base/textcomp.sty
+INPUT /usr/share/texmf/tex/latex/lineno/lineno.sty
+INPUT /usr/share/texmf/tex/latex/lineno/lineno.sty
+INPUT /usr/share/texmf/tex/latex/lineno/lineno.sty
+INPUT /usr/share/texmf/tex/latex/lineno/lineno.sty
+INPUT /usr/share/texmf/tex/latex/lineno/lineno.sty
+INPUT /usr/share/texmf/tex/latex/lineno/lineno.sty
+INPUT /usr/share/texmf/tex/latex/lineno/lineno.sty
+INPUT /usr/share/texmf/tex/latex/lineno/lineno.sty
+INPUT /usr/share/texmf/tex/latex/lineno/lineno.sty
+INPUT /usr/share/texmf/tex/latex/lineno/lineno.sty
+INPUT /usr/share/texmf/tex/latex/lineno/lineno.sty
+INPUT /usr/share/texmf/tex/latex/base/ifthen.sty
+INPUT /usr/share/texmf/tex/latex/tools/calc.sty
+INPUT /usr/share/texmf/tex/latex/tools/calc.sty
+INPUT /usr/share/texmf/tex/latex/tools/calc.sty
+INPUT /usr/share/texmf/tex/latex/tools/calc.sty
+INPUT /usr/share/texmf/tex/latex/tools/calc.sty
+INPUT /usr/share/texmf/tex/latex/tools/calc.sty
+INPUT /usr/share/texmf/tex/latex/tools/calc.sty
+INPUT /usr/share/texmf/tex/latex/tools/calc.sty
+INPUT /usr/share/texmf/tex/latex/tools/calc.sty
+INPUT /usr/share/texmf/tex/latex/tools/calc.sty
+INPUT /usr/share/texmf/tex/latex/tools/calc.sty
+INPUT /usr/share/texmf/tex/latex/tools/shellesc.sty
+INPUT /usr/share/texmf/tex/latex/tools/shellesc.sty
+INPUT /usr/share/texmf/tex/latex/tools/shellesc.sty
+INPUT /usr/share/texmf/tex/latex/tools/shellesc.sty
+INPUT /usr/share/texmf/tex/latex/tools/shellesc.sty
+INPUT /usr/share/texmf/tex/latex/tools/shellesc.sty
+INPUT /usr/share/texmf/tex/latex/tools/shellesc.sty
+INPUT /usr/share/texmf/tex/latex/tools/shellesc.sty
+INPUT /usr/share/texmf/tex/latex/tools/shellesc.sty
+INPUT /usr/share/texmf/tex/latex/tools/shellesc.sty
+INPUT /usr/share/texmf/tex/latex/tools/shellesc.sty
+INPUT /usr/share/texmf/tex/latex/tools/shellesc.sty
+INPUT /usr/share/texmf/tex/latex/tools/shellesc.sty
+INPUT /usr/share/texmf/tex/latex/ifplatform/ifplatform.sty
+INPUT /usr/share/texmf/tex/latex/ifplatform/ifplatform.sty
+INPUT /usr/share/texmf/tex/latex/ifplatform/ifplatform.sty
+INPUT /usr/share/texmf/tex/latex/ifplatform/ifplatform.sty
+INPUT /usr/share/texmf/tex/latex/ifplatform/ifplatform.sty
+INPUT /usr/share/texmf/tex/latex/ifplatform/ifplatform.sty
+INPUT /usr/share/texmf/tex/latex/ifplatform/ifplatform.sty
+INPUT /usr/share/texmf/tex/latex/ifplatform/ifplatform.sty
+INPUT /usr/share/texmf/tex/latex/ifplatform/ifplatform.sty
+INPUT /usr/share/texmf/tex/latex/ifplatform/ifplatform.sty
+INPUT /usr/share/texmf/tex/latex/ifplatform/ifplatform.sty
+INPUT /usr/share/texmf/tex/latex/tools/shellesc.sty
+INPUT /usr/share/texmf/tex/generic/pdftexcmds/pdftexcmds.sty
+INPUT /usr/share/texmf/tex/generic/catchfile/catchfile.sty
+INPUT /usr/share/texmf/tex/generic/catchfile/catchfile.sty
+INPUT /usr/share/texmf/tex/generic/catchfile/catchfile.sty
+INPUT /usr/share/texmf/tex/generic/catchfile/catchfile.sty
+INPUT /usr/share/texmf/tex/generic/catchfile/catchfile.sty
+INPUT /usr/share/texmf/tex/generic/catchfile/catchfile.sty
+INPUT /usr/share/texmf/tex/generic/catchfile/catchfile.sty
+INPUT /usr/share/texmf/tex/generic/catchfile/catchfile.sty
+INPUT /usr/share/texmf/tex/generic/catchfile/catchfile.sty
+INPUT /usr/share/texmf/tex/generic/catchfile/catchfile.sty
+INPUT /usr/share/texmf/tex/generic/catchfile/catchfile.sty
+INPUT /usr/share/texmf/tex/generic/infwarerr/infwarerr.sty
+INPUT /usr/share/texmf/tex/generic/ltxcmds/ltxcmds.sty
+INPUT /usr/share/texmf/tex/generic/etexcmds/etexcmds.sty
+INPUT /usr/share/texmf/tex/generic/iftex/ifluatex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/ifluatex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/ifluatex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/ifluatex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/ifluatex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/ifluatex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/ifluatex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/ifluatex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/ifluatex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/ifluatex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/ifluatex.sty
+INPUT /usr/share/texmf/tex/generic/iftex/iftex.sty
+INPUT /dev/null
+INPUT /dev/null
+INPUT /dev/null
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.w18
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.w18
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.w18
+INPUT /usr/share/texmf/tex/generic/pdftexcmds/pdftexcmds.sty
+INPUT /usr/share/texmf/tex/latex/etoolbox/etoolbox.sty
+INPUT /usr/share/texmf/tex/generic/xstring/xstring.sty
+INPUT /usr/share/texmf/tex/generic/xstring/xstring.sty
+INPUT /usr/share/texmf/tex/generic/xstring/xstring.sty
+INPUT /usr/share/texmf/tex/generic/xstring/xstring.sty
+INPUT /usr/share/texmf/tex/generic/xstring/xstring.sty
+INPUT /usr/share/texmf/tex/generic/xstring/xstring.sty
+INPUT /usr/share/texmf/tex/generic/xstring/xstring.sty
+INPUT /usr/share/texmf/tex/generic/xstring/xstring.sty
+INPUT /usr/share/texmf/tex/generic/xstring/xstring.sty
+INPUT /usr/share/texmf/tex/generic/xstring/xstring.sty
+INPUT /usr/share/texmf/tex/generic/xstring/xstring.sty
+INPUT /usr/share/texmf/tex/generic/xstring/xstring.tex
+INPUT /usr/share/texmf/tex/latex/lineno/lineno.sty
+INPUT /usr/share/texmf/tex/latex/framed/framed.sty
+INPUT /usr/share/texmf/tex/latex/framed/framed.sty
+INPUT /usr/share/texmf/tex/latex/framed/framed.sty
+INPUT /usr/share/texmf/tex/latex/framed/framed.sty
+INPUT /usr/share/texmf/tex/latex/framed/framed.sty
+INPUT /usr/share/texmf/tex/latex/framed/framed.sty
+INPUT /usr/share/texmf/tex/latex/framed/framed.sty
+INPUT /usr/share/texmf/tex/latex/framed/framed.sty
+INPUT /usr/share/texmf/tex/latex/framed/framed.sty
+INPUT /usr/share/texmf/tex/latex/framed/framed.sty
+INPUT /usr/share/texmf/tex/latex/framed/framed.sty
+INPUT /usr/share/texmf/tex/latex/float/float.sty
+INPUT /usr/share/texmf/tex/latex/float/float.sty
+INPUT /usr/share/texmf/tex/latex/float/float.sty
+INPUT /usr/share/texmf/tex/latex/float/float.sty
+INPUT /usr/share/texmf/tex/latex/float/float.sty
+INPUT /usr/share/texmf/tex/latex/float/float.sty
+INPUT /usr/share/texmf/tex/latex/float/float.sty
+INPUT /usr/share/texmf/tex/latex/float/float.sty
+INPUT /usr/share/texmf/tex/latex/float/float.sty
+INPUT /usr/share/texmf/tex/latex/float/float.sty
+INPUT /usr/share/texmf/tex/latex/float/float.sty
+INPUT /usr/share/texmf/tex/latex/algorithm2e/algorithm2e.sty
+INPUT /usr/share/texmf/tex/latex/algorithm2e/algorithm2e.sty
+INPUT /usr/share/texmf/tex/latex/algorithm2e/algorithm2e.sty
+INPUT /usr/share/texmf/tex/latex/algorithm2e/algorithm2e.sty
+INPUT /usr/share/texmf/tex/latex/algorithm2e/algorithm2e.sty
+INPUT /usr/share/texmf/tex/latex/algorithm2e/algorithm2e.sty
+INPUT /usr/share/texmf/tex/latex/algorithm2e/algorithm2e.sty
+INPUT /usr/share/texmf/tex/latex/algorithm2e/algorithm2e.sty
+INPUT /usr/share/texmf/tex/latex/algorithm2e/algorithm2e.sty
+INPUT /usr/share/texmf/tex/latex/algorithm2e/algorithm2e.sty
+INPUT /usr/share/texmf/tex/latex/algorithm2e/algorithm2e.sty
+INPUT /usr/share/texmf/tex/latex/base/ifthen.sty
+INPUT /usr/share/texmf/tex/latex/ifoddpage/ifoddpage.sty
+INPUT /usr/share/texmf/tex/latex/ifoddpage/ifoddpage.sty
+INPUT /usr/share/texmf/tex/latex/ifoddpage/ifoddpage.sty
+INPUT /usr/share/texmf/tex/latex/ifoddpage/ifoddpage.sty
+INPUT /usr/share/texmf/tex/latex/ifoddpage/ifoddpage.sty
+INPUT /usr/share/texmf/tex/latex/ifoddpage/ifoddpage.sty
+INPUT /usr/share/texmf/tex/latex/ifoddpage/ifoddpage.sty
+INPUT /usr/share/texmf/tex/latex/ifoddpage/ifoddpage.sty
+INPUT /usr/share/texmf/tex/latex/ifoddpage/ifoddpage.sty
+INPUT /usr/share/texmf/tex/latex/ifoddpage/ifoddpage.sty
+INPUT /usr/share/texmf/tex/latex/ifoddpage/ifoddpage.sty
+INPUT /usr/share/texmf/tex/latex/tools/xspace.sty
+INPUT /usr/share/texmf/tex/latex/tools/xspace.sty
+INPUT /usr/share/texmf/tex/latex/tools/xspace.sty
+INPUT /usr/share/texmf/tex/latex/tools/xspace.sty
+INPUT /usr/share/texmf/tex/latex/tools/xspace.sty
+INPUT /usr/share/texmf/tex/latex/tools/xspace.sty
+INPUT /usr/share/texmf/tex/latex/tools/xspace.sty
+INPUT /usr/share/texmf/tex/latex/tools/xspace.sty
+INPUT /usr/share/texmf/tex/latex/tools/xspace.sty
+INPUT /usr/share/texmf/tex/latex/tools/xspace.sty
+INPUT /usr/share/texmf/tex/latex/tools/xspace.sty
+INPUT /usr/share/texmf/tex/latex/relsize/relsize.sty
+INPUT /usr/share/texmf/tex/latex/relsize/relsize.sty
+INPUT /usr/share/texmf/tex/latex/relsize/relsize.sty
+INPUT /usr/share/texmf/tex/latex/relsize/relsize.sty
+INPUT /usr/share/texmf/tex/latex/relsize/relsize.sty
+INPUT /usr/share/texmf/tex/latex/relsize/relsize.sty
+INPUT /usr/share/texmf/tex/latex/relsize/relsize.sty
+INPUT /usr/share/texmf/tex/latex/relsize/relsize.sty
+INPUT /usr/share/texmf/tex/latex/relsize/relsize.sty
+INPUT /usr/share/texmf/tex/latex/relsize/relsize.sty
+INPUT /usr/share/texmf/tex/latex/relsize/relsize.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsmath.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsmath.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsmath.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsmath.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsmath.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsmath.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsmath.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsmath.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsmath.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsmath.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsmath.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsopn.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsopn.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amstext.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amstext.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amstext.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amstext.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amstext.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amstext.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amstext.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amstext.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amstext.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amstext.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amstext.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsgen.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsgen.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsgen.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsgen.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsgen.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsgen.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsgen.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsgen.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsgen.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsgen.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsgen.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsbsy.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsbsy.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsbsy.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsbsy.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsbsy.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsbsy.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsbsy.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsbsy.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsbsy.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsbsy.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsbsy.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsgen.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsopn.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsopn.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsopn.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsopn.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsopn.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsopn.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsopn.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsopn.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsopn.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsopn.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsopn.sty
+INPUT /usr/share/texmf/tex/latex/amsmath/amsgen.sty
+INPUT /usr/share/texmf/tex/latex/stmaryrd/stmaryrd.sty
+INPUT /usr/share/texmf/tex/latex/stmaryrd/stmaryrd.sty
+INPUT /usr/share/texmf/tex/latex/stmaryrd/stmaryrd.sty
+INPUT /usr/share/texmf/tex/latex/stmaryrd/stmaryrd.sty
+INPUT /usr/share/texmf/tex/latex/stmaryrd/stmaryrd.sty
+INPUT /usr/share/texmf/tex/latex/stmaryrd/stmaryrd.sty
+INPUT /usr/share/texmf/tex/latex/stmaryrd/stmaryrd.sty
+INPUT /usr/share/texmf/tex/latex/stmaryrd/stmaryrd.sty
+INPUT /usr/share/texmf/tex/latex/stmaryrd/stmaryrd.sty
+INPUT /usr/share/texmf/tex/latex/stmaryrd/stmaryrd.sty
+INPUT /usr/share/texmf/tex/latex/stmaryrd/stmaryrd.sty
+INPUT /usr/share/texmf/tex/latex/amsfonts/amssymb.sty
+INPUT /usr/share/texmf/tex/latex/amsfonts/amssymb.sty
+INPUT /usr/share/texmf/tex/latex/amsfonts/amssymb.sty
+INPUT /usr/share/texmf/tex/latex/amsfonts/amssymb.sty
+INPUT /usr/share/texmf/tex/latex/amsfonts/amssymb.sty
+INPUT /usr/share/texmf/tex/latex/amsfonts/amssymb.sty
+INPUT /usr/share/texmf/tex/latex/amsfonts/amssymb.sty
+INPUT /usr/share/texmf/tex/latex/amsfonts/amssymb.sty
+INPUT /usr/share/texmf/tex/latex/amsfonts/amssymb.sty
+INPUT /usr/share/texmf/tex/latex/amsfonts/amssymb.sty
+INPUT /usr/share/texmf/tex/latex/amsfonts/amssymb.sty
+INPUT /usr/share/texmf/tex/latex/amsfonts/amsfonts.sty
+INPUT /usr/share/texmf/tex/latex/amsfonts/amsfonts.sty
+INPUT /usr/share/texmf/tex/latex/amsfonts/amsfonts.sty
+INPUT /usr/share/texmf/tex/latex/amsfonts/amsfonts.sty
+INPUT /usr/share/texmf/tex/latex/amsfonts/amsfonts.sty
+INPUT /usr/share/texmf/tex/latex/amsfonts/amsfonts.sty
+INPUT /usr/share/texmf/tex/latex/amsfonts/amsfonts.sty
+INPUT /usr/share/texmf/tex/latex/amsfonts/amsfonts.sty
+INPUT /usr/share/texmf/tex/latex/amsfonts/amsfonts.sty
+INPUT /usr/share/texmf/tex/latex/amsfonts/amsfonts.sty
+INPUT /usr/share/texmf/tex/latex/amsfonts/amsfonts.sty
+INPUT /usr/share/texmf/tex/latex/todonotes/todonotes.sty
+INPUT /usr/share/texmf/tex/latex/todonotes/todonotes.sty
+INPUT /usr/share/texmf/tex/latex/todonotes/todonotes.sty
+INPUT /usr/share/texmf/tex/latex/todonotes/todonotes.sty
+INPUT /usr/share/texmf/tex/latex/todonotes/todonotes.sty
+INPUT /usr/share/texmf/tex/latex/todonotes/todonotes.sty
+INPUT /usr/share/texmf/tex/latex/todonotes/todonotes.sty
+INPUT /usr/share/texmf/tex/latex/todonotes/todonotes.sty
+INPUT /usr/share/texmf/tex/latex/todonotes/todonotes.sty
+INPUT /usr/share/texmf/tex/latex/todonotes/todonotes.sty
+INPUT /usr/share/texmf/tex/latex/todonotes/todonotes.sty
+INPUT /usr/share/texmf/tex/latex/base/ifthen.sty
+INPUT /usr/share/texmf/tex/latex/xkeyval/xkeyval.sty
+INPUT /usr/share/texmf/tex/latex/xkeyval/xkeyval.sty
+INPUT /usr/share/texmf/tex/latex/xkeyval/xkeyval.sty
+INPUT /usr/share/texmf/tex/latex/xkeyval/xkeyval.sty
+INPUT /usr/share/texmf/tex/latex/xkeyval/xkeyval.sty
+INPUT /usr/share/texmf/tex/latex/xkeyval/xkeyval.sty
+INPUT /usr/share/texmf/tex/latex/xkeyval/xkeyval.sty
+INPUT /usr/share/texmf/tex/latex/xkeyval/xkeyval.sty
+INPUT /usr/share/texmf/tex/latex/xkeyval/xkeyval.sty
+INPUT /usr/share/texmf/tex/latex/xkeyval/xkeyval.sty
+INPUT /usr/share/texmf/tex/latex/xkeyval/xkeyval.sty
+INPUT /usr/share/texmf/tex/generic/xkeyval/xkeyval.tex
+INPUT /usr/share/texmf/tex/generic/xkeyval/xkvutils.tex
+INPUT /usr/share/texmf/tex/latex/xcolor/xcolor.sty
+INPUT /usr/share/texmf/tex/latex/pgf/frontendlayer/tikz.sty
+INPUT /usr/share/texmf/tex/latex/pgf/frontendlayer/tikz.sty
+INPUT /usr/share/texmf/tex/latex/pgf/frontendlayer/tikz.sty
+INPUT /usr/share/texmf/tex/latex/pgf/frontendlayer/tikz.sty
+INPUT /usr/share/texmf/tex/latex/pgf/frontendlayer/tikz.sty
+INPUT /usr/share/texmf/tex/latex/pgf/frontendlayer/tikz.sty
+INPUT /usr/share/texmf/tex/latex/pgf/frontendlayer/tikz.sty
+INPUT /usr/share/texmf/tex/latex/pgf/frontendlayer/tikz.sty
+INPUT /usr/share/texmf/tex/latex/pgf/frontendlayer/tikz.sty
+INPUT /usr/share/texmf/tex/latex/pgf/frontendlayer/tikz.sty
+INPUT /usr/share/texmf/tex/latex/pgf/frontendlayer/tikz.sty
+INPUT /usr/share/texmf/tex/latex/pgf/basiclayer/pgf.sty
+INPUT /usr/share/texmf/tex/latex/pgf/basiclayer/pgf.sty
+INPUT /usr/share/texmf/tex/latex/pgf/basiclayer/pgf.sty
+INPUT /usr/share/texmf/tex/latex/pgf/basiclayer/pgf.sty
+INPUT /usr/share/texmf/tex/latex/pgf/basiclayer/pgf.sty
+INPUT /usr/share/texmf/tex/latex/pgf/basiclayer/pgf.sty
+INPUT /usr/share/texmf/tex/latex/pgf/basiclayer/pgf.sty
+INPUT /usr/share/texmf/tex/latex/pgf/basiclayer/pgf.sty
+INPUT /usr/share/texmf/tex/latex/pgf/basiclayer/pgf.sty
+INPUT /usr/share/texmf/tex/latex/pgf/basiclayer/pgf.sty
+INPUT /usr/share/texmf/tex/latex/pgf/basiclayer/pgf.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgfrcs.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgfrcs.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgfrcs.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgfrcs.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgfrcs.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgfrcs.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgfrcs.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgfrcs.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgfrcs.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgfrcs.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgfrcs.sty
+INPUT /usr/share/texmf/tex/generic/pgf/utilities/pgfutil-common.tex
+INPUT /usr/share/texmf/tex/generic/pgf/utilities/pgfutil-common-lists.tex
+INPUT /usr/share/texmf/tex/generic/pgf/utilities/pgfutil-latex.def
+INPUT /usr/share/texmf/tex/generic/pgf/utilities/pgfrcs.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/utilities/pgfrcs.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/utilities/pgfrcs.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/utilities/pgfrcs.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/pgf.revision.tex
+INPUT /usr/share/texmf/tex/generic/pgf/pgf.revision.tex
+INPUT /usr/share/texmf/tex/latex/pgf/basiclayer/pgfcore.sty
+INPUT /usr/share/texmf/tex/latex/pgf/basiclayer/pgfcore.sty
+INPUT /usr/share/texmf/tex/latex/pgf/basiclayer/pgfcore.sty
+INPUT /usr/share/texmf/tex/latex/pgf/basiclayer/pgfcore.sty
+INPUT /usr/share/texmf/tex/latex/pgf/basiclayer/pgfcore.sty
+INPUT /usr/share/texmf/tex/latex/pgf/basiclayer/pgfcore.sty
+INPUT /usr/share/texmf/tex/latex/pgf/basiclayer/pgfcore.sty
+INPUT /usr/share/texmf/tex/latex/pgf/basiclayer/pgfcore.sty
+INPUT /usr/share/texmf/tex/latex/pgf/basiclayer/pgfcore.sty
+INPUT /usr/share/texmf/tex/latex/pgf/basiclayer/pgfcore.sty
+INPUT /usr/share/texmf/tex/latex/pgf/basiclayer/pgfcore.sty
+INPUT /usr/share/texmf/tex/latex/graphics/graphicx.sty
+INPUT /usr/share/texmf/tex/latex/pgf/systemlayer/pgfsys.sty
+INPUT /usr/share/texmf/tex/latex/pgf/systemlayer/pgfsys.sty
+INPUT /usr/share/texmf/tex/latex/pgf/systemlayer/pgfsys.sty
+INPUT /usr/share/texmf/tex/latex/pgf/systemlayer/pgfsys.sty
+INPUT /usr/share/texmf/tex/latex/pgf/systemlayer/pgfsys.sty
+INPUT /usr/share/texmf/tex/latex/pgf/systemlayer/pgfsys.sty
+INPUT /usr/share/texmf/tex/latex/pgf/systemlayer/pgfsys.sty
+INPUT /usr/share/texmf/tex/latex/pgf/systemlayer/pgfsys.sty
+INPUT /usr/share/texmf/tex/latex/pgf/systemlayer/pgfsys.sty
+INPUT /usr/share/texmf/tex/latex/pgf/systemlayer/pgfsys.sty
+INPUT /usr/share/texmf/tex/latex/pgf/systemlayer/pgfsys.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgfrcs.sty
+INPUT /usr/share/texmf/tex/generic/pgf/systemlayer/pgfsys.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/systemlayer/pgfsys.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/systemlayer/pgfsys.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/systemlayer/pgfsys.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/utilities/pgfkeys.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/utilities/pgfkeysfiltered.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/systemlayer/pgf.cfg
+INPUT /usr/share/texmf/tex/generic/pgf/systemlayer/pgfsys-pdftex.def
+INPUT /usr/share/texmf/tex/generic/pgf/systemlayer/pgfsys-pdftex.def
+INPUT /usr/share/texmf/tex/generic/pgf/systemlayer/pgfsys-common-pdf.def
+INPUT /usr/share/texmf/tex/generic/pgf/systemlayer/pgfsyssoftpath.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/systemlayer/pgfsyssoftpath.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/systemlayer/pgfsyssoftpath.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/systemlayer/pgfsyssoftpath.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/systemlayer/pgfsysprotocol.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/systemlayer/pgfsysprotocol.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/systemlayer/pgfsysprotocol.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/systemlayer/pgfsysprotocol.code.tex
+INPUT /usr/share/texmf/tex/latex/graphics/keyval.sty
+INPUT /usr/share/texmf/tex/latex/xcolor/xcolor.sty
+INPUT /usr/share/texmf/tex/generic/pgf/basiclayer/pgfcore.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/basiclayer/pgfcore.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/basiclayer/pgfcore.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/basiclayer/pgfcore.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/math/pgfmath.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/math/pgfmathcalc.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/math/pgfmathutil.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/math/pgfmathparser.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/math/pgfmathfunctions.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/math/pgfmathfunctions.basic.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/math/pgfmathfunctions.trigonometric.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/math/pgfmathfunctions.random.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/math/pgfmathfunctions.comparison.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/math/pgfmathfunctions.base.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/math/pgfmathfunctions.round.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/math/pgfmathfunctions.misc.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/math/pgfmathfunctions.integerarithmetics.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/math/pgfmathfloat.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/math/pgfint.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/basiclayer/pgfcorepoints.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/basiclayer/pgfcorepathconstruct.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/basiclayer/pgfcorepathusage.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/basiclayer/pgfcorescopes.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/basiclayer/pgfcoregraphicstate.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/basiclayer/pgfcoretransformations.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/basiclayer/pgfcorequick.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/basiclayer/pgfcoreobjects.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/basiclayer/pgfcorepathprocessing.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/basiclayer/pgfcorearrows.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/basiclayer/pgfcoreshade.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/basiclayer/pgfcoreimage.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/basiclayer/pgfcoreexternal.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/basiclayer/pgfcorelayers.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/basiclayer/pgfcoretransparency.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/basiclayer/pgfcorepatterns.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/basiclayer/pgfcorerdf.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/modules/pgfmoduleshapes.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/modules/pgfmoduleplot.code.tex
+INPUT /usr/share/texmf/tex/latex/pgf/compatibility/pgfcomp-version-0-65.sty
+INPUT /usr/share/texmf/tex/latex/pgf/compatibility/pgfcomp-version-0-65.sty
+INPUT /usr/share/texmf/tex/latex/pgf/compatibility/pgfcomp-version-0-65.sty
+INPUT /usr/share/texmf/tex/latex/pgf/compatibility/pgfcomp-version-0-65.sty
+INPUT /usr/share/texmf/tex/latex/pgf/compatibility/pgfcomp-version-0-65.sty
+INPUT /usr/share/texmf/tex/latex/pgf/compatibility/pgfcomp-version-0-65.sty
+INPUT /usr/share/texmf/tex/latex/pgf/compatibility/pgfcomp-version-0-65.sty
+INPUT /usr/share/texmf/tex/latex/pgf/compatibility/pgfcomp-version-0-65.sty
+INPUT /usr/share/texmf/tex/latex/pgf/compatibility/pgfcomp-version-0-65.sty
+INPUT /usr/share/texmf/tex/latex/pgf/compatibility/pgfcomp-version-0-65.sty
+INPUT /usr/share/texmf/tex/latex/pgf/compatibility/pgfcomp-version-0-65.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgfrcs.sty
+INPUT /usr/share/texmf/tex/latex/pgf/compatibility/pgfcomp-version-1-18.sty
+INPUT /usr/share/texmf/tex/latex/pgf/compatibility/pgfcomp-version-1-18.sty
+INPUT /usr/share/texmf/tex/latex/pgf/compatibility/pgfcomp-version-1-18.sty
+INPUT /usr/share/texmf/tex/latex/pgf/compatibility/pgfcomp-version-1-18.sty
+INPUT /usr/share/texmf/tex/latex/pgf/compatibility/pgfcomp-version-1-18.sty
+INPUT /usr/share/texmf/tex/latex/pgf/compatibility/pgfcomp-version-1-18.sty
+INPUT /usr/share/texmf/tex/latex/pgf/compatibility/pgfcomp-version-1-18.sty
+INPUT /usr/share/texmf/tex/latex/pgf/compatibility/pgfcomp-version-1-18.sty
+INPUT /usr/share/texmf/tex/latex/pgf/compatibility/pgfcomp-version-1-18.sty
+INPUT /usr/share/texmf/tex/latex/pgf/compatibility/pgfcomp-version-1-18.sty
+INPUT /usr/share/texmf/tex/latex/pgf/compatibility/pgfcomp-version-1-18.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgfrcs.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgffor.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgffor.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgffor.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgffor.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgffor.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgffor.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgffor.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgffor.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgffor.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgffor.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgffor.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgfrcs.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgfkeys.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgfkeys.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgfkeys.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgfkeys.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgfkeys.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgfkeys.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgfkeys.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgfkeys.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgfkeys.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgfkeys.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgfkeys.sty
+INPUT /usr/share/texmf/tex/generic/pgf/utilities/pgfkeys.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/utilities/pgfkeys.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/utilities/pgfkeys.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/utilities/pgfkeys.code.tex
+INPUT /usr/share/texmf/tex/latex/pgf/math/pgfmath.sty
+INPUT /usr/share/texmf/tex/latex/pgf/math/pgfmath.sty
+INPUT /usr/share/texmf/tex/latex/pgf/math/pgfmath.sty
+INPUT /usr/share/texmf/tex/latex/pgf/math/pgfmath.sty
+INPUT /usr/share/texmf/tex/latex/pgf/math/pgfmath.sty
+INPUT /usr/share/texmf/tex/latex/pgf/math/pgfmath.sty
+INPUT /usr/share/texmf/tex/latex/pgf/math/pgfmath.sty
+INPUT /usr/share/texmf/tex/latex/pgf/math/pgfmath.sty
+INPUT /usr/share/texmf/tex/latex/pgf/math/pgfmath.sty
+INPUT /usr/share/texmf/tex/latex/pgf/math/pgfmath.sty
+INPUT /usr/share/texmf/tex/latex/pgf/math/pgfmath.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgfrcs.sty
+INPUT /usr/share/texmf/tex/latex/pgf/utilities/pgfkeys.sty
+INPUT /usr/share/texmf/tex/generic/pgf/math/pgfmath.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/math/pgfmath.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/math/pgfmath.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/math/pgfmath.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/utilities/pgffor.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/utilities/pgffor.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/utilities/pgffor.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/utilities/pgffor.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/math/pgfmath.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/frontendlayer/tikz/tikz.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/frontendlayer/tikz/tikz.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/frontendlayer/tikz/tikz.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/frontendlayer/tikz/tikz.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/libraries/pgflibraryplothandlers.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/libraries/pgflibraryplothandlers.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/modules/pgfmodulematrix.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrarytopaths.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrarytopaths.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrarypositioning.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrarypositioning.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibraryshadows.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibraryshadows.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibraryfadings.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibraryfadings.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/libraries/pgflibraryfadings.code.tex
+INPUT /usr/share/texmf/tex/generic/pgf/libraries/pgflibraryfadings.code.tex
+OUTPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.pdf
+INPUT /usr/share/texmf/tex/latex/tools/calc.sty
+INPUT /usr/share/texmf/tex/latex/base/textcomp.sty
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.aex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.aex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.aex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.aex
+INPUT /usr/share/texmf/tex/latex/l3backend/l3backend-pdftex.def
+INPUT /usr/share/texmf/tex/latex/l3backend/l3backend-pdftex.def
+INPUT /usr/share/texmf/tex/latex/l3backend/l3backend-pdftex.def
+INPUT /usr/share/texmf/tex/latex/l3backend/l3backend-pdftex.def
+INPUT /usr/share/texmf/tex/latex/l3backend/l3backend-pdftex.def
+INPUT /usr/share/texmf/tex/latex/l3backend/l3backend-pdftex.def
+INPUT /usr/share/texmf/tex/latex/l3backend/l3backend-pdftex.def
+INPUT /usr/share/texmf/tex/latex/l3backend/l3backend-pdftex.def
+INPUT /usr/share/texmf/tex/latex/l3backend/l3backend-pdftex.def
+INPUT /usr/share/texmf/tex/latex/l3backend/l3backend-pdftex.def
+INPUT /usr/share/texmf/tex/latex/l3backend/l3backend-pdftex.def
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/frontpage.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/frontpage.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/frontpage.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/ack.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/ack.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/ack.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/summary.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/summary.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/summary.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/00intro.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/00intro.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/00intro.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/01aes.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/01aes.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/01aes.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/02pow.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/02pow.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/02pow.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/03soa.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/03soa.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/03soa.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/04expres.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/04expres.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/04expres.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/05conclusions.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/05conclusions.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/05conclusions.aux
+OUTPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.aux
+INPUT /usr/share/texmf/tex/latex/microtype/mt-cmr.cfg
+INPUT /usr/share/texmf/tex/latex/microtype/mt-cmr.cfg
+INPUT /usr/share/texmf/tex/latex/microtype/mt-cmr.cfg
+INPUT /usr/share/texmf/tex/latex/microtype/mt-cmr.cfg
+INPUT /usr/share/texmf/tex/latex/hyperref/nameref.sty
+INPUT /usr/share/texmf/tex/latex/hyperref/nameref.sty
+INPUT /usr/share/texmf/tex/latex/hyperref/nameref.sty
+INPUT /usr/share/texmf/tex/latex/hyperref/nameref.sty
+INPUT /usr/share/texmf/tex/latex/hyperref/nameref.sty
+INPUT /usr/share/texmf/tex/latex/hyperref/nameref.sty
+INPUT /usr/share/texmf/tex/latex/hyperref/nameref.sty
+INPUT /usr/share/texmf/tex/latex/hyperref/nameref.sty
+INPUT /usr/share/texmf/tex/latex/hyperref/nameref.sty
+INPUT /usr/share/texmf/tex/latex/hyperref/nameref.sty
+INPUT /usr/share/texmf/tex/latex/hyperref/nameref.sty
+INPUT /usr/share/texmf/tex/latex/refcount/refcount.sty
+INPUT /usr/share/texmf/tex/latex/refcount/refcount.sty
+INPUT /usr/share/texmf/tex/latex/refcount/refcount.sty
+INPUT /usr/share/texmf/tex/latex/refcount/refcount.sty
+INPUT /usr/share/texmf/tex/latex/refcount/refcount.sty
+INPUT /usr/share/texmf/tex/latex/refcount/refcount.sty
+INPUT /usr/share/texmf/tex/latex/refcount/refcount.sty
+INPUT /usr/share/texmf/tex/latex/refcount/refcount.sty
+INPUT /usr/share/texmf/tex/latex/refcount/refcount.sty
+INPUT /usr/share/texmf/tex/latex/refcount/refcount.sty
+INPUT /usr/share/texmf/tex/latex/refcount/refcount.sty
+INPUT /usr/share/texmf/tex/generic/ltxcmds/ltxcmds.sty
+INPUT /usr/share/texmf/tex/generic/infwarerr/infwarerr.sty
+INPUT /usr/share/texmf/tex/generic/gettitlestring/gettitlestring.sty
+INPUT /usr/share/texmf/tex/generic/gettitlestring/gettitlestring.sty
+INPUT /usr/share/texmf/tex/generic/gettitlestring/gettitlestring.sty
+INPUT /usr/share/texmf/tex/generic/gettitlestring/gettitlestring.sty
+INPUT /usr/share/texmf/tex/generic/gettitlestring/gettitlestring.sty
+INPUT /usr/share/texmf/tex/generic/gettitlestring/gettitlestring.sty
+INPUT /usr/share/texmf/tex/generic/gettitlestring/gettitlestring.sty
+INPUT /usr/share/texmf/tex/generic/gettitlestring/gettitlestring.sty
+INPUT /usr/share/texmf/tex/generic/gettitlestring/gettitlestring.sty
+INPUT /usr/share/texmf/tex/generic/gettitlestring/gettitlestring.sty
+INPUT /usr/share/texmf/tex/generic/gettitlestring/gettitlestring.sty
+INPUT /usr/share/texmf/tex/latex/kvoptions/kvoptions.sty
+INPUT /usr/share/texmf/tex/generic/ltxcmds/ltxcmds.sty
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.out
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.out
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.out
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.out
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.out
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.out
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.out
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.out
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.out
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.out
+OUTPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.out
+INPUT /usr/share/texmf/tex/latex/base/textcomp.sty
+INPUT /usr/share/texmf/tex/context/base/mkii/supp-pdf.mkii
+INPUT /usr/share/texmf/tex/context/base/mkii/supp-pdf.mkii
+INPUT /usr/share/texmf/tex/context/base/mkii/supp-pdf.mkii
+INPUT /usr/share/texmf/tex/context/base/mkii/supp-pdf.mkii
+INPUT /usr/share/texmf/tex/latex/epstopdf-pkg/epstopdf-base.sty
+INPUT /usr/share/texmf/tex/latex/epstopdf-pkg/epstopdf-base.sty
+INPUT /usr/share/texmf/tex/latex/epstopdf-pkg/epstopdf-base.sty
+INPUT /usr/share/texmf/tex/latex/epstopdf-pkg/epstopdf-base.sty
+INPUT /usr/share/texmf/tex/latex/epstopdf-pkg/epstopdf-base.sty
+INPUT /usr/share/texmf/tex/latex/epstopdf-pkg/epstopdf-base.sty
+INPUT /usr/share/texmf/tex/latex/epstopdf-pkg/epstopdf-base.sty
+INPUT /usr/share/texmf/tex/latex/epstopdf-pkg/epstopdf-base.sty
+INPUT /usr/share/texmf/tex/latex/epstopdf-pkg/epstopdf-base.sty
+INPUT /usr/share/texmf/tex/latex/epstopdf-pkg/epstopdf-base.sty
+INPUT /usr/share/texmf/tex/latex/epstopdf-pkg/epstopdf-base.sty
+INPUT /usr/share/texmf/tex/latex/latexconfig/epstopdf-sys.cfg
+INPUT /usr/share/texmf/tex/latex/latexconfig/epstopdf-sys.cfg
+INPUT /usr/share/texmf/tex/latex/latexconfig/epstopdf-sys.cfg
+INPUT /usr/share/texmf/tex/latex/latexconfig/epstopdf-sys.cfg
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/frontpage.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/frontpage.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/frontpage.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/frontpage.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/frontpage.tex
+OUTPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/frontpage.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/frontpage.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/frontpage.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/frontpage.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/frontpage.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/frontpage.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/frontpage.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/frontpage.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/frontpage.tex
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/ecrm2488.tfm
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/ecbx2488.tfm
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/ecrm1440.tfm
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/ecrm1728.tfm
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/ecrm2074.tfm
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/ecbx2074.tfm
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/logopolitonuovo.jpeg
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/logopolitonuovo.jpeg
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/logopolitonuovo.jpeg
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/logopolitonuovo.jpeg
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/logopolitonuovo.jpeg
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/ecbx1095.tfm
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/ecbx1440.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/cm/cmr12.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/cm/cmmi12.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/cm/cmsy10.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/cm/cmex10.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm
+INPUT /usr/share/texmf/tex/latex/stmaryrd/Ustmry.fd
+INPUT /usr/share/texmf/tex/latex/stmaryrd/Ustmry.fd
+INPUT /usr/share/texmf/tex/latex/stmaryrd/Ustmry.fd
+INPUT /usr/share/texmf/tex/latex/stmaryrd/Ustmry.fd
+INPUT /usr/share/texmf/fonts/tfm/public/stmaryrd/stmary10.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/stmaryrd/stmary10.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/stmaryrd/stmary7.tfm
+INPUT /usr/share/texmf/tex/latex/amsfonts/umsa.fd
+INPUT /usr/share/texmf/tex/latex/amsfonts/umsa.fd
+INPUT /usr/share/texmf/tex/latex/amsfonts/umsa.fd
+INPUT /usr/share/texmf/tex/latex/amsfonts/umsa.fd
+INPUT /usr/share/texmf/fonts/tfm/public/amsfonts/symbols/msam10.tfm
+INPUT /usr/share/texmf/tex/latex/microtype/mt-msa.cfg
+INPUT /usr/share/texmf/tex/latex/microtype/mt-msa.cfg
+INPUT /usr/share/texmf/tex/latex/microtype/mt-msa.cfg
+INPUT /usr/share/texmf/tex/latex/microtype/mt-msa.cfg
+INPUT /usr/share/texmf/fonts/tfm/public/amsfonts/symbols/msam10.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/amsfonts/symbols/msam7.tfm
+INPUT /usr/share/texmf/tex/latex/amsfonts/umsb.fd
+INPUT /usr/share/texmf/tex/latex/amsfonts/umsb.fd
+INPUT /usr/share/texmf/tex/latex/amsfonts/umsb.fd
+INPUT /usr/share/texmf/tex/latex/amsfonts/umsb.fd
+INPUT /usr/share/texmf/fonts/tfm/public/amsfonts/symbols/msbm10.tfm
+INPUT /usr/share/texmf/tex/latex/microtype/mt-msb.cfg
+INPUT /usr/share/texmf/tex/latex/microtype/mt-msb.cfg
+INPUT /usr/share/texmf/tex/latex/microtype/mt-msb.cfg
+INPUT /usr/share/texmf/tex/latex/microtype/mt-msb.cfg
+INPUT /usr/share/texmf/fonts/tfm/public/amsfonts/symbols/msbm10.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/amsfonts/symbols/msbm7.tfm
+INPUT /var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/ack.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/ack.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/ack.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/ack.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/ack.tex
+OUTPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/ack.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/ack.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/ack.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/ack.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/ack.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/ack.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/ack.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/ack.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/ack.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/summary.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/summary.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/summary.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/summary.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/summary.tex
+OUTPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/summary.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/summary.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/summary.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/summary.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/summary.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/summary.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/summary.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/summary.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/summary.tex
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/ecti1095.tfm
+INPUT /usr/share/texmf/tex/latex/base/t1cmtt.fd
+INPUT /usr/share/texmf/tex/latex/base/t1cmtt.fd
+INPUT /usr/share/texmf/tex/latex/base/t1cmtt.fd
+INPUT /usr/share/texmf/tex/latex/base/t1cmtt.fd
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/ectt1095.tfm
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/tcrm1095.tfm
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.lof
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.lof
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.lof
+INPUT /usr/share/texmf/fonts/tfm/public/cm/cmr8.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/cm/cmr6.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/cm/cmmi10.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/cm/cmmi8.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/cm/cmmi6.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/cm/cmsy10.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/cm/cmsy8.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/cm/cmsy6.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/cm/cmex10.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/amsfonts/cmextra/cmex8.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/stmaryrd/stmary10.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/stmaryrd/stmary8.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/stmaryrd/stmary6.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/amsfonts/symbols/msam10.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/amsfonts/symbols/msam10.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/amsfonts/symbols/msam7.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/amsfonts/symbols/msbm10.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/amsfonts/symbols/msbm10.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/amsfonts/symbols/msbm7.tfm
+OUTPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.lof
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.lot
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.lot
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.lot
+OUTPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.lot
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.toc
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.toc
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.toc
+OUTPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.toc
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/00intro.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/00intro.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/00intro.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/00intro.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/00intro.tex
+OUTPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/00intro.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/00intro.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/00intro.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/00intro.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/00intro.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/00intro.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/00intro.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/00intro.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/00intro.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/01aes.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/01aes.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/01aes.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/01aes.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/01aes.tex
+OUTPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/01aes.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/01aes.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/01aes.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/01aes.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/01aes.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/01aes.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/01aes.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/01aes.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/01aes.tex
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/ecrm0800.tfm
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/ecrm0900.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/cm/cmr9.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/cm/cmmi9.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/cm/cmsy9.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/amsfonts/cmextra/cmex9.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/stmaryrd/stmary9.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/stmaryrd/stmary5.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/amsfonts/symbols/msam10.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/amsfonts/symbols/msam5.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/amsfonts/symbols/msbm10.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/amsfonts/symbols/msbm5.tfm
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/ecrm0600.tfm
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/ectt0900.tfm
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/ecti0900.tfm
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/ecrm1200.tfm
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/ecbx1200.tfm
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//subBytes.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//subBytes.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//subBytes.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//subBytes.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//subBytes.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//shiftRows.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//shiftRows.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//shiftRows.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//shiftRows.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//shiftRows.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//mixColumns.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//mixColumns.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//mixColumns.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//mixColumns.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//mixColumns.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//addRoundKey.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//addRoundKey.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//addRoundKey.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//addRoundKey.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//addRoundKey.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//aes_rounds.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//aes_rounds.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//aes_rounds.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//aes_rounds.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//aes_rounds.pdf
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/ectt0800.tfm
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/ectt0800.tfm
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//diff_cryptanalysis.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//diff_cryptanalysis.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//diff_cryptanalysis.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//diff_cryptanalysis.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//diff_cryptanalysis.pdf
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/ectt1200.tfm
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/02pow.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/02pow.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/02pow.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/02pow.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/02pow.tex
+OUTPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/02pow.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/02pow.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/02pow.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/02pow.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/02pow.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/02pow.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/02pow.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/02pow.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/02pow.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//side_channel.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//side_channel.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//side_channel.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//side_channel.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//side_channel.pdf
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/ecbx0900.tfm
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//scope_circuit.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//scope_circuit.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//scope_circuit.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//scope_circuit.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//scope_circuit.pdf
+OUTPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.pyg
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/default-pyg-prefix.pygstyle
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/default-pyg-prefix.pygstyle
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/default-pyg-prefix.pygstyle
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/default-pyg-prefix.pygstyle
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/default-pyg-prefix.pygstyle
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/default-pyg-prefix.pygstyle
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/default-pyg-prefix.pygstyle
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/default-pyg-prefix.pygstyle
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/default.pygstyle
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/default.pygstyle
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/default.pygstyle
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/default.pygstyle
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/default.pygstyle
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/default.pygstyle
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/default.pygstyle
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/default.pygstyle
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.pyg
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/FE6984492F6B2DB88C223C4F2AF4B23B95ED62DB7DA91897153A4BCACDB72C79.pygtex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/FE6984492F6B2DB88C223C4F2AF4B23B95ED62DB7DA91897153A4BCACDB72C79.pygtex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/FE6984492F6B2DB88C223C4F2AF4B23B95ED62DB7DA91897153A4BCACDB72C79.pygtex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/FE6984492F6B2DB88C223C4F2AF4B23B95ED62DB7DA91897153A4BCACDB72C79.pygtex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/FE6984492F6B2DB88C223C4F2AF4B23B95ED62DB7DA91897153A4BCACDB72C79.pygtex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/FE6984492F6B2DB88C223C4F2AF4B23B95ED62DB7DA91897153A4BCACDB72C79.pygtex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/FE6984492F6B2DB88C223C4F2AF4B23B95ED62DB7DA91897153A4BCACDB72C79.pygtex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/FE6984492F6B2DB88C223C4F2AF4B23B95ED62DB7DA91897153A4BCACDB72C79.pygtex
+OUTPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.pyg
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.pyg
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/42804DD3297E329332CAE5CDDDEDE37E1F2D8067E0A256B6FCF34360A44AFD35.pygtex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/42804DD3297E329332CAE5CDDDEDE37E1F2D8067E0A256B6FCF34360A44AFD35.pygtex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/42804DD3297E329332CAE5CDDDEDE37E1F2D8067E0A256B6FCF34360A44AFD35.pygtex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/42804DD3297E329332CAE5CDDDEDE37E1F2D8067E0A256B6FCF34360A44AFD35.pygtex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/42804DD3297E329332CAE5CDDDEDE37E1F2D8067E0A256B6FCF34360A44AFD35.pygtex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/42804DD3297E329332CAE5CDDDEDE37E1F2D8067E0A256B6FCF34360A44AFD35.pygtex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/42804DD3297E329332CAE5CDDDEDE37E1F2D8067E0A256B6FCF34360A44AFD35.pygtex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/42804DD3297E329332CAE5CDDDEDE37E1F2D8067E0A256B6FCF34360A44AFD35.pygtex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//spa_example.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//spa_example.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//spa_example.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//spa_example.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//spa_example.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//spa_example_aes2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//spa_example_aes2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//spa_example_aes2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//spa_example_aes2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//spa_example_aes2.png
+OUTPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.pyg
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.pyg
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/1BD9C22D99E5F63923C2B8ADA4FD5CC595ED62DB7DA91897153A4BCACDB72C79.pygtex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/1BD9C22D99E5F63923C2B8ADA4FD5CC595ED62DB7DA91897153A4BCACDB72C79.pygtex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/1BD9C22D99E5F63923C2B8ADA4FD5CC595ED62DB7DA91897153A4BCACDB72C79.pygtex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/1BD9C22D99E5F63923C2B8ADA4FD5CC595ED62DB7DA91897153A4BCACDB72C79.pygtex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/1BD9C22D99E5F63923C2B8ADA4FD5CC595ED62DB7DA91897153A4BCACDB72C79.pygtex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/1BD9C22D99E5F63923C2B8ADA4FD5CC595ED62DB7DA91897153A4BCACDB72C79.pygtex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/1BD9C22D99E5F63923C2B8ADA4FD5CC595ED62DB7DA91897153A4BCACDB72C79.pygtex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/1BD9C22D99E5F63923C2B8ADA4FD5CC595ED62DB7DA91897153A4BCACDB72C79.pygtex
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/ecit1095.tfm
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//spa_example3.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//spa_example3.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//spa_example3.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//spa_example3.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//spa_example3.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//dpa_kocher_pdf.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//dpa_kocher_pdf.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//dpa_kocher_pdf.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//dpa_kocher_pdf.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//dpa_kocher_pdf.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//dpa_bus.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//dpa_bus.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//dpa_bus.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//dpa_bus.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//dpa_bus.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//trace_alignment.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//trace_alignment.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//trace_alignment.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//trace_alignment.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//trace_alignment.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//dpa_aes.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//dpa_aes.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//dpa_aes.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//dpa_aes.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//dpa_aes.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//cpa_weights1.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//cpa_weights1.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//cpa_weights1.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//cpa_weights1.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//cpa_weights1.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//cpa_hw.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//cpa_hw.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//cpa_hw.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//cpa_hw.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//cpa_hw.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./cpa_50/res.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./cpa_50/res.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./cpa_50/res.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./cpa_50/res.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./cpa_50/res.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./cpa_50/corrTraces[0-5000].png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./cpa_50/corrTraces[0-5000].png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./cpa_50/corrTraces[0-5000].png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./cpa_50/corrTraces[0-5000].png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./cpa_50/corrTraces[0-5000].png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./cpa_800/corrTraces[0-5000].png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./cpa_800/corrTraces[0-5000].png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./cpa_800/corrTraces[0-5000].png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./cpa_800/corrTraces[0-5000].png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./cpa_800/corrTraces[0-5000].png
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/ecbi1440.tfm
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/tcbx1440.tfm
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/ecbi1200.tfm
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/tcbx1200.tfm
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/ecbi1095.tfm
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/tcbx1095.tfm
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//cwlite.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//cwlite.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//cwlite.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//cwlite.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//cwlite.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//sampling.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//sampling.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//sampling.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//sampling.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//sampling.pdf
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/03soa.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/03soa.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/03soa.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/03soa.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/03soa.tex
+OUTPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/03soa.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/03soa.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/03soa.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/03soa.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/03soa.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/03soa.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/03soa.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/03soa.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/03soa.tex
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/ectt2488.tfm
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/ectt1440.tfm
+INPUT /usr/share/texmf/fonts/tfm/jknappen/ec/tcti1095.tfm
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/04expres.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/04expres.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/04expres.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/04expres.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/04expres.tex
+OUTPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/04expres.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/04expres.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/04expres.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/04expres.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/04expres.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/04expres.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/04expres.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/04expres.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/04expres.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/aes_plot_1.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/aes_plot_1.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/aes_plot_1.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/aes_plot_1.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/aes_plot_1.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/aes_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/aes_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/aes_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/aes_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/aes_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/freyre2_plot_1.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/freyre2_plot_1.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/freyre2_plot_1.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/freyre2_plot_1.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/freyre2_plot_1.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/freyre2_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/freyre2_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/freyre2_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/freyre2_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/freyre2_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/freyre3_plot_1.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/freyre3_plot_1.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/freyre3_plot_1.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/freyre3_plot_1.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/freyre3_plot_1.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/freyre3_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/freyre3_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/freyre3_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/freyre3_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/freyre3_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_1000/freyre2_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_1000/freyre2_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_1000/freyre2_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_1000/freyre2_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_1000/freyre2_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_1000/freyre3_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_1000/freyre3_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_1000/freyre3_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_1000/freyre3_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_1000/freyre3_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_5000/freyre2_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_5000/freyre2_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_5000/freyre2_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_5000/freyre2_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_5000/freyre2_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_5000/freyre3_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_5000/freyre3_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_5000/freyre3_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_5000/freyre3_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_5000/freyre3_plot_2.png
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/05conclusions.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/05conclusions.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/05conclusions.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/05conclusions.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/05conclusions.tex
+OUTPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/05conclusions.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/05conclusions.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/05conclusions.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/05conclusions.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/05conclusions.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/05conclusions.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/05conclusions.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/05conclusions.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/05conclusions.tex
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.bbl
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.bbl
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.bbl
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.bbl
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/frontpage.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/frontpage.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/frontpage.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/ack.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/ack.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/ack.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/summary.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/summary.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/summary.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/00intro.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/00intro.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/00intro.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/01aes.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/01aes.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/01aes.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/02pow.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/02pow.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/02pow.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/03soa.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/03soa.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/03soa.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/04expres.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/04expres.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/04expres.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/05conclusions.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/05conclusions.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/05conclusions.aux
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.out
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.out
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.pyg
+INPUT /home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.pyg
+INPUT /usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-ts1.enc
+INPUT /usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-t1.enc
+INPUT /usr/share/texmf/fonts/type1/public/amsfonts/cm/cmex10.pfb
+INPUT /usr/share/texmf/fonts/type1/public/amsfonts/cm/cmmi10.pfb
+INPUT /usr/share/texmf/fonts/type1/public/amsfonts/cm/cmmi6.pfb
+INPUT /usr/share/texmf/fonts/type1/public/amsfonts/cm/cmmi8.pfb
+INPUT /usr/share/texmf/fonts/type1/public/amsfonts/cm/cmmi9.pfb
+INPUT /usr/share/texmf/fonts/type1/public/amsfonts/cm/cmr10.pfb
+INPUT /usr/share/texmf/fonts/type1/public/amsfonts/cm/cmr8.pfb
+INPUT /usr/share/texmf/fonts/type1/public/amsfonts/cm/cmr9.pfb
+INPUT /usr/share/texmf/fonts/type1/public/amsfonts/cm/cmsy10.pfb
+INPUT /usr/share/texmf/fonts/type1/public/amsfonts/cm/cmsy8.pfb
+INPUT /usr/share/texmf/fonts/type1/public/amsfonts/cm/cmsy9.pfb
+INPUT /usr/share/texmf/fonts/type1/public/amsfonts/symbols/msam10.pfb
+INPUT /usr/share/texmf/fonts/type1/public/amsfonts/symbols/msbm10.pfb
+INPUT /usr/share/texmf/fonts/type1/public/cm-super/sfbi1095.pfb
+INPUT /usr/share/texmf/fonts/type1/public/cm-super/sfbi1200.pfb
+INPUT /usr/share/texmf/fonts/type1/public/cm-super/sfbi1440.pfb
+INPUT /usr/share/texmf/fonts/type1/public/cm-super/sfbx0900.pfb
+INPUT /usr/share/texmf/fonts/type1/public/cm-super/sfbx1095.pfb
+INPUT /usr/share/texmf/fonts/type1/public/cm-super/sfbx1200.pfb
+INPUT /usr/share/texmf/fonts/type1/public/cm-super/sfbx1440.pfb
+INPUT /usr/share/texmf/fonts/type1/public/cm-super/sfbx2074.pfb
+INPUT /usr/share/texmf/fonts/type1/public/cm-super/sfbx2488.pfb
+INPUT /usr/share/texmf/fonts/type1/public/cm-super/sfit1095.pfb
+INPUT /usr/share/texmf/fonts/type1/public/cm-super/sfrm0600.pfb
+INPUT /usr/share/texmf/fonts/type1/public/cm-super/sfrm0800.pfb
+INPUT /usr/share/texmf/fonts/type1/public/cm-super/sfrm0900.pfb
+INPUT /usr/share/texmf/fonts/type1/public/cm-super/sfrm1095.pfb
+INPUT /usr/share/texmf/fonts/type1/public/cm-super/sfrm1440.pfb
+INPUT /usr/share/texmf/fonts/type1/public/cm-super/sfrm1728.pfb
+INPUT /usr/share/texmf/fonts/type1/public/cm-super/sfti0900.pfb
+INPUT /usr/share/texmf/fonts/type1/public/cm-super/sfti1095.pfb
+INPUT /usr/share/texmf/fonts/type1/public/cm-super/sftt0800.pfb
+INPUT /usr/share/texmf/fonts/type1/public/cm-super/sftt0900.pfb
+INPUT /usr/share/texmf/fonts/type1/public/cm-super/sftt1095.pfb
+INPUT /usr/share/texmf/fonts/type1/public/cm-super/sftt1200.pfb
+INPUT /usr/share/texmf/fonts/type1/public/cm-super/sftt1440.pfb
+INPUT /usr/share/texmf/fonts/type1/public/cm-super/sftt2488.pfb

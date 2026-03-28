@@ -1,0 +1,133 @@
+\chapter{\sbocs{} Variants: State of the Art}\label{chap:soa}
+
+    % * Spiega quali sono state le strategie, nello specidico di AES, per ridurre i side-channel
+    % * Spiega che ultimamente ci si concentra nello specifico nella struttura della SBox
+
+    The development of countermeasures against side-channel attacks is a continuously evolving field of the academic research. Their importance is becoming crucial, especially given the extreme efficiency these attacks can reach with respect to classical cryptanalysis. For instance, while differential power analysis can leverage as just as 2000 bytes of plaintext-ciphertext pairs, linear or differential cryptanalysis needs terabytes of such pairs to achieve the same result~\cite{carlet2005highly}. In general, for a malicious actor, the choice of which attack to use is often dictated by how practical the attack is: in the case of an embedded device this unquestionably falls on side-channel attacks.
+
+    The problem of finding proper countermeasures presents a multitude of approaches and trade-offs to be evaluated. Since each different implementation addresses different security needs, it is therefore important for both the researcher and the hardware/software engineer to have adequate knowledge of the possible solutions that can be implemented.
+
+    In general, the following scenario can be observed: the greater the security provided by a particular solution, the greater its impact on the device performance. As an example, we can cite the two following solutions:
+    
+    \begin{itemize}
+        \item \textbf{Temporal Noise Addition}: provides a lightweight solution able to increase the overall complexity of a side-channel attack with relatively small overhead on the algorithm complexity. However, the random delays inserted can be easily recognized and circumvented thanks to the use of inference techniques such as the one proposed in~\cite{coron2010analysis};
+        \item \textbf{Masking Schemes}: provides a strong security against SCA (side-channel analysis) but induces a high performance overhead, making its implementation not practicable in small embedded devices~\cite{chari1999towards}~\cite{piret2012picaro}.
+    \end{itemize}
+
+    While some implementations may accept a significant performance impact to achieve a higher level of security, others, however, must necessarily settle for a lower level of security in order to keep performance (or power consumption) within certain parameters. For instance, in the case of smartcards, even lighter solutions can significantly impact the entire project design. In general, the use of countermeasures at the implementation level has been claimed to impact both performance and code size roughly by a factor of two, directly damaging the entire area of embedded cryptography where the computation power and the memory capacity are limited~\cite{prouff2005dpa}. 
+    
+    In recent years the focus has therefore shifted to solutions that could abandon the implementation level and move towards the same logical and mathematical level of algorithmic specifications, as briefly proposed by Kocher in~\cite{kocher2011introduction}. The main motivation behind this choice considers resistance to side-channel attacks in the same way as resistance to classical cryptanalysis, treating it as a key parameter to be taken into account for the successful development of old and new block cipher algorithms. As stated by Prouff in~\cite{prouff2005dpa} ``\emph{the design of DPA-resistant algorithms would make the addition of countermeasures unnecessary. Such a design could be done by selecting pertinent S-boxes.}''
+
+
+    % % ~\cite{piret2012picaro}
+    % The development of DSCA countermeasures is a dynamic and challenging research domain where the ultimate goal is to find the good trade-off between security and performances.  Many countermeasures focus on noise addition techniques, which should increase the attack complexity. For instance, inserting random delays during the cipher execution is a common practice in order to render
+    % % 
+
+    % ~\cite{boey2011resistant}
+
+    % From these results it is clear that DES needs the highest number of power traces to reveal 12 bit of its round key. Also AES only needs a quarter of the total power traces needed for the DES attack. 
+    
+    % AES has eight identical 8-to-8 bit SBoxes, DES has eight unique 6-to-4 bit SBoxes. As shown in Fig. 7, the number of power traces needed to reveal the correct round key in each algorithm generally increases with the number of unique SBoxes. This indicates that the more unique SBoxes employed, the worse the signal-to-noise ratio (SNR). Fig. 8 shows the signal-to-noise ratio for the different encryption algorithm SBoxes. The higher the SNR of an SBox, the higher its information leakage. Therefore, DES is the most difficult algorithm to attack since it has a high number of unique SBoxes and a low SNR ratio in comparison to the other algorithms.
+
+    % A further reason why the DES SBox is more difficult to attack is that the input-to-output data is not a 1-to-1 mapping. The input size is 6 bits while the output size is only 4 bits, a ratio of 2 6 to 2 4 or 64 to 16 entries. The distribution of elements in terms of its HW is shown in Fig9(b)
+    % 
+    
+\section{Introduction on Novel \sbocs{} Implementations}
+    
+    % * Spiega perché la struttura di SBox viene targettizzata per queste implementazioni
+    Many of the recent proposals are directly targeting \sbocs{} designs. Since these structures already provide many properties against classical cryptanalysis, it is therefore reasonable to integrate in their design possible countermeasures against side-channel attacks~\cite{carlet2017trade}.
+        
+    Recent research has already proven the importance of \sbocs{}es against SCA. Boey \emph{et al.} observed a significant correlation among their use in multiple block ciphers and the feasibility of a side-channel attack against their hardware implementations. For instance, the authors noticed a higher resistance against CPA in \des{} algorithm than in \aes{}, proven by the higher number of traces needed to recover the round key. The observations have been related to the fact that \des{} leverages the presence of multiple unique \sbocs{}es with a lower signal-to-noise ratio in comparison to other algorithms. A further reason is due to the fact that \des{} \sbocs{}es implement a non-bijective 6-to-4 bits mapping, de facto shrinking the Hamming weight distribution at their output.
+
+    \subsection{Theoretical metrics against classical cryptanalysis}
+        % Intro ai parametri teorici utili
+        To define the properties and qualities of an \sbocs{} design many parameters have been defined over time. With respect to classical cryptanalysis, five basic properties are used in literature~\cite{accikkapi2019side}:
+        
+        \begin{itemize}
+            \item \textbf{Bijection}: An \sbocs{} $S(n, m)$ is said to be bijective if it maps each input $x \in B^n$ to a distinct output $y = S(x) \in B^m$ and all possible $2^m$ outputs are present. An \sbocs{} $S(n, m)$ can be bijective only when $n = m$. A bijective \sbocs{} $S(n, n)$ represents a permutation of its $2^n$ inputs, since each input is mapped to a distinct output and all possible $2^n$ outputs are present. In this way, $S(n, n)$ will be reversible, that is, there is a mapping from each distinct output to its corresponding input;
+            \item \textbf{Nonlinearity}: To test this property the \sbocs{} is firstly expressed in terms of linear equations and then evaluated using \emph{Walsh} spectrum. The nonlinearity value of \aes{} \sbocs{} is 112;
+            \item \textbf{Strict Avalanche Criterion - SAC}: A Boolean function is said to satisfy the \emph{Strict Avalanche Criterion} if each of the output bits change with a probability $p = \frac{1}{2}$ whenever a single bit is complemented at the input~\cite{forrie1988strict}. As a consequence, a slight change in the input leads to a large change in the output (an avalanche effect), effectively making it difficult for an attacker to infer the input value from the output. The optimum value for the \emph{SAC} criterion is 0.5~\cite{accikkapi2019side};
+            \item \textbf{Bit Independence Criterion - BIC}: This property states that two output bits $j$ and $k$ should change independently when any single input bit $i$ is complemented, for all $i$, $j$ and $k$;
+            \item \textbf{Input/Output XOR Distribution}: As mentioned in~\ref{subsub:diff_crypt}, differential cryptanalysis is based on the use of the imbalances in the Differential Distribution Table (DDT). If an \sbocs{} has an equiprobable input/output XOR distribution, the \sbocs{} is immune to a differential attack. In the case of \aes{}, the maximum value of differential propagation probability is of $4/256$ (or $2^{-6}$).
+        \end{itemize}
+
+    \subsection{Theoretical metrics against side-channel analysis}
+        Fairly recent publications also proved an opposition among properties associated to classical cryptanalysis and the feasibility of side-channel attacks. For instance, Guilley \emph{et al.} proved that the more an \sbocs{} is protected against linear cryptanalysis, the more vulnerable it is to side-channel attacks such as DPA~\cite{guilley2004differential}. Similarly, Prouff in~\cite{prouff2005dpa} points out that a trade-off between the classical cryptographic criteria and resistance to DPA attacks has to be found, since their respective properties are in opposition.
+
+        As for classical cryptanalysis, new properties have been defined over the years to address and formally define the resistance of \sbocs{}es against side-channel analysis:
+
+        \begin{itemize}
+            \item \textbf{Transparency Order}: Formally defined by Prouff in~\cite{prouff2005dpa}, the Transparency Order (TO) can quantify the resistance of an \sbocs{} to DPA attacks: the smaller the TO of an \sbocs{} the higher its resistance. The author also proved that the lower bound for the TO (meaning the highest possible resistance against DPA) is achieved by particular affine functions, whereas the upper bound is achieved by bent functions\footnote{Bent functions are a special type of Boolean functions that present resistance \emph{by definition} to linear cryptanalysis and apparently perfect resistance against differential cryptanalysis.~\cite{wikibent}} (proving his initial claim that the higher the nonlinearity of a Boolean function the lower its resistance against DPA). Carlet in ~\cite{carlet2005highly} defines a lower bound for this metric, proving that highly nonlinear Boolean functions like the ones that compose the \sbocs{} of \aes{} have ``very bad transparency orders'';
+            
+            \item \textbf{Improved Transparency Order}: Following the work of Prouff on the transparency order, Chakraborty \emph{et al.} define, a decade later, the so called Improved Transparency Order. The authors prove that Prouff's definition is not sufficient to achieve a satisfying level of security. However, choosing \sbocs{}es with small minimum transparency order is a sound strategy if combined with other classical countermeasures like masking. Based on the definition given by the authors, the lower the ITO, the lower the success probability to extract the secret key based on leakages associated to the \sbocs{}~\cite{chakraborty2017redefining};
+
+            \item \textbf{Confusion Coefficient}: In 2012, Fei \emph{et al.}~\cite{fei2015statistics} introduced the Confusion Coefficient (CC). According to the authors, a low (standard) deviation of the confusion coefficient $\kappa$ characterizes an \sbocs{} with a high resistance against physical attacks. However, Picek \emph{et al.}~\cite{picek2014confused} as well as \emph{Stoffelen}~\cite{stoffelen2015intrinsic} report that the higher the CC metric, the higher the resistance of the \sbocs{} against side-channel attacks~\cite{lerman2016comparing}. The confusion coefficient measures the discrepancy between the hypothesis of an intermediate state using the correct (secret) key and any hypothesis made with a (wrong) key assumption~\cite{carlet2017trade}. Therefore, as one compares possible intermediate processed values, the confusion coefficient depends on the underlying cryptographic algorithm and thus, if the attacker targets an \sbocs{} operation, on the side-channel resistance of that specific \sbocs{}~\cite{carlet2017trade};
+            
+            \item \textbf{Autocorrelation Function}: The maximum value $AC_{max}$ assumed by this parameter, obtained when evaluating all the Boolean functions that compose an \sbocs{} structure, can be considered as a measure of the resistance of the \sbocs{} against SCA. The lower $AC_{max}$ the better~\cite{millan1999evolutionary};
+            
+            \item \textbf{Success Rate}: Also known as \emph{success probability}, the SR is used by cryptanalysts to measure the resistance of an implementation against CPA. The SR metric represents the probability with which a physical attack can extract secret keys from the device~\cite{lerman2016comparing}.
+        \end{itemize}
+
+        A work by Carlet, Heuser and Picek~\cite{carlet2017trade} highlights the fact that the (almost) preservation of Hamming weight and a small Hamming distance between a plaintext $x$ and an intermediate $F(x)$ are two properties which, from an intuitive perspective, can strengthen the resistance to SCA. The authors also verify the claim and additionally observe that, especially in the case of the Hamming weight, \sbocs{}es with no difference between the HW of their input and output have nonlinearity equal to 0, therefore obtaining terrible properties against classical cryptanalysis. The authors finally confirm that having an \sbocs{} more resilient against SCA will make it potentially more vulnerable against classical cryptanalysis, without however excluding possible trade-offs, similarly to what Prouff already proved.
+
+        A first publication to prove the theoretical claims advanced on many new \sbocs{} structures was addressed by Lerman \emph{et al.} in~\cite{lerman2016comparing}. The authors analyzed several designs, highlighting the fact that, in some cases, metrics proposed above like CC and TO lack accuracy to evaluate the resistance of \sbocs{}es against side-channel attacks.
+
+        For instance, when theoretically evaluating the designs under attack, the authors observed that both  TO and CC metrics contradict themselves. For instance, in the case of larger \sbocs{}es, where a higher nonlinearity is expected, the authors obtained a large value of the TO which also indicates a lower resistance to SCA, therefore confirming Prouff's claim~\cite{prouff2005dpa} on the opposition of the two properties. However, Lerman's observations did not replicate the same rationale in the case of the Confusion Coefficient, leading to a first contradiction between the two metrics. The results obtained with theoretical simulation also indicated that theoretical metrics such as TO and CC \emph{``do not match actual attacks when the leakage model matches the leakage function (representing the worst case scenario i.e., when the adversary knows how the device leaks information).''}
+        Finally, when evaluating experimental results on a real device, the authors concluded that \emph{``the complexity of a side-channel attack cannot be represented using any theoretical metrics based on a single scalar value''} and that \emph{``the outcomes of the theoretical metrics do not always reflect the success rate of a side-channel attack when considering simulated and real leakages''}~\cite{lerman2016comparing}.
+   
+
+\section{Design Methodologies}
+
+    The most common generation methods used for the design of \sbocs{} structures can be divided into three main categories: algebraic construction, pseudo-random generation and heuristic techniques. 
+    
+    Algebraic methods have been used to build many ``historical'' \sbocs{} structures, such as the one used in \aes{}~\cite{daemen1999aes}. They are in fact known for their excellent cryptographic properties against linear and differential cryptanalysis, thus making them the preferred choice by cryptographers in past years. Further analysis has shown that this methodology leads to the existence of a system of polynomial equations with low degree which can pose as a ``potential vulnerability'' of the cipher to algebraic attacks~\cite{de2017generation}.
+
+    In the case of pseudo-random generation, \sbocs{}es are constructed from a table of random values. This methodology warrants random structures, but the \sbocs{}es generated lack of relevant cryptographic properties in most cases~\cite{freyre2020evolving}. 
+    
+    Finally, the heuristic approach is an attempt to maintain the randomness present in the structure of pseudo-random generated \sbocs{}es, with properties as close as possible to the ones present in algebraic constructions~\cite{freyre2020evolving}. This methodology will be further elaborated later.
+
+    In cryptography, it is also not uncommon to build an \sbocs{} from smaller ones, usually an 8-bit \sbocs{} from several 4-bit \sbocs{}es. In many cases, such a structure is used not only to allow an efficient implementation of the \sbocs{} in hardware or using a bit-sliced approach, but also to protect \sbocs{}es implemented in this way against side-channel attacks~\cite{de2017generation}.
+
+    In recent years, novel design methodologies like chaos-based generation, quantum-based structures and many others have been presented. The resulting \sbocs{} structures claim to overcome both classical and side-channel cryptanalysis. In the following sections a brief overview on the most common methodologies is presented, illustrating the corresponding results and publications. 
+
+    \subsection{Chaos-Based Methods}
+        % ~\cite{accikkapi2019side}
+        Chaos-based methodologies propose a new rationale to be used for the creation of \sbocs{} structures, based on the use of chaotic systems as a source of randomness. The three main reasons behind this choice are summarized by Özkaynak in~\cite{ozkaynak2019construction}:
+
+        \begin{itemize}
+            \item Chaotic systems’ long-term behavior is non-periodic;
+            \item System trajectories are dependent on the initial conditions and control parameters;
+            \item The equation of a chaotic system is deterministic and its irregular behavior is caused by intrinsic nonlinearities rather than noise.
+        \end{itemize}
+
+        \noindent The above characteristic present a good premise for structures able to provide enough \emph{confusion} to a block cipher algorithm, like \sbocs{}es.
+        
+        Many different randomness sources have been presented in literature, some of which leverage chaotic maps and hyper chaotic systems (see~\cite{dimitrov2020design},~\cite{ali2019application},~\cite{tang2005novel} and~\cite{ozkaynak2019chaos}). For instance, Özkaynak in~\cite{ozkaynak2019construction} produced more than $20.000$ \sbocs{} based on discrete and continuous-time chaotic systems as Logistic Map and Lorenz's system. In most cases, the construction of \sbocs{}es with good cryptographic properties involves the use of optimization algorithms to operate on the initial values provided by the main source of randomness. The choice of a good source of randomness is extremely important, so are its initial parameters. The values it returns need to be normalized in the range $[0,255]$ and possibly discarded in case the final value obtained is already in the \sbocs{} LUT (to guarantee bijection). Once a large set of possible \sbocs{} candidates is available, the optimization function iterates on every candidate building a ranking and sorting the best candidates which maximizes both nonlinearity and differential propagation (also called I/O XOR distribution).
+
+        The same publication by Özkaynak demonstrated that current chaos-based \sbocs{} structures have worse cryptographic properties than those of the \sbocs{} proposed by Daemen and Rijmen for \aes{}. For instance, while the nonlinearity index of \aes{} \sbocs{} is $112$~\cite{daemen1999aes}, in the case of chaos-based designs the maximum value achieved has been shown to be $106.75$~\cite{ozkaynak2019construction}. Similarly, while the maximum differential propagation probability in the case of \aes{} \sbocs{} is of $4/256$ (even if most entries achieve even lower ratios: either $0/256$ or $2/256$~\cite{daemen1999aes}), the \textbf{minimum} value for this metric achieved by current chaos-based structures is of $10/256$~\cite{ozkaynak2019construction}. The above metrics, also highlighted in a derivative work by Açikkapi in~\cite{accikkapi2019side}, are sufficient to prove that the actual chaos-based \sbocs{} structures are less resistant to classical cryptanalysis such as linear and differential attacks.
+
+        In literature, as reported in~\cite{accikkapi2019side}, chaos-based \sbocs{}es have been indicated as an alternative defense against implementation attacks, especially side-channel analysis. In this publication, the authors tested 3 different \sbocs{} structures: the first being the classical one used in \aes{} while the remaining two are chaos-based and directly taken from Özkaynak's research~\cite{ozkaynak2019construction} (the authors picked the best and the worst performing \sbocs{}es proposed in his paper). The results obtained prove that the proposed chaos-based \sbocs{} structures are \emph{slightly} more resistant against side-channel attacks. However, by recalling the statement given by Prouff in~\cite{prouff2005dpa} we can argue back with the observations obtained by Açikkapi, claiming that the observed strengths against SCA are mainly due to the low nonlinearity and low differential probability score obtained by both chaos-based structures.
+        
+    \subsection{Heuristic Methods}
+        Heuristic methods fall into the class of optimization algorithms: their goal is to solve a search problem in a faster and more efficient way with respect to exact/exhaustive algorithms, sacrificing, in general, the quality of the final results for speed of execution. In most cases, due to the fact that many problems have an NP-Hard complexity, heuristic algorithms are de facto the only feasible approach to solve them. For instance, in the case of an \texttt{8x8} \sbocs{} structure like the one of \aes{}, the different possible \sbocs{}es obtainable are $256^{256}$ (since each of the 256 input values can assume 256 different output values): the search space is incredibly large~\cite{clark2005design}.
+        
+        Many heuristic algorithms have been proposed for the search of \sbocs{} structures with good trade-offs between classical cryptanalysis properties and SCA resistance. In 2014 Picek \emph{et al.}~\cite{picek2014confused} leveraged heuristic methods and the confusion coefficient CC to build \sbocs{}es with improved resistance to implementation attacks. In the case of \texttt{8x8} \sbocs{}es the improvement have, once again, the counter-effect of worsening classical cryptanalytical properties like nonlinearity and differential uniformity.
+
+        In general, as observed by Picek \emph{et al.} in~\cite{picek2016new}, the quality of solutions produced by such methods could fit somewhere between the random search (which return \sbocs{}es with poor cryptographic results) and algebraic constructions (which return structures having the best cryptographic properties). Moreover, the authors highlight the importance of exploring the entire space of solutions. Since many cryptographic properties are in opposition between each other, moving away from algebraic methodologies and explore the use of heuristic algorithms is beneficial as it allows to explore the available trade-offs. This claim confirms the possibility for heuristic methods to improve properties related to side-channel attacks providing good trade-offs with cryptographic properties. In this same publication, the authors present a new cost function, used to obtain bijective \sbocs{}es that reach a nonlinearity scores of 104~\cite{picek2016new}.
+        
+        In~\cite{millan1999evolutionary} the authors leverage both genetic algorithm (GA) and a hill-climb method to design \sbocs{}es with relatively high nonlinearity and low autocorrelation. The result obtained also prove that the heuristic algorithm used can find \sbocs{} structures faster than exhaustive search, with better cryptographic properties with respect to the ones obtained with random search.
+
+        One of the latest contributions to heuristic methodologies has been proposed by Freyre \emph{et al.} in 2020~\cite{freyre2020evolving}. The authors adopted a novel hybrid heuristic method based on \emph{Leaders and Followers}\footnote{A metaheuristic algorithm that tries to avoid biased comparisons among the evolved results by using two distinct populations: the first stores the best solutions found (leaders), the second (followers) stores sub-optimal solutions pursuing the results obtained by the first group.~\cite{freyre2020evolving}} and \emph{hill-climbing} algorithms obtaining ``excellent results for confusion coefficient variance''. In addition, the group leverages the cost function proposed by Picek in~\cite{picek2016new} to improve the nonlinearity score of their findings, obtaining values always greater or equal than $100$. The authors run their algorithm on a Haswell \emph{Core\tm-i7} , obtaining two of the most performing \sbocs{} among the entire set they built in 40 and 44 hours of running time. The structure obtained prove to have better \textbf{theoretical} side-channel resistance than many real-life \sbocs{}es used in algorithms like \aes{} and PICARO~\cite{piret2012picaro} while satisfying nonlinearity and differential properties.
+
+        % Moreover, heuristic methods can be used to improve properties related to side-channel attacks in the search for a good trade-off between cryptographic properties.
+
+        % we follow an evolutionary approach to design S-boxes with theoretical resistancedifferential power attacks (DPA), measured through confusion coefficient variance, having high nonlinearity, and low differential uniformity, with the background idea of a tradeoff between cryptographic properties
+
+        % * Cosa sono?
+        % * Quali sono i principali studi in questo ambito?
+        % * Quali sono i pro?
+        % * Quali sono i contro?
+        % * Conclusioni
+
+
+    

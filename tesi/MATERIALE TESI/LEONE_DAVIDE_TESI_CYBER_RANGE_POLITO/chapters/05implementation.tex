@@ -1,0 +1,415 @@
+\chapter{Implementation}\label{chap:implementation}
+
+We now turn from design to implementation. The sections that follow detail how each subsystem of the \pcbctf{} platform is realised in code, with emphasis on the non-obvious engineering decisions, the algorithms behind the interactive tools, and the security measures baked into the platform. Cross-references to Chapter~\ref{chap:architecture} are provided where a design concept is implemented without modification; the focus here is on the concrete techniques, data structures, and code patterns that bring the architecture to life.
+
+% ============================================================================
+\section{Interactive PCB Viewer}\label{sec:pcb-viewer}
+% ============================================================================
+
+The PCB viewer renders the uploaded board image as a background and overlays interactive elements---component highlight regions, measurement pins, probe wires, and snap indicators---using absolutely positioned HTML elements combined with SVG paths (RF-01).
+
+\subsection{Coordinate Conversion}\label{subsec:coord-conversion}
+
+As described in Section~\ref{subsec:coords}, all persistent coordinates are stored as percentages of the image dimensions. At render time, the conversion to pixel positions uses the container's bounding rectangle obtained via \texttt{getBoundingClientRect()}:
+
+\begin{equation}
+    x_{\text{px}} = \frac{x_{\%}}{100} \times w_{\text{container}}, \quad
+    y_{\text{px}} = \frac{y_{\%}}{100} \times h_{\text{container}}
+\end{equation}
+
+The conversion runs on every render cycle to account for window resizes and layout changes. The inverse transform (pixel to percentage) is used by the authoring panel when the instructor places elements by clicking on the canvas (RF-18).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{pcb-viewer-overview.png}
+    \caption{The PCB viewer during an active exercise. The sidebar (left) provides tool selection; the central canvas displays the PCB image with overlaid component regions, measurement pins, and probe wires; the top bar shows the current objective and flag progress.}
+    \label{fig:pcb-viewer}
+\end{figure}
+
+\subsection{Snap-to-Pin Mechanism}\label{subsec:snap}
+
+When a probe is dragged, the viewer continuously evaluates the Euclidean distance between the cursor position and every visible pin (RF-07). A pin becomes a snap target when the distance to its centre falls below a dynamic snap radius:
+
+\begin{equation}
+    r_{\text{snap}} = \max\left(r_{\text{min}},\; \frac{d_{\text{pin}}}{2}\right)
+\end{equation}
+
+where $r_{\text{min}} = 15$\,px is a global minimum and $d_{\text{pin}}$ is the rendered diameter of the pin. Larger pins are therefore easier to target, while small pins retain a usable interaction area. Among all candidates within the snap radius, the one with the smallest distance wins; ties between overlapping pins are broken by proximity.
+
+Pin filtering is tool-dependent: the multimeter exposes all measurement pins, the UART adapter shows only UART-role pins, and the firmware dumper restricts candidates to SPI-role pins. Pins that belong to multiple categories (e.g., a shared GND pin used by both UART and SPI) are deduplicated by identifier and flagged with multiple type markers.
+
+Figure~\ref{fig:multimeter} shows the snap mechanism in action: the red probe connects to a PCB pin after being guided by the snap indicator within the dynamic radius.
+
+\subsection{Wire Rendering}\label{subsec:wires}
+
+Probe-to-pin connections are rendered as quadratic B\'{e}zier curves in SVG. The control point sits below both endpoints to produce a natural ``hanging wire'' appearance (RNF-04):
+
+\begin{equation}
+    P_{\text{control}} = \left(\frac{x_1 + x_2}{2},\; \max(y_1, y_2) + 60\right)
+\end{equation}
+
+Wires pass through three visual states: dashed and semi-transparent while a probe is being dragged, solid upon connection, and colour-coded by probe identity (red/black for multimeter, green/yellow/grey for UART, role-specific colours for SPI).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.55\textwidth]{uart-connection.png}
+    \caption{B\'{e}zier wire rendering illustrated through a UART connection. Solid wires connect the adapter pins (TX, RX, GND) to PCB pins, with the control point positioned below the endpoints to produce a natural curve.}
+    \label{fig:wires}
+\end{figure}
+
+\subsection{Magnifying Lens}\label{subsec:lens}
+
+The magnifying lens (RF-03) provides a zoomed view of the PCB region under the cursor. It is implemented as a circular CSS element whose \texttt{background-image} property references the same PCB image at a scaled position:
+
+\begin{equation}
+    \text{bg-pos}_x = -(x_{\text{cursor}} \times z - r), \quad
+    \text{bg-pos}_y = -(y_{\text{cursor}} \times z - r)
+\end{equation}
+
+where $z$ is the zoom level and $r$ is the lens radius. A dedicated content sublayer renders wires, probe endpoints, and snap indicators within the zoomed viewport. Visibility testing relies on B\'{e}zier curve intersection against the circular lens boundary, approximated with 10 samples along the quadratic curve.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.55\textwidth]{magnifying-lens.png}
+    \caption{The magnifying lens overlaid on the PCB image, showing a zoomed view of a component region. Wires and snap indicators are correctly rendered within the lens viewport.}
+    \label{fig:lens}
+\end{figure}
+
+% ============================================================================
+\section{Simulated Hardware Analysis Tools}\label{sec:tools-impl}
+% ============================================================================
+
+\subsection{Digital Multimeter}\label{subsec:multimeter}
+
+The multimeter widget (RF-04) is a draggable panel displaying a simulated LCD reading. Two measurement modes are supported:
+
+\begin{itemize}
+    \item \textbf{Voltage mode (V):} With a single probe connected, the display shows the absolute voltage of the contacted pin. With both probes connected, the display shows the differential voltage $V_{\text{red}} - V_{\text{black}}$, preserving sign.
+    \item \textbf{Resistance mode ($\Omega$):} With a single probe, the display shows ``OL'' (open circuit). With both probes connected, the display shows $R_1 + R_2$, where $R_1$ and $R_2$ are the resistance values of the contacted pins. Values exceeding 99{,}999\,$\Omega$ are displayed as ``OL''.
+\end{itemize}
+
+A digital noise component of $\pm$0.02\,V (or $\pm$0.02\,$\Omega$), refreshed every 400\,ms, simulates the last-digit instability characteristic of real digital multimeters. Pin electrical characteristics follow role-based models: UART TX pins idle at 3.3\,V with approximately 65\,$\Omega$ output impedance (CMOS driver characteristic), while UART RX pins idle at 3.3\,V with approximately 47\,k$\Omega$ input impedance (pull-up resistor). SPI pins follow analogous role-based electrical models. These values produce pedagogically meaningful readings that guide the student toward correct interface identification.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.55\textwidth]{multimeter-probes.png}
+    \caption{The simulated digital multimeter displaying a voltage reading with realistic last-digit noise. The red and black probe indicators show connection status.}
+    \label{fig:multimeter}
+\end{figure}
+
+\subsection{UART Adapter}\label{subsec:uart-impl}
+
+The UART adapter (RF-05) simulates a USB-to-Serial converter with three active pins: TX, RX, and GND. The student connects each adapter pin to the corresponding PCB pin, respecting the crossover convention: adapter TX to device RX, adapter RX to device TX, GND directly to GND.
+
+The validation logic checks that all three connections are established and that the role mapping is correct. Upon successful connection, the platform optionally auto-launches a terminal component, simulating the moment when the analyst gains serial console access to the target device.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.55\textwidth]{uart-connection.png}
+    \caption{The UART adapter widget with three probes (TX, RX, GND) connected to the PCB. The status bar shows ``Connected'' after successful crossover validation.}
+    \label{fig:uart-adapter}
+\end{figure}
+
+\subsection{SPI Firmware Dumper}\label{subsec:spi-impl}
+
+The firmware dumper (RF-06) simulates a flash memory programmer with six probes, one for each SPI signal: VCC, GND, CS (Chip Select), CLK (Clock), MOSI (Master Out, Slave In), and MISO (Master In, Slave Out). Each probe is colour-coded and must be connected to the corresponding role on the PCB.
+
+Validation supports two strategies: role-based matching (the probe's role must match the pin's role) and explicit mapping (a predefined list of required probe-to-pin connections). The role-based approach is the default in the current implementation for its flexibility.
+
+Upon successful connection and initiation, the dumper displays an animated progress bar with a simulated hex address counter, advancing from \texttt{0x000000} to \texttt{0xFFFFFF} over a configurable duration. Upon completion, a download button offers the pre-uploaded firmware binary file.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.55\textwidth]{firmware-dumper.png}
+    \caption{The SPI firmware dumper during a dump operation. Six colour-coded probes are connected to the flash chip. The progress bar shows the simulated read address advancing.}
+    \label{fig:fw-dumper}
+\end{figure}
+
+% ============================================================================
+\section{Terminal Engine}\label{sec:terminal-impl}
+% ============================================================================
+
+The terminal subsystem implements the architecture described in Section~\ref{sec:terminal-design}. We concentrate here on the concrete classes, their internal logic, and implementation-specific details not covered by the design chapter.
+
+\subsection{Configuration Loader}\label{subsec:config-loader}
+
+The \texttt{TerminalConfigLoader} class normalises and validates the terminal configuration at load time through a four-phase process:
+
+\begin{enumerate}
+    \item \textbf{Tree flattening.} If the filesystem uses nested tree notation, the loader recursively traverses it to produce flat \texttt{directories} and \texttt{files} records.
+    \item \textbf{File normalisation.} String-valued file entries (a convenient authoring shorthand) are expanded to full \texttt{FileNode} objects with default permissions (\texttt{-rw-r-{}-r-{}-}) and owner (\texttt{root}).
+    \item \textbf{Directory computation.} Directory entries are auto-generated by scanning the keys of both dictionaries and extracting direct children.
+    \item \textbf{Command resolution.} Global commands and tab-specific commands are merged, with tab-level default constraints applied through a shallow merge---command-level fields take precedence.
+\end{enumerate}
+
+\subsection{Command Executor}\label{subsec:executor}
+
+The \texttt{CommandExecutor} class implements the four-stage pipeline described in Section~\ref{subsec:cmd-pipeline}. Constraint validation proceeds in a fixed order, failing fast on the first unmet constraint (RF-13). The output generation stage dispatches to type-specific generators, each receiving the full execution context: command arguments, current path, filesystem state, environment variables, boot stage, discovered flags, command history, and state variables.
+
+Seven built-in command handlers provide standard filesystem operations (RF-09): \texttt{ls} (with \texttt{-l} and \texttt{-a} flags), \texttt{cd}, \texttt{cat}, \texttt{pwd}, \texttt{grep} (with regex and case-insensitive support), \texttt{find} (with \texttt{-name} and \texttt{-type} filters), and \texttt{clear}. These handlers operate on the virtual filesystem abstraction and are registered at executor construction time.
+
+Listing~\ref{lst:cmd-def} shows an example command definition that illustrates the interplay between constraints, output generation, and side effects (RF-11). The \texttt{strings} command is restricted to the \texttt{shell} boot stage, uses a lookup table to produce context-dependent output based on the file path argument, and conditionally unlocks a flag when the student analyses the correct file.
+
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption={Example command definition with lookup output and conditional flag unlock.}, label={lst:cmd-def}, basicstyle=\ttfamily\scriptsize]
+{
+  "strings": {
+    "description": "Extract printable strings from binary",
+    "handler": "custom",
+    "constraints": {
+      "state": { "bootStage": "shell" }
+    },
+    "output": {
+      "type": "lookup",
+      "argIndex": 0,
+      "matchType": "contains",
+      "table": {
+        "mtdblock3": [
+          "admin_pass=sohoadmin",
+          "wifi_password=MyW1F1P@ssw0rd!"
+        ],
+        "httpd": [
+          "execFormatCmd(%s)",
+          "system(cmd_buffer)"
+        ]
+      }
+    },
+    "sideEffects": {
+      "unlockFlags": [{
+        "id": "leak",
+        "condition": {
+          "type": "argument",
+          "contains": "mtdblock3"
+        }
+      }]
+    }
+  }
+}
+\end{lstlisting}
+\end{minipage}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{terminal-shell.png}
+    \caption{The simulated terminal during the case study exercise. The UART Console tab shows a shell prompt with command output. The flag progress bar at the top indicates the discovery progress.}
+    \label{fig:terminal}
+\end{figure}
+
+\subsection{Boot Sequence Animation}\label{subsec:boot-animation}
+
+The boot sequence subsystem renders the startup output of the simulated device (RF-10). When a boot stage becomes active, a React effect computes a per-line delay as $\Delta t = d / n$, where $d$ is the stage duration and $n$ is the number of output lines. An interval timer appends one line to the terminal history per tick, producing the visual effect of progressive boot output. Once all lines are rendered and a \texttt{nextStage} reference is defined, the system schedules a transition after the remaining delay.
+
+Three configuration-driven behaviours govern special stage transitions:
+\begin{itemize}
+    \item \textbf{Auto-progression.} A stage with an \texttt{autoProgressTimeout} field (milliseconds) starts a countdown timer. If the user presses any key before the timeout expires, the timer is cancelled and the stage advances immediately; otherwise, it advances automatically. This models U-Boot autoboot behaviour without hardcoding any stage identifier.
+    \item \textbf{Login prompt.} When a stage's \texttt{prompt} field contains the substring \texttt{"login"}, the component captures visible input and matches it against the terminal's command map. A matching command triggers its side effects---typically a stage transition.
+    \item \textbf{Password prompt.} When the \texttt{prompt} field of a stage contains the substring \texttt{"password"}, input is captured but displayed as asterisks (\texttt{********}). The same command-matching logic applies.
+\end{itemize}
+
+The fully declarative nature of this design means login and authentication sequences are configured entirely through the terminal configuration file: the author defines a command whose name matches the expected credential, and whose side effect transitions the boot stage to \texttt{shell}. No authentication logic is hardcoded in the platform.
+
+\subsection{Tab Completion}\label{subsec:tab-completion}
+
+The terminal supports basic tab completion for filesystem paths (RF-09). When the user presses Tab, the component extracts the last whitespace-delimited token from the input buffer, determines the target directory and filename prefix, and queries the virtual filesystem for matching entries. A single match completes the token in-place, with a trailing slash appended for directories. Multiple matches are displayed as a list below the prompt.
+
+\subsection{State Persistence Across Mounts}\label{subsec:terminal-persistence}
+
+The terminal React component may be mounted and unmounted multiple times during an exercise---for example, when the student switches between PCB view and terminal view. To preserve the session, the component uses a module-level \texttt{Map} outside the React component tree, keyed by the terminal component identifier. This map stores a \texttt{PersistedTerminalState} object containing the output history, current working directory, command history (for arrow-key navigation), and current boot stage for each tab. On mount, the component reads from this map; on each state update, it writes back. Because the map lives outside React's lifecycle, the session survives unmount-remount cycles without requiring a global state management library for this specific purpose.
+
+Listing~\ref{lst:persisted-state} shows the structure of the persisted state object.
+
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption={Terminal state persisted across component mount cycles.}, label={lst:persisted-state}, language={}, basicstyle=\ttfamily\scriptsize]
+interface PersistedTerminalState {
+  primaryHistory: HistoryLine[];     // UART tab output
+  stage: string;                     // current boot stage
+  primaryPath: string;               // current working directory
+  primaryCmdHistory: string[];       // command history (arrow keys)
+  secondaryHistory: HistoryLine[];   // Local Machine tab output
+  secondaryPath: string;             // secondary tab working dir
+  secondaryCmdHistory: string[];     // secondary tab cmd history
+}
+\end{lstlisting}
+\end{minipage}
+
+% ============================================================================
+\section{Exercise Completion System}\label{sec:completion}
+% ============================================================================
+
+The exercise progression is governed by the \texttt{exerciseStore} (Section~\ref{sec:state}), which maintains the current step index, objective index, and a step mode: \texttt{education} (introductory text displayed), \texttt{active} (simulator enabled), or \texttt{completed} (all objectives fulfilled). Each objective type has a distinct completion path (RF-14, RF-15):
+
+\begin{itemize}
+    \item \textbf{Component (RF-02).} The student clicks on the correct PCB region. The store compares the click coordinates against the objective's bounding box and marks the objective as complete on a match.
+    \item \textbf{Pin.} The store evaluates current probe connections against the objective's pin condition array. Conditions can be combined with AND or OR logic---for example, requiring that both probes are connected to specific pins, or that either connection is established.
+    \item \textbf{UART (RF-05).} The store verifies that all three UART connections (TX, RX, GND) are established with the correct crossover mapping. The terminal auto-launches if configured.
+    \item \textbf{Terminal (RF-11).} The store monitors the \texttt{terminalDiscoveries} array, populated as the student unlocks flags through terminal commands. The objective completes when all specified flag identifiers have been discovered.
+    \item \textbf{Firmware dump (RF-06).} The store confirms correct SPI role mapping, tracks dump progress, and marks the objective complete only after the student dismisses the download dialog---ensuring they have had the opportunity to save the firmware file.
+\end{itemize}
+
+When all objectives in a step are complete, the step transitions to \texttt{completed} mode. A flag validation dialog prompts the student to enter the expected flag for the step (RF-16). If the entered flag matches the \texttt{expectedFlag} in the configuration, the next step begins in \texttt{education} mode.
+
+The flag displayed to the student is built progressively by concatenating the \texttt{flagPart} values of completed objectives. For steps with a terminal phase, the terminal's progressive flag---discovered parts shown, pending parts masked with \texttt{?} characters---is appended to the objective-derived flag parts, providing continuous visual feedback on progress.
+
+Between steps, the exercise store performs a full state reset: all probe connections are cleared, the UART adapter is disconnected, the terminal component is unmounted, and the active tool reverts to the pointer. Each step therefore begins from a clean slate (RNF-11).
+
+% ============================================================================
+\section{Authoring Panel}\label{sec:authoring}
+% ============================================================================
+
+The authoring panel (\texttt{/settings}) provides a visual interface for exercise configuration (RF-18, RF-19, RF-22). It is organised into a sidebar with tab-based navigation and a central canvas.
+
+\subsection{Visual Canvas Editor}\label{subsec:canvas}
+
+The canvas displays the uploaded PCB image and lets the instructor place and resize components and pins through mouse interactions. Components are created by dragging a rectangle; pins are placed by clicking. Both element types support repositioning by drag and resizing through handles.
+
+The canvas supports zoom (Ctrl+scroll), pan (middle-click drag), and rotation (manual adjustment). All transforms are applied to a CSS wrapper element, preserving the coordinate calculation logic. A minimum component size of 2\%$\times$2\% prevents accidentally invisible elements.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{authoring-canvas.png}
+    \caption{The authoring panel canvas editor. Components (blue rectangles) and pins (coloured circles) are positioned on the PCB image via drag-and-drop. The sidebar provides configuration controls for the selected element.}
+    \label{fig:authoring-canvas}
+\end{figure}
+
+\subsection{Terminal Configuration Editor}\label{subsec:terminal-editor}
+
+The terminal configuration section of the sidebar provides editors for commands (output type selection, constraint configuration, flag unlock definitions), filesystem entries (tree-view interface), boot sequence stages (duration and prompt configuration), and flag parts (RF-19). An integrated preview panel renders the current terminal configuration in YAML format for verification (RF-20).
+
+\subsection{Preset Management}\label{subsec:preset-mgmt}
+
+The preset system (RF-21) lets instructors save complete exercise snapshots---exercise configuration plus terminal configuration---with a name and description. Presets are stored as JSON files in the \texttt{src/data/presets/} directory, with an \texttt{index.json} manifest tracking metadata (name, description, creation and modification timestamps). The active preset identifier is persisted in \texttt{localStorage} for continuity across page reloads.
+
+When a preset is created or updated, the current PCB image is copied to a preset-specific file (\texttt{public/images/preset-\{id\}.\{ext\}}), giving each preset an independent copy of its associated image. Without this isolation, uploading a new image for one exercise would retroactively alter previously saved presets. The copy operation is skipped for protected images---default PCB images shipped with the platform (\texttt{pcb.jpg}, \texttt{pcb\_v1.png}, etc.)---which are never modified or deleted.
+
+The preset identifier is generated from the preset name through a slug transformation (lowercase, non-alphanumeric characters replaced with hyphens, truncated to 40~characters) followed by a timestamp-based hash suffix. This guarantees global uniqueness without requiring a database sequence.
+
+Listing~\ref{lst:preset-structure} shows the structure of a preset JSON file.
+
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption={Preset file structure bundling exercise and terminal configurations.}, label={lst:preset-structure}, language={}, basicstyle=\ttfamily\scriptsize]
+{
+  "metadata": {
+    "id": "vuln-wr841n-mmq0k8fjp2z9w",
+    "name": "TP-Link WR841N - Vulnerability Analysis",
+    "description": "Complete walkthrough: HW identification,
+                    UART, vulnerability analysis, SPI dump",
+    "createdAt": "2025-01-15T10:30:00.000Z",
+    "updatedAt": "2025-01-20T14:22:00.000Z"
+  },
+  "exerciseConfig": { /* Exercise object */ },
+  "terminalConfig": [
+    { "id": "tc-uart", "name": "UART Console",
+      "config": { /* TerminalConfig */ } },
+    { "id": "tc-local", "name": "Local Machine",
+      "config": { /* TerminalConfig */ } }
+  ]
+}
+\end{lstlisting}
+\end{minipage}
+
+The terminal configuration field supports both a legacy single-object format and a newer bundle format (an array of \texttt{\{id, name, config\}} entries), providing backward compatibility as the data model evolved from single-terminal to multi-terminal exercises (RF-12).
+
+% ============================================================================
+\section{API Layer}\label{sec:api}
+% ============================================================================
+
+The backend consists of Next.js API route handlers organised into four groups:
+
+\begin{itemize}
+    \item \textbf{Configuration API} (\texttt{/api/config/load}, \texttt{/api/config/save}): reads and writes the exercise configuration override file (\texttt{src/data/exercise.override.json}). The save endpoint auto-generates a step structure from the component list if the input lacks explicit steps.
+    \item \textbf{Terminal Configuration API} (\texttt{/api/terminal-config/*}): reads and writes the terminal configuration file (\texttt{src/data/terminal.override.json}).
+    \item \textbf{Presets API} (\texttt{/api/presets/*}): full CRUD with index management. Handles the image lifecycle (copy on create/update, delete on remove) and supports both single-config and bundle formats for backward compatibility.
+    \item \textbf{Media APIs} (\texttt{/api/images/*}, \texttt{/api/firmware/*}, \texttt{/api/hints/*}): file upload and deletion with filename sanitisation, size limits (20\,MB for images, 50\,MB for firmware and hints), and path traversal protection.
+\end{itemize}
+
+All upload endpoints prefix filenames with timestamps for uniqueness. All delete endpoints validate that the resolved filesystem path remains within the expected directory, preventing path traversal attacks. No authentication is implemented in the current version, as the authoring panel is intended for local development use and is disabled in production builds.
+
+% ============================================================================
+\section{Security by Design}\label{sec:security}
+% ============================================================================
+
+Given that the thesis falls within the domain of cybersecurity, we devote particular attention to the security posture of the platform itself. The design and implementation adopt a defence-in-depth approach, addressing the relevant categories of the OWASP Top~10 Web Application Security Risks (2021 edition)~\cite{owasptop10} through architectural choices, input validation, and secure deployment practices (RNF-10).
+
+\subsection{Architectural Mitigation: Client-Side Execution}\label{subsec:sec-clientside}
+
+The most consequential security decision is the confinement of all simulation logic---including terminal command execution---to the client side. The server never interprets, compiles, or executes user-supplied commands. This eliminates entire categories of vulnerabilities that plague platforms where user input reaches a shell or interpreter:
+
+\begin{itemize}
+    \item \textbf{OS Command Injection (A03:2021 -- Injection).} No API route invokes \texttt{eval()}, \texttt{exec()}, \texttt{child\_process}, or any other code execution primitive; there is simply no attack surface for command injection. A comprehensive audit of the server-side codebase confirmed zero instances of these functions.
+    \item \textbf{Server-Side Request Forgery (A10:2021 -- SSRF).} The server makes no outbound HTTP requests on behalf of user input, eliminating SSRF entirely.
+\end{itemize}
+
+The terminal's \texttt{CommandExecutor} operates on pre-registered handler functions and declarative output definitions. Command output is generated through type-safe template substitution and lookup tables---never through interpretation of arbitrary code. The constraint validation pipeline (path, permissions, prerequisites, arguments, state) further restricts command behaviour to the boundaries defined by the exercise author.
+
+\subsection{Input Validation and Sanitisation}\label{subsec:sec-input}
+
+All file upload endpoints implement defence-in-depth input validation:
+
+\begin{itemize}
+    \item \textbf{MIME type whitelisting.} The image upload endpoint accepts only \texttt{image/jpeg}, \texttt{image/png}, and \texttt{image/webp}. Requests with other content types are rejected with HTTP~400.
+    \item \textbf{File size limits.} Images are capped at 20\,MB; firmware and hint files at 50\,MB. Oversized uploads are rejected before being written to disk.
+    \item \textbf{Filename sanitisation.} All uploaded filenames are processed through a strict regular expression (\texttt{/[\^{}a-zA-Z0-9\_-]/g}) that replaces any character outside the alphanumeric, underscore, and hyphen set. A unique timestamp prefix is prepended to prevent collisions and eliminate predictable filenames. This mitigates risks related to special characters, null bytes, and double-extension attacks.
+\end{itemize}
+
+\subsection{Path Traversal Prevention}\label{subsec:sec-traversal}
+
+All file deletion endpoints enforce a two-layer defence against path traversal attacks:
+
+\begin{enumerate}
+    \item \textbf{Path canonicalisation.} The user-supplied path is resolved to an absolute path using \texttt{path.resolve()}, which eliminates \texttt{..}, symbolic links, and relative path components.
+    \item \textbf{Directory boundary enforcement.} The resolved path is checked against the expected base directory using a \texttt{startsWith()} comparison. Requests that resolve outside the boundary (e.g., \texttt{../../etc/passwd}) are rejected with HTTP~400.
+\end{enumerate}
+
+Additionally, a set of protected image filenames (\texttt{pcb.jpg}, \texttt{pcb\_v1.png}, \texttt{pcb\_v2.jpg}, \texttt{pcb\_v3.png}, \texttt{pcb\_v4.png}) is maintained as a whitelist. Deletion requests targeting these files are unconditionally rejected. Preset-owned images are identified through a strict regex pattern (\texttt{/\textbackslash/images\textbackslash/preset-[\^{}/]+\textbackslash.[\^{}/]+\$/}) and are only deleted as part of preset removal operations.
+
+\subsection{Access Control}\label{subsec:sec-access}
+
+The authoring panel (\texttt{/settings}) is protected by a build-time environment flag. The \texttt{NEXT\_PUBLIC\_DEV\_MODE} variable is injected at build time and cannot be modified at runtime. In production builds (\texttt{.env.production} sets the flag to \texttt{false}), the settings page returns HTTP~404 via Next.js's \texttt{notFound()} function, making the route effectively nonexistent. This approach is more robust than runtime middleware checks: the flag is embedded in the compiled JavaScript bundle and cannot be tampered with through request manipulation.
+
+\subsection{Secure Deployment}\label{subsec:sec-deploy}
+
+The Docker deployment configuration implements several hardening measures:
+
+\begin{itemize}
+    \item \textbf{Multi-stage build.} The production image is built from a clean \texttt{node:20-alpine} base, excluding development dependencies, source code, and build artifacts. This reduces both the attack surface and the image size.
+    \item \textbf{Non-root execution.} A dedicated system user (\texttt{nextjs}, UID~1001) is created, and all application files are owned by this user. The container runs as this non-root user (\texttt{USER nextjs}), limiting the impact of a potential container escape.
+    \item \textbf{Environment isolation.} The \texttt{.dockerignore} file excludes \texttt{.env}, \texttt{.env.local}, log files, and editor configuration from the build context, preventing accidental inclusion of sensitive data in the image.
+    \item \textbf{Production mode.} The \texttt{NODE\_ENV=production} variable is set explicitly, disabling development-only features and enabling Next.js production optimisations.
+\end{itemize}
+
+\subsection{Cross-Site Scripting Prevention}\label{subsec:sec-xss}
+
+The platform relies on React~19's built-in XSS protection: all JSX expressions are automatically escaped before rendering into the DOM. A codebase audit confirmed zero instances of \texttt{dangerouslySetInnerHTML}, the React API that bypasses this protection. Terminal output lines are rendered as plain text within \texttt{<div>} elements, and template-based output generation in the \texttt{CommandExecutor} uses string replacement (\texttt{String.prototype.replace}) rather than HTML parsing, ensuring that no user-controlled content is interpreted as markup.
+
+\subsection{Static Analysis and Type Safety}\label{subsec:sec-sast}
+
+The codebase enforces \typescript{} strict mode (\texttt{"strict": true} in \texttt{tsconfig.json}), activating the full suite of compile-time checks: \texttt{noImplicitAny}, \texttt{strictNullChecks}, \texttt{strictFunctionTypes}, \texttt{strictPropertyInitialization}, and \texttt{noImplicitThis}. These checks serve as a form of Static Application Security Testing (SAST), catching at compile time several classes of bugs that could lead to security vulnerabilities at runtime---null pointer dereferences, type confusion, and implicit \texttt{any} escapes that bypass the type system.
+
+Dependency versions are locked through \texttt{package-lock.json}, ensuring reproducible builds and preventing supply chain attacks through transitive dependency updates. ESLint with the \texttt{next/core-web-vitals} and \texttt{next/typescript} rulesets provides an additional layer of static analysis.
+
+\subsection{Summary of OWASP Top~10 Coverage}\label{subsec:sec-summary}
+
+Table~\ref{tab:owasp} summarises the mapping between OWASP Top~10 categories and the mitigation strategies adopted in the platform.
+
+\begin{table}[ht]
+\centering
+\caption{OWASP Top~10 (2021) coverage and mitigation strategies.}
+\label{tab:owasp}
+\small
+\begin{tabularx}{\textwidth}{clX}
+\toprule
+\textbf{ID} & \textbf{Category} & \textbf{Mitigation} \\
+\midrule
+A01 & Broken Access Control & Settings page returns 404 in production via build-time flag \\
+A02 & Cryptographic Failures & N/A --- no sensitive user data stored \\
+A03 & Injection & Client-side terminal; filename regex sanitisation; no \texttt{eval}/\texttt{exec} \\
+A04 & Insecure Design & Defence-in-depth: client-only execution, path boundary checks, file type whitelisting \\
+A05 & Security Misconfiguration & TypeScript strict mode, non-root Docker user, minimal \texttt{.env} \\
+A06 & Vulnerable Components & \texttt{package-lock.json} for reproducible builds \\
+A07 & Auth.\ Failures & Dev mode flag prevents production access to authoring \\
+A08 & Integrity Failures & Multi-stage Docker build; no external scripts during build \\
+A09 & Logging Failures & Errors logged server-side; no stack traces in API responses \\
+A10 & SSRF & No server-initiated outbound requests \\
+\bottomrule
+\end{tabularx}
+\end{table}

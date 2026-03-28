@@ -1,0 +1,105 @@
+% =============================================================================
+% THESIS - Politecnico di Torino
+% Davide Leone - Interactive Web-Based Cyber Range for Hardware Security Training
+% =============================================================================
+
+\documentclass[11pt,a4paper]{report}
+\usepackage[top=3cm, bottom=2.5cm]{geometry}
+
+% --- Encoding & Language ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}            % Scalable fonts (required by microtype)
+\usepackage[english]{babel}
+
+% --- Typography ---
+\usepackage{microtype}
+
+% --- Hyperlinks ---
+\usepackage{hyperref}
+\hypersetup{
+    pdfpagemode={UseOutlines},
+    bookmarksopen,
+    pdfstartview={FitH},
+    colorlinks,
+    linkcolor={blue},
+    citecolor={blue},
+    urlcolor={blue}
+}
+
+% --- Tables ---
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{longtable}
+
+% --- Graphics ---
+\usepackage{graphicx}
+\usepackage[export]{adjustbox}   % adds trim/clip options to \includegraphics
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{subcaption}
+
+% --- Code Listings ---
+\usepackage{listings}
+\usepackage{minted}
+
+% --- Colors ---
+\usepackage{color}
+\usepackage{xcolor}
+\definecolor{lbcolor}{rgb}{0.9,0.9,0.9}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codegreen}{rgb}{0.0,0.5,0.0}
+\definecolor{backgray}{rgb}{0.95,0.95,0.95}
+
+% --- Quotations ---
+\usepackage{csquotes}
+
+% --- Math ---
+\usepackage{amsmath, amssymb, stmaryrd}
+
+% --- Algorithms ---
+\usepackage[ruled,vlined]{algorithm2e}
+
+% --- TikZ Diagrams ---
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, fit, calc, backgrounds}
+
+% --- Utility ---
+\setlength{\marginparwidth}{2cm}
+\usepackage{todonotes}
+
+% --- Listings Configuration ---
+\lstset{
+    basicstyle=\ttfamily\small,
+    backgroundcolor=\color{backgray},
+    breaklines=true,
+    captionpos=b,
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{blue}\bfseries,
+    numberstyle=\tiny\color{codegray},
+    numbers=left,
+    numbersep=5pt,
+    tabsize=2,
+    frame=single,
+    framesep=5pt,
+    xleftmargin=10pt,
+    showstringspaces=false
+}
+
+% =============================================================================
+% Custom Commands
+% =============================================================================
+\newcommand{\pcbctf}{\textsc{PCB-CTF}}
+\newcommand{\artic}{\textsc{ARTIC}}
+\newcommand{\nextjs}{\texttt{Next.js}}
+\newcommand{\reactjs}{\texttt{React}}
+\newcommand{\zustand}{\texttt{Zustand}}
+\newcommand{\typescript}{\texttt{TypeScript}}
+\newcommand{\tailwind}{\texttt{Tailwind CSS}}
+\newcommand{\radixui}{\texttt{Radix UI}}
+
+% =============================================================================
+% Image Path
+% =============================================================================
+\graphicspath{ {./images/} }

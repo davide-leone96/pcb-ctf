@@ -1,0 +1,158 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\def\@LN@column{1}
+\@writefile{toc}{\contentsline {chapter}{\numberline {6}Implementation}{42}{chapter.6}\protected@file@percent }
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\@writefile{loa}{\addvspace {10\p@ }}
+\newlabel{chap:implementation}{{6}{42}{Implementation}{chapter.6}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6.1}Interactive PCB Viewer}{42}{section.6.1}\protected@file@percent }
+\newlabel{sec:pcb-viewer}{{6.1}{42}{Interactive PCB Viewer}{section.6.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1.1}Coordinate Conversion}{42}{subsection.6.1.1}\protected@file@percent }
+\newlabel{subsec:coord-conversion}{{6.1.1}{42}{Coordinate Conversion}{subsection.6.1.1}{}}
+\def\@LN@column{1}
+\@writefile{lof}{\contentsline {figure}{\numberline {6.1}{\ignorespaces The PCB viewer during an active exercise. The sidebar (left) provides tool selection; the central canvas displays the PCB image with overlaid component regions, measurement pins, and probe wires; the top bar shows the current objective and flag progress.}}{43}{figure.caption.24}\protected@file@percent }
+\newlabel{fig:pcb-viewer}{{6.1}{43}{The PCB viewer during an active exercise. The sidebar (left) provides tool selection; the central canvas displays the PCB image with overlaid component regions, measurement pins, and probe wires; the top bar shows the current objective and flag progress}{figure.caption.24}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1.2}Snap-to-Pin Mechanism}{43}{subsection.6.1.2}\protected@file@percent }
+\newlabel{subsec:snap}{{6.1.2}{43}{Snap-to-Pin Mechanism}{subsection.6.1.2}{}}
+\def\@LN@column{1}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1.3}Wire Rendering}{44}{subsection.6.1.3}\protected@file@percent }
+\newlabel{subsec:wires}{{6.1.3}{44}{Wire Rendering}{subsection.6.1.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6.2}{\ignorespaces B\'{e}zier wire rendering illustrated through a UART connection. Solid wires connect the adapter pins (TX, RX, GND) to PCB pins, with the control point positioned below the endpoints to produce a natural curve.}}{44}{figure.caption.25}\protected@file@percent }
+\newlabel{fig:wires}{{6.2}{44}{B\'{e}zier wire rendering illustrated through a UART connection. Solid wires connect the adapter pins (TX, RX, GND) to PCB pins, with the control point positioned below the endpoints to produce a natural curve}{figure.caption.25}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1.4}Magnifying Lens}{44}{subsection.6.1.4}\protected@file@percent }
+\newlabel{subsec:lens}{{6.1.4}{44}{Magnifying Lens}{subsection.6.1.4}{}}
+\def\@LN@column{1}
+\@writefile{lof}{\contentsline {figure}{\numberline {6.3}{\ignorespaces The magnifying lens overlaid on the PCB image, showing a zoomed view of a component region. Wires and snap indicators are correctly rendered within the lens viewport.}}{45}{figure.caption.26}\protected@file@percent }
+\newlabel{fig:lens}{{6.3}{45}{The magnifying lens overlaid on the PCB image, showing a zoomed view of a component region. Wires and snap indicators are correctly rendered within the lens viewport}{figure.caption.26}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6.2}Simulated Hardware Analysis Tools}{45}{section.6.2}\protected@file@percent }
+\newlabel{sec:tools-impl}{{6.2}{45}{Simulated Hardware Analysis Tools}{section.6.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.1}Digital Multimeter}{45}{subsection.6.2.1}\protected@file@percent }
+\newlabel{subsec:multimeter}{{6.2.1}{45}{Digital Multimeter}{subsection.6.2.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6.4}{\ignorespaces The simulated digital multimeter displaying a voltage reading with realistic last-digit noise. The red and black probe indicators show connection status.}}{45}{figure.caption.27}\protected@file@percent }
+\newlabel{fig:multimeter}{{6.4}{45}{The simulated digital multimeter displaying a voltage reading with realistic last-digit noise. The red and black probe indicators show connection status}{figure.caption.27}{}}
+\def\@LN@column{1}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.2}UART Adapter}{46}{subsection.6.2.2}\protected@file@percent }
+\newlabel{subsec:uart-impl}{{6.2.2}{46}{UART Adapter}{subsection.6.2.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6.5}{\ignorespaces The UART adapter widget with three probes (TX, RX, GND) connected to the PCB. The status bar shows ``Connected'' after successful crossover validation.}}{46}{figure.caption.28}\protected@file@percent }
+\newlabel{fig:uart-adapter}{{6.5}{46}{The UART adapter widget with three probes (TX, RX, GND) connected to the PCB. The status bar shows ``Connected'' after successful crossover validation}{figure.caption.28}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.3}SPI Firmware Dumper}{46}{subsection.6.2.3}\protected@file@percent }
+\newlabel{subsec:spi-impl}{{6.2.3}{46}{SPI Firmware Dumper}{subsection.6.2.3}{}}
+\def\@LN@column{1}
+\@writefile{lof}{\contentsline {figure}{\numberline {6.6}{\ignorespaces The SPI firmware dumper during a dump operation. Six colour-coded probes are connected to the flash chip. The progress bar shows the simulated read address advancing.}}{47}{figure.caption.29}\protected@file@percent }
+\newlabel{fig:fw-dumper}{{6.6}{47}{The SPI firmware dumper during a dump operation. Six colour-coded probes are connected to the flash chip. The progress bar shows the simulated read address advancing}{figure.caption.29}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6.3}Terminal Engine}{47}{section.6.3}\protected@file@percent }
+\newlabel{sec:terminal-impl}{{6.3}{47}{Terminal Engine}{section.6.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.1}Configuration Loader}{47}{subsection.6.3.1}\protected@file@percent }
+\newlabel{subsec:config-loader}{{6.3.1}{47}{Configuration Loader}{subsection.6.3.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.2}Command Executor}{47}{subsection.6.3.2}\protected@file@percent }
+\newlabel{subsec:executor}{{6.3.2}{47}{Command Executor}{subsection.6.3.2}{}}
+\def\@LN@column{1}
+\newlabel{lst:cmd-def}{{6.1}{48}{Example command definition with lookup output and conditional flag unlock}{lstlisting.6.1}{}}
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {6.1}{\ignorespaces Example command definition with lookup output and conditional flag unlock.}}{48}{lstlisting.6.1}\protected@file@percent }
+\def\@LN@column{1}
+\@writefile{lof}{\contentsline {figure}{\numberline {6.7}{\ignorespaces The simulated terminal during the case study exercise. The UART Console tab shows a shell prompt with command output. The flag progress bar at the top indicates the discovery progress.}}{49}{figure.caption.30}\protected@file@percent }
+\newlabel{fig:terminal}{{6.7}{49}{The simulated terminal during the case study exercise. The UART Console tab shows a shell prompt with command output. The flag progress bar at the top indicates the discovery progress}{figure.caption.30}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.3}Boot Sequence Animation}{49}{subsection.6.3.3}\protected@file@percent }
+\newlabel{subsec:boot-animation}{{6.3.3}{49}{Boot Sequence Animation}{subsection.6.3.3}{}}
+\def\@LN@column{1}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.4}Tab Completion}{50}{subsection.6.3.4}\protected@file@percent }
+\newlabel{subsec:tab-completion}{{6.3.4}{50}{Tab Completion}{subsection.6.3.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.5}State Persistence Across Mounts}{50}{subsection.6.3.5}\protected@file@percent }
+\newlabel{subsec:terminal-persistence}{{6.3.5}{50}{State Persistence Across Mounts}{subsection.6.3.5}{}}
+\newlabel{lst:persisted-state}{{6.2}{50}{Terminal state persisted across component mount cycles}{lstlisting.6.2}{}}
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {6.2}{\ignorespaces Terminal state persisted across component mount cycles.}}{50}{lstlisting.6.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6.4}Exercise Completion System}{50}{section.6.4}\protected@file@percent }
+\newlabel{sec:completion}{{6.4}{50}{Exercise Completion System}{section.6.4}{}}
+\def\@LN@column{1}
+\@writefile{toc}{\contentsline {section}{\numberline {6.5}Authoring Panel}{51}{section.6.5}\protected@file@percent }
+\newlabel{sec:authoring}{{6.5}{51}{Authoring Panel}{section.6.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5.1}Visual Canvas Editor}{51}{subsection.6.5.1}\protected@file@percent }
+\newlabel{subsec:canvas}{{6.5.1}{51}{Visual Canvas Editor}{subsection.6.5.1}{}}
+\def\@LN@column{1}
+\@writefile{lof}{\contentsline {figure}{\numberline {6.8}{\ignorespaces The authoring panel canvas editor. Components (blue rectangles) and pins (coloured circles) are positioned on the PCB image via drag-and-drop. The sidebar provides configuration controls for the selected element.}}{52}{figure.caption.31}\protected@file@percent }
+\newlabel{fig:authoring-canvas}{{6.8}{52}{The authoring panel canvas editor. Components (blue rectangles) and pins (coloured circles) are positioned on the PCB image via drag-and-drop. The sidebar provides configuration controls for the selected element}{figure.caption.31}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5.2}Terminal Configuration Editor}{52}{subsection.6.5.2}\protected@file@percent }
+\newlabel{subsec:terminal-editor}{{6.5.2}{52}{Terminal Configuration Editor}{subsection.6.5.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5.3}Preset Management}{52}{subsection.6.5.3}\protected@file@percent }
+\newlabel{subsec:preset-mgmt}{{6.5.3}{52}{Preset Management}{subsection.6.5.3}{}}
+\citation{owasptop10}
+\def\@LN@column{1}
+\newlabel{lst:preset-structure}{{6.3}{53}{Preset file structure bundling exercise and terminal configurations}{lstlisting.6.3}{}}
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {6.3}{\ignorespaces Preset file structure bundling exercise and terminal configurations.}}{53}{lstlisting.6.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6.6}API Layer}{53}{section.6.6}\protected@file@percent }
+\newlabel{sec:api}{{6.6}{53}{API Layer}{section.6.6}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6.7}Security by Design}{53}{section.6.7}\protected@file@percent }
+\newlabel{sec:security}{{6.7}{53}{Security by Design}{section.6.7}{}}
+\def\@LN@column{1}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.7.1}Architectural Mitigation: Client-Side Execution}{54}{subsection.6.7.1}\protected@file@percent }
+\newlabel{subsec:sec-clientside}{{6.7.1}{54}{Architectural Mitigation: Client-Side Execution}{subsection.6.7.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.7.2}Input Validation and Sanitisation}{54}{subsection.6.7.2}\protected@file@percent }
+\newlabel{subsec:sec-input}{{6.7.2}{54}{Input Validation and Sanitisation}{subsection.6.7.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.7.3}Path Traversal Prevention}{54}{subsection.6.7.3}\protected@file@percent }
+\newlabel{subsec:sec-traversal}{{6.7.3}{54}{Path Traversal Prevention}{subsection.6.7.3}{}}
+\def\@LN@column{1}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.7.4}Access Control}{55}{subsection.6.7.4}\protected@file@percent }
+\newlabel{subsec:sec-access}{{6.7.4}{55}{Access Control}{subsection.6.7.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.7.5}Secure Deployment}{55}{subsection.6.7.5}\protected@file@percent }
+\newlabel{subsec:sec-deploy}{{6.7.5}{55}{Secure Deployment}{subsection.6.7.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.7.6}Cross-Site Scripting Prevention}{55}{subsection.6.7.6}\protected@file@percent }
+\newlabel{subsec:sec-xss}{{6.7.6}{55}{Cross-Site Scripting Prevention}{subsection.6.7.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.7.7}Static Analysis and Type Safety}{55}{subsection.6.7.7}\protected@file@percent }
+\newlabel{subsec:sec-sast}{{6.7.7}{55}{Static Analysis and Type Safety}{subsection.6.7.7}{}}
+\def\@LN@column{1}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.7.8}Summary of OWASP Top~10 Coverage}{56}{subsection.6.7.8}\protected@file@percent }
+\newlabel{subsec:sec-summary}{{6.7.8}{56}{Summary of OWASP Top~10 Coverage}{subsection.6.7.8}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6.1}{\ignorespaces OWASP Top~10 (2021) coverage and mitigation strategies.}}{56}{table.caption.32}\protected@file@percent }
+\newlabel{tab:owasp}{{6.1}{56}{OWASP Top~10 (2021) coverage and mitigation strategies}{table.caption.32}{}}
+\@setckpt{chapters/05implementation}{
+\setcounter{page}{57}
+\setcounter{equation}{4}
+\setcounter{enumi}{2}
+\setcounter{enumii}{0}
+\setcounter{enumiii}{0}
+\setcounter{enumiv}{0}
+\setcounter{footnote}{0}
+\setcounter{mpfootnote}{0}
+\setcounter{part}{0}
+\setcounter{chapter}{6}
+\setcounter{section}{7}
+\setcounter{subsection}{8}
+\setcounter{subsubsection}{0}
+\setcounter{paragraph}{0}
+\setcounter{subparagraph}{0}
+\setcounter{figure}{8}
+\setcounter{table}{1}
+\setcounter{section@level}{2}
+\setcounter{Item}{24}
+\setcounter{Hfootnote}{0}
+\setcounter{bookmark@seq@number}{93}
+\setcounter{LT@tables}{0}
+\setcounter{LT@chunks}{0}
+\setcounter{float@type}{16}
+\setcounter{caption@flags}{2}
+\setcounter{continuedfloat}{0}
+\setcounter{subfigure}{0}
+\setcounter{subtable}{0}
+\setcounter{lstnumber}{18}
+\setcounter{FancyVerbLine}{0}
+\setcounter{linenumber}{1}
+\setcounter{LN@truepage}{56}
+\setcounter{FancyVerbWriteLine}{0}
+\setcounter{FancyVerbBufferLine}{0}
+\setcounter{FV@TrueTabGroupLevel}{0}
+\setcounter{FV@TrueTabCounter}{0}
+\setcounter{FV@HighlightLinesStart}{0}
+\setcounter{FV@HighlightLinesStop}{0}
+\setcounter{FancyVerbLineBreakLast}{0}
+\setcounter{FV@BreakBufferDepth}{0}
+\setcounter{minted@FancyVerbLineTemp}{0}
+\setcounter{listing}{0}
+\setcounter{parentequation}{0}
+\setcounter{AlgoLine}{0}
+\setcounter{algocfline}{0}
+\setcounter{algocfproc}{0}
+\setcounter{algocf}{0}
+\setcounter{@todonotes@numberoftodonotes}{0}
+\setcounter{lstlisting}{3}
+}

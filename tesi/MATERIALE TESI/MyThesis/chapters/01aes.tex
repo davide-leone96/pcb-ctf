@@ -1,0 +1,432 @@
+\chapter{Advanced Encryption Standard (AES)}\label{chap:aes}
+
+\section{Introduction}\label{sec:aes_intro}
+    The Advanced Encryption Standard (AES) is a specification for data encryption drafted by the NIST (National Institute of Standards and Technology) which finds its actual implementation in the Rijndael algorithm. Rijndael is an iterated block cipher\footnote{A block cipher is a deterministic algorithm that operates on a fixed-length block of information and produces, using the cipher key, a different block of the same size.} designed by Vincent Rijmen and Joan Daemen, two belgian cryptographers that issued it to an open selection process proposed in 1997 and finally concluded in the year 2000. This process had the goal to find an algorithm that could supersede the standard in use at that time: \des{} (Data Encryption Standard).
+
+    \des{} was initially designed by Horst Feistel (to which we owe the concept of \textit{Feistel's Networks}) and then enhanced by the NSA. After being standardized in 1977, it was no longer considered secure starting from the late '90s following repeated brute-force demonstrations of its cryptographic weakness. It was in that years (January 1997) that the National Institute of Standards and Technology (NIST) initiated the search for a replacement for \des{}~\cite{dobbertin2004cryptanalysis}. The requirements for the new standard were the following:
+
+    \begin{itemize}
+        \item a 128-bit block cipher with three possible key sizes: 128, 192 and 256 bits;
+        \item a public and flexible design, in contrast to the \des{} algorithm, which captured the suspects of the cryptographic community due to the presence of classified elements and the alleged presence of backdoors inserted by the NSA;
+        \item  at least as secure as two-key triple-\des{}, which was the latest \des{} iteration in use at that time to be considered still secure;
+        \item available royalty-free worldwide;
+    \end{itemize}
+
+    Rijndael, competing against four other finalist algorithms (MARS, RC6, Serpent, and Twofish), was eventually chosen as the winner of the selection process and became a U.S. federal standard in 2001.
+
+    In order to meet the requirements proposed by NIST, some additional features of Rijndael were discarded. For example, the initial specification drafted by Rijmen and Deamen called for different block sizes of 128, 192 and 256 bits: the latter two block sizes were discarded in favor of a constant block size of 128 bits (consequently, the difference on the variants of \aes{} simply relates on the size of the encryption key, not the block size).
+
+\newpage
+\section{The Algorithm}\label{sec:aes_design}
+    \aes{} is based on a \emph{Substitution-Permutation Network} (\textit{SP-Network}), requiring 10, 12 or 14 encryption rounds, depending on the length of the key (128, 192 and 256 bits, respectively). This number of rounds has been determined by looking at the maximum number of rounds for which shortcut attacks have been found~\footnote{A shortcut attack is an attack more efficient than exhaustive key search.~\cite{daemen1999aes}}, finally adding a considerable security margin~\cite{daemen1999aes}. For instance, in the case of \aess{}, 4 of the total 10 rounds have been added as a security margin~\footnote{For the \aes{} variants with 192 and 256 bits keys the number of rounds is increased to prevent shortcut attacks, which, conversely to exhaustive attacks, can afford to be less efficient in case of longer keys~\cite{daemen1999aes}}.
+
+    All the various steps of the algorithm operate on an internal data structure, called \emph{State}. The \emph{Initial State} corresponds to the plaintext (ciphertext) to be encrypted (decrypted), the \emph{Final State} corresponds to the encrypted (decrypted) message and the \emph{Intermediate State} refers to the intermediate cipher result. In all variants of \aes{}, both the State and the cipher key can be visually represented as a matrix of Bytes with 4 rows and 4 columns~\footnote{The original specification of Rijndael specified a variable number of columns, depending on the block size. As mentioned in~\ref{sec:aes_intro},the standardization process that lead to \aes{} imposed a block length of 128 bit, therefore fixing the number of columns of the State to 4}.
+
+    Differently from \des{}, each \aes{} round does not follow a \textit{Feistel's Structure}, but is composed of three distinct invertible uniform transformations, called \emph{layers}~\cite{daemen1999aes}~\cite{paar2009understanding}:
+
+        \begin{enumerate}
+            \item \textbf{Linear Mixing Layer}: guarantees high \emph{diffusion} over multiple rounds and consists of two sublayers, both of which perform linear operations:
+            \begin{enumerate}
+                \item \textbf{ShiftRows Layer}: permutes the Bytes of each row of the State matrix;
+                \item \textbf{MixColumn Layer}: combines the columns of the State matrix, mixing them as arrays of 4 Bytes.
+            \end{enumerate}
+            \item \textbf{Non-Linear Layer}: each Byte of the State is nonlinearly transformed using lookup tables (\sbocs{}es) with special mathematical properties. This introduces \emph{confusion} in the data processed;
+            \item \textbf{Key Addition Layer}: \texttt{XOR} operation between the \emph{Round Key}\footnote{A Round Key is an intermediate key derived by the \emph{Key Schedule} algorithm from the main cipher key. See~\ref{subsubsec:keyschedule}} and the \emph{State}.
+        \end{enumerate}
+
+    In general, as for all block ciphers based on \emph{SP-Networks}, the substitution layer(s) operate by mapping small chunks of data, introducing local \emph{confusion} into the cipher thanks to their highly nonlinear properties. On the other hand, the permutation layer(s) operate on the entire block with simple linear transformations, \emph{diffusing} the effects of the mappings enforced by the substitution layer(s)~\cite{decanniere2006cryptanalysis}.
+
+    \subsection{Algorithm Steps - Encryption}
+        Each round of the algorithm is composed of 4 main operations: \texttt{SubBytes}, \texttt{ShiftRows}, \texttt{MixColumns} and \texttt{AddRoundKey}.
+        However, the rounds are not repeated equally 10, 12 or 14 times: each variant of \aes{} firstly performs a \texttt{AddRoundKey} operation (also known as \emph{Key Whitening}) and only then it executes \emph{R-1} rounds (where \emph{R} is the total number of rounds). Finally, the last round completes 3 operations out of the 4 available, skipping the \texttt{MixColumns} one.
+        The round distribution of an entire execution of the \aes{} algorithm is summarized in Figure~\ref{fig:aes_rounds}.
+
+        \subsubsection{\texttt{SubBytes}}
+            This operation performs a substitution of every Byte present in the State matrix, following a precise Substitution Table (called \sbocs{}) that acts as a LUT (Look-Up Table). The \sbocs{} is the only nonlinear element of \aes{}: it implements a bijective mapping, meaning that each of the $2^8 = 256$ possible input values is one-to-one mapped to one output Byte. This last property implies the possibility to uniquely reverse the S-Box, therefore allowing decryption. \aes{} \sbocs{}es have a strong algebraic structure, based on two main operations: a Galois field inversion (in the field $GF(2^8)$) and an affine mapping~\cite{paar2009understanding}. Moreover, unlike \des{}, where 8 different \sbocs{}es are applied, \aes{} leverages a unique \sbocs{} for the entire cryptographic operation. The resulting lower memory footprint allows for much lighter software implementations, making encryption possible even for small embedded systems and IoT devices.
+            The \texttt{SubBytes} operation is pictured in Figure~\ref{fig:subBytes}.
+
+            \begin{figure}[h]
+                \centering
+                \includegraphics[width=0.7 \columnwidth]{subBytes.png}
+                \caption{
+                        \label{fig:subBytes}
+                        The \texttt{SubBytes} operation~\cite{wikisubbytes}.
+                }
+            \end{figure}
+
+        \subsubsection{\texttt{ShiftRows}}
+            This operations provides the \emph{diffusion} properties of \aes{} by rotating the Bytes over each row of the State matrix. The first row is not rotated, the second one rotates over 1 Byte, the third one rotates over 2 Bytes and the third one rotates over 3 Bytes (see Figure~\ref{fig:shiftRows}).
+            \begin{figure}[h]
+                \centering
+                \includegraphics[width=0.7 \columnwidth]{shiftRows.png}
+                \caption{
+                        \label{fig:shiftRows}
+                        The \texttt{ShiftRows} operation~\cite{wikishiftrows}.
+                }
+            \end{figure}
+
+        \subsubsection{\texttt{MixColumns}}
+            Like the \texttt{ShiftRows} step, the \texttt{MixColumns} operation provide the necessary \emph{diffusion} to the algorithm. In this case, every column of the State matrix is treated as a vector and multiplied by a fixed 4×4 matrix containing constant entries. The result is a linear transformation of the State. The multiplication and addition of the coefficients is done in $GF(2^8)$: both operations can be implemented quite efficiently, as the addition consists of a \texttt{XOR} operation and the multiplication can be realized using bitwise shifting and modular reduction, or by simply leveraging additional memory to store precomputed LUTs (see Figure~\ref{fig:mixColumns}).
+            \begin{figure}[h]
+                \centering
+                \includegraphics[width=0.7 \columnwidth]{mixColumns.png}
+                \caption{
+                        \label{fig:mixColumns}
+                        The \texttt{MixColumns} operation~\cite{wikimixcolumns}.
+                }
+            \end{figure}
+
+        \subsubsection{\texttt{AddRoudKeys}}
+            In this step every single Byte of the State is \texttt{XOR}ed with the corresponding Bytes that compose the Round Key (see Figure~\ref{fig:addRoundKey}).
+            \begin{figure}[h]
+                \centering
+                \includegraphics[width=0.7 \columnwidth]{addRoundKey.png}
+                \caption{
+                        \label{fig:addRoundKey}
+                        The \texttt{AddRoundKeys} operation~\cite{wikiaddroundkeys}.
+                }
+            \end{figure}
+
+        \begin{figure}[p]
+            \centering
+            \includegraphics[scale=0.8]{aes_rounds.pdf}
+            \caption{
+                    \label{fig:aes_rounds}
+                    Round organization in a complete execution of an \aes{} encryption.
+            }
+        \end{figure}
+
+        \subsection{Key Schedule Operation}\label{subsubsec:keyschedule}
+        The \emph{Key Schedule} is an internal algorithm used by \aes{} to derive multiple \emph{Round Keys} from the original input key of the cipher, to be used in the \texttt{AddRoundKeys} steps. The number of round keys to be derived is equal to the number of rounds plus one (since the initial \emph{Key Whitening} operation must be considered, so as the $R-1$ ``complete'' rounds and the final round). As an example, for a key length of 128 bits, the total number of rounds is $R = 10$, giving 11 round keys, each of 128 bits~\cite{paar2009understanding}.
+
+        The algorithm slightly changes depending on the \aes{} variant in use. For instance, \aess{} has the first 128-bit round key which is exactly equal to the main cipher key: this is not true for the other two \aes{} variants (the first round key of \aesss{} is equal to the main key only for the first 128 bits).\footnote{This peculiarity of \aess{} is one the main reasons why this variant has been adopted for the purposes of this thesis. More details will be given in the following chapters.}
+
+        Two different implementations exists for the \emph{Key Schedule} algorithm:
+        \begin{enumerate}
+            \item \textbf{Precomputation}: All round keys are computed before the actual encryption (decryption) operation and stored in memory, each to be retrieved later when needed. This approach is often taken in PC and server implementations of \aes{}, where large pieces of data are encrypted under one key. Such an implementation is not desirable on a device with limited memory resources, such as a smart card;
+            \item \textbf{On-The-Fly}: Every round key is derived only when required during the encryption (decryption) process. This reduces the memory footprint of the key schedule algorithm but introduces computational overhead.
+        \end{enumerate}
+
+    \subsection{Algorithm Steps - Decryption}
+        Since \aes{} is not based on a \emph{Feistel's Network}, the decryption operation cannot be performed by simply re-run the same algorithm: an inverse implementation of every round is needed. The structure of Rijndael is such that the sequence of transformations of its inverse is equal to that of the cipher itself, with the transformations replaced by their inverses and a change in the \emph{Key Schedule}~\cite{daemen1999aes}. Therefore, the 4 main steps that compose each round, once inverted, are now called \texttt{InvSubBytes}, \texttt{InvShiftRows}, \texttt{InvMixColumns} and \texttt{AddRoundKey}. This last transformation doesn't need further modifications as the internal \texttt{XOR} operation is intrinsically invertible by reapplying the function itself.
+
+        The inverse structure of a generic round is composed as such:
+        \begin{enumerate}
+            \item \texttt{AddRoundKey};
+            \item \texttt{InvMixColumns};
+            \item \texttt{InvShiftRows};
+            \item \texttt{InvSubBytes}.
+        \end{enumerate}
+        Since the last encryption round does not perform the \texttt{MixColumns} operation, the first decryption round also does not contain the corresponding inverse layer (\texttt{InvMixColumns}).
+        Finally, an additional \texttt{AddRoundKey} step is performed as last operation for the decrypting algorithm, as opposed to the encrypting algorithm, where this operation (\emph{Key Whitening}) is performed first.
+    
+\section{Cryptanalysis}\label{sec:cryptanalysis}
+    Cryptanalysis is a set of techniques used:
+    \begin{itemize}
+        \item \emph{to test} the robustness of an encryption scheme and its secret key by attacking it with various attack models;
+        \item \emph{to break} an encryption scheme revealing the plaintext and/or the secret used to encrypt it.
+    \end{itemize}
+
+    It is therefore an essential stage in the development of secure algorithms: in order to design a strong cipher, the cryptographer has to understand where the potential weaknesses are~\cite{decanniere2006cryptanalysis}.
+    
+    In general, cryptanalysis leverages mathematical techniques to analyse encryption schemes from their logical specification. Additionally, cryptanalysis also includes side-channel attacks in order to target the weaknesses at the implementation level (see Chap.~\ref{chap:pow}).
+    From a point of view of the bare logic specification, a cipher should be secure even if the attacker knows every detail of the algorithm, following \emph{Kerckhoffs’ Principle}. This principle actually discourages the use of the \emph{security by obscurity} technique, which has been demonstrated to be a \emph{weak} design principle: an algorithm which security relies only on the obfuscation of its specification can be completely broken as soon as it is secret design gets reversed-engineered or leaked through other means~\cite{paar2009understanding}. This is why modern cryptographic schemes (like \aes{}) are completely open source and available for analysis from the cryptographic community.
+
+    \subsection{Methodology Overview}\label{subsec:meth_overview}
+    In the case of block ciphers like \aes{}, the goal of cryptanalysis is to break the cipher by recovering the plaintext partially or in its entirety. An even ambitious goal would be to retrieve the cipher key: in this scenario an attacker can leverage the retrieved secret to encrypt/decrypt all the messages from the moment the key was revealed onward, harming the confidentiality and authenticity of the user's communications.
+
+    Cryptanalysis can be carried on following various attack models ~\cite{decanniere2006cryptanalysis} ~\cite{sakiyama2016security}, including:
+    \begin{itemize}
+        \item \textbf{Ciphertext-only attack}: The attacker can only observe ciphertexts produced as output by the encryption algorithm. Since this scenario is indistinguishable from the normal behavior of the algorithm, block ciphers succumbing this model of attack are considered to be very weak;
+        \item \textbf{Known-plaintext attack}: The attacker has access to (parts of) the plaintext related to the captured ciphertext. On the other hand, the attacker does not have any control of the plaintext to be encrypted;
+        \item \textbf{Chosen-plaintext attack}: The attacker has control over the plaintexts generated, which are then feeded to the encrypting algorithm. The resulting ciphertexts are then observed;
+        \item \textbf{Chosen-ciphertext attack}: Similarly to the previous model, the attacker can carefully craft a ciphertext, submit it to the block cipher for its decryption and observe the plaintext produced as output;
+        \item \textbf{Adaptively chosen-plaintext attack}: The attacker has the possibility to choose and send multiple plaintexts, possibly creating each plaintext according to the results obtained from the observations of the previously obtained ciphertexts;
+        \item \textbf{Adaptively chosen-ciphertext attack}: Similarly to the previous model, the attacker submits multiple ciphertexts to the decrypting algorithm, adapting its decisions following the observations retrieved during the entire attack procedure;
+        \item \textbf{Related-Key attack}: Similar to a chosen-plaintext attack, in this model the attacker can compare and analyze two different ciphertexts (plaintexts) obtained using two different secret keys, having only the information about their relationship (for instance, the two keys may differ only by a single bit).
+    \end{itemize}
+
+    It is worth to point out that an attacker cannot compute the correspondence between a plaintext and a random ciphertext if the key value is unknown. The only way to keep track of which plaintext (or ciphertext) has produced which ciphertext (or plaintext) is to \emph{query} the cipher sequentially, storing the plaintext-ciphertext pairs obtained. A system that replies to these \emph{queries} is called an \emph{oracle} (respectively, an \emph{encryption oracle} and a \emph{decryption oracle}). This \emph{query}-based attack will be the one in use for this thesis work, as it is widely used to carry on side-channel attacks.
+
+    \subsection{Generic Attacks}\label{subsec:generic_att}
+        Given the limited key and block lengths that characterize real (i.e., implementable) block ciphers, \emph{brute-force} and \emph{dictionary} attacks are considered to be the most generic class of attacks a malicious actor can pursue against an encryption scheme. Indeed, such methodologies can break a block cipher simply by treating it as a black box, without considering the actual details of the internal algorithmic implementation.
+    
+        A \emph{brute-force} attack, also called \emph{exhaustive key search}, simply iterates an encryption (decryption) process on a given plaintext (ciphertext) trying all possible key combinations, comparing each time the obtained ciphertext (plaintext) with the ``golden'' one (i.e., the one obtained with the secret key).
+        This attack is made ineffective~\footnote{i.e., not feasible in reasonable time due to the high computational complexity} by simply increasing the number of bits of the cipher key: nowadays an 80-bit key is considered to be the bare minimum to prevent \emph{exhaustive search}. For instance, the ``weakest'' variant of \aes{} (\aess{}) leverages a 128-bit key.
+        All the optimizations for this methodology aim to reduce the number of necessary iterations, reducing the computational workload and possibly leveraging the time-memory tradeoff, as proposed by Hellman in~\cite{hellman1980cryptanalytic}.
+    
+        In a \emph{dictionary} attack, an attacker can submit multiple plaintexts (ciphertexts) to the block cipher obtaining back the related ciphertexts (plaintexts), building a table of plaintext-ciphertext mappings (a dictionary) for that specific key. If a malicious actor is able to submit all the possible plaintexts (the cardinality of the entire plaintext space follows the relation $2^b$, whereas $b$ corresponds to the block length in bits) then the consequent dictionary can be used to decrypt any future message encrypted with the same secret key.
+        In reality, it is not even necessary to complete the dictionary by submitting all possible plaintexts: whenever a block cipher outputs the same ciphertext block twice, it leaks information about the plaintexts. This kind of repetitions in a random set of $b$-bit blocks starts to occur frequently when the number of blocks exceeds $2^{b/2}$ (a consequence of the \emph{birthday paradox}~\footnote{In cryptography, the same principle is exploited when evaluating the probability of collisions for a given hash function}). It is therefore not advisable for any user to encrypt more than $2^{b/2}$ blocks with the same secret key~\cite{sakiyama2016security}. Similarly to a \emph{brute-force} attack, the \emph{dictionary} attack is made ineffective by simply increasing the number of bits of the block length.
+
+        A comparison between these two methodologies can highlight the tradeoffs they provide: with a \emph{brute-force} attack the attacker needs a single memory location, storing the single captured plaintext-ciphertext pair: the memory requirements are thus very low. On the other hand, each iteration (out of the $2^k$ possible one, being $k$ the key length expressed in bits) requires time to complete and, overall, lots of computational power. Conversely, a \emph{dictionary} attack, assuming the dictionary already built and available for use, requires multiple memory locations (one for each plaintext-ciphertext pair, for a total memory amount of $2b2^b$ bits) but a negligible time complexity given the single access needed to look-up for one of the two values that compose a pair.
+
+        As a remark, both \emph{brute-force} and \emph{dictionary} attacks are theoretically impossible to prevent due to the intrinsic properties of block cipher algorithms. However, nowadays ciphers are built with a large number of key and block bits, making this class of attacks unfeasible with the current computational resources.
+
+    \subsection{Shortcut Attacks}\label{subsec:shortcut_att}
+        As opposed to \emph{Generic Attacks}, \emph{Shortcut Attacks} leverage the understandings of the internal algorithm implementation to reduce the computational complexity. For a block cipher, the feasibility of a shortcut attack is usually considered to be a significant vulnerability. Since both brute-force and dictionary attacks set an upper bound on both time and memory requirements, an attack that has an overall reduced complexity is considered to be a shortcut attack.
+        
+        In general, this class of attacks is conducted in two main steps. The first step tries to find and leverage properties that allows the attacker to overcome the ability of the block cipher to make every ciphertext produced completely random. If such a property is found to be also reproducible, the attacker can now formalize a methodology that generalize an attack for a reduced variant of the encryption scheme, omitting a certain number of rounds for simplicity. The goal of this second phase of the attack is to retrieve, partially or completely, a round key. If found, the attacker can continue with the same procedure on another round of the algorithm or can now leverage an exhaustive search, supported by the lower computational complexity provided by reduced exploration space.
+
+        \subsubsection{Differential Cryptanalysis}\label{subsub:diff_crypt}
+            \emph{Differential Cryptanalysis} was firstly introduced by Biham and Shamir to attack \des{} in 1992~\cite{biham1992differential}. It is a chosen-plaintext attack, meaning that the attacker is able to submit specially crafted plaintexts and to examine the ciphertexts produced as outputs in an attempt to derive the key.
+
+            \paragraph{Attack rationale}
+
+                This method focuses on finding datapaths in the block cipher structure that are more likely to occur with certain selected sets of plaintexts. The attack is called ``differential'' because the plaintexts are selected in pairs in order to satisfy a certain differential relation among their values.
+
+                For instance, suppose that $x$ and $x'$ are two messages processed by the same function $F$: the results obtained are, respectively, $F(x)$ and $F(x')$.
+                Knowing that the difference between two generic input values $x$ and $x'$ is called $\Delta x$ and corresponds to the \texttt{XOR} operation between the two~\footnote{The difference can also be expressed in other ways: the \texttt{XOR} difference is however the most common one.},
+                \begin{equation}\label{eq:input_diff}
+                    \Delta x = x \oplus x'
+                \end{equation}
+                It is possible to compute the difference between the two results obtained with the two computations:
+                \begin{equation}\label{eq:output_diff}
+                    \Delta y = F(x) \oplus F(x')
+                \end{equation}
+                The fact that an input difference $\Delta x$ is reflected as an output difference $\Delta y$ after a transformation $F$ is said to be a \emph{propagation} and the $[\Delta x, \Delta y]$ pair is called \emph{differential}~\cite{heys2002tutorial}. Differential cryptanalysis bases its rationale on the observations of these pairs, relying on the fact that a given propagation pattern only occurs for certain values of inputs. The reason is that, in many computations widely adopted in current block cipher algorithms, \emph{deterministic} differential propagations can be constructed even without knowing the key value~\cite{sakiyama2016security}. In an ideally randomizing cipher, the probability of a differential propagation to occur is $1/2^z$, where $z$ is the number of bits of the input value $x$. The attack seeks to exploit a scenario where a particular propagation occurs with a very high probability (much greater than $1/2^n$)~\cite{heys2002tutorial}.
+
+                To easily describe the main idea behind the attack, let us imagine a scenario involving the \aes{} \texttt{AddRoundKey} operation (but the example can be adapted to many other block ciphers). Let us also assume the attacker has a \emph{single} plaintext $P$ available and does not know the value of the key $K$ used. By feeding $P$ to the \texttt{AddRoundKey} operation, the plaintext itself is \texttt{XOR}ed with the key $K$, obtaining as a result the State $S$:
+                \begin{equation}
+                    S = P \oplus K
+                \end{equation}
+                Since the key $K$ is unknown, the result $S$ is also unknown: every information that was in the attacker possession is now lost.
+
+                Let us now assume a similar scenario as the previous one, in which the attacker is now in possession of \emph{two} different plaintexts $P$ and $P'$. By issuing them sequentially to the \texttt{AddRoundKey} operation, the attacker obtains:
+                \begin{equation}
+                    S = P \oplus K
+                \end{equation}
+                and
+                \begin{equation}
+                    S' = P' \oplus K
+                \end{equation}
+
+                Now, the attacker can compute the difference between the two plaintexts $P$ and $P'$ (both known) and the two results $S$ and $S'$ (unknown), following the definitions given in~\ref{eq:output_diff} and~\ref{eq:input_diff}:
+                \begin{equation}
+                    \Delta P = P \oplus P'
+                \end{equation}
+                \begin{equation}\label{eq:addroundkey_res}
+                    \Delta S = S \oplus S' = (P \oplus K) \oplus (P' \oplus K) = (P \oplus P') \oplus (K \oplus K) = P \oplus P' = \Delta P
+                \end{equation}
+                The above equation demonstrates that:
+                \begin{itemize}
+                    \item the output difference between $S$ and $S'$ can be computed even without knowing the values of $S$ and $S'$ and is equal to the input difference $\Delta P$, because...
+                    \item the difference between the two plaintexts is propagated to the outputs through the \texttt{AddRoundKey} transformation;
+                    \item the secret key is completely removed: the attacker can observe the effects of the encryption operation without taking into account the actual value of the key;
+                \end{itemize}
+                
+                This is possible thanks to the linear nature of the \texttt{AddRoundKey} step, as it simply consists of a \texttt{XOR} operation.
+
+                Since a linear function $L$ satisfies the following property:
+                \begin{equation}\label{eq:diff_crypt_lin}
+                    L(a) \oplus L(b) = L(a \oplus b)
+                \end{equation}
+                the difference of two values $a$ and $b$ after a linear computation $L$ can be computed by taking their difference as input to $L$. This specific case is known as a \emph{Deterministic Differential Propagation in Linear Computation}. 
+                
+                As a consequence of~\ref{eq:diff_crypt_lin}, given any linear operation, a constant key $K$ and a pair of plaintexts $P$ and $P'$, the input difference $\Delta x$ is propagated to the output difference $\Delta y$ with a probability of 1 (i.e., deterministically). It is also true, given the same conditions, that obtaining $\Delta y \neq \Delta x$ is impossible (i.e., the probability is $0$). This is true also for a composition of multiple linear operations, since the result of the composition itself is also linear~\footnote{In general, the goal of an attacker exploiting \emph{Differential Cryptanalysis} is to obtain propagations with the highest possible probability (possibly deterministic): this allows to determine the differences between pairs without knowing their respective values, as seen in~\ref{eq:addroundkey_res}. This approach is useful for the analysis because the plaintext values become unknown quickly owing to the key.}.
+
+                In general, not every operation of a block cipher is linear (for instance, the \aes{} \sbocs{}): in this case, no efficient method is known to derive a high probability differential propagation. The logical consequence for an attacker is to compute the probability of a given [$\Delta x$, $\Delta y$] pair by feeding all the possible input values to the nonlinear operation under attack and to list all the resulting output values. This operations aims at building a \emph{Differential Distribution Table} or \emph{DDT}. Each row of the table refers to a specific input difference, while each column refers to a specific output difference. Each entry of the table represents how many of the possible values the input $x$ can assume satisfy the relation:
+
+                \begin{equation}
+                    F(x) \oplus F(x \oplus \Delta x \textsubscript{expected}) = \Delta y \textsubscript{expected}
+                \end{equation}
+
+                \noindent The probability of the differential propagation is obtained by dividing the number in each entry with the number of possible values $x$ can assume (given by $2^z$).
+
+                \noindent In general, this probability can also be defined as follows~\cite{sakiyama2016security}:
+
+                \begin{equation}\label{eq:diff_crypt_general_prob}
+                    P[\Delta x \xrightarrow[]{F} \Delta y] \triangleq \frac{\#\{x|F(x) \oplus F(x \oplus \Delta x) = \Delta y\}}{2^z}
+                \end{equation}
+
+                \noindent where:
+
+                \begin{itemize}
+                    \item $F$ is a function that is either known or unknown to the attacker;
+                    \item $z$ is the bit-length of the input value to the function $F$.
+                \end{itemize}
+                
+                To better illustrate the scenario with a nonlinear operation see example~\ref{par:diff_crypt_ex}, firstly given in~\cite{sakiyama2016security} and summarized in Fig.~\ref{fig:diff_cryptanalysis}.
+
+                The above definition can be exploited only if the computation size is small, that is, the value of $z$ is small. Namely,~\ref{eq:diff_crypt_general_prob} can be applied for small 4-bit to 4-bit mappings (like example~\ref{par:diff_crypt_ex}) and even to the \aes{} \sbocs{} operation, but it cannot be evaluated for a 128-bit to 128-bit mapping of the entire \aes{} cipher. When evaluating a multi-round cipher, the attacker is forced to apply the analysis one round at a time, assuming that the probability of the differential propagation can be evaluated independently for each round: evaluating the \emph{conditional probability}, especially for many rounds, is computationally infeasible.
+
+                In a broader view, singularly evaluating the linear and nonlinear operations that make up the structure of the block cipher allows the attacker to find a global \emph{differential} $[\Delta x, \Delta y]$ that propagates from the inputs of the cipher to the inputs of its last round. To build this differential it is necessary to examine highly likely \emph{differential characteristics}: sequences of input and output differences to the rounds so that the output difference from one round corresponds to the input difference for the next round~\cite{heys2002tutorial}. An highly likely differential characteristic gives the attacker the opportunity to exploit information coming into the last round of the cipher to derive bits from the last layers of subkeys, eventually helping in the procedure of reconstructing the main cipher key (leveraging the knowledge of the key schedule algorithm).
+
+            \paragraph{Example: Computing the probability of a given propagation}\label{par:diff_crypt_ex}
+
+                First, it is required to define a cipher operation under attack, keeping in mind that this could be any operation of any block cipher of our interest. In this example the \sbocs{} structure defined in the lightweight block cipher TWINE is exploited~\cite{suzaki2012twine}. The knowledge of the implementation details is not explicitly required: the attacker can observe directly the outputs of the \sbocs{} table, without leveraging the knowledge of the applied mapping to infer their values.
+
+                Let us assume the goal is to assess the probability of the propagation between the following (given) input difference and output difference:
+                \begin{align}\label{eq:iodifference_example}
+                        \Delta x = x \oplus x' = \texttt{5} && \Delta y = y \oplus y' = \sbocs{}[x] \oplus \sbocs{}[x'] = \texttt{A}
+                \end{align}
+
+                \begin{equation}
+                    P[\Delta x \xrightarrow[]{\sbocs{}} \Delta y] = P[\texttt{5} \xrightarrow[]{\sbocs{}} \texttt{A}]
+                \end{equation}
+
+                The probability must be computed repeating the procedure for all the possible input values $x \in \{ \texttt{0}, \texttt{1}, \dots, \texttt{F} \}$, enforcing the given input difference $\Delta x$ and obtaining the second input by simply inverting its relation $x' = \Delta x \oplus x$. The values $y$ and $y'$ are then computed applying the mapping provided by the \sbocs{} function:
+
+                \begin{align}
+                    y = \sbocs{}[x], && y' = \sbocs{}[x']
+                \end{align}
+
+                It is now possible to compute the output difference~\ref{eq:output_diff} and check if it matches the expected one ($\Delta y = \texttt{A}$):
+
+                \begin{equation}
+                    \Delta y \textsubscript{obtained} = \texttt{C} \oplus \texttt{B} \neq \Delta y \textsubscript{expected} = \texttt{A}
+                \end{equation}
+
+                By iterating on all the 16 possible values the input $x$ can assume, one can compute the overall probability of the given propagation, which is simply the number of times (out of 16) the input difference $\Delta x = \texttt{5}$ produces the output difference $\Delta y = \texttt{A}$.
+                Given the \sbocs{} structure of the TWINE cipher (see Table~\ref{tab:twine_sbox}), the probability of the propagation of this example is:
+
+                \begin{equation}
+                    P[\Delta x \xrightarrow[]{\sbocs{}} \Delta y] = P[\texttt{5} \xrightarrow[]{\sbocs{}} \texttt{A}] = 2/16 = 2^{-3}
+                \end{equation}
+
+                This example is summarized in Fig~\ref{fig:diff_cryptanalysis}.
+
+                 
+
+                \begin{table}[]
+                    \begin{center}
+                        \begin{tabular}{|l|l|l|l|l|l|l|l|l|l|l|l|l|l|l|l|l|}
+                            \hline
+                            x    & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & A & B & C & D & E & F \\ \hline
+                            S(x) & C & 0 & F & A & 2 & B & 9 & 5 & 8 & 3 & D & 7 & 1 & E & 6 & 4 \\ \hline
+                            \end{tabular}
+                            \caption{TWINE's \sbocs{} Mapping in the Hexadecimal Notation}
+                            \label{tab:twine_sbox}
+                    \end{center}
+                \end{table}
+
+                \begin{figure}[h]
+                    \centering
+                    \includegraphics[scale=0.8]{diff_cryptanalysis.pdf}
+                    \caption{
+                            \label{fig:diff_cryptanalysis}
+                            Example~\ref{par:diff_crypt_ex}: computing the probability of a specific differential propagation.
+                    }
+                \end{figure}
+% 
+\newpage
+% 
+        \subsubsection{Impossible Differential Cryptanalysis}
+            Following similar principles of the more generic \emph{Differential Cryptanalysis}, this attack exploits differential propagations that are never satisfied.
+
+            An impossible differential propagation is defined as follows:
+            \begin{equation}\label{eq:impdiffcrypt}
+                P[\Delta x \xrightarrow[]{F} \Delta y] = 0
+            \end{equation}
+            where $\Delta x$ and $\Delta y$ represent the input and output difference, respectively, on both ends of function $F$. Equation~\ref{eq:impdiffcrypt} indicates that such differential propagation is impossible, since its probability is zero. As an example, an impossible propagation is the one involving an input difference $\Delta x = 0$ (meaning that the two inputs of function $F$ are equal) and an output difference $\Delta y \neq 0$ (meaning that the two outputs of $F$ have different values). A similar example can be obtained considering a bijective function $F$ (such as the \sbocs{} of the \aes{} block cipher): it is impossible to have a propagation that involves an input difference $\Delta x \neq 0$ and results in an output difference $\Delta y = 0$.
+
+            An attack based on an impossible differential characteristic can be built as follows. Let us imagine to have a plaintext pair $[P, P' = P \oplus \Delta x]$ to which corresponds the ciphertext pair $[C, C']$. Let us also assume to have a function $F$ for which the definition of impossible differential propagation holds~\ref{eq:impdiffcrypt}. To recover the key, the attacker exhaustively guesses the last round key values and partially decrypts both $C$ and $C'$: the values resulting from this two sequential decryption operations correspond to the outputs values of function $F$. If the difference between these two values is equal to $\Delta y$ then the attacker has found a key value that produces the given impossible differential propagation: the key guess is wrong and it can be removed from the set of round keys candidates. Trivially, the attack recovers the right key guess by simply eliminating all the wrong ones.
+
+            While the generic variant of differential cryptanalysis tries to find highly probable differential propagations to directly guess the correct value of the round key, the impossible variant, on the contrary, tries to discard all those keys related to impossible differential propagations, finding the correct key guess by exclusion~\cite{sakiyama2016security}.
+
+        \subsubsection{Linear Cryptanalysis}\label{subsubsec:linear_crypt}
+            Introduced in 1993 by Matsui~\cite{matsui1993linear} as a theoretical attack on \des{} (and empirically used shortly after~\cite{matsui1994first}), \emph{Linear Cryptanalysis} is nowadays, together with \emph{Differential Cryptanalysis}, one of the most widely used attacks on block ciphers. Given its importance, it is considered by the cryptographic community as a mandatory step in evaluating the strength of new cipher proposals.
+
+            Linear cryptanalysis is a known-plaintext attack, meaning that the attacker has knowledge on a set of plaintexts and the corresponding ciphertexts, without having the chance (or the need) to control which plaintexts (and related ciphertexts) are available. This is an important advantage over differential cryptanalysis as no restrictions are imposed on the plaintexts.
+
+            The main rationale behind the attack is to approximate the nonlinear operations of a block cipher with linear functions (like \texttt{XOR}, or any other modulo-2 bitwise operation).
+            
+            Such a linear function has the following form:
+
+            \begin{equation}\label{eq:lin_crypt}
+                P[i_1, i_2, .. , i_a] \oplus C[j_1, j_2, .. , j_b] = K[k_1, k_2, .. , k_c]
+            \end{equation}
+
+            where $P$ represents the input plaintext on $a$ bits, $C$ represents the output ciphertext on $b$ bits and $K$ represents the secret key on $k$ bits. The goal is to find linear approximations like~\ref{eq:lin_crypt} that have a high or low probability of occurrence for randomly given plaintexts $P$ and the corresponding ciphertexts $C$~\cite{matsui1993linear}. In fact, in an ideal cipher, any linear equation relating plaintext, ciphertext and key bits would hold with probability $p = 1/2$, proving ideal randomization capabilities. The attack exploits the deviation (or \emph{bias}) from this ideal probability: the further away that a linear expression is from holding with a probability of $1/2$, the better the cryptanalyst is able to apply linear cryptanalysis. If an expression like~\ref{eq:lin_crypt} holds with a probability $p$, the \emph{linear probability bias} can be defined as $\epsilon = p - 1/2$: the higher its magnitude $|\epsilon = p - 1/2|$, the better the applicability of the attack, with a reduced amount of known plaintexts required~\cite{heys2002tutorial}.
+
+            Note that both extremes of the probability $p = 1$ and $p = 0$ implies that the related linear expression is a perfect representation of the cipher behavior, hence the cipher has a catastrophic weakness~\cite{heys2002tutorial}.
+
+            The attacker concentrates its efforts only on cipher's nonlinear components such as \sbocs{}es: finding linear relations on cipher's linear operations is trivial. Similarly to what happens with differential cryptanalysis, the procedure to attack a nonlinear operation is to enumerate every possible linear equation relating the \sbocs{}'s input and output bits. During this process, a \emph{Linear Approximation Table} is built, allowing the attacker to compute the biases of every linear approximation and to select the best performing ones.
+            The next step of the attack is to build a chain of approximations, called \emph{linear characteristic}. Such a chain can be used to recover the bits of the last round key if it is long enough to cover $R - 1$ rounds (for a $R$-rounds cipher) and has a suitably large probability bias.
+            To build this \emph{Linear Characteristic}, Matsui proposes the so called \emph{Piling-up Lemma}, which main principle is summarized in the paragraph~\ref{par:pilinglemma}.
+
+            The recover bits of the last round key (also called \emph{target partial subkey}~\cite{heys2002tutorial}), it is necessary to \texttt{XOR} the corresponding ciphertext bits with all the possible values the target partial subkey can assume. The result of the operation is then back propagated to the \sbocs{} corresponding to the last round we are operating in. This is done for all known plaintext/ciphertext samples and a count is kept considering each value assumed by the target partial subkey. The count is incremented whenever the linear expression holds true for the bits into the last round’s \sbocs{} (which are determined by the \texttt{XOR} operation) and the known plaintext bits. Finally, the subkey guess whose count has the greatest absolute difference from half the number of plaintext-ciphertext pairs represents the most likely set of values for those key bits~\cite{heys2002tutorial}.
+
+            \paragraph{Piling-up Lemma}\label{par:pilinglemma}~\cite{matsui1993linear}~\cite{heys2002tutorial}
+            Let us consider two random binary variables $X_1$ and $X_2$ and their linear and affine relationships: $X_1 \oplus X_2 = 0$ (which leads to $X_1 = X_2$) and $X_1 \oplus X_2 = 1$ (which leads to $X_1 \neq X_2$), respectively. Let us now assume their probability distributions are given by:
+
+            \begin{equation}
+                P(X_1 = i) = \left\{\begin{matrix}
+                                p_1, & i = 0\\ 
+                                1 - p_1, & i = 1 
+                             \end{matrix}\right.
+            \end{equation}
+
+            \noindent and
+
+            \begin{equation}
+                P(X_2 = i) = \left\{\begin{matrix}
+                                p_2, & i = 0\\ 
+                                1 - p_2, & i = 1 
+                             \end{matrix}\right.
+            \end{equation}
+
+            \noindent Assuming the two random variables are independent, then
+
+            \begin{equation}
+                P(X_1 = i, X_2 = j) = \left\{\begin{matrix}
+                                         p_1p_2, & i = 0, j = 0\\ 
+                                         p_1(1 - p_2), & i = 0, j = 1\\
+                                         (1 - p_1)p_2, & i = 1, j = 0\\
+                                         (1 - p_1)(1 - p_2), & i = 1, j = 1
+                                      \end{matrix}\right.
+            \end{equation}
+
+            \noindent The probability of the linear relation between the two variables is:
+
+            \begin{align*}
+                P(X_1 \oplus X_2 = 0)   &= P(X_1 = X_2) \\
+                                        &= P(X_1 = 0, X_2 = 0) + P(X_1 = 1, X_2 = 1) \\
+                                        &= p_1p_2 + (1-p_1)(1-p_2)
+            \end{align*}
+
+            \noindent Now, let us assume the presence of a \emph{linear probability bias}: it is possible to rewrite both probabilities equations as $p_1 = 1/2 + \epsilon_1$ and $p_2 = 1/2 + \epsilon_2$. Therefore, it follows that:
+
+            \begin{align*}
+                P(X_1 \oplus X_2 = 0)   &= p_1p_2 + (1-p_1)(1-p_2) \\
+                                        &= 1/2 + 2\epsilon_1\epsilon_2 \\
+                                        &= 1/2 + \epsilon_{1,2}
+            \end{align*}
+
+            The \emph{Piling-up Lemma} generalizes the above result to multiple random binary variables, from $X_1$ to $X_n$, with the respective probabilities going from $p_1 = 1/2 + \epsilon_1$ to $p_n = 1/2 + \epsilon_n$. The lemma also assumes that all $n$ random binary variables are independent~\footnote{In reality linear approximations of nonlinear structures like \sbocs{}es are not independent between each other and this can have a significant impact on the computation of the linear characteristic probability.}:
+
+            \begin{equation}
+                P(X_1 \oplus \dots \oplus X_n = 0) = 1/2 + 2^{n-1} \prod_{i=1}^{n} \epsilon_i
+            \end{equation}
+
+            or, equivalently,
+
+            \begin{equation}
+                \epsilon_{1,2, \dots, n} = 2^{n-1} \prod_{i=1}^{n} \epsilon_i
+            \end{equation}
+
+            When developing a linear cryptanalysis attack on a cipher, the $X_i$ values actually represent linear approximations of nonlinear operations (like \aes{} \sbocs{}). These approximations can be combined together to form new linear expressions and eventually build an entire chain of linear approximations (\emph{linear characteristic}). The \emph{Piling-up Lemma} is therefore crucial to compute the overall composition of the single biases $\epsilon_i$, finally determining the overall bias of the entire chain.
+
+            It is interesting to note that if $p_i = 0$ (or $1$) for all $i$, then $P(X_i \oplus \dots \oplus X_n = 0)$ (or $1$). Namely, a linear characteristic composed by $n$ linear approximations perfectly approximate all the block cipher operations if and only if all the single linear expressions that compose the chain perfectly approximate their respective cipher's operations. 
+            
+            Conversely, even a single linear approximation with a probability $p_i = 1/2$ can ``destroy'' the entire linear characteristic, bringing the entire chain probability to $P(X_1 \oplus \dots \oplus X_n = 0) = 1/2$, thereby nullifying the bias contributions of all the other approximations. 
+
+            As demonstrated, the overall bias of a linear characteristic is consequence of all the linear approximations of the \sbocs{}es involved (as they are the main nonlinear component of a block cipher's operations). The cryptographic community is constantly trying to improve the resistance against linear cryptanalysis. To do so, the focus is on optimized \sbocs{} designs that minimize the biases by keeping their mappings as ideally random as possible. Another technique is to implement round structures that maximize the number of \emph{active} \sbocs{}es (so to say, the number of \sbocs{}es involved in linear approximations). The design principles of Rijndael are an excellent example of such an approach.
+
+    \subsection{\aes{} Security and Countermeasures Against Cryptanalysis}\label{subsec:aes_security}
+        The cryptographic strengths of the \aes{} algorithm strongly depends on the choice of the \sbocs{} structure. Rijndael's \sbocs{} has been designed taking into account the most recent cryptanalysis attacks known at that time, like linear/differential cryptanalysis and algebraic manipulations (for example, interpolations attacks).
+
+        \noindent The main design criteria took into account by Daemen and Rijmen were the following~\cite{daemen1999aes}:
+
+        \begin{enumerate}
+            \item Invertibility;
+            \item Minimisation of the largest non-trivial correlation between linear combinations of input bits and linear combination of output bits;
+            \item Minimisation of the largest non-trivial value in the EXOR table;
+            \item Complexity of its algebraic expression in $GF(2^8)$;
+            \item Simplicity of description.
+        \end{enumerate}
+
+        The final structure allows to obtain a maximum differential propagation probability of $4/256$ (or $2^{-6}$), even if most entries achieve even lower ratios: either $0/256$ or $2/256$~\cite{daemen1999aes}.
+
+        The three main criteria are satisfied by the main mapping $x \Rightarrow x^{-1}$ in $GF(2^8)$, that is however susceptible to algebraic attacks (like interpolation ones) due to its very simple algebraic expression. An additional invertible affine transformation has bee therefore applied on top of it: this allows the \sbocs{} to satisfy the fourth criterion too without affecting the first three.
+
+        Both Rijndael's cryptographers proposed that the standard \sbocs{} they designed could be swapped with similar structures that could satisfy the above criteria, for example, in case of suspicion of a trapdoor present in the block cipher. They both went as far as suggesting that a new \sbocs{} structure could not necessarily optimise both linear and differential cryptanalysis criteria (second and third criteria) given the great confidence residing on the overall cipher structure and the conservatively high number of rounds~\cite{daemen1999aes}.

@@ -1,0 +1,120 @@
+\chapter{Exercise Configuration Schema}\label{app:exercise-schema}
+
+This appendix documents the JSON schema of the Exercise configuration, which defines the complete structure of a training scenario in the \pcbctf{} platform.
+
+% ============================================================================
+\section{Root Structure}\label{sec:app-root}
+% ============================================================================
+
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[language={}, caption={Top-level Exercise schema.}]
+{
+  "pcbImage": "/images/pcb.jpg",
+  "initialFlag": "flag{????????????????????}",
+  "steps": [ ... ],
+  "components": [ ... ],
+  "pins": [ ... ],
+  "uartPins": [ ... ],
+  "firmwareDumpPins": [ ... ],
+  "toolGroups": [ ... ],
+  "toolConfig": { ... },
+  "completionDialog": { ... }
+}
+\end{lstlisting}
+\end{minipage}
+
+% ============================================================================
+\section{Step and Objective Structure}\label{sec:app-step}
+% ============================================================================
+
+Each step contains an ordered array of objectives. The \texttt{type} field determines which completion condition applies.
+
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[language={}, caption={Step with objectives.}]
+{
+  "id": "step-1",
+  "title": "Hardware Analysis",
+  "description": "Identify the main components...",
+  "expectedFlag": "flag{CPU_EPROM_DUMP}",
+  "availableTools": ["pointer", "magnifier", "multimeter"],
+  "objectives": [
+    {
+      "id": "cpu",
+      "name": "SoC Identification",
+      "type": "component",
+      "instruction": "Find the main processor...",
+      "hint": "Look for the largest IC...",
+      "flagPart": "CPU",
+      "coords": [45, 40, 15, 20]
+    }
+  ]
+}
+\end{lstlisting}
+\end{minipage}
+
+% ============================================================================
+\section{Enumerations}\label{sec:app-enums}
+% ============================================================================
+
+\begin{table}[H]
+\centering
+\caption{Objective types and their completion conditions.}
+\label{tab:obj-types}
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Type} & \textbf{Completion Condition} \\
+\midrule
+\texttt{component} & Student clicks the correct PCB region \\
+\texttt{pin}       & Probes satisfy pin conditions (AND/OR logic) \\
+\texttt{uart}      & All UART connections established with correct crossover \\
+\texttt{terminal}  & All specified terminal flags discovered \\
+\texttt{firmware-dump} & SPI probes connected and dump file downloaded \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Available tool identifiers.}
+\label{tab:tools}
+\begin{tabular}{ll}
+\toprule
+\textbf{Tool ID} & \textbf{Description} \\
+\midrule
+\texttt{pointer}       & Default selection tool \\
+\texttt{magnifier}     & Magnifying lens \\
+\texttt{multimeter}    & Digital multimeter \\
+\texttt{probes}        & UART adapter \\
+\texttt{firmware-dump} & SPI flash programmer \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{UART and SPI pin roles with typical electrical characteristics.}
+\label{tab:pin-roles}
+\begin{tabular}{llcc}
+\toprule
+\textbf{Protocol} & \textbf{Role} & \textbf{Voltage (V)} & \textbf{Impedance ($\Omega$)} \\
+\midrule
+UART & TX  & 3.3 & $\sim$65 \\
+UART & RX  & 3.3 & $\sim$47\,k \\
+UART & GND & 0   & 0 \\
+UART & VCC & 3.3 & 0 \\
+\midrule
+SPI  & CS   & 3.3 & $\sim$10\,k \\
+SPI  & CLK  & 0   & $\sim$65 \\
+SPI  & MOSI & 0   & $\sim$65 \\
+SPI  & MISO & 0.15 & $\sim$150\,k \\
+SPI  & VCC  & 3.3 & 0 \\
+SPI  & GND  & 0   & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================================
+\section{Coordinate System}\label{sec:app-coords}
+% ============================================================================
+
+All spatial coordinates use the format \texttt{[left\%, top\%, width\%, height\%]} where each value represents a percentage of the PCB image dimensions. This ensures that overlay regions scale correctly with the rendered image size. Objectives that are not spatially bound to the PCB (e.g., UART connection, terminal exploration) use \texttt{[0, 0, 0, 0]} as placeholder coordinates.

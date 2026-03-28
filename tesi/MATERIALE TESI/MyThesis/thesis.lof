@@ -1,0 +1,39 @@
+\babel@toc {english}{}
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {2.1}{\ignorespaces The \texttt {SubBytes} operation~\cite {wikisubbytes}. }}{13}{figure.2.1}%
+\contentsline {figure}{\numberline {2.2}{\ignorespaces The \texttt {ShiftRows} operation~\cite {wikishiftrows}. }}{13}{figure.2.2}%
+\contentsline {figure}{\numberline {2.3}{\ignorespaces The \texttt {MixColumns} operation~\cite {wikimixcolumns}. }}{14}{figure.2.3}%
+\contentsline {figure}{\numberline {2.4}{\ignorespaces The \texttt {AddRoundKeys} operation~\cite {wikiaddroundkeys}. }}{14}{figure.2.4}%
+\contentsline {figure}{\numberline {2.5}{\ignorespaces Round organization in a complete execution of an \texttt {AES}{} encryption. }}{15}{figure.2.5}%
+\contentsline {figure}{\numberline {2.6}{\ignorespaces Example~\ref {par:diff_crypt_ex}: computing the probability of a specific differential propagation. }}{23}{figure.2.6}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Logical representation of the side-channel attack principles. }}{28}{figure.3.1}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Implementation of a current sensing circuit with a high-side shunt resistor. }}{31}{figure.3.2}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Visual analysis of two slightly different power traces: the second one includes an additional \texttt {NOP} instruction, denoted by an additional spike in the trace. For both traces, the attacker is able to group the various peaks into the corresponding sequences of assembly instructions. }}{34}{figure.3.3}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Annotations of the \emph {key Whitening} operation followed by the very first round of \texttt {AES-128}{}. }}{35}{figure.3.4}%
+\contentsline {figure}{\numberline {3.5}{\ignorespaces SPA used to highlight the presence of conditional branches in the code flow. }}{37}{figure.3.5}%
+\contentsline {figure}{\numberline {3.6}{\ignorespaces Visual representation of the effects due to partitioning: the higher the distance between the two curves the better the prediction function~\cite {kocher2011introduction}. }}{40}{figure.3.6}%
+\contentsline {figure}{\numberline {3.7}{\ignorespaces Visual representation of the effect of data bus transfers on the power rails, assuming a microcontroller with precharge logic. }}{40}{figure.3.7}%
+\contentsline {figure}{\numberline {3.8}{\ignorespaces Traces affected by high clock frequency jitter before and after trace alignment~\cite {varchola2012differential}. }}{41}{figure.3.8}%
+\contentsline {figure}{\numberline {3.9}{\ignorespaces Superposition between the captured power traces and the (magnified) absolute differential traces $|\Delta T|$ (one differential trace for each byte of the key). }}{43}{figure.3.9}%
+\contentsline {figure}{\numberline {3.10}{\ignorespaces Graphical representation of the distance among 9 different mean traces, each representative of the Hamming weight related to its origin set. The relation is not linear.~\cite {sakiyama2016security} }}{45}{figure.3.10}%
+\contentsline {figure}{\numberline {3.11}{\ignorespaces Presence of a linear relationship between the current consumption and the Hamming weight of the intermediate values, in the case of the \texttt {XMEGA}{} target device. }}{45}{figure.3.11}%
+\contentsline {figure}{\numberline {3.12}{\ignorespaces The results obtained with a CPA attack on \texttt {AES-128}{}, done with just 50 traces collected with \textit {ChipWhisperer}\texttrademark {} against the target \texttt {XMEGA}{} microcontroller: 15/16 bytes were correctly recovered. }}{48}{figure.3.12}%
+\contentsline {figure}{\numberline {3.13}{\ignorespaces The correlation traces related to the same attack depicted in Fig.~\ref {fig:cpa_res_50} }}{48}{figure.3.13}%
+\contentsline {figure}{\numberline {3.14}{\ignorespaces The correlation traces related to another CPA attack on \texttt {AES}{}, this time completed with 800 traces. }}{49}{figure.3.14}%
+\contentsline {figure}{\numberline {3.15}{\ignorespaces NewAE's \textit {ChipWhisperer}\texttrademark {} Lite board, on the left, and the target detachable \texttt {XMEGA}{} board, on the right. }}{52}{figure.3.15}%
+\contentsline {figure}{\numberline {3.16}{\ignorespaces \textit {ChipWhisperer}\texttrademark {}'s default synchronous sampling clock vs. \texttt {XMEGA}{}'s (attacked device) default operating clock. }}{52}{figure.3.16}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {5.1}{\ignorespaces PGE for \texttt {AES}{} \texttt {S-Box}{}, 100 traces, PGE threshold crossed at $\approx 55$ traces. }}{65}{figure.5.1}%
+\contentsline {figure}{\numberline {5.2}{\ignorespaces Correlations for \texttt {AES}{} \texttt {S-Box}{}, 100 traces. }}{65}{figure.5.2}%
+\contentsline {figure}{\numberline {5.3}{\ignorespaces PGE for \texttt {sbox\_freyre\_2}{}, 100 traces, PGE threshold NOT crossed. }}{66}{figure.5.3}%
+\contentsline {figure}{\numberline {5.4}{\ignorespaces Correlations for \texttt {sbox\_freyre\_2}{}, 100 traces. }}{66}{figure.5.4}%
+\contentsline {figure}{\numberline {5.5}{\ignorespaces PGE for \texttt {sbox\_freyre\_3}{}, 100 traces, PGE threshold crossed at $\approx 27$ traces. }}{67}{figure.5.5}%
+\contentsline {figure}{\numberline {5.6}{\ignorespaces Correlations for \texttt {sbox\_freyre\_3}{}, 100 traces. }}{67}{figure.5.6}%
+\contentsline {figure}{\numberline {5.7}{\ignorespaces Correlations for \texttt {sbox\_freyre\_2}{}, 1000 traces. }}{68}{figure.5.7}%
+\contentsline {figure}{\numberline {5.8}{\ignorespaces Correlations for \texttt {sbox\_freyre\_3}{}, 1000 traces. }}{68}{figure.5.8}%
+\contentsline {figure}{\numberline {5.9}{\ignorespaces Correlations for \texttt {sbox\_freyre\_2}{}, 5000 traces. }}{69}{figure.5.9}%
+\contentsline {figure}{\numberline {5.10}{\ignorespaces Correlations for \texttt {sbox\_freyre\_3}{}, 5000 traces. }}{69}{figure.5.10}%
+\addvspace {10\p@ }

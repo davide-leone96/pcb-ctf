@@ -4,7 +4,7 @@
     "name": "TP-Link WR841N - Vulnerability Analysis",
     "description": "Walkthrough completo: identificazione HW, UART, analisi vulnerabilità, firmware dump SPI via CH341A con simulazione flashrom",
     "createdAt": "2026-03-13T23:00:00.000Z",
-    "updatedAt": "2026-03-17T12:33:58.850Z"
+    "updatedAt": "2026-03-20T21:28:02.574Z"
   },
   "exerciseConfig": {
     "pcbImage": "/images/preset-vuln-wr841n-mmq0k8fjp2z9w.png",

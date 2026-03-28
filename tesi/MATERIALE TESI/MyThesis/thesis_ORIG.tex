@@ -1,0 +1,161 @@
+% !TEX encoding = UTF-8 Unicode
+% !TeX spellcheck = en_GB 
+% !TEX TS-program = pdflatex
+
+ \documentclass[%
+    formato=a4paper,
+    corpo=11pt,
+    twoside,
+    stile=standard,
+    tipotesi=magistrale,
+    evenboxes,
+    english
+]{toptesi}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern} % o altro font
+\usepackage[english]{babel}
+\usepackage{hyperref}
+\usepackage{listings}
+
+\usepackage[
+    left = \flqq{},
+    right = \frqq{},
+    leftsub = \flq{},
+    rightsub = \frq{}
+]{dirtytalk}
+
+\hypersetup{
+    pdfpagemode={UseOutlines},
+    bookmarksopen,
+    pdfstartview={FitH},
+    colorlinks,
+    linkcolor={blue},
+    citecolor={blue},
+    urlcolor={blue}
+ }
+
+\usepackage[backend=bibtex, maxbibnames=99]{biblatex}
+\usepackage{csquotes}
+\usepackage{multirow}
+
+\usepackage{color}
+\definecolor{ChapBlue}{RGB}{0,0,175}
+
+\graphicspath{ {./images/} }
+\addbibresource{mybib.bib}
+\renewcommand{\mkbegdispquote}[2]{\itshape}
+
+%%%%%%% Definizioni locali
+\ExtendCaptions{english}{Abstract}{Acknowledgements}
+\raggedbottom
+
+\newcommand\Tstrut{\rule{0pt}{2.6ex}}         % = `top' strut
+\newcommand\Bstrut{\rule[-0.9ex]{0pt}{0pt}}   % = `bottom' strut
+
+\begin{document}
+\english
+\errorcontextlines=9 % used to define number of lines to describe an error %
+
+\begin{titlepage}
+\centerline{\huge POLITECNICO DI TORINO}
+\vspace{0.5cm}
+\centerline{\Large DEPARTMENT OF CONTROL AND COMPUTER ENGINEERING (DAUIN)}
+\vspace{1.5cm}
+\centerline{\Large Master Degree in Computer Engineering}
+\vspace{1cm}
+\centerline{\LARGE Master Degree Thesis}
+\vspace{2.5cm}
+\centerline{\huge\textsc{\bfseries Put here the title}}
+\vspace{1.5cm}
+\centerline{
+\includegraphics[width=7cm]{./logopolito}} 
+\vspace{1.5cm}
+\centerline{\Large Author: Nome \textsc{Cognome}}
+\bigskip
+\vspace{1cm}
+\centerline{\Large Supervisor: Paolo Ernesto \textsc{Prinetto}}
+\vspace{2cm}
+\centerline{\LARGE month, year}
+\end{titlepage}
+
+\summary
+Put here the summary of your thesis.
+
+\figurespagetrue
+\tablespagetrue
+\indici
+
+\chapter{Introduction}
+This is the introduction.
+This is an \emph{itemize}, where you can put a list of items:
+\begin{itemize}
+\item item number 1
+\item item number 2
+\end{itemize} 
+
+This is an \emph{enumerate}, where you can put a list of items with numbers:
+\begin{enumerate}
+\item item number 1
+\item item number 2
+\end{enumerate} 
+
+\begin{figure}[h!]
+\vspace{0.5cm}
+\includegraphics[width=\textwidth]{simplearch}
+\caption{The basic architecture of the key management system}
+\label{fig:generalschema}
+\end{figure}
+This is an image, and you can refer to the image using its label, like this: \ref{fig:generalschema}.
+
+\chapter{State of the Art}
+In this chapter we will analyse the state of the art.
+\section{Section title}\label{examplesection}
+This is a section under a chapter.
+\subsection{Subsection title}
+This is a subsection under the section. You can refer to the section using its label, like this: \ref{examplesection}.
+
+The following is a table.
+
+\begin{table}
+\centering
+\caption{Preliminary Experimental Results}
+\begin{tabular}{| p{3cm} | p{3cm} | p{3cm} |}
+    \hline
+    \textbf{Benchmark} & \textbf{Inputs} & \textbf{Time (no prot.)} \\ \hline
+    SHA & Message of 100 KB & 368449 \\ \hline
+    RIJNDAEL & Message of 100 KB & 1083568 \\ \hline
+    DIJKSTRA & Matrix of 100x100 \textbf{int} & 324782 \\ \hline
+    STRING & 1331 strings (var. length) & 178616 \\ \hline
+    BITCOUNT & 12800 \textbf{int} & 419545 \\ \hline
+    \hline
+\end{tabular}
+\label{tab:ar}
+\end{table}
+
+If you want to write an equation, you can do like this:
+\begin{equation}
+X_{k}=\sum _{n=0}^{N-1}x_{n}e^{-ik{\frac {2\pi }{N}}n}\quad \quad k=0,\dots ,N-1
+\end{equation}
+
+You can write in italic \emph{like this}, you can write in bold \textbf{like this}, or you can write using colors \textcolor{cyan}{like this}.
+
+The following is a piece of code:
+
+\begin{lstlisting}
+This is a piece of code
+\end{lstlisting}
+
+You can also write in-text code like this \lstinline{this is an inline code}.
+
+You can cite references like this \cite{lee2016introduction} \cite{jiang2013towards}. You have to copy within \lstinline{\cite} brackets the label of the entry that you have in the BibTeX file, and that's it. For every online paper that you may read on online libraries, you can download its BibTeX reference. Just copy and paste in the .bib file. The command \lstinline{\addbibresource} at the top of this main file indicates what file you're referring to.
+
+\input{./chapters/chap}
+
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{Bibliography}
+\printbibliography
+
+\end{document}

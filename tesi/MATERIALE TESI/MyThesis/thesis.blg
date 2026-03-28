@@ -1,0 +1,57 @@
+This is BibTeX, Version 0.99d (TeX Live 2021/TeX Live for SUSE Linux)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: thesis.aux
+A level-1 auxiliary file: frontpage.aux
+A level-1 auxiliary file: ack.aux
+A level-1 auxiliary file: summary.aux
+A level-1 auxiliary file: chapters/00intro.aux
+A level-1 auxiliary file: chapters/01aes.aux
+A level-1 auxiliary file: chapters/02pow.aux
+A level-1 auxiliary file: chapters/03soa.aux
+A level-1 auxiliary file: chapters/04expres.aux
+A level-1 auxiliary file: chapters/05conclusions.aux
+The style file: unsrt.bst
+Database file #1: bibliography.bib
+Warning--empty journal in daemen1999aes
+You've used 60 entries,
+            1791 wiz_defined-function locations,
+            773 strings with 14103 characters,
+and the built_in function-call counts, 16243 in all, are:
+= -- 1601
+> -- 563
+< -- 26
++ -- 215
+- -- 155
+* -- 926
+:= -- 2332
+add.period$ -- 213
+call.type$ -- 60
+change.case$ -- 56
+chr.to.int$ -- 0
+cite$ -- 61
+duplicate$ -- 777
+empty$ -- 1659
+format.name$ -- 155
+if$ -- 3853
+int.to.chr$ -- 0
+int.to.str$ -- 60
+missing$ -- 51
+newline$ -- 312
+num.names$ -- 60
+pop$ -- 274
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 0
+skip$ -- 418
+stack$ -- 0
+substring$ -- 1184
+swap$ -- 286
+text.length$ -- 26
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 0
+warning$ -- 1
+while$ -- 172
+width$ -- 62
+write$ -- 684
+(There was 1 warning)

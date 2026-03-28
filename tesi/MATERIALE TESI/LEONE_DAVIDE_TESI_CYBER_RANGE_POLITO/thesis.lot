@@ -1,0 +1,19 @@
+\babel@toc {english}{}\relax 
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {3.1}{\ignorespaces Comparison of existing platforms and the proposed \textsc {PCB-CTF}{} system.}}{25}{table.caption.11}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {6.1}{\ignorespaces OWASP Top~10 (2021) coverage and mitigation strategies.}}{56}{table.caption.32}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {A.1}{\ignorespaces Objective types and their completion conditions.}}{72}{table.caption.39}%
+\contentsline {table}{\numberline {A.2}{\ignorespaces Available tool identifiers.}}{72}{table.caption.40}%
+\contentsline {table}{\numberline {A.3}{\ignorespaces UART and SPI pin roles with typical electrical characteristics.}}{73}{table.caption.41}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {B.1}{\ignorespaces Command handler types.}}{76}{table.caption.42}%
+\contentsline {table}{\numberline {B.2}{\ignorespaces Terminal output types.}}{77}{table.caption.43}%
+\contentsline {table}{\numberline {B.3}{\ignorespaces Command constraint categories and evaluation order.}}{77}{table.caption.44}%

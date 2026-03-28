@@ -1,0 +1,127 @@
+\chapter{Contributions and Requirements Analysis}\label{chap:contributions}
+
+This chapter presents the contributions of this thesis and formalises the requirements that drive the design of the \pcbctf{} platform. We begin by outlining the motivations for an accessible and reproducible hardware security training environment, then describe the system's actors and define the functional and non-functional requirements that shape the architecture presented in Chapter~\ref{chap:architecture}.
+
+% ============================================================================
+\section{Motivations}\label{sec:motivations}
+% ============================================================================
+
+The gaps identified in Chapter~\ref{chap:stateoftheart} point to a clear need for a training solution that satisfies three properties simultaneously: \emph{realism} (the training experience should approximate real hardware analysis), \emph{accessibility} (the platform should be usable by anyone with a web browser, at no cost), and \emph{reproducibility} (exercises should produce deterministic, repeatable outcomes). Existing solutions optimise for at most two of these three properties.
+
+The present work aims to demonstrate that a web-based simulation can achieve a useful degree of realism---sufficient for developing foundational hardware security skills---while fully satisfying the accessibility and reproducibility requirements. The platform does not claim to replace physical laboratories for advanced training. Rather, it provides an accessible entry point that lowers the barrier to a field traditionally gated by equipment costs and institutional resources. We believe this positioning is both realistic and useful: a student who has practised component identification, multimeter measurements, UART crossover wiring, and embedded system navigation in the simulator approaches a physical laboratory session with better conceptual preparation and greater confidence, reducing the time and supervision required for hands-on training.
+
+The choice of a Capture The Flag format is motivated by its proven effectiveness in cybersecurity education. Gamified learning structures---progressive challenges, flag-based scoring, immediate feedback---have been shown to increase student engagement and knowledge retention compared to traditional laboratory exercises~\cite{ctfd, hamari2014}. Hardware security CTFs such as RHme~\cite{rhme} and CSAW ESC~\cite{csawesc} have demonstrated this motivational effect in practice, but their physical nature limits participation to students with access to dedicated hardware kits. By bringing CTF mechanics into a browser-based simulation, we combine the engagement benefits of gamification with the reach of web-based learning.
+
+An equally important motivation is the need to empower content creation by educators who may lack web development skills. Creating interactive educational content typically demands both domain expertise and software engineering proficiency---a combination that is rare and creates a significant bottleneck in pedagogical innovation. The vulnerability analysis conducted by Genova~\cite{genova2025} on three consumer IoT devices (TP-Link WR841N router, Ezviz C6N camera, Xiaomi Mi Router 4C) produced a rich corpus of documented findings---boot logs, UART transcripts, firmware dumps, filesystem structures, hardcoded credentials---that can serve as raw material for training exercises. However, transforming this raw material into structured CTF challenges has historically required programming effort that domain experts cannot justify. The knowledge of what to teach exists in the hardware security community, but the means to package it into interactive experiences does not. The no-code authoring interface proposed in this thesis addresses this bottleneck directly, enabling an instructor to compose a complete exercise---from PCB layout to terminal simulation---through visual editors and structured forms, without writing a single line of code.
+
+% ============================================================================
+\section{Operational Context and Actors}\label{sec:actors}
+% ============================================================================
+
+The platform serves two distinct user roles:
+
+\begin{itemize}
+    \item \textbf{Student.} The primary user of the simulation environment. The student interacts with the virtual PCB, uses the simulated instruments, and progresses through the exercise by completing objectives and discovering flag fragments. No prior experience with the platform is assumed; contextual instructions and hints guide the student through each step.
+
+    \item \textbf{Author (Instructor).} The user responsible for designing and configuring exercises. The author uses the settings interface to upload a PCB image, place components and measurement pins, define exercise steps and objectives, configure the terminal environment, and manage exercise presets. The author is assumed to have domain expertise in hardware security but not necessarily in web development.
+\end{itemize}
+
+In the current version, the platform operates in a single-user mode: each instance serves one student at a time, with no shared state between sessions. This design choice simplifies the architecture and eliminates the need for user authentication and access control, which are deferred to future work (Section~\ref{sec:future}).
+
+The separation between these two roles has an important architectural consequence: the entire authoring subsystem can be disabled in production without affecting the student experience. A production deployment exposes only the simulator route (\texttt{/}), while the authoring panel (\texttt{/settings}) is accessible exclusively in development builds. This separation ensures that the exercise configuration is immutable from the student's perspective, preventing accidental or malicious modification of the training content during a session. It also simplifies the security model: since students interact only with client-side simulation logic and never with the authoring API, the attack surface of a production deployment is minimal.
+
+The design also anticipates a future multi-instance deployment model in which a single author prepares exercises on a development instance and exports them as portable presets, which are then deployed across multiple read-only student instances. This workflow is already supported by the preset system (Section~\ref{subsec:preset-mgmt}): the author creates a preset, downloads the JSON file and the associated PCB image, and distributes them to any number of platform instances. No database synchronisation, shared storage, or network connectivity between instances is required.
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[
+        actor/.style={font=\small\bfseries},
+        uc/.style={ellipse, draw, fill=blue!6, minimum width=3cm, minimum height=0.7cm, align=center, font=\footnotesize},
+        sysbox/.style={rectangle, draw, dashed, gray, inner sep=10pt},
+        arr/.style={-, thick}
+    ]
+    % System boundary
+    \node[sysbox, minimum width=5.5cm, minimum height=7cm] (sys) at (0,0) {};
+    \node[font=\small\bfseries, gray] at (0, 3.8) {\pcbctf{} Platform};
+    % Student use cases
+    \node[uc] (uc1) at (0, 3) {Explore PCB};
+    \node[uc] (uc2) at (0, 2) {Measure pins};
+    \node[uc] (uc3) at (0, 1) {Connect UART};
+    \node[uc] (uc4) at (0, 0) {Extract firmware};
+    \node[uc] (uc5) at (0, -1) {Explore terminal};
+    \node[uc] (uc6) at (0, -2) {Complete exercise};
+    % Author use cases
+    \node[uc, fill=green!8] (uc7) at (0, -3) {Configure exercise};
+    % Actors
+    \node[actor] (student) at (-5, 0.5) {Student};
+    \node[actor] (author) at (5, -3) {Author};
+    % Stick figures
+    \draw (-5, 1.4) circle (0.25);
+    \draw (-5, 1.15) -- (-5, 0.5);
+    \draw (-5.3, 0.9) -- (-4.7, 0.9);
+    \draw (-5, 0.5) -- (-5.3, -0.1);
+    \draw (-5, 0.5) -- (-4.7, -0.1);
+    %
+    \draw (5, -2.1) circle (0.25);
+    \draw (5, -2.35) -- (5, -3);
+    \draw (4.7, -2.6) -- (5.3, -2.6);
+    \draw (5, -3) -- (4.7, -3.6);
+    \draw (5, -3) -- (5.3, -3.6);
+    % Lines
+    \foreach \u in {uc1,uc2,uc3,uc4,uc5,uc6}
+        \draw[arr] (student) -- (\u);
+    \draw[arr] (author) -- (uc7);
+    \end{tikzpicture}
+    \caption{Use case diagram showing the interactions of the two actors (Student and Author) with the \pcbctf{} platform.}
+    \label{fig:use-cases}
+\end{figure}
+
+% ============================================================================
+\section{Functional Requirements}\label{sec:functional}
+% ============================================================================
+
+The functional requirements are organised by subsystem and expressed below as prose paragraphs. Each requirement retains a unique identifier (RF-\emph{nn}) for traceability against the architecture and implementation chapters.
+
+\subsection{PCB Simulation}\label{subsec:req-pcb}
+
+The simulator displays a high-resolution image of a printed circuit board as the central interactive canvas~(RF-01). Students identify hardware components by clicking on predefined regions of this image, with the system highlighting the selected component and providing contextual information~(RF-02). To support detailed inspection of densely populated boards, the platform provides a magnifying lens tool that renders a zoomed view of the area under the cursor, with configurable radius and zoom level~(RF-03).
+
+\subsection{Measurement and Connection Tools}\label{subsec:req-tools}
+
+The platform simulates the physical instruments commonly used in hardware security assessments. A digital multimeter with two probes (red and black) supports voltage and resistance measurement modes, allowing students to practice identifying active pins and characterising electrical properties~(RF-04). A USB-to-Serial adapter with TX, RX, and GND pins simulates UART connectivity, enforcing the crossover convention---adapter TX connects to device RX and vice versa---so that students internalise correct wiring practice~(RF-05). For firmware extraction scenarios, an SPI flash programmer with six colour-coded probes (VCC, GND, CS, CLK, MOSI, MISO) validates role-based connections against the target device's pinout~(RF-06). All probe-based tools benefit from a snap-to-pin mechanism that automatically aligns probes to nearby measurement points within a configurable radius, reducing frustration from imprecise mouse placement~(RF-07).
+
+\subsection{Simulated Terminal}\label{subsec:req-terminal}
+
+The terminal subsystem provides an in-browser terminal emulator that displays command output and accepts user input~(RF-08). It operates on a virtual filesystem composed of directories and files, navigable through standard commands such as \texttt{ls}, \texttt{cd}, \texttt{cat}, \texttt{pwd}, \texttt{grep}, and \texttt{find}~(RF-09). To recreate the experience of interacting with an embedded device, the terminal supports configurable boot sequences with animated stage transitions that simulate bootloader and kernel startup~(RF-10). Flag discovery is woven into the terminal interaction through a progressive flag system, where individual flag fragments are unlocked as side effects of specific commands~(RF-11). A single exercise can include multiple terminal tabs---for instance, a UART console and a local analysis workstation---each with its own independent environment~(RF-12). The system enforces command-level constraints based on the current working directory, permission context, prerequisite conditions, argument patterns, and boot stage, ensuring that students follow a realistic sequence of operations~(RF-13).
+
+\subsection{Exercise Structure}\label{subsec:req-exercise}
+
+Exercises are organised as an ordered sequence of steps, each containing one or more objectives that the student must complete before advancing~(RF-14). The platform supports five distinct objective types: component identification, pin measurement, UART connection, terminal exploration, and firmware extraction~(RF-15). As objectives are completed, their associated flag fragments are concatenated to build the exercise flag progressively, giving students continuous feedback on their advancement~(RF-16). Upon completion of all steps, the platform displays a configurable completion dialog that can provide a download link, a redirect URL, or a copy-to-clipboard action for the assembled flag~(RF-17).
+
+\subsection{Authoring and Configuration}\label{subsec:req-authoring}
+
+The authoring subsystem enables instructors to create exercises without writing code. A visual editor supports drag-and-drop placement of components and measurement pins on the PCB image~(RF-18). A dedicated terminal configuration editor allows the definition of commands, virtual filesystems, boot sequences, and flag systems through structured forms~(RF-19), complemented by a terminal preview panel where authors can verify terminal behaviour without leaving the editor~(RF-20). The preset system supports saving, loading, updating, and deleting complete exercise configurations---each preset bundles an exercise definition together with its terminal configuration---enabling rapid iteration and sharing of exercises across deployments~(RF-21). Authors can also fine-tune built-in tool parameters such as magnifier radius and zoom level, UART connector persistence, and firmware dump probe layout~(RF-22). Finally, tool groups determine which instruments are available during each exercise step, allowing instructors to introduce tools progressively and avoid overwhelming students with options irrelevant to the current objective~(RF-23).
+
+% ============================================================================
+\section{Non-Functional Requirements}\label{sec:nonfunctional}
+% ============================================================================
+
+Beyond its functional capabilities, the platform is subject to a set of quality and architectural constraints that shape design decisions throughout. These non-functional requirements fall into three broad categories: accessibility and deployment, user experience, and maintainability and security.
+
+\paragraph{Accessibility and deployment.} The platform is accessible through a standard web browser without requiring any plugin, extension, or local software installation~(RNF-01). Deployment is equally straightforward: the entire application runs as a single Docker container or a standalone Node.js process~(RNF-02).
+
+\paragraph{User experience.} Each objective is accompanied by textual instructions and an optional hint, supporting self-paced learning without instructor intervention~(RNF-03). Interactions with probes, connections, and the PCB provide immediate visual feedback---colour changes, animations, snap indicators---so that students always understand the effect of their actions~(RNF-04). The interface adapts to different screen sizes, with a minimum supported resolution of 1280$\times$720 pixels~(RNF-05).
+
+\paragraph{Architecture and security.} All simulation logic---instrument readings, terminal command execution, flag validation---executes in the browser; the server is required only for initial page load and configuration persistence~(RNF-06). Once the exercise configuration has been loaded, the simulation operates without further server communication, ensuring resilience to network interruptions~(RNF-07). The codebase is written in \typescript{} with strict compiler settings to enable compile-time error detection and improve long-term maintainability~(RNF-08). The terminal system is configurable through a declarative schema, without requiring code changes for new exercises~(RNF-09). Critically, the platform never executes user-supplied commands on the server, eliminating an entire class of remote code execution vulnerabilities~(RNF-10). Each browser session operates independently, with no shared mutable state between concurrent users~(RNF-11).
+
+% ============================================================================
+\section{Use Cases}\label{sec:usecases}
+% ============================================================================
+
+The principal use cases for each actor are summarised below and correspond to the diagram in Figure~\ref{fig:use-cases}.
+
+\paragraph{Student use cases.}
+The student begins by exploring the PCB image using the magnifying lens to identify components and read markings~(CU-01). This is a deliberate pedagogical choice: before reaching for instruments, the student develops visual literacy---learning to distinguish SoC packages from flash chips, to recognise UART headers by their characteristic 3--4 pin arrangement, and to identify SPI flash by package type. Using the digital multimeter, the student then measures voltage and resistance on PCB pins to locate active interfaces~(CU-02). The progression from visual to electrical analysis mirrors professional practice: an experienced analyst does not randomly probe pins but uses visual cues to narrow the search space before taking measurements. Once candidate UART pins have been identified, the student establishes a serial connection using the USB-to-Serial adapter, respecting the TX/RX crossover convention~(CU-03). In firmware extraction exercises, the student connects the SPI flash programmer probes to the appropriate pins and initiates a dump~(CU-04). With a connection established or firmware extracted, the student explores the embedded system through the simulated terminal, navigating the filesystem, inspecting configuration files, and discovering flag fragments~(CU-05). The exercise concludes when the student has progressed through all steps and assembled the complete flag~(CU-06). The ordering of these use cases is intentional: it follows the hardware analysis methodology described in Section~\ref{subsec:methodology}, ensuring that the student develops skills in the same sequence they would apply in a real assessment.
+
+\paragraph{Author use cases.}
+The instructor uploads a PCB image and configures the visual layout by placing components, measurement pins, and connection points on the canvas~(CU-07). This visual approach to exercise authoring is a distinguishing feature: rather than writing JSON or YAML by hand, the instructor sees the PCB image and interacts with it directly, placing elements where they physically exist on the real board. Exercise steps, objectives, and their associated flag fragments are then defined through the structured editor~(CU-08). The step editor enforces structural constraints---each step must have at least one objective, each objective must have a type and a flag fragment---that prevent malformed exercises from being saved. The terminal environment---filesystem, commands, boot sequence, and flag system---is configured using the dedicated terminal editor and verified through the preview panel~(CU-09). The preview capability is critical for iterative development: the author can modify a command's output, click preview, and immediately see the rendered terminal response without saving or switching to the simulator. Finally, the instructor saves the complete exercise as a preset for distribution or later refinement~(CU-10).

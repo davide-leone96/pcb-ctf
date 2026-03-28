@@ -1,0 +1,109 @@
+% \documentclass[%
+% formato=a4paper,
+% corpo=11pt,
+% twoside,
+% stile=classica,
+% tipotesi=magistrale,
+% evenboxes,
+% english
+% ]{toptesi}
+
+\documentclass[11pt,a4paper]{report}
+% \usepackage[left=3cm, right=3cm, top=3cm, bottom=2.5cm]{geometry}
+\usepackage[top=3cm, bottom=2.5cm]{geometry}
+
+% Mandatory Packages
+\usepackage[utf8]{inputenc} % Editor encoding
+\usepackage[T1]{fontenc}    % Font enconding: T1 -> Italy and eastern countries
+\usepackage[english]{babel}
+% \usepackage{textgreek}      % Use greek letters as text symbols
+
+% Suggested Packages
+\usepackage{microtype}      % Font expansion
+
+% Packages
+\usepackage{hyperref}       % Hyperlinks
+\usepackage{booktabs}       % Additional table settings
+\usepackage{listings}       % Add source code, 
+\usepackage{csquotes}       % Advanced facilities for inline and display quotations
+\usepackage{multirow}       % Create tabular cells spanning multiple rows
+\usepackage{color}          % Foreground (text, rules, etc.) and background colour mgmt
+\usepackage{xcolor}
+\usepackage{graphicx}       % Enhanced support for graphics
+\usepackage{wrapfig}
+\usepackage{minted}
+\usepackage[ruled,vlined]{algorithm2e}
+% \usepackage{footmisc}
+\usepackage{                % Math packages
+    amsmath,%
+    stmaryrd,%
+    amssymb}
+% \usepackage[                % Bibliography
+% backend=bibtex,%
+% maxbibnames=99]{biblatex}
+% 
+% Utility Packages
+\setlength {\marginparwidth }{2cm}
+\usepackage{todonotes}      % TODOs
+
+% \hypersetup{
+%     pdfpagemode={UseOutlines},
+%     bookmarksopen,
+%     pdfstartview={FitH},
+%     colorlinks,
+%     linkcolor={blue},
+%     citecolor={blue},
+%     urlcolor={blue}
+%  }
+
+% Colors
+\definecolor{lbcolor}{rgb}{0.9,0.9,0.9}
+% \definecolor{amaranth}{rgb}{0.9, 0.17, 0.31}
+% \definecolor{backgray}{rgb}{0.9, 0.9, 0.9}
+% \definecolor{commentcolor}{rgb}{0.0, 0.5, 0.0}
+% \definecolor{OrangeString}{RGB}{240,78,0}
+% \definecolor{ChapBlue}{RGB}{0,0,175}
+
+% Listings settings
+% \lstset{
+%     language=C,
+%     showstringspaces=false,
+%     backgroundcolor=\color{backgray},
+%     identifierstyle=\color{black},
+%     keywordstyle=\color{amaranth}\bfseries,
+%     numberstyle=\color{purple},
+%     stringstyle=\color{OrangeString},
+%     commentstyle=\color{commentcolor},
+%     emph={uint8_t, uint16_t, uint32_t, int32_t, uint64_t, bool, size_t},
+%     emphstyle={\color{blue}},
+%     tabsize=4,
+%     breaklines=true
+% }
+
+% User-commands definition
+\newcommand{\tm}{\texttrademark}
+\newcommand{\regm}{\textsuperscript{\textregistered}}
+\newcommand{\cw}{\textit{ChipWhisperer}\tm}
+\newcommand{\des}{\texttt{DES}}
+\newcommand{\aes}{\texttt{AES}}
+\newcommand{\aess}{\texttt{AES-128}}
+\newcommand{\aesss}{\texttt{AES-196}}
+\newcommand{\aessss}{\texttt{AES-256}}
+\newcommand{\rsa}{\texttt{RSA}}
+\newcommand{\sbocs}{\texttt{S-Box}}
+\newcommand{\xaes}{\texttt{sbox\_aes}}
+\newcommand{\xfone}{\texttt{sbox\_freyre\_1}}
+\newcommand{\xftwo}{\texttt{sbox\_freyre\_2}}
+\newcommand{\xfthree}{\texttt{sbox\_freyre\_3}}
+\newcommand{\xhussain}{\texttt{sbox\_hussain\_6}}
+\newcommand{\xozkaynak}{\texttt{sbox\_ozkaynak\_1}}
+
+\newcommand{\xmega}{\texttt{XMEGA}}
+
+\newcommand{\sca}{\textit{side-channel analysis}}
+% \renewcommand{\mkbegdispquote}[2]{\itshape}
+
+
+
+
+\graphicspath{ {./images/} }

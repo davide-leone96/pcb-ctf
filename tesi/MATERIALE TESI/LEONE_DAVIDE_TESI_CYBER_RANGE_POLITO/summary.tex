@@ -1,0 +1,11 @@
+\chapter*{Abstract}\label{chap:Abstract}
+
+The rapid proliferation of Internet of Things (IoT) devices has introduced a vast and often poorly defended attack surface at the hardware level. Routers, cameras, industrial controllers, and other embedded systems are routinely deployed with exposed debug interfaces, unencrypted firmware, and hardcoded credentials. Despite this, practical training in hardware security remains confined to expensive professional courses and physical laboratories that require specialized equipment, limiting access for the vast majority of students and practitioners.
+
+This thesis presents the design and implementation of \pcbctf{}, a web-based interactive cyber range that enables hardware security training in a Capture The Flag (CTF) format entirely within the browser. The platform simulates the complete workflow of hardware analysis---from visual board inspection and electrical measurements to serial protocol connection, firmware extraction, and embedded system exploitation---without requiring any physical equipment or server-side code execution.
+
+The core contributions of this work are threefold. First, we propose an architecture for simulating hardware analysis instruments (digital multimeter, UART adapter, SPI programmer) with realistic feedback, driven entirely by client-side logic. Second, we design and implement a configurable terminal emulation system that reproduces embedded environments---including U-Boot bootloaders, Linux filesystems, and progressive flag discovery---through a declarative configuration language, without executing any code on the server. Third, we deliver a no-code authoring interface that allows instructors to build complete exercises through a visual editor, lowering the barrier for content creation.
+
+The platform is validated through a case study based on the analysis of a TP-Link WR841N router, demonstrating that a realistic multi-step exercise---covering component identification, UART connection, firmware extraction, and terminal-based vulnerability discovery---can be entirely configured and delivered through the proposed system.
+
+\pcbctf{} has been developed within the \artic{} project, part of Spoke~4 of the SERICS national research program funded under the Italian PNRR initiative.

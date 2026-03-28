@@ -1,0 +1,632 @@
+\chapter{Power Analysis}\label{chap:pow}
+
+    \section{Introduction to Side-Channel Analysis}\label{sec:sca_intro}
+        As briefly mentioned in the previous chapter, cryptanalysis includes an additional class of attacks whose approach significantly differs from linear, differential and algebraic analysis. This class, called \emph{side-channel analysis}, sets the focus on studying the physical platforms that hosts software or hardware implementations of cryptographic schemes. Such platforms, in the most common scenarios, can be identified as \emph{IoT} and small embedded devices: in reality, any analog or digital electronic circuit can be attacked. In summary, while classic cryptanalysis exploits the vulnerabilities of the algorithm itself, on a logical level, side-channel analysis studies the vulnerabilities of their implementation, on a physical level.
+    
+        The main methodology is based on the observation of the physical emissions of an operating device, like electromagnetic, heat and sound emissions. Additional parameters can be observed, although being not properly ``emitted'', such as the device power consumption or the time taken to execute a specific operation. The observation and retrieval of side-channel information allows the attacker to gather data that, if manipulated with proper methodologies, can eventually lead to the disclosure of the secret key used within the cipher (see Fig.~\ref{fig:side_channel}). This scenario, in which the attacker does not interfere with the observed object, is typical of so-called \emph{passive} attacks. Conversely, \emph{active} attacks expect the attacker to intentionally disturb the computations during the device execution, inserting faults or specially crafted values in the intermediate data treated by the cipher during an encryption/decryption operation (also called \emph{fault attacks})~\cite{sakiyama2016security}.
+        
+        Side-channel analysis groups multiple attack implementations, depending on the targeted emission, the most known being \emph{Power Attacks}, \emph{Timing Attacks}, \emph{EM Attacks} and \emph{Optical Attacks}~\cite{prinetto2020hardware}. The observation of the emissions of a device can be seen as a \emph{non-invasive} technique to gather side-channel information. The disassembly, in this case, is not required and the attack, generally, does not leave any trace on the chip package. For instance, when acquiring power-related information, probes may be attached externally to the device, generally on its external pins or on the nearby PCB traces. In other cases, such as electromagnetic observations, probes simply need to be placed in the proximity of the package without the need of physical contact, leaving absolutely no trace on the chip nor on the device enclosure. This goes in opposition to what happens with \emph{invasive} physical attacks, such as \emph{microprobing} and \emph{hardware reverse engineering}, in which the chip's die is extracted from its package (decapped) before being analyzed with very expensive instrumentation like scanning electron microscopes (SEMs).
+
+        In general, no real circuit is immune to \emph{passive} side-channel analysis: physical emissions are beyond any processor architecture or higher level specifications. They can be reduced and masked as much as to make an attack pointless, leading an attacker in spending more than it can retrieve from the attack itself. However, they cannot be prevented from happening, as they are intrinsically tied to the normal usage of a circuit. 
+
+        \begin{figure}[h]
+            \centering
+            \includegraphics[width=0.7 \columnwidth]{side_channel.pdf}
+            \caption{
+                    \label{fig:side_channel}
+                    Logical representation of the side-channel attack principles.
+            }
+        \end{figure}
+
+        % In the case of non-invasive side-channel analysis, academia has further distinguished between the so called \emph{passive side-channel attacks} and \emph{active side-channel attacks}. The former simply involve the observation of physical information leakage by the attacker, that will manipulate the harvested data with methodologies that can eventually help him/her retrieving the secret key used by the cipher. On the other hand, \emph{active} attacks expect the attacker to intentionally disturb the computations of the cryptographic algorithm, inserting faults or specially crafted values in the intermediate data treated by the cipher during an encryption/decryption operation (also called \emph{fault attacks})~\cite{sakiyama2016security}.
+
+    \section{Power Analysis}\label{sec:pow}
+        This thesis concentrates on \emph{passive} side-channel analysis, specifically targeting \emph{power attacks}. This methodology was firstly exposed in 1998 by \emph{Paul Kocher}, \emph{Joshua Jaffe} and \emph{Benjamin Jun} with their widely known publication ``Differential Power Analysis''~\cite{kocher1999differential}. This work laid the foundation for power-related side-channel attacks on computing systems, highlighting the importance of hardware as the backbone of computer system security and opening up a new chapter of exploration for cryptanalysis. Although Kocher's paper demonstrate the ability of power side-channel attacks to overcome the \des{} implementation, the overall methodology and its general effectiveness have been proven multiple times against a multitude of different deployments and ciphers. 
+        
+        Power analysis leverages the fact that the power consumed by a circuit varies according to the activity of its individual transistors and other components. Such transistors (mainly MOSFETs; FinFETs in more recent technologies) act as voltage-controlled switches, relying on the accumulation of electric charges across their terminals. The continuous toggling activity to which a device is subjected implies a continuous charge and discharge of these intrinsic capacitances present in the MOSes structures. This motion of electric charge (current) translates itself in power consumption and electromagnetic emissions, two parameters that, if properly observed, can disclose important ``clues'' on the data treated internally by a microprocessor.
+
+        It is important to highlight that different operations lead to different energy consumption profiles: an idle device consumes much less energy than a device performing a cryptographic operation (such operations are, in general, quite demanding in terms of computational resources, and thus require non-negligible energy needs). In summary, the power consumption of an integrated circuit or a larger device reflects the aggregate activity of its individual elements~\cite{kocher2011introduction}. Similarly, on a much finer grain, the toggling activity of transistors depends on the data processed by the circuit in a certain moment in time. To better indicate what is the main goal of the power observations carried by an attacker, we can \textbf{logically} distinguish among \emph{operation-dependent} and \emph{data-dependent} power consumption observations. The first relates to coarse grain observations: the attacker is interested in finding \emph{what} is the operation computed by the processor in a certain interval of time, not \emph{how} the operation is specifically manipulating the data. On the other hand, \emph{data-dependent} observations operate on a much finer grain: the attacker is interested in finding, in the specific, \emph{how} the \textbf{power trace} relates with the data handled by the processor~\footnote{With the term ``\textbf{trace}'' we indicate a collection of sample points captured during the entire (or partial) activity related to a certain operation performed by the device under attack. In particular, a ``\textbf{power trace}'' can be represented as an interpolated curve composed of many sample points, each of which corresponds to a specific quantized voltage value.}. Clearly, the first approach will be the one used by the attacker in the very first phases of the analysis: the goal is to gather as much information as possible about the executing conditions of the device. For instance, the attacker has to find, by simply observing the captured power trace(s), what is the time interval in which the processor is executing the main cryptographic operation, discarding other non-targeted computations. Once the main operation has been localized, the attacker switches to a data-dependent observation of the power consumption: the goal now is to carefully observe a specific time interval (where the cryptographic operation is supposed to happen) and relate the power consumption to the data handled by the device. This last step is what will allow the attacker to retrieve the internal information treated by the cipher, such as the round keys used. It is evident that the second observation model is way more complex that the first one. While an operation-dependent observation tries to relate a certain computation to a time interval in the captured trace (hence, trying to find a reference on the $x$ axis), a data-dependent observation tries to relate each voltage sample to a specific data bus transaction (thus, primarily observing what happens on the $y$ axis).
+        
+        As showed in the next sections, operation-dependent observations are carried on mostly in the case of \emph{Simple Power Analysis} (or \emph{SPA}), whereas data-dependent observations are reserved to the case of \emph{Differential} and \emph{Correlation Power Analysis} (or \emph{DPA} and \emph{CPA}, respectively). It is extremely important to highlight the fact that, while an operation-dependent observation can be done even with a single power trace, a data-dependent analysis is not possible if not by capturing a multitude of traces to be examined at a later time using statistical methods (as no manual observation is feasible in this case).
+
+        \bigskip
+        
+        On a more physical level, it is important to highlight that the total amount of power consumed by a digital circuit is divided into two major components, depending on the nature of the consumption itself: \textbf{static power} and \textbf{dynamic power}~\ref{eq:tot_power}.
+        Static power indicates the amount of energy consumed whenever the circuit is powered on, independently on the toggling activity and on the operating frequency: a device running idle or at its full performance consumes roughly the same amount of static power. On the other hand, dynamic power indicates the amount of energy consumed due to the switching activity of the transistors: in this case, the power consumption varies depending on the frequency at which the transistors switch their state. Dynamic power can be further divided into two components~\ref{eq:stat_dyn_power}: the \textbf{short-circuit power} and the \textbf{switching power}. The first component corresponds to the power consumed during the switching transient in a CMOS circuit: it is considered negligible in most of the cases due to its reduced impact with respect to the switching power. The second component depends on the circuit capacitance $C$, on the clock frequency $f_{clk}$, on the supply voltage $V_{dd}$ and finally on the switching activity $E_{sw}$, which represents the probability of a transistor to toggle its state.
+
+        \begin{equation}\label{eq:tot_power}
+            P_{tot} = \underbrace{P_{leak}}_{P_{static}} + \underbrace{P_{sc} + P_{sw}}_{P_{dynamic}}
+        \end{equation}
+
+        \begin{align}\label{eq:stat_dyn_power}
+            P_{static} = I_{leak} V_{dd}, && P_{dynamic} = P_{sc} + P_{sw} \approx P_{sw} = \frac{1}{2} E_{sw} f_{clk} C V_{dd}^2
+        \end{align}
+
+        Every power attack leverages the observation of the \emph{dynamic power} component of a circuit total power consumption: the \emph{static power}, given its constant nature, does not reflect any toggling activity, therefore does not relates to the actual information propagation happening within the circuit. On the other hand, by observing the dynamic power the attacker is able to correlate, both qualitatively and quantitatively, the power consumption to the stream of information processed by the microprocessor. 
+        
+        In a real scenario, the attacker that inserts the instrumentation probes on the power supply pins of the chip will observe the total power consumption, namely the sum of both static and dynamic components. However, this poses no problem regarding the ultimate goal of the attacker: as with every variable signal, it is sufficient to remove the constant component (the static power) from the signal to obtain only the variable one (the dynamic power).
+
+        \subsection{Attack Instrumentation and Circuit Configuration}
+            To carry out a power attack full access to the device to be attacked is required. For the purposes of a cryptanalyst or penetration tester, the device can be provided directly by the company that has an interest in the results of the attack, in order to assess the security of the product or to find criticalities in its implementation. In the case of a malicious actor, the access to the device can be obtained by simple purchase (the information extracted could be worth much more than the cost of the product) or directly by stealing it. The access to the device due to temporary inattention of the respective owner is unlikely given the time and resources required to build some prior knowledge of the device under attack (e.g., to locate the main cryptographic chip and its power pins in the PCB). It should also be noted that although the required instrumentation is not overly expensive, it cannot be considered easily transportable. In fact, the attacker needs two mandatory tools to first capture the side-channel information and, at a later stage, to process the captured data. These two correspond in most (if not all) cases, to an oscilloscope and a personal computer. In addition, some low-cost off-the-shelf electronics are also needed, as well as an entry-level electronic knowledge. Finally, in some cases, additional tools such as a soldering station may be needed to be able to remove any unwanted components from the device's PCB. In section~\ref{sec:cw} new powerful instruments are presented, already available for purchase and capable of partially easing the problems listed above.
+
+            % As mentioned, the observation of the power consumption of a device is done leveraging an oscilloscope (or any other digital device capable of capturing and storing voltage samples).
+            
+            The power consumption of the device can be expressed as:
+
+            \begin{equation}
+                P_{device} = V_{dd} I_{device}
+            \end{equation}
+
+            Since the supply voltage $V_{dd}$ is constant, the variations of the device's power consumption can only be appreciated by observing the current absorbed $I_{device}$. However, no oscilloscope is able to relate a current variation to the time domain: any trace represented by the instrument corresponds to a time-voltage relation. Therefore, it is mandatory to include the device under attack within an adapting circuit able to ``translate'' the variable current consumption into a variable voltage, to be observed with the oscilloscope probe. Such circuit, called \emph{current sensing circuit}, is extremely simple as it consists of a single shunt resistor, leveraging the basics of \emph{Ohm's} law~\footnote{\emph{Ohm's} law points out that the voltage drop across a resistor is linearly proportional to the current that flows through it: $V_{R} = RI$.}. A shunt resistor is a resistor of very low but accurately known value. It is placed in series to the device, so that virtually all of the current to be measured flows through it. The low value of the resistance allows to measure the resulting voltage drop without significantly interfering with the rest of the circuit (meaning that the device still receives roughly the same supply voltage as before and that the current component due to the shunt resistor is negligible). The shunt resistor can be placed in a high-side or low-side configuration with respect to the device: the position does not significantly impact the voltage measures. In this thesis, an high-side placement of the shunt resistor is considered, as pictured in Fig.~\ref{fig:scope_circuit}.
+
+            \begin{figure}[htp]
+                \centering
+                \includegraphics[width=1 \columnwidth]{scope_circuit.pdf}
+                \caption{
+                        \label{fig:scope_circuit}
+                        Implementation of a current sensing circuit with a high-side shunt resistor.
+                }
+            \end{figure}
+            
+            % The position of the oscilloscope probe, however, does make some difference.
+            % Since the interest in the measurements concerns only the voltage variations and not its constant values, the probe must be AC coupled. By doing so, the constant component of the voltage is discarded, passing only its variations (that are consequence of the different current absorptions of the device under attack). However, having only two points where to connect the probe (in parallel to the shunt resistor or in parallel to the device itself) it is preferable to measure at the point where the constant voltage to be discarded is lower. Assuming a circuit configuration like the one depicted in Fig.~\ref{fig:scope_circuit}, we can express each voltage as a sum between a constant component and a variable one:
+
+            % \begin{align}
+            %     V_{dd}      &= V_{dd_{const}} \pm \frac{1}{2} \Delta V_{dd}\\
+            %     V_{s}       &= V_{s_{const}} \pm \frac{1}{2} \Delta V_{s}\\
+            %     V_{\mu P}   &= V_{\mu P_{const}} \pm \frac{1}{2} \Delta V_{\mu P}
+            % \end{align}
+
+            % We can assume the shunt resistor to have an ideal linear characteristic, therefore we can drop the variable component from $V_{s}$.
+
+            % If we place our probe across the shunt terminals (i.e. in the opposite configuration with respect to Fig.~\ref{fig:scope_circuit}), we get:
+
+            % \begin{align*}
+            %     V_{s}   &= V_{dd} - V_{\mu P} =\\
+            %             &= (V_{dd_{const}} - V_{\mu P_{const}}) \mp \frac{1}{2} \Delta V_{\mu P}
+            % \end{align*}
+
+            % Conversely, if we place the probe across the device terminals (i.e. in the exact same configuration as shown in Fig.~\ref{fig:scope_circuit}), we get:
+
+            % \begin{align*}
+            %     V_{\mu P}   &= V_{dd} - V_{s} =\\
+            %                 &= (V_{dd_{const}} - V_{s_{const}}) \pm \frac{1}{2} \Delta V_{\mu P} =\\
+            %                 &= V_{\mu P} \pm \frac{1}{2} \Delta V_{\mu P}
+            % \end{align*}
+
+            To implement the overall circuit the attacker has to firstly locate the chip under attack and find its main power supply pins (possibly using the related datasheet, assuming it is publicly available). Once the pins located, the attacker has to find a way to insert the shunt resistor. Some manipulation of the PCB is required, such as desoldering the $V_{dd}$ pin and soldering the shunt in place. If the resistor cannot be inserted (e.g., if a
+            device uses an internal battery), the device’s internal resistance is often sufficient~\cite{kocher2011introduction}. Once the circuit completed, the attacker simply needs to connect the oscilloscope probe to the shunt resistor terminals. The corresponding voltage drop is measured: each time the current absorption increases due to heavier computational requirements the voltage drop across the shunt resistor increases in turn. Therefore, positive spikes on the traces captured correspond to spikes in the current consumption. Conversely, negative spikes are related to a sudden decrease in the power consumption (the current in the sensing circuit lowers so as the measured voltage drop). The probe must be AC-coupled: this allows to cut-off the entire DC component of the signal, keeping only the voltage variations around the rejected mean value.
+
+            % The use of lab-grade instruments is crucial when dealing with hard-to-measure parameters such as the current consumption of a microcontroller. 
+            
+            % The use of proper sampling techniques can act as an additional key factor in achieving a successful attack, especially when dealing with statistical attacks such as DPA and CPA. Synchronous sampling allows to conduce an attack with a much lower sample rate~\cite{o2015synchronous} since the jitter among the samples that compose different captured traces is significantly reduced. This implies lower hardware requirements to conduct the attack, thus enabling for cheaper instruments like low-cost oscilloscopes and other high-speed digital-to-analog conversion systems. With this method, the voltage samples that compose a captured trace are all synchronized with a clock edge of the device (in our case, the rising edge). Synchronous sampling also allows for an easier visual inspection of the captured traces, which is particularly useful when finding for temporal references in the case of simple power analysis. In Fig.~\ref{fig:sampling} we report an introductory example of synchronous sampling~\footnote{Synchronous sampling will be further explained in section~\ref{sec:cw}.}.
+            
+            
+            % the use of noise-shielded interconnects and proper sampling techniques can be the key factor in achieving a successful attack. As mentioned in section~\ref{sec:cw}, this entire thesis work leverages the use of the \cw{} board, which allows, by default, to capture the power traces of a device by sampling in-sync with the device clock. Synchronous sampling allows to conduce an attack with a much lower sample rate~\cite{o2015synchronous} since the jitter is significantly reduced. 
+
+            In general, as recalled by Kocher itself, measurements taken closer to the cryptographic component will generally be of better quality. In the case the chip has multiple power supply pins, the attacker should measure the voltage on the one that directly powers the targeted internal circuitry. The removal of decoupling capacitors is beneficial as well, as they tend to eliminate rapid voltage variations, working against the measurements goals. In addition, it is recommended to use quality probes and interconnects, possibly shielded to avoid the influence of noise from the surrounding environment. Finally, following the same noise-reducing principle, the attacker should use an external bench-grade power supply to power the device under attack with the cleanest possible supply voltage: the measured voltage variations shall come from the device, not from the external environment.
+
+            As a consequence of these arrangements, the attacker can reduce the total number of traces to be collected. A reduced number of traces is especially useful when considering the heavy statistical computations required for both DPA and CPA: less traces means less computational effort which leads to a faster attack and, potentially, to a better final result (see~\ref{sec:dpa} and~\ref{sec:cpa}).
+        
+    % * Introduction
+    % * What are the main historical discovers?
+    % * Cite papers and hacker conferences
+
+    \section{Simple Power Analysis (SPA)}\label{sec:spa}
+        \emph{Simple Power Analysis} is the first technique an attacker can leverage to have some initial understandings of the device operations, basically corresponding to what previously referred as \emph{operation-related} observations. As defined by Kocher, Jaffe and Jun, SPA is ``\emph{a technique that involves directly interpreting power consumption measurements collected during cryptographic operations. SPA can yield information about a device’s operation as well as key material.}''~\cite{kocher1999differential}. The analysis exploits qualitative observations of the power consumption, often done visually by the attacker itself. The goal is to leverage relevant power fluctuations and macro-characteristics to identify the microprocessor activity. By investigating the overall shape of a single power trace (nothing prevents observing multiple traces), the attacker can recognize the presence of a certain algorithm, possibly distinguishing its individual internal operations (see example~\ref{par:ex_spa2}). In some cases, an in-depth analysis can go to the extent of discerning each single clock cycle of the device under attack, allowing the attacker to recognize and identify the assembly operations performed by the microcontroller, as demonstrated in example~\ref{par:ex_spa1}.
+
+        Given the nature of the observations made with SPA, it is possible to exploit the information obtained from multiple power traces as additional clues for a reverse engineering attack. When stimulated with different inputs, the power leaks emitted by the device can report different paths in the the code flow, highlighting the presence of possible conditional branches. Again, an example of this scenario is reported in~\ref{par:ex_spa3}.
+        
+        With SPA, however, it is very unlikely for the attacker to retrieve the data related to a cipher key: data-related observations, in the case of block cipher implementations, are almost unfeasible without relying on statistical computations. In any case, the basic information gathered is of extremely importance for the next steps of the analysis, as it allows the cryptanalyst to understand the device behavior and the overall environment. In summary, SPA provides a very effective and efficient way to obtain the information necessary to solve for the secret keys, therefore, it should not be an overlooked step~\cite{kocher2011introduction}.
+
+        \subsection{SPA: Attack Demonstrations}\label{subsec:SPA_examples}
+        Used as a tool to identify macro-characteristics of the device power consumption, a carefully crafted SPA attack can also be leveraged to infer even smaller clues about the operations performed by a device. 
+        
+        % The use of lab-grade instruments is crucial when dealing with hard-to-measure parameters such as the current consumption of a microcontroller: the use of noise-shielded interconnects and proper sampling techniques can be the key factor in achieving a successful attack. As mentioned in section~\ref{sec:cw}, this entire thesis work leverages the use of the \cw{} board, which allows, by default, to capture the power traces of a device by sampling in-sync with the device clock. Synchronous sampling allows to conduce an attack with a much lower sample rate~\cite{o2015synchronous} since the jitter is significantly reduced. This implies lower hardware requirements to conduct the attack, thus enabling for cheaper instruments like low-cost oscilloscopes and other high-speed digital-to-analog conversion systems. With this method, the voltage samples that compose a captured trace are all synchronized with a clock edge of the device (in our case, the rising edge). Synchronous sampling also allows for an easier visual inspection of the captured traces, which is particularly useful when finding for temporal references in the case of simple power analysis.
+
+        This section demonstrates what an attacker can deduce by simply observing a power trace captured using a synchronous sampling technique. The capture tool used is a \cw{} \emph{Lite} board, connected to the target device via a coaxial SMA probe, whose terminal is connected between the chip itself and the shunt resistor. In our case, the chip is an \texttt{ATXMEGA128D4} 8-bit RISC microcontroller, produced by \emph{Atmel}. Additional information about the setup used for this thesis work will be given in~\ref{sec:cw}.
+
+\newpage
+
+        \paragraph{Example 1 - Annotating a simple C program}\label{par:ex_spa1}
+            \noindent The example below demonstrates to what extent it is possible to correlate a certain operation with its power trace. Let us assume being in possession of a given \texttt{C} program, executed by the \xmega{} target. Let us also assume the knowledge of the related assembly code. 
+            
+            \noindent The \texttt{C} code is the following:
+            
+            \begin{minted}[linenos=true,bgcolor=lbcolor,numberblanklines=true,showspaces=false,breaklines=true]{C}
+                int main(void)
+                {
+                    volatile long int A = 0x2BAA;
+                    while(1)
+                    {
+                        A *= 2;
+                        __asm__("nop");
+                        __asm__("nop");
+                    }
+                }
+            \end{minted}
+
+            \noindent The related \texttt{AVR} assembly code is the following:
+
+            \begin{minted}[linenos=true,bgcolor=lbcolor,numberblanklines=true,showspaces=false,breaklines=true]{text}
+                        A *= 2;
+                79c:	89 81   ldd r24, Y+1 ; 0x01
+                79e:	9a 81   ldd r25, Y+2 ; 0x02
+                7a0:	ab 81   ldd r26, Y+3 ; 0x03
+                7a2:	bc 81   ldd r27, Y+4 ; 0x04
+                7a4:	88 0f   add r24, r24
+                7a6:	99 1f   adc r25, r25
+                7a8:	aa 1f   adc r26, r26
+                7aa:	bb 1f   adc r27, r27
+                7ac:	89 83   std Y+1, r24 ; 0x01
+                7ae:	9a 83   std Y+2, r25 ; 0x02
+                7b0:	ab 83   std Y+3, r26 ; 0x03
+                7b2:	bc 83   std Y+4, r27 ; 0x04
+                    __asm__("nop");
+                7b4:	00 00   nop
+                    __asm__("nop");
+                7b6:	00 00   nop
+                while (1)
+                7b8:	91 cf   rjmp .-222  ; 0x6dc <main+0x60>
+            \end{minted}
+
+            \noindent As it is possible to see by comparing the two listings, the \texttt{AVR} compiler translates the \texttt{C} code into 15 assembly operations: 12 for the main computation, 2 for the two \texttt{NOP}s and 1 for the \texttt{while(1)} instruction. By referring to the datasheet related to the \texttt{XMEGA} family of microcontrollers~\cite{xmega} we obtain that:
+
+            \begin{itemize}
+                \item the \texttt{ldd} instructions take 3 clock cycles each;
+                \item the \texttt{add} and \texttt{adc} instructions take 1 clock cycle each;
+                \item the \texttt{std} instructions take 2 clock cycles each;
+                \item the \texttt{rjmp} instruction takes 2 clock cycles.
+            \end{itemize}
+
+            Fig.~\ref{fig:spa_example} shows two annotated graphs for two different captured power traces. Both graphs represent the end result of an SPA attack: the observed power leakage was enough to obtain important information about the computations done by the device. Namely, the bottom graph refers the specific case just mentioned (identifiable by the presence of two \texttt{NOP}s instructions). The image proves that it is possible to locate each assembly instruction by observing its related spike/power sample in the trace graph. In detail, each major spike in the image represents the very first sample among the four collected for each clock cycle of the target (see Fig.~\ref{fig:sampling}). To prove the correctness of the analysis let us remove one of the two \texttt{NOP}s and compare the new trace with the previous one: if the new trace obtained shows one spike less then our annotations are correct. The graph corresponding to this test is the top one in the same image~\ref{fig:spa_example}. The only major difference in the collected samples consists in the lacking of the peak related to the \texttt{NOP} instruction we just removed, hence confirming our annotations.
+            
+            \begin{figure}[htp]
+                \centering
+                \includegraphics[width=0.7 \columnwidth]{spa_example.png}
+                \caption{
+                        \label{fig:spa_example}
+                        Visual analysis of two slightly different power traces: the second one includes an additional \texttt{NOP} instruction, denoted by an additional spike in the trace. For both traces, the attacker is able to group the various peaks into the corresponding sequences of assembly instructions.
+                }
+            \end{figure}
+
+\newpage
+
+        \paragraph{Example 2 - Annotating AES-128}\label{par:ex_spa2}
+            % Simple power analysis can give an attacker a rough idea of the time position of a specific operation done by the device under attack. An attacker can therefore observe a wide portion of an entire device computation, possibly inferring what variant of a specific algorithm is executed. 
+            
+            Fig.~\ref{fig:spa_example_aes2} reports the observations and consequent annotations done on a power trace referring the execution of \aess{}. A simple qualitative observation is sufficient for an experienced attacker to infer the operations executed: the various colored groups refer, in fact, to the different operations that compose the \aess{} algorithm, such as the \texttt{ShiftRows} and \texttt{MixColumns} operation. The case of the \texttt{ShiftRows} step is striking: the presence of 3 main spikes clearly indicates the 3 rotations done on the State matrix (the first row of the State is kept as is). Additionally, a closer look to the the main peaks present in both the \texttt{AddRoundKey} and \texttt{SubBytes} sets can give a further clue for the attacker: the fact that each group contains exactly 16 main spikes, each related to a different byte of the State, confirms the presence of a 128-bit block cipher.
+
+            \begin{figure}[htp]
+                \centering
+                \includegraphics[width=1 \columnwidth]{spa_example_aes2.png}
+                \caption{
+                        \label{fig:spa_example_aes2}
+                        Annotations of the \emph{key Whitening} operation followed by the very first round of \aess{}.
+                }
+            \end{figure}
+
+\newpage
+
+        \paragraph{Example 3 - Highlighting Code Flow Differences}\label{par:ex_spa3}
+            Superimposing and observing multiple traces can highlight differences in the flow of the code executed by the device. Each trace captured is related to a different execution of the target device: similarly to a chosen plaintext attack, the attacker can submit a different set of inputs per execution. In this example, the \texttt{C} code executed by the device completes a password check by sequentially checking each submitted character: if the character is different from the expected one then the loop that iterates on all the characters stops iterating, jumping on the code section in charge of emitting an error code.
+
+            \noindent The \texttt{C} code of the example is the following:
+
+            \begin{minted}[linenos=true,bgcolor=lbcolor,numberblanklines=true,showspaces=false,breaklines=true]{C}
+                // Hardcode expected password
+                char passwd[32];
+                char correct_passwd[] = "h0px3";
+                //Get user password
+                my_puts("Please enter password to continue: ");
+                my_read(passwd, 32);
+                uint8_t passbad = 0;
+                trigger_high(); // Trigger for trace capture
+
+                // sizeof(correct_passwd) == 6
+                for (uint8_t i = 0; i < sizeof(correct_passwd); i++) {
+                    if (correct_passwd[i] != passwd[i]) {
+                        passbad = 1;
+                        break;
+                    }
+                }
+                if (passbad) {
+                    my_puts("PASSWORD FAIL\n");
+                    led_error(1);
+                }
+                else {
+                    my_puts("Access granted, Welcome!\n");
+                    led_ok(1);
+                }
+            \end{minted}
+
+            Figure~\ref{fig:spa_example3} shows the alignment and superposition of 36 different power traces, each corresponding to a different possible input character (assuming the password cannot contain characters out of this set). The superposition highlights the presence of different paths in the code flow: in this case, character ``\texttt{h}'' leads to a unique power consumption profile, proving the presence of a conditional branch. Since all possible character have been tested, the attacker evinces that ``\texttt{h}'' must be a character of the password. The attacker can now iterate the same attack for each of the remaining characters: eventually, the entire password will be revealed and the password check cracked.
+
+            \begin{figure}[htp]
+                \centering
+                \includegraphics[width=0.8 \columnwidth]{spa_example3.png}
+                \caption{
+                        \label{fig:spa_example3}
+                        SPA used to highlight the presence of conditional branches in the code flow.
+                }
+            \end{figure}
+
+        % * Cosa è
+        % * Cosa permette di fare
+        % * In cosa consiste un attacco
+
+\newpage
+
+    \section{Differential Power Analysis (DPA)}\label{sec:dpa}
+        \emph{Differential Power Analysis} (or \emph{DPA}) is the first of the two main statistics-based methods regarding the class of power side-channel attacks. DPA allows the attacker to conduct \emph{data-related} observations, correlating the power consumption measured in a certain instant in time to the data handled by the microprocessor under attack. In contrast with SPA, statistical analysis like DPA normally require a large amount of power traces to achieve a key recovery. In some cases, the collected traces may need an additional conditioning step before the main statistical computations. For instance, the attacker may want to remove unwanted samples (which may refer to operations preceding or following the targeted one) and to remove possible alignment errors. The temporal alignment of the collected traces can in fact significantly improve the efficiency of the attack and the quality of the results obtained. Trace alignment becomes a mandatory step in all those real-world scenarios where the trace capture is launched in slightly different time instants. The misalignment can also be caused by the presence of jitter between the sampling clock and the device clock: the use (if possible) of synchronous sampling solves this problem (see Fig.~\ref{fig:trace_alignment}).
+
+\bigskip
+
+        \noindent DPA bases its observations on the existence of an intermediate value within the block cipher data that, if considered in the ensemble of the implementation environment, can be physically correlated to a specific contribute to the power consumption. This intermediate value must also be the result of an operation involving the plaintext (ciphertext) and (part of) the key.
+        
+        These two ``rules'' are based on the (correct) assumption that every single bit transferred on the data bus causes a certain amount of power consumption. The interconnects that form the parallel data bus between the register file and the processor core can be (roughly) seen as load capacitances that are charged/discharged at each data transfer. As shown in Fig.~\ref{fig:dpa_bus}, different bit transfers imply different spikes on the chip power rail: it follows that if more bus lines have to be charged, more current will be needed to charge the related parasitic capacitances. Differential power analysis exploits the correlation between the value assumed by a single transferred target bit and the consequent presence of a spike in the microcontroller power rail. If the bit is \texttt{1}, we assume the presence of a spike in the captured power trace, while if the bit is \texttt{0}, we assume its absence. In most of the cases the bit under observation makes up the result of the \texttt{XOR} operation between the plaintext and the cipher key, so to satisfy the rules previously mentioned. As a tacit convention, generally this bit coincides with the LSB: in reality every bit position can be considered. 
+
+        This assumption is what defines the most common policy of a DPA \emph{prediction function}. This function defines the criterion to be applied when correlating the power consumption to the data processed internally by the block cipher implementation. Several policies may be defined: some may lead to better results than others, depending on the physical environment in which the attack is applied. Moreover, several prediction functions can be used in the same attack: the different results obtained can be compared with each other to find trade-offs between the quality of the results and the computational complexity required to obtain them. 
+        
+        % The attack involves the construction of a \emph{prediction function}. Multiple policies can be associated to this function and multiple functions can be used in the same attack. The most common policy supposes to associate the energy consumption recorded in a specific time instant with the value assumed by a single bit of the the intermediate result 
+        
+        The following step of the attack involves the so called \emph{selection function}. Its goal is to apply the policy dictated by the prediction function to the collected power traces. Assuming the most common policy just mentioned, the selection function evaluates and separates the traces into two distinct sets: the first is associated to the target bit having value \texttt{1}, while the second relates to the target bit having value \texttt{0}. To partition the various traces, the selection function must leverage some partial information coming from the block cipher: the intermediate value. However, considering the nature of the attacker's target operating environment, no encrypted data is directly observable apart from side-channel emissions. In any case, if the attacker were able to extract intermediate data directly from the device, it would make no sense to attempt a side-channel attack in the first place.
+
+        To find this intermediate value, a reduced replica of the block cipher under attack is built. This is possible thanks to the open source nature and public availability of the specifications of modern block ciphers, which all follow \emph{Kerckhoffs’ Principle}.
+
+        In many real-world scenarios involving \aess{}, for instance, the model built by the attacker replicates a very small portion of the block cipher algorithm, formed by combining the Key Whitening operation (\texttt{AddRoundKey}) and the subsequent \texttt{SubBytes} step (the one related to the first round). The result obtained with this ideal replica is then masked in order to isolate the targeted bit. The selection function will then assign each trace to one set or the other according to the bit's value. The choice of the \texttt{AddRoundKey} and \texttt{SubBytes} operations for the model is not accidental: as mentioned in~\ref{subsubsec:keyschedule}, only the 128-bit variant of \aes{} uses the entire main secret as round key for the very first \texttt{AddRoundKey} operation. Therefore, by targeting the Key Whitening step, the attacker can expect to retrieve the main secret immediately, without having to analyse multiple rounds or to resort to the key schedule algorithm.
+
+        % This is where simple power analysis comes in handy: by visually analyzing the computations carried by the device, the attacker can infer what is the block cipher algorithm executed by the microprocessor~\footnote{This is possible thanks to \emph{Kerckhoffs’ Principle} and the open source nature of modern encryption algorithms: the attacker can leverage all the information necessary to infer the algorithm executed by the implementation under attack.} (see example~\ref{par:ex_spa2}). In addition, it is important to recall that passive side-channel attacks like SPA, DPA and CPA can leverage the known-plaintext attack model. The union of these two main factors is what enables the attacker to exploit the knowledge of an intermediate value without having to actually extract it from the device. Once an intermediate value found, the selection function can finally discern between the two sets deciding at each iteration in which set the current trace needs to be placed in.
+            
+        Once the partitioning phase has evaluated the entire trace collection, two representative average traces are computed for both of the two sets. Finally, the difference among these traces is determined. If the choice of which trace is assigned to each set is uncorrelated to the measurements contained in the traces, the difference in the sets' averages will approach zero as the number of traces increases. Otherwise, if the partitioning into subsets is correlated to the trace measurements, the averages will approach a non-zero value~\cite{kocher2011introduction}. Given enough traces, extremely tiny correlations can be isolated no matter how much noise is present in the measurements. The presence of non-zero values in the differential trace indicates that the partitioning phase (and the policy applied) correctly assumed the correlation between the power samples and the value of the observed intermediate bit. Better policies better highlight the differences between the two sets: having a ``good'' prediction means that the attacker is able to correctly assume the correlation between the device power consumption and the data handled by it. Consequently, a good prediction function provides better results in lower computational time.
+
+        In Fig.~\ref{fig:dpa_kocher_pdf}, provided by Kocher in~\cite{kocher2011introduction}, the authors show two probability distribution functions of measurements obtained at a certain offset in a set of collected traces. The two Gaussian curves have been obtained by partitioning the entire trace collection in two main sets following the exact same selection function presented above. The distance between the two curves is due to the partitioning applied: a good prediction policy better distances the two curves, as the partitioning better separates the traces collected. As a consequence, a higher distance between the two Gaussians indicates the applied prediction function leads to better quality of the final results, meaning the attacker can retrieve a larger portion of the key in less time. As highlighted by the authors, the left-hand side curve (LSB @ ``\texttt{1}'') presents a power consumption with a lower mean with respect to the curve on the right-hand side (LSB @ ``\texttt{0}''). This counterintuitive scenario is due to the placement of inverters by logic synthesis tools and other design details, de facto making it possible for either value to consume more power. In any case, what matters is that these two distributions are significantly different, demonstrating that the power consumption is statistically correlated to the LSB of the \sbocs{} output~\cite{kocher2011introduction}.
+
+        % The probability distribution functions in the graph refer to a specific point in time, meaning that only the power samples at a specific offset have been considered for both sets. However, not the whole set of samples that compose the $i$-th trace can produce such widely spaced Gaussian curves: in many cases, i.e. whenever there is no correlation between the power consumption and the specific bit considered, the two distributions overlap, indicating that no difference has been detected by the partitioning step. These points in time (to which the corresponding voltage samples correspond) appear in the final differential trace as flat regions converging towards the value 0, meaning that no difference has been highlighted. To have a better understanding of the various traces obtained with DPA, please refer to the example~\ref{subsec:dpa_example}.
+
+
+        \begin{figure}[htp]
+            \centering
+            \includegraphics[width=0.7 \columnwidth]{dpa_kocher_pdf.png}
+            \caption{
+                    \label{fig:dpa_kocher_pdf}
+                    Visual representation of the effects due to partitioning: the higher the distance between the two curves the better the prediction function~\cite{kocher2011introduction}.
+            }
+        \end{figure}
+
+        \begin{figure}[htp]
+            \centering
+            \includegraphics[width=1 \columnwidth]{dpa_bus.pdf}
+            \caption{
+                    \label{fig:dpa_bus}
+                    Visual representation of the effect of data bus transfers on the power rails, assuming a microcontroller with precharge logic.
+            }
+        \end{figure}
+
+        \begin{figure}[htp]
+            \centering
+            \includegraphics[width=0.7 \columnwidth]{trace_alignment.png}
+            \caption{
+                    \label{fig:trace_alignment}
+                    Traces affected by high clock frequency jitter before and after trace alignment~\cite{varchola2012differential}.
+            }
+        \end{figure}
+
+        \subsection{DPA: Attacking an \aess{} software implementation}\label{subsec:dpa_example}
+
+            This example illustrates the main operations that characterize a DPA attack against \aess{}: for the sake of brevity, let us assume the attacker has already collected a number $N$ of different [plaintext - trace] pairs ($[P_i, T_i]$). Each power trace is composed by $S$ sample points: each point corresponds to a quantized voltage measure.
+
+            In a real scenario, a complete DPA attack involves a multitude of iterations, primarily due to:
+
+            \begin{itemize}
+                \item The number of \texttt{[plaintext - trace]} pairs collected;
+                \item The number of samples that make up each power trace;
+                \item The number of bytes of the key (out of 16) the attacker wants to retrieve;
+                \item The number of iterations necessary to recover each byte of the key ($2^8 = 256$ iterations needed per byte).
+            \end{itemize}
+
+            A complete DPA attack is carried on using an iterative \emph{Divide et Impera} approach, meaning that all the 16 bytes that compose an \aess{} key are addressed one at a time. This allows to break the attack in 16 different and sequential iterations: once the $b$-th key byte has been retrieved, the attack proceeds by cracking the following $(b+1)$-th. This approach allows the attacker to try every possible value a key byte can assume (from \texttt{0x00} to \texttt{0xFF}), de facto implementing a small (and feasible) exhaustive search on $n = 2^8 = 256$ values.
+
+            Each of the 256 key candidates $K_n$ is fed into the model built by the attacker (see equation~\ref{eq:dpa_model}) to derive the value of $I_{i,n}$, evaluating each $[P_i, T_i]$ pair. Thereafter, the selection function selects the targeted bit from the intermediate State: Let us assume, for this example, the targeted bit corresponds to the LSB of $I_{i,n}$. Each trace is assigned to one of two subsets, depending on whether the selection function result is ``0'' or ``1'' ~\cite{kocher2011introduction}. The difference of the subsets’ averages is then examined (also called \emph{Difference of Means} or \emph{DoM}). If the value of the \sbocs{} output bit predicted by the selection function has even a tiny correlation to the power traces, the DPA test will show spikes indicating that the key guess $K_n$ is correct. For each wrong candidate $K_n$, the predicted values of $I_{i,n}$ will be (largely) unrelated to any data being processed by the target device, and the DPA test will not be (or will be much less) statistically significant.
+
+            \begin{equation}\label{eq:dpa_model}
+                I_{i,n} = \sbocs{}[P_{i,n} \oplus K_{n}]
+            \end{equation}
+            
+            % The first objective for the attacker is to find an intermediate whose value over different time instants can be used during the partitioning phase of the collected traces. To do so, since the intermediate cannot be extracted directly from the device, the attacker builds a reduced replica of the block cipher under attack, called \emph{model}.
+            
+            % In many real-world scenarios involving \aess{}, for instance, the model built by the attacker replicates a very small portion of the block cipher algorithm, formed by combining the Key Whitening operation (\texttt{AddRoundKey}) and the subsequent \texttt{SubBytes} step (the one related to the first round). The result obtained with this ideal replica is then masked in order to isolate the targeted bit (the LSB, in most of the cases). The selection function will then assign each trace to one set or the other according to the bit's value.
+
+            % The choice of the \texttt{AddRoundKey} and \texttt{SubBytes} operations for the model is not accidental: as we mentioned in~\ref{subsubsec:keyschedule}, only the 128-bit variant of \aes{} uses the entire main secret as round key for the very first \texttt{AddRoundKey} operation. Therefore, by targeting the Key Whitening step, the attacker can expect to retrieve the main secret immediately, without having to analyse multiple rounds or to resort to the key schedule algorithm.
+
+            % Once this reduced model of \aess{} is built, the attacker can submit one plaintext and one partial key guess for each execution launched on the device. The result of the \texttt{XOR} operation between key guess and plaintext is then fed to the \texttt{SubBytes} operation: the corresponding mapping is completed and the final result is made available for the selection function which, in turn, will select only the target bit.
+
+            % therefore the reduced model built by the attacker must run multiple times, linearly dependent (but not limited to) to the number of traces to be collected.
+
+            % Let us now assume the attacker wants to retrieve the main key in its entireness (128 bits, i.e. 16 bytes): we indicate with $K_b$ the $b$-th byte of the key, being $b \in \{0,\dots,15\}$. We can denote $I_i$ the 16-byte intermediate State just after the \texttt{SubBytes} step in both the device cipher and the reduced model implemented by the attacker. Each State $I_i$ is associated to an input plaintext $P_i$ and the related power trace $T_i$. Let the $b$-th byte of this intermediate State be denoted $I_{i,b}$. 
+            
+            % In both the reduced model and the real \aess{} implementation under attack, the $I_{i,b}$ byte of the Intermediate state is computed as follows:
+
+            % In this equation $P_{i,b}$ is known (since it is a known-plaintext attack) and $K_{i,b}$ is a secret constant: $I_{i,b}$ is therefore an unknown variable.
+            
+            In most real-case scenarios, the differential traces computed for the wrong key guesses may still show some nonzero peaks of correlation. Their presence is mainly due to two reasons: the contribute due to measurement noise and the lack of an ideal independence among the target intermediate value produced by the correct key and the target intermediate value produced by the wrong key candidates. As a consequence, the attack may not succeed for each of the 16 iterations to be completed: when analyzing a specific byte some of the 256 guesses may return better correlations although not being the correct ones due to the above noise contributions. In any case, the attacker can easily build a list of all the key candidates that returned a higher correlation than the others, ranking all of them based on the differential score they are associated to. This score can have multiple definitions: in the most common case it corresponds to the value recorded by the highest peak in the absolute differential trace $|\Delta T|$, indicating the highest correlation registered for the current key guess.
+
+            The above problem is solved by increasing the number of processed power traces: both noise contributions become less significant while the correlations for the correct guess become more prominent. Adding more traces to be processed leads to an additional computational load and to longer attacks. Hence, it is advisable to start with a reduced number of traces and follow an incremental approach until the correct key is discovered. A proper attack stops as soon as the result obtained is satisfactory, avoiding calculations that are not strictly necessary.
+
+            In Fig.~\ref{fig:dpa_aes_keys} shows the correlation traces produced by a full attack on the 16 bytes of the secret key in~\ref{tab:key}. The graph is constructed by overlaying the entire collection of power traces (it is possible to recognize the same pattern that characterizes the profile of \aess{}, see Fig.~\ref{fig:spa_example_aes2}). On top of these traces, 16 different absolute differential traces are superimposed, each of which is associated with the key guess having the same value as the corresponding byte of the secret key. As can be seen from the spikes registered on each differential trace, correlation peaks at exactly the position where each \sbocs{} lookup is performed. For example, the first trace, corresponding to the key byte \texttt{0x2B}, peaks just after the completion of the \texttt{AddRoundKey} step, on the first \texttt{SubBytes} lookup. This effectively confirms the correctness of the applied policy, which assumes the presence of a correlation between the LSB of the \sbocs{} output result and the energy consumption. Even higher correlation peaks can be observed when the \texttt{MixColumns} step is executed: due to the nature of \aes{}, these correlations are generally rendered undetectable after 2 rounds.
+            
+            \begin{figure}[htp]
+                \centering
+                \includegraphics[width=1 \columnwidth]{dpa_aes.pdf}
+                \caption{
+                        \label{fig:dpa_aes_keys}
+                        Superposition between the captured power traces and the (magnified) absolute differential traces $|\Delta T|$ (one differential trace for each byte of the key).
+                }
+            \end{figure}
+
+            % Please add the following required packages to your document preamble:
+            % \usepackage{booktabs}
+            \begin{table}[]
+                \centering
+                \resizebox{\textwidth}{!}{%
+                    \begin{tabular}{@{}lllllllllllllllll@{}}
+                    \toprule
+                    byte & \#0  & \#1  & \#2  & \#3  & \#4  & \#5  & \#6  & \#7  & \#8  & \#9  & \#10 & \#11 & \#12 & \#13 & \#14 & \#15 \\ \midrule
+                        & 0x2B & 0x7E & 0x15 & 0x16 & 0x28 & 0xAE & 0xD2 & 0xA6 & 0xAB & 0xF7 & 0x15 & 0x88 & 0x09 & 0xCF & 0x4F & 0x3C \\ \bottomrule
+                    \end{tabular}%
+                }
+                \caption{The secret key to used for this thesis work.}
+                \label{tab:key}
+            \end{table}
+
+        % * Cosa è
+        % * Cosa permette di fare
+        % * In cosa consiste un attacco
+        %     * qual è l'algoritmo principale dietro?
+        %     * quali sono le nozioni di statistica necessarie?
+
+\newpage
+
+    \section{Correlation Power Analysis (CPA)}\label{sec:cpa}
+        \emph{Correlation Power Analysis} (or \emph{CPA}) is the second statistical technique able to retrieve the entire content of a secret key by leveraging the collection of multiple power traces. It is based on similar principles as DPA, to the point of being, in some cases, considered as a subclass attack of it. However, correlation power analysis takes a step further in the attempt to correlate the data internally treated by the physical implementation with the resulting power consumption. For the purposes of a differential power attack, it is sufficient to prove \emph{the presence} of a power consumption contribution whenever certain conditions on an intermediate State are verified device side, without being interested neither in its relative nor absolute value. The assumption is made \emph{a priori} and later statistically verified provided that a sufficient number of power traces has been collected.
+        
+        In the case of CPA, the main assumption relies on the fact that each single bit that makes up the intermediate value brings a specific and relative contribute to the overall power consumption. Therefore, the focus of the attack is on the cumulative contribution caused by the toggling bits. To better understand this rationale, let us refer again to Fig.~\ref{fig:dpa_bus}. In the specific, CPA relies on the fact that each single bus line and the corresponding parasitic capacitance require a certain amount of charge whenever its state toggles. This translates in a specific current absorption and in a corresponding power spike on the power supply rails of the microprocessor under attack. 
+
+        \subsection{The Leakage Model}
+            CPA defines the so called \emph{leakage model}: a representation of the device leakage that depends
+            on the value of (or a function of) one or more intermediates in the cryptographic calculation.~\cite{kocher2011introduction}. In summary, CPA and the leakage model extend the concept applied by the DPA's selection function from a single-bit policy to a multi-bit one. CPA is most effective in white-box analysis where the device leakage model is known by the attacker: if the attack leads to poor results the cause generally relates either to a low-leaky device implementation or to a poor assumption of the leakage model~\cite{kocher2011introduction}. Similarly to the \emph{selection function} in the case of DPA, the attacker can test multiple \emph{leakage models} to assess which one leads to better results, trading off the additional flexibility to the time required to end the attack. 
+            
+            \paragraph{The Hamming weight (HW) Model}
+                In many applications, the leakage model is defined as the Hamming weight of a multi-bit value $I_{i,b}$ in a register (or on a bus), meaning that $HW(I_{i,b})$ is assumed to roughly estimate the power consumption~\footnote{Remember that $i \in \{0,\dots,N\}$ where N indicates the number of traces captured, and $b \in {0,\dots,15}$ indicates the byte position in the plaintext $P_i$, key $K$ and intermediate state $I_i$}. For instance, assuming an 8-bit microcontroller having an 8-bit wide data bus, the byte \texttt{0x05} shall consume less power than the byte \texttt{0xFF}, since the latter has a larger Hamming weight $HW(\texttt{0xFF} = 8)$ than the former $HW(\texttt{0x05} = 2)$.
+
+                It is also important to highlight that, in the generic case, if cipher's intermediate value $I_{i,b}$ contains $m$ independent and uniformly distributed bits, the whole word has an average Hamming weight $\mu_H = m/2$ and a variance $\sigma^2_H = m/4$~\cite{brier2004correlation}.
+                
+            \paragraph{The Hamming Distance (HD) Model}
+                The Hamming Distance model, as proposed by~\cite{brier2004correlation}, can be seen as a generalization of the previous one. While the HW model focuses on the intermediate value assumed by the state $I_{i,b}$ at a specific timing, the HD one focuses on the power consumption related to the number of bits switching their state when transitioning from a value to the successive one. For instance, the transition of the $I_{i,b}$ value from \texttt{0x13} to \texttt{0x37} denotes an Hamming Distance $HD(\texttt{0x13} \rightarrow \texttt{0x37}) = HD(\texttt{0x13} \oplus \texttt{0x37}) = 2$, since only 2 bits flip during the transition.
+                
+                The authors in~\cite{brier2004correlation} assume the presence of a reference word $R$ considered as the starting state, while calling $I_{i,b}$ the arrival state, therefore defining the generic Hamming Distance as:
+
+                \begin{equation}\label{eq:hammingdistance}
+                    HD(R \oplus I_{i,n})
+                \end{equation}
+                
+                Like in the previous model, if $I_{i,b}$ is a uniform random variable, so is $R \oplus I_{i,b}$, and $HD(R \oplus I_{i,b})$ has the the same mean $\mu_H = m/2$ and a variance $\sigma^2_H = m/4$.
+
+                The definition given in~\ref{eq:hammingdistance} encloses the Hamming weight model, which is obtainable by simply considering $R = 0$. Sometimes the reference state $R$ is systematically 0 due to the presence of pre-charge logic, that clears the bus between each transferred value~\ref{fig:dpa_bus}.
+
+                In general, the presence of a linear relationship between the current consumption and the Hamming models is also assumed. This can be seen as a limitation but, as highlighted by the authors, the linear model fits reality quite well if we consider a chip as a large set of elementary electrical components~\cite{brier2004correlation}. Indeed, Fig.~\ref{fig:cpa_hw} shows the presence of such linear relationship in our \xmega{} target board, computed once again using \cw{}.
+
+\bigskip
+
+            Both models are not too unrealistic since the bus lines are usually considered as the most consuming elements within a microprocessor/microcontroller. However, power leaks in real worlds scenarios can be complicated. In some devices, transitions from \texttt{0} to \texttt{1} leak differently than transitions from \texttt{1} to \texttt{0}. Hamming weight and Hamming distance models treat bits independently but, in real devices, the amplitude of leaks varies significantly for different bits, and may be further modulated by multi-bit effects. For instance, some devices have word-oriented leaks which may be correlated to flag bits such as sign, zero, overflow, or carry~\cite{kocher2011introduction}. This means that not every device is to be expected of leaking linearly in the number of bits, as pictured in Fig.~\ref{fig:cpa_weights1}. In this image, taken from~\cite{sakiyama2016security}, the entire collection of traces has been partitioned into 9 sets, each corresponding to a different value of the Hamming weight assumed by a certain intermediate value in a specific time instant. The graph  shows 9 different mean traces, each one computed from all the traces of the corresponding set. As it is possible to see, the vertical distance between the traces having $HW = 7$ and $HW = 8$ is way higher than the distance between the trace associated to $HW = 0$ and the one related to $HW = 1$, proving the non linearity of the power consumption contributions.
+
+            \begin{figure}[htp]
+                \centering
+                \includegraphics[width=0.8 \columnwidth]{cpa_weights1.png}
+                \caption{
+                        \label{fig:cpa_weights1}
+                        Graphical representation of the distance among 9 different mean traces, each representative of the Hamming weight related to its origin set. The relation is not linear.~\cite{sakiyama2016security}
+                }
+            \end{figure}
+
+            \begin{figure}[htp]
+                \centering
+                \includegraphics[width=0.8 \columnwidth]{cpa_hw.png}
+                \caption{
+                        \label{fig:cpa_hw}
+                        Presence of a linear relationship between the current consumption and the Hamming weight of the intermediate values, in the case of the \xmega{} target device.
+                }
+            \end{figure}
+
+        \subsection{Computing the estimated leakage}
+            Assuming the attacker has already formed a collection of power traces, the goal is now to build an estimation of the leakage produced by each intermediate state $I_{i,b}$ leveraging the selected leakage model. This is achieved by building a reduced replica of the block cipher, as done in the case of DPA. The intermediate result returned by the replica corresponds to the same data expected to be internally elaborated by the device implementation. The output of the replica is then fed to the selected leakage model which, assuming the use of the Hamming weight criterion, returns an estimate of the energy consumption $h_{i,b}$.
+
+            \begin{equation}\label{eq:cpa_pow_est}
+                h_{i,b} = HW[I_{i,b}] = HW[\sbocs{}[P_{i,b} \oplus K_b]]
+            \end{equation}
+
+            Equation~\ref{eq:cpa_pow_est} is applied following the same \emph{Divide and Conquer} approach leveraged for DPA: each of the 16 $b$ key bytes to be evaluated carry an additional evaluation on $n = 2^8 = 256$ possible key candidates.
+
+        \subsection{Correlating the estimated leakage to the real power consumption}
+            
+
+            % Let us now formalize what we just mentioned in a more generic way. Following the exact same \emph{Divide and Conquer} approach applied for DPA,
+            % we sequentially iterate over the 16 bytes that compose an \aess{} key $K_n$ and a plaintext $P_{i,b}$. For each $n$-th byte, we 
+            
+            % the estimate of the energy consumption $h_{i,n}$ is computed for each of the $N$ trace captured and for each of the $n$ bytes that compose both the key and the plaintext $P_i$ associated to trace $T_i$.
+            
+            
+            
+            % feeding at each iteration the related plaintext byte $P_{i,b}$ and key byte $K_n$ to the replica ($n \in \{0,\dots,15\}$ and $i \in \{0,\dots,N\}$). The obtained output corresponds to the $I_{i,b}$ intermediate state. Each of these intermediate output bytes is then fed to the leakage model that will compute the related Hamming weight $HW(I_{i,b})$, i.e. the hypothesis of the energy consumption associated to the $n$-th byte of the $i$-th trace, which we denote as $h_{i,n}$:
+
+            
+
+            The HW model assumes that there is a linear dependency between the Hamming weight of the intermediate value and the power consumption, i.e. a correlation. To extract and prove the correlation between the rough estimation of power consumption and the real power traces, a so called \emph{evaluation function} is needed. In most of the cases, this function corresponds to \emph{Pearson's correlation coefficient} $\rho$~\cite{sakiyama2016security}. In statistics, the Pearson's correlation coefficient (PCC) is a measure of linear correlation between two sets of data. It is essentially a normalised measurement of the covariance, such that the result always has a value between $-1$ and $1$. As with covariance itself, the measure can only reflect a linear correlation of variables, and ignores many other types of relationship or correlation~\cite{wikipearson}. 
+
+            \noindent Given a pair of random variables $(X,Y)$, the Pearson coefficient $\rho$ can be written as follows:
+
+            \begin{equation}
+                \rho_{X,Y} = \frac{cov(X,Y)}{\sigma x \sigma y} = \frac{\mathbb{E}[(X - \mu x)(Y - \mu y)]}{\sqrt{\mathbb{E}[(X - \mu x)^2] \mathbb{E}[(Y - \mu y)^2]}}
+            \end{equation}
+
+            where $\mathbb{E}$ is the expectation, $\mu x$ is the mean of $X$, $\mu y$ is the mean of $Y$ and $\sigma x$, $\sigma y$ are the standard deviations of $X$ and $Y$, respectively.
+
+            As mentioned, the value of $\rho_{X,Y}$ will always be in the range $[-1, 1]$, describing how close the two variables $X$ and $Y$ are related:
+
+            \begin{itemize}
+                \item If $Y$ always increases when $X$ increases, it will be $1$;
+                \item If $Y$ always decreases when $X$ increases, it will be $-1$;
+                \item If $Y$ is totally independent of $X$, it will be $0$.
+            \end{itemize}
+
+            \noindent Let us assume the following:
+            
+            \begin{itemize}
+                \item the attacker has collected $N$ \texttt{[plaintext - trace]} pairs, denoted as $[P_i, T_i]$;
+                \item each trace $T_i$ ($i \in {0,\ \dots, N}$) is formed by $S$ sample points, indexed by the variable $j \in \{0,\ \dots, S\}$;
+                \item $n$ indicates the $n$-th key guess, among all the $n = 2^8 = 256$ possible values a key byte can assume;
+                \item $h_{i,n}$ indicates the power estimate in trace $i$ for key candidate $n$, as computed in~\ref{eq:cpa_pow_est}.
+            \end{itemize}
+            
+            Let us write the PCC in case of a CPA attack as:
+
+            \begin{equation}\label{eq:pearson}
+                r_{n,j} = \frac{\sum^{N}_{i=1} [(h_{i,n} - \overline{h_i})(T_{i,n} - \overline{T_i})]}{\sqrt{\sum^{N}_{i=1} [(h_{i,n} - \overline{h_i})^2(T_{i,n} - \overline{T_i})^2]}}
+            \end{equation}
+
+            \noindent The following is an alternative form of the equation that can be used for \emph{online} calculations, as it allows the attacker to add one trace at a time without re-computing all of the past data~\cite{cpanewae}:
+
+            \begin{equation}\label{eq:pearson_alt}
+                r_{n,j} = \frac{N \sum^{N}_{i=1} (h_{i,n} T_{i,j}) - \sum^{N}_{i=1} h_{i,n} \sum^{N}_{i=1} T_{i,j}}{\sqrt{[(\sum^{N}_{i=1}h_{i,n})^2 - N \sum^{N}_{i=1} h^2_{i,n}] - [(\sum^{N}_{i=1} T_{i,j})^2 - N \sum^{N}_{i=1} T^2_{i,j}]}}
+            \end{equation}
+            
+            \noindent By iterating the previous computations on all the possible key guesses, for all the captured traces and for all the samples in a trace, the attacker builds a ranking of the best performing key candidates for the given key byte position $b$ where $b \in \{0, \dots, 15\}$, sorting them by highest correlation score. To retrieve the entire key, this entire process is iterated 16 times.
+            
+            Similarly to DPA, the more the traces computed the better the correct key guess will be highlighted with respect to the wrong ones. With a high enough number of traces the correct candidate will ``float'' up to the top of the ranking: generally, due to the higher efficiency of CPA over DPA, a way lower number of traces is sufficient. An example of the results obtained by attacking \aess{} can be seen in Fig.~\ref{fig:cpa_res_50}. In Fig.~\ref{fig:cpa_traces_50} and~\ref{fig:cpa_traces_800} we report the superposition of all the 16 correlation traces related to the correct key guesses. The first graph has been obtained with just 50 traces, the second one with 800 traces~\footnote{To achieve similar results with DPA $2500+$ traces are needed.}. The comparison between the two shows how the uncorrelated samples are quickly nullified as the number of traces increases.
+
+            \begin{figure}[htp]
+                \centering
+                \includegraphics[width=\textwidth]{./cpa_50/res.png}
+                \caption{
+                        \label{fig:cpa_res_50}
+                        The results obtained with a CPA attack on \aess{}, done with just 50 traces collected with \cw{} against the target \xmega{} microcontroller: 15/16 bytes were correctly recovered.
+                }
+            \end{figure}
+            
+            \begin{figure}[htp]
+                \centering
+                \includegraphics[width=1 \columnwidth]{./cpa_50/corrTraces[0-5000].png}
+                \caption{
+                        \label{fig:cpa_traces_50}
+                        The correlation traces related to the same attack depicted in Fig.~\ref{fig:cpa_res_50}
+                }
+            \end{figure}
+            
+            \begin{figure}[htp]
+                \centering
+                \includegraphics[width=1 \columnwidth]{./cpa_800/corrTraces[0-5000].png}
+                \caption{
+                        \label{fig:cpa_traces_800}
+                        The correlation traces related to another CPA attack on \aes{}, this time completed with 800 traces.
+                }
+            \end{figure}
+
+        % * Cosa è
+        %     * Cosa permette di fare
+        %     * In cosa consiste un attacco
+        %         * qual è l'algoritmo principale dietro?
+        %         * quali sono le nozioni di statistica necessarie?
+        %     * Perché è l'attacco più potente disponibile
+        %     * Dove sta la sua flessibilità (Leakage models)
+
+    \section{Countermeasures}\label{sec:countermeasures}
+        Side-channel power analysis, as mentioned in the introduction, cannot be entirely prevented due to the power consuming nature that characterize any operating VLSI device: ``\textit{[...] to introduce direction into a transition between states, energy must be lost irreversibly. A system that conserves energy cannot make a transition to a definite state and thus cannot make a decision (compute)}'' as stated by~\cite{mead1980introduction} and recalled by~\cite{coron2004statistics}.
+
+        Although not completely removable, leakage from a microprocessor can be reduced and side-channel analysis can be made so complex as to make it economically unattractive, leading the attacker to spend more resources than he/she can gain from a successful attack.
+        
+        In the case of SPA, for instance, implementations shall make use of constant time execution paths, avoiding the use of conditional branches when treating secret data. If possible, hardware and software engineers shall cherry-pick primitive instructions known to leak less information to implement security-critical code sections~\cite{kocher2011introduction}.
+
+\newpage
+
+        Preventing DPA and CPA (and in general all the variants based on statistical observations) requires more effort than SPA, since the effects of noise and uncorrelated device activity decrease by simply increasing the number of traces captured. In general, the countermeasures against this class of analysis adhere to two main principles: 
+
+        \begin{enumerate}
+            \item reduce as much as possible the information leaked;
+            \item mask and ``scramble'' the remaining portion of the leakage, so as to make unfeasible a statistical analysis.
+        \end{enumerate}
+
+        \subsection{Reducing the leakage}
+            The first point can be achieved by decreasing the \emph{signal-to-noise} ratio: this will result in the need for a higher number of traces to obtain a successful attack. In the extreme case, this number can be made so high so that the attacker cannot afford to spend the time required for the related computations.
+            
+            \paragraph{Balancing}
+                Balancing the power consumption reduces the observed amplitude of data dependent variations. Several solutions have been proposed such as the use of dual-rail pre-charge logic or the use of multi-bit data representations and balanced transitions~\cite{kocher2011introduction}. 
+
+            \paragraph{Noise introduction}
+                Noise can be introduced on both the temporal and amplitude domain. The former can be introduced by using variable clocks and the insertion of random wait state and/or random branching. The latter can be achieved by leveraging the presence of circuitry able to perform computations in parallel to the main cryptographic core, adding their spikes contribution to the shared power rail. In general, if “noise” is positively correlated to the intermediate data, the attack gets easier. Conversely, if noise is negatively correlated to intermediates, the result is a balancing countermeasure. A reduction factor of $k$ in the \emph{signal-to-noise} ratio achieved by the addition of amplitude noise increases the number of traces required by a factor of $k^2$. Temporal noise is instead less effective as the number of traces required increases linearly in $k$: this is because each individual trace provides $O(k)$ more locations to perform the attack.
+
+                In any case, the effectiveness of both noise components can be mitigated by advanced trace alignment and filtering techniques~\cite{kocher2011introduction}.
+
+        \subsection{Blinding and masking}
+            The goal of blinding and masking is to ensure that information leakage is not directly related to the secret data.
+            This kind of countermeasure is able to resist DPA and CPA by periodically changing the random representation of secret parameters. This allows to obtain a limited amount of collected traces with the same secret representation, de facto limiting the applicability of statistical computations. The effects caused on the attack are important: the attacker has now to target the relationship between masks and masked data, relying on the so called \emph{high-order} DPA, which requires a way higher number of traces with respect to classical DPA~\cite{kocher2011introduction}.
+
+        \subsection{Protocol level countermeasures}
+            Different countermeasures can also be adopted outside the implementation level, like on the cryptographic one or even closer to the application level. As stated by Kocher \emph{et al.} ``\emph{The most effective and least difficult way to address side channel attacks is to design cryptographic protocols to survive leakage}''~\cite{kocher2011introduction}. The general approach is to limit the number of cryptographic operations performed with a single key: even in the case of a successful side-channel attack, the effect of subsequent attacks can be limited by simply periodically changing the key. In a similar way, a cryptanalyst can assess how many bits per transaction the implementation is leaking. Knowing the desired security level for the application (expressed in bits), it can define the key cryptoperiod in transaction terms, enforcing an automatic key change whenever the number of transactions reaches a certain critical threshold.
+
+        % * Dare una rationale introduttiva: limitare e offuscare il più possibile le emissioni
+        % * Citare pesantemente Kocher, dato che contiene una lista esaustiva di tutte le countermeasures
+
+\newpage
+
+    \section{Tools: The \cw{} Kit}\label{sec:cw}
+        The growing popularity of side-channel analysis in recent years has driven the research for powerful, compact and low-priced tools that could compete against lab-grade instruments. The latest advances in specialized hardware are enabling the ability to perform both passive and active attacks even in the educational environment and to novices in the field, effectively further democratizing this class of attack. 
+
+        One of the most interesting (and probably the most known) tool in the market is NewAE's \cw{}. \cw{} is an entire ecosystem composed by many tools (both hardware and software) proposed for embedded hardware security research targeting, in the specific, side-channel analysis and fault injection. A single \cw{} board can be considered as a viable substitute for digital oscilloscopes: the extreme flexibility and small physical size allow the attacker/cryptanalyst to easily reproduce attack setups without relying on external tools.
+
+        % Introduzione a CW:
+        %     * Come è nato
+        %     * Quali sono le possibilità
+        %     * Quali sono i vantaggi rispetto ad altri strumenti
+        %         * Citare il paper di OFlynn sul campionamento sincrono
+        \subsection{\cw{} Hardware}
+            \cw{} delivers a capture technique that commercial oscilloscopes usually do not provide: synchronous sampling. In opposition to these instruments, where both the clock of the capturing device and the clock of the device under attack run freely, \cw{} is able to derive the former from the latter in order to always measure a consistent point in time. In other cases, \cw{} is also able to generate a single clock signal which is used by both the device under attack and \cw{}'s own sampling circuitry. Synchronous sampling allows to keep always the same phase relation among the two clocks: this relaxes the sample rate requirements with respect to asynchronous sampling. For instance, in~\cite{o2012case}, the authors present an attack against a SASEBO-GII board claiming that synchronously sampling at 96 MS/s produces similar results obtained by an asynchronous sampling done at 2 GS/s. The lower frequencies needed are mainly due to the absence of jitter and phase variations among the two clocks, something that is simply not possible to achieve if the two clocks run freely and are therefore completely independent.
+
+            Additionally, \cw{} provides the necessary hardware to perform fault analysis and glitch-attacks, de facto merging a good majority of the instruments used by an hardware attacker (Fault attacks and glitching are topics not covered for the purposes of this thesis).
+
+            \subsection{\cw{} Lite Characteristics}
+                \cw{} capture board can leverage both asynchronous and synchronous sampling up to a frequency of 105MS/s. Being the frequency quite low (with respect to a lab-grade oscilloscope), the synchronous sampling technique is preferred. The capture circuitry leverages an AC-coupled probe, a low-noise amplifier with adjustable gain and a 10-bit ADC. The sample buffer can contain up to $24573$ samples. However, x4 and x10 decimation factors are possible, allowing to cover even larger temporal ranges. \cw{} leverages an FPGA to manage the entire capture and glitching phase, while counting on an Atmel microcontroller for configuration and interface with the attacker's personal computer. The board also provides built-in serial ports and programmers to communicate with daughter boards, if present.
+                
+                Finally, the entire design, both hardware and software, is completely open-source, allowing the attacker to modify all the aspects of the product and to possibly contribute to its development.
+
+            \subsubsection{\cw{} \xmega{} Target Board}
+                NewAE also produces kits providing an additional evaluation board to be attacked by the main \cw{} capture device. The kit used for this thesis work provides, as target board, an \texttt{ATXMEGA128D4} 8-bit microcontroller by Atmel. In Fig.~\ref{fig:cwlite} it is possible to appreciate the main \cw{} attacker device (on the left) and the target detachable \xmega{} board on the right. 
+
+                \begin{figure}[htp]
+                    \centering
+                    \includegraphics[width=0.8 \columnwidth]{cwlite.png}
+                    \caption{
+                            \label{fig:cwlite}
+                            NewAE's \cw{} Lite board, on the left, and the target detachable \xmega{} board, on the right.
+                    }
+                \end{figure}
+
+                The two boards share the same clock signal, therefore allowing for synchronous sampling. The \xmega{} microcontroller receives an ``untouched'' version of the clock, running at 7MHz, while the capture board multiplies by four the main frequency, bringing the sampling clock to 28MHz. This allows to achieve what visible in image~\ref{fig:sampling}: each clock cycle happening in the device is sampled in four different instants. Both the capture probe and glitching interconnection can be achieved, once the two boards detached, using two shielded SMA cables.
+
+                \begin{figure}[htp]
+                    \centering
+                    \includegraphics[width=0.7 \columnwidth]{sampling.pdf}
+                    \caption{
+                            \label{fig:sampling}
+                            \cw{}'s default synchronous sampling clock vs. \xmega{}'s (attacked device) default operating clock.
+                    }
+                \end{figure}
+
+
+            % * Quali sono i parametri di campionamento più importanti e cosa comportano (CW Lite)
+            % * A cosa serve la target board
+        \subsection{\cw{} Sofware}
+            The \cw{} main capture board can completely substitute an oscilloscope: the samples collected during the acquisition are automatically sent to the attacker's personal computer. The software interface between the board and the PC is achieved thanks to a set of Python API's. The exposed commands allow to deeply configure all the capture parameters of the board, such as the decimation factors, the adjustable gain, the sampling clock and many others. Once the board correclty configured, the attacker can launch an acquisition phase using a Python script and continue with the offline statistical analysis within the same script. The entire client-side API architecture, being completely based on Python, enables the attacker the use for the extremely large library of additional modules provided by the language, such as \texttt{numpy}, \texttt{pandas} and \texttt{matplotlib}. The extreme portability of the device and the flexibility provided by Python allows for fast, scriptable and highly reproducible setups, allowing to ease the work of the generic cryptanalyst and enabling a low-cost approach to hardware security in academic and educational environments.
+
+            % * Come posso interfacciarmi con CW
+            %     * Piccola spiegazione a python, a matplotlib e a numpy
+            %     * Introduzione al funzionamento delle API di cw

@@ -1,0 +1,374 @@
+\begin{thebibliography}{10}
+
+\bibitem{wikisubbytes}
+Matt Crypto.
+\newblock {SubBytes operation for AES}.
+\newblock Available at
+  \url{https://it.wikipedia.org/wiki/File:AES-SubBytes.svg}, August 2006.
+\newblock Accessed 13 March 2021.
+
+\bibitem{wikishiftrows}
+Matt Crypto.
+\newblock {ShiftRows operation for AES}.
+\newblock Available at
+  \url{https://it.wikipedia.org/wiki/File:AES-ShiftRows.svg}, August 2006.
+\newblock Accessed 12 March 2021.
+
+\bibitem{wikimixcolumns}
+Matt Crypto.
+\newblock {MixColumns operation for AES}.
+\newblock Available at
+  \url{https://it.wikipedia.org/wiki/File:AES-MixColumns.svg}, August 2006.
+\newblock Accessed 12 March 2021.
+
+\bibitem{wikiaddroundkeys}
+Matt Crypto.
+\newblock {AddRoundKey operation for AES}.
+\newblock Available at
+  \url{https://it.wikipedia.org/wiki/File:AES-AddRoundKey.svg}, August 2006.
+\newblock Accessed 12 March 2021.
+
+\bibitem{kocher2011introduction}
+Paul Kocher, Joshua Jaffe, Benjamin Jun, and Pankaj Rohatgi.
+\newblock Introduction to differential power analysis.
+\newblock {\em Journal of Cryptographic Engineering}, 1(1):5--27, 2011.
+
+\bibitem{varchola2012differential}
+Michal Varchola and Milos Drutarovsky.
+\newblock The differential power analysis laboratory setup.
+\newblock In {\em Proceedings of 22nd International Conference Radioelektronika
+  2012}, pages 1--4. IEEE, 2012.
+
+\bibitem{sakiyama2016security}
+Kazuo Sakiyama, Yu~Sasaki, and Yang Li.
+\newblock {\em Security of block ciphers: from algorithm design to hardware
+  implementation}.
+\newblock John Wiley \& Sons, 2016.
+
+\bibitem{kocher2019spectre}
+Paul Kocher, Jann Horn, Anders Fogh, Daniel Genkin, Daniel Gruss, Werner Haas,
+  Mike Hamburg, Moritz Lipp, Stefan Mangard, Thomas Prescher, et~al.
+\newblock Spectre attacks: Exploiting speculative execution.
+\newblock In {\em 2019 IEEE Symposium on Security and Privacy (SP)}, pages
+  1--19. IEEE, 2019.
+
+\bibitem{lipp2018meltdown}
+Moritz Lipp, Michael Schwarz, Daniel Gruss, Thomas Prescher, Werner Haas,
+  Anders Fogh, Jann Horn, Stefan Mangard, Paul Kocher, Daniel Genkin, et~al.
+\newblock Meltdown: Reading kernel memory from user space.
+\newblock In {\em 27th $\{$USENIX$\}$ Security Symposium ($\{$USENIX$\}$
+  Security 18)}, pages 973--990, 2018.
+
+\bibitem{leakypage}
+Paul Röttger and Artur Janc.
+\newblock {A Spectre proof-of-concept for a Spectre-proof web}.
+\newblock Available at
+  \url{https://security.googleblog.com/2021/03/a-spectre-proof-of-concept-for-spectre.html},
+  March 2021.
+\newblock Accessed 15 March 2021.
+
+\bibitem{cosimo2018futuro}
+R.~Baldoni, R.~De Nicola, and P.~Prinetto.
+\newblock {\em Il Futuro della Cybersecurity in Italia: Ambiti Progettuali
+  Strategici}.
+\newblock Consorzio Interuniversitario Nazionale per l'Informatica - CINI,
+  2018. ISBN: 9788894137330.
+
+\bibitem{prinetto2020hardware}
+Paolo Prinetto and Gianluca Roascio.
+\newblock Hardware security, vulnerabilities, and attacks: A comprehensive
+  taxonomy.
+\newblock In {\em ITASEC}, pages 177--189, 2020.
+
+\bibitem{kocher1999differential}
+Paul Kocher, Joshua Jaffe, and Benjamin Jun.
+\newblock Differential power analysis.
+\newblock In {\em Annual international cryptology conference}, pages 388--397.
+  Springer, 1999.
+
+\bibitem{carlet2005highly}
+Claude Carlet.
+\newblock On highly nonlinear s-boxes and their inability to thwart dpa
+  attacks.
+\newblock In {\em International Conference on Cryptology in India}, pages
+  49--62. Springer, 2005.
+
+\bibitem{dobbertin2004cryptanalysis}
+Hans Dobbertin, Lars Knudsen, and Matt Robshaw.
+\newblock The cryptanalysis of the aes--a brief survey.
+\newblock In {\em International Conference on Advanced Encryption Standard},
+  pages 1--10. Springer, 2004.
+
+\bibitem{daemen1999aes}
+Joan Daemen and Vincent Rijmen.
+\newblock Aes proposal: Rijndael.
+\newblock 1999.
+
+\bibitem{paar2009understanding}
+Christof Paar and Jan Pelzl.
+\newblock {\em Understanding cryptography: a textbook for students and
+  practitioners}.
+\newblock Springer Science \& Business Media, 2009.
+
+\bibitem{decanniere2006cryptanalysis}
+Christophe De~Canniere, Alex Biryukov, and Bart Preneel.
+\newblock An introduction to block cipher cryptanalysis.
+\newblock {\em Proceedings of the IEEE}, 94(2):346--356, 2006.
+
+\bibitem{hellman1980cryptanalytic}
+Martin Hellman.
+\newblock A cryptanalytic time-memory trade-off.
+\newblock {\em IEEE transactions on Information Theory}, 26(4):401--406, 1980.
+
+\bibitem{biham1992differential}
+Eli Biham and Adi Shamir.
+\newblock Differential cryptanalysis of the full 16-round des.
+\newblock In {\em Annual International Cryptology Conference}, pages 487--496.
+  Springer, 1992.
+
+\bibitem{heys2002tutorial}
+Howard~M Heys.
+\newblock A tutorial on linear and differential cryptanalysis.
+\newblock {\em Cryptologia}, 26(3):189--221, 2002.
+
+\bibitem{suzaki2012twine}
+Tomoyasu Suzaki, Kazuhiko Minematsu, Sumio Morioka, and Eita Kobayashi.
+\newblock Twine: A lightweight block cipher for multiple platforms.
+\newblock In {\em International Conference on Selected Areas in Cryptography},
+  pages 339--354. Springer, 2012.
+
+\bibitem{matsui1993linear}
+Mitsuru Matsui.
+\newblock Linear cryptanalysis method for des cipher.
+\newblock In {\em Workshop on the Theory and Application of of Cryptographic
+  Techniques}, pages 386--397. Springer, 1993.
+
+\bibitem{matsui1994first}
+Mitsuru Matsui.
+\newblock The first experimental cryptanalysis of the data encryption standard.
+\newblock In {\em Annual International Cryptology Conference}, pages 1--11.
+  Springer, 1994.
+
+\bibitem{xmega}
+Atmel.
+\newblock {Atmel 8 and 16 bit avr microcontrollers - atxmega}.
+\newblock Available at
+  \url{http://ww1.microchip.com/downloads/en/devicedoc/atmel-8135-8-and-16-bit-avr-microcontroller-atxmega16d4-32d4-64d4-128d4_datasheet.pdf},
+  September 2016.
+\newblock Accessed 15 March 2021.
+
+\bibitem{brier2004correlation}
+Eric Brier, Christophe Clavier, and Francis Olivier.
+\newblock Correlation power analysis with a leakage model.
+\newblock In {\em International workshop on cryptographic hardware and embedded
+  systems}, pages 16--29. Springer, 2004.
+
+\bibitem{wikipearson}
+Wikipedia Community.
+\newblock {Pearson Correlation Coefficient - Wikipedia}.
+\newblock Available at
+  \url{https://en.wikipedia.org/wiki/Pearson_correlation_coefficient}.
+\newblock Accessed 26 March 2021.
+
+\bibitem{cpanewae}
+Colin O’Flynn.
+\newblock {Correlation Power Analysis - NewAE Wiki}.
+\newblock Available at \url{https://wiki.newae.com/Correlation_Power_Analysis}.
+\newblock Accessed 26 March 2021.
+
+\bibitem{mead1980introduction}
+Carver Mead and Lynn Conway.
+\newblock Introduction to vlsi systems, 1980.
+
+\bibitem{coron2004statistics}
+Jean-S{\'e}bastien Coron, David Naccache, and Paul Kocher.
+\newblock Statistics and secret leakage.
+\newblock {\em ACM Transactions on Embedded Computing Systems (TECS)},
+  3(3):492--508, 2004.
+
+\bibitem{o2012case}
+Colin O’Flynn and Zhizhang Chen.
+\newblock A case study of side-channel analysis using decoupling capacitor
+  power measurement with the openadc.
+\newblock In {\em International Symposium on Foundations and Practice of
+  Security}, pages 341--356. Springer, 2012.
+
+\bibitem{coron2010analysis}
+Jean-S{\'e}bastien Coron and Ilya Kizhvatov.
+\newblock Analysis and improvement of the random delay countermeasure of ches
+  2009.
+\newblock In {\em International Workshop on Cryptographic Hardware and Embedded
+  Systems}, pages 95--109. Springer, 2010.
+
+\bibitem{chari1999towards}
+Suresh Chari, Charanjit~S Jutla, Josyula~R Rao, and Pankaj Rohatgi.
+\newblock Towards sound approaches to counteract power-analysis attacks.
+\newblock In {\em Annual International Cryptology Conference}, pages 398--412.
+  Springer, 1999.
+
+\bibitem{piret2012picaro}
+Gilles Piret, Thomas Roche, and Claude Carlet.
+\newblock Picaro--a block cipher allowing efficient higher-order side-channel
+  resistance.
+\newblock In {\em International Conference on Applied Cryptography and Network
+  Security}, pages 311--328. Springer, 2012.
+
+\bibitem{prouff2005dpa}
+Emmanuel Prouff.
+\newblock Dpa attacks and s-boxes.
+\newblock In {\em International Workshop on Fast Software Encryption}, pages
+  424--441. Springer, 2005.
+
+\bibitem{carlet2017trade}
+Claude Carlet, Annelie Heuser, and Stjepan Picek.
+\newblock Trade-offs for s-boxes: Cryptographic properties and side-channel
+  resilience.
+\newblock In {\em International Conference on Applied Cryptography and Network
+  Security}, pages 393--414. Springer, 2017.
+
+\bibitem{accikkapi2019side}
+Mehmet~{\c{S}}ahin A{\c{c}}ikkapi, Fatih {\"O}zkaynak, and Ahmet~Bedri
+  {\"O}zer.
+\newblock Side-channel analysis of chaos-based substitution box structures.
+\newblock {\em IEEE Access}, 7:79030--79043, 2019.
+
+\bibitem{forrie1988strict}
+R{\'e}jane Forri{\'e}.
+\newblock The strict avalanche criterion: spectral properties of boolean
+  functions and an extended definition.
+\newblock In {\em Conference on the Theory and Application of Cryptography},
+  pages 450--468. Springer, 1988.
+
+\bibitem{guilley2004differential}
+Sylvain Guilley, Philippe Hoogvorst, and Renaud Pacalet.
+\newblock Differential power analysis model and some results.
+\newblock In {\em Smart Card Research and Advanced Applications Vi}, pages
+  127--142. Springer, 2004.
+
+\bibitem{wikibent}
+Wikipedia Community.
+\newblock {Bent function - Wikipedia}.
+\newblock Available at \url{https://en.wikipedia.org/wiki/Bent_function}.
+\newblock Accessed 29 March 2021.
+
+\bibitem{chakraborty2017redefining}
+Kaushik Chakraborty, Sumanta Sarkar, Subhamoy Maitra, Bodhisatwa Mazumdar,
+  Debdeep Mukhopadhyay, and Emmanuel Prouff.
+\newblock Redefining the transparency order.
+\newblock {\em Designs, codes and cryptography}, 82(1-2):95--115, 2017.
+
+\bibitem{fei2015statistics}
+Yunsi Fei, A~Adam Ding, Jian Lao, and Liwei Zhang.
+\newblock A statistics-based success rate model for dpa and cpa.
+\newblock {\em Journal of Cryptographic Engineering}, 5(4):227--243, 2015.
+
+\bibitem{picek2014confused}
+Stjepan Picek, Kostas Papagiannopoulos, Bar{\i}{\c{s}} Ege, Lejla Batina, and
+  Domagoj Jakobovic.
+\newblock Confused by confusion: Systematic evaluation of dpa resistance of
+  various s-boxes.
+\newblock In {\em International Conference on Cryptology in India}, pages
+  374--390. Springer, 2014.
+
+\bibitem{stoffelen2015intrinsic}
+Ko~Stoffelen.
+\newblock {\em Intrinsic side-channel analysis resistance and efficient
+  masking}.
+\newblock PhD thesis, Master’s thesis, Radboud University, 2015.
+
+\bibitem{lerman2016comparing}
+Liran Lerman, Olivier Markowitch, and Nikita Veshchikov.
+\newblock Comparing sboxes of ciphers from the perspective of side-channel
+  attacks.
+\newblock In {\em 2016 IEEE Asian Hardware-Oriented Security and Trust
+  (AsianHOST)}, pages 1--6. IEEE, 2016.
+
+\bibitem{millan1999evolutionary}
+William Millan, L~Burnett, Gary Carter, Andrew Clark, and Ed~Dawson.
+\newblock Evolutionary heuristics for finding cryptographically strong s-boxes.
+\newblock In {\em International Conference on Information and Communications
+  Security}, pages 263--274. Springer, 1999.
+
+\bibitem{de2017generation}
+Reynier~Antonio de~la Cruz~Jim{\'e}nez.
+\newblock Generation of 8-bit s-boxes having almost optimal cryptographic
+  properties using smaller 4-bit s-boxes and finite field multiplication.
+\newblock In {\em International Conference on Cryptology and Information
+  Security in Latin America}, pages 191--206. Springer, 2017.
+
+\bibitem{freyre2020evolving}
+Alejandro Freyre-Echevarr{\'\i}a, Ismel Mart{\'\i}nez-D{\'\i}az, Carlos
+  Miguel~Leg{\'o}n P{\'e}rez, Guillermo Sosa-G{\'o}mez, and Omar Rojas.
+\newblock Evolving nonlinear s-boxes with improved theoretical resilience to
+  power attacks.
+\newblock {\em IEEE Access}, 8:202728--202737, 2020.
+
+\bibitem{ozkaynak2019construction}
+Fatih {\"O}zkaynak.
+\newblock Construction of robust substitution boxes based on chaotic systems.
+\newblock {\em Neural Computing and Applications}, 31(8):3317--3326, 2019.
+
+\bibitem{dimitrov2020design}
+Miroslav~M Dimitrov.
+\newblock On the design of chaos-based s-boxes.
+\newblock {\em IEEE Access}, 8:117173--117181, 2020.
+
+\bibitem{ali2019application}
+Khawaja~Muhammad Ali and Majid Khan.
+\newblock Application based construction and optimization of substitution boxes
+  over 2d mixed chaotic maps.
+\newblock {\em International Journal of Theoretical Physics}, 58(9):3091--3117,
+  2019.
+
+\bibitem{tang2005novel}
+Guoping Tang, Xiaofeng Liao, and Yong Chen.
+\newblock A novel method for designing s-boxes based on chaotic maps.
+\newblock {\em Chaos, Solitons \& Fractals}, 23(2):413--419, 2005.
+
+\bibitem{ozkaynak2019chaos}
+Fatih {\"O}zkaynak.
+\newblock Chaos based substitution boxes as a cryptographic primitives:
+  Challenges and opportunities.
+\newblock {\em Chaotic Model. Simul.}, 1:49--57, 2019.
+
+\bibitem{clark2005design}
+John~A Clark, Jeremy~L Jacob, and Susan Stepney.
+\newblock The design of s-boxes by simulated annealing.
+\newblock {\em New Generation Computing}, 23(3):219--231, 2005.
+
+\bibitem{picek2016new}
+Stjepan Picek, Marko Cupic, and Leon Rotim.
+\newblock A new cost function for evolution of s-boxes.
+\newblock {\em Evolutionary computation}, 24(4):695--718, 2016.
+
+\bibitem{boey2011resistant}
+Kean~Hong Boey, Maire O'Neill, and Roger Woods.
+\newblock How resistant are sboxes to power analysis attacks?
+\newblock In {\em 2011 4th IFIP International Conference on New Technologies,
+  Mobility and Security}, pages 1--6. IEEE, 2011.
+
+\bibitem{hussain2013efficient}
+Iqtadar Hussain, Tariq Shah, Muhammad~Asif Gondal, and Hasan Mahmood.
+\newblock An efficient approach for the construction of lft s-boxes using
+  chaotic logistic map.
+\newblock {\em Nonlinear Dynamics}, 71(1):133--140, 2013.
+
+\bibitem{cwgithub}
+NewAEtech.
+\newblock {ChipWhisperer - NewAE Github repository}.
+\newblock Available at \url{https://github.com/newaetech/chipwhisperer}.
+\newblock Accessed 29 March 2021.
+
+\bibitem{massey1994guessing}
+James~L Massey.
+\newblock Guessing and entropy.
+\newblock In {\em Proceedings of 1994 IEEE International Symposium on
+  Information Theory}, page 204. IEEE, 1994.
+
+\bibitem{o2015synchronous}
+Colin O’Flynn and Zhizhang Chen.
+\newblock Synchronous sampling and clock recovery of internal oscillators for
+  side channel analysis and fault injection.
+\newblock {\em Journal of Cryptographic Engineering}, 5(1):53--69, 2015.
+
+\end{thebibliography}

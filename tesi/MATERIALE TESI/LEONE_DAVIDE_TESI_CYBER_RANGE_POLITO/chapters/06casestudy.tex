@@ -1,0 +1,178 @@
+\chapter{Validation: Case Study}\label{chap:casestudy}
+
+We validate the \pcbctf{} platform through a complete exercise based on the hardware analysis of a TP-Link WR841N wireless router. The exercise covers the full spectrum of the platform's capabilities---visual board inspection, instrument-based measurements, serial interface connection, terminal-based vulnerability analysis, and firmware extraction---and serves as a concrete demonstration that each functional requirement is met in practice. We describe the device selection rationale, the exercise structure, the terminal configuration, a detailed walkthrough of the terminal challenges, and the authoring workflow that produced the exercise.
+
+% ============================================================================
+\section{Device Selection}\label{sec:device}
+% ============================================================================
+
+The TP-Link WR841N was selected for several converging reasons. First, it is one of the most widely deployed consumer routers globally, with millions of units in service, making it a realistic and relatable training target. Second, it has been extensively analysed in the hardware security literature and was among the devices investigated by Genova~\cite{genova2025}, providing a well-documented reference for the exercise content. Third, the device exhibits a representative set of vulnerabilities: exposed UART and SPI interfaces, default credentials, unencrypted configuration partitions, and a web server binary susceptible to command injection. These vulnerabilities span a broad range of the attack patterns discussed in Chapter~\ref{chap:background}.
+
+The device is based on the Qualcomm Atheros QCA9533 SoC (MIPS architecture, 650\,MHz), 4\,MB NOR flash (Winbond 25Q32), and 32\,MB DRAM. It runs a Linux-based firmware with a SquashFS root filesystem and a JFFS2 configuration partition.
+
+% ============================================================================
+\section{Exercise Structure}\label{sec:exercise-structure}
+% ============================================================================
+
+The exercise is organised into three formal steps followed by an auto-launched terminal phase (RF-14).
+
+\subsection{Step 1: Hardware Identification}\label{subsec:step1}
+
+The first step introduced the student to physical board reconnaissance. Three objectives had to be completed in sequence:
+
+\begin{enumerate}
+    \item \textbf{Identify the SoC.} The student used the magnifying lens to inspect the PCB and clicked on the Qualcomm Atheros QCA9533 chip. Upon correct identification, the flag fragment \texttt{QCA9533} was revealed. This step validates RF-02 (component identification) and RF-03 (magnification).
+    \item \textbf{Identify the flash memory.} The student located the Winbond W25Q32 flash chip. The flag fragment \texttt{\_W25Q32} was revealed.
+    \item \textbf{Identify the UART header.} The student located the UART debug header on the board. The flag fragment \texttt{PORTA\_UART} was revealed.
+\end{enumerate}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{pcb-viewer-overview.png}
+    \caption{Step~1 of the case study exercise: hardware analysis. The student interacts with the PCB image, identifying components and connecting instrument probes to measurement points.}
+    \label{fig:cs-step1}
+\end{figure}
+
+\subsection{Step 2: UART Connection and Vulnerability Analysis}\label{subsec:step2}
+
+The second step required the student to establish a serial connection with the device and begin vulnerability analysis. The student selected the UART adapter tool, identified the TX, RX, and GND pins on the PCB (guided by multimeter readings from Step~1), and connected the adapter pins with the correct crossover wiring. This step validates RF-04 (multimeter usage for pin identification), RF-05 (UART crossover wiring), and RF-07 (snap-to-pin mechanism). Upon successful connection, the platform automatically launched the terminal interface, transitioning to the terminal exploration phase where the student analysed the embedded system for vulnerabilities.
+
+\subsection{Step 3: SPI Firmware Dump}\label{subsec:step3}
+
+The third step required the student to extract the firmware from the flash chip using the SPI programmer. The student connected the six SPI probes (VCC, GND, CS, CLK, MOSI, MISO) to the corresponding pins on the Winbond W25Q32 chip. Upon correct role-based connection and successful dump completion, the firmware binary was made available for download. This step validates RF-06 (SPI firmware extraction) and RF-15 (firmware-dump objective type).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{uart-connection.png}
+    \caption{Step~2: UART connection. The student has connected the adapter probes with correct crossover wiring (TX$\to$RX, RX$\to$TX, GND$\to$GND). The status bar confirms a successful connection.}
+    \label{fig:cs-step2}
+\end{figure}
+
+\subsection{Terminal Phase: Embedded System Exploitation}\label{subsec:terminal-phase}
+
+The terminal phase presented six progressive challenges, each revealing a flag fragment (RF-11). The challenges mirror the actual vulnerabilities documented in the WR841N analysis:
+
+\begin{enumerate}
+    \item \textbf{Boot Analysis} (\texttt{b00t}). The student executed \texttt{printenv} in the U-Boot shell and identified inconsistencies between the configured \texttt{rootfstype} variable and the actual filesystem mounted by the kernel.
+
+    \item \textbf{Root Access} (\texttt{r00t}). After the simulated kernel boot and login prompt, the student gained shell access using the device's default credentials (\texttt{root}/\texttt{sohoadmin}), hardcoded in the firmware.
+
+    \item \textbf{Hash Cracking} (\texttt{h4sh}). The student extracted password hashes from \texttt{/etc/shadow} in the UART console tab and cracked the MD5 hash using \texttt{hashcat} in the Local Machine tab. This step validates RF-12 (multi-tab terminal support).
+
+    \item \textbf{Data Leak} (\texttt{l34k}). The student used \texttt{strings /dev/mtdblock3} to extract plaintext data from the configuration partition, revealing Wi-Fi credentials and administrative passwords stored without encryption.
+
+    \item \textbf{Command Injection} (\texttt{1nj3ct}). The student analysed the web server binary using \texttt{strings /usr/bin/httpd} and identified calls to functions like \texttt{execFormatCmd} that are vulnerable to command injection.
+
+    \item \textbf{Backdoor Discovery} (\texttt{sh3ll}). The student examined running processes with \texttt{ps} and discovered an anomalous process. Investigation with \texttt{strings} on the suspicious binary revealed a planted backdoor.
+\end{enumerate}
+
+The complete terminal flag is \texttt{flag\{b00t\_r00t\_h4sh\_l34k\_1nj3ct\_sh3ll\}}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{terminal-boot.png}
+    \caption{The simulated UART console during the boot sequence. U-Boot output is displayed with an autoboot countdown, followed by kernel boot messages and the login prompt.}
+    \label{fig:cs-terminal-boot}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{terminal-shell.png}
+    \caption{The terminal shell after successful login. The student executes commands to explore the embedded filesystem. The flag progress bar at the top tracks discovery progress.}
+    \label{fig:cs-terminal-shell}
+\end{figure}
+
+% ============================================================================
+\section{Terminal Configuration}\label{sec:terminal-config}
+% ============================================================================
+
+The exercise defines two terminal tabs (RF-12):
+
+\begin{itemize}
+    \item \textbf{UART Console.} Simulates the serial console of the WR841N, with a boot sequence progressing through U-Boot initialisation (\texttt{uboot-init}), U-Boot console (\texttt{uboot}), kernel boot (\texttt{kernel-boot}), login prompt, password entry, and root shell (RF-10). The virtual filesystem mirrors the device's actual directory structure (\texttt{/etc/passwd}, \texttt{/etc/shadow}, \texttt{/proc/cpuinfo}, \texttt{/dev/mtdblock*}, \texttt{/usr/bin/httpd}).
+
+    \item \textbf{Local Machine.} Simulates the analyst's workstation, providing access to password cracking tools (\texttt{hashcat}) and file analysis utilities. This tab starts directly at a shell prompt without a boot sequence.
+\end{itemize}
+
+Custom commands are defined with conditional outputs to simulate context-dependent behaviour (RF-13). The \texttt{strings} command, for example, uses a lookup output type: when invoked with \texttt{/dev/mtdblock3}, it returns simulated partition content including cleartext credentials; when invoked with \texttt{/usr/bin/httpd}, it returns strings suggesting command injection vulnerabilities. Each successful discovery triggers a flag unlock side effect.
+
+Boot stage constraints restrict certain commands to specific stages. The \texttt{printenv} command is available only during the \texttt{uboot} stage, while filesystem commands (\texttt{ls}, \texttt{cat}, \texttt{cd}) are restricted to the \texttt{shell} stage. This enforces a realistic temporal progression through the device's boot process.
+
+\subsection{Terminal Challenge Walkthrough}\label{subsec:walkthrough}
+
+To illustrate the interaction between the terminal configuration and the student experience, we describe the expected progression through the six terminal challenges in detail.
+
+The exercise began with the simulated UART console displaying U-Boot initialisation output: the SoC identification banner (``Booting QCA953x''), memory detection (``DRAM: 32 MB''), and flash chip identification (``flash size 4MB, sector count = 64''). After the initialisation stage, the U-Boot prompt appeared, and the student could execute \texttt{printenv} to examine the bootloader environment variables. The output revealed a \texttt{rootfstype=ext4} variable that contradicted the SquashFS filesystem actually mounted by the kernel---a deliberate configuration anomaly that mirrors what is observed on the real device. Recognising this inconsistency unlocked the \texttt{b00t} flag.
+
+After the simulated kernel boot (auto-progression), a login prompt appeared. The student had to enter the username \texttt{root} and password \texttt{sohoadmin}---the factory default credentials for TP-Link WR841N devices. These credentials are defined as commands in the terminal configuration: entering the correct username triggered a stage transition from \texttt{login} to \texttt{password}, and entering the correct password transitioned to the \texttt{shell} stage, unlocking the \texttt{\_r00t} flag.
+
+Once in the shell, the student navigated the virtual filesystem. The \texttt{/etc/shadow} file contained a realistic shadow entry with an MD5 password hash (\texttt{\$1\$} prefix). The student was expected to copy this hash and switch to the Local Machine tab, where the \texttt{hashcat} command was available. Running \texttt{hashcat} with the hash as argument produced simulated cracking output and unlocked the \texttt{\_h4sh} flag. This cross-tab workflow validates RF-12 in a practical scenario.
+
+The data leak challenge required the student to run \texttt{strings /dev/mtdblock3} in the UART Console tab. The output included plaintext Wi-Fi credentials and the web administration password---data that on the real device is stored unencrypted in the JFFS2 configuration partition. This discovery unlocked the \texttt{\_l34k} flag.
+
+The command injection challenge was discovered by running \texttt{strings} on the web server binary (\texttt{httpd}), which revealed function calls such as \texttt{execFormatCmd} and direct \texttt{system()} invocations with unsanitised input---patterns indicative of command injection. On the real WR841N, this corresponds to CVE-2023-33538. Identifying these patterns unlocked the \texttt{\_1nj3ct} flag.
+
+Finally, the student ran \texttt{ps} to inspect running processes, where an unfamiliar \texttt{backdoorTest} process was visible. Running \texttt{strings} and \texttt{file} on the suspicious binary revealed that it was a planted backdoor, simulating a supply-chain attack scenario documented by Genova~\cite{genova2025}. This discovery unlocked the final \texttt{\_sh3ll} flag, completing the terminal challenge with the full flag:
+
+\smallskip
+\centerline{\texttt{flag\{b00t\_r00t\_h4sh\_l34k\_1nj3ct\_sh3ll\}}}
+\smallskip
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{completion-dialog.png}
+    \caption{The exercise completion dialog, displayed after all six terminal flags have been discovered. The dialog shows the complete flag, a copy-to-clipboard button, and an optional download link for the exercise report.}
+    \label{fig:cs-completion}
+\end{figure}
+
+% ============================================================================
+\section{Preliminary Observations}\label{sec:observations}
+% ============================================================================
+
+Although a formal user study is deferred to future work (Section~\ref{sec:future}), several preliminary observations emerged during the development and internal testing of the case study exercise.
+
+The exercise successfully exercises the full pipeline from physical board inspection to embedded system exploitation, confirming that the platform can host a complete, multi-step hardware security CTF without requiring physical equipment or server-side infrastructure. Each of the six terminal challenges maps to a documented vulnerability on the real WR841N device, demonstrating that the simulation is grounded in authentic attack scenarios rather than artificial puzzles.
+
+The boot sequence simulation proved particularly effective at conveying the temporal structure of embedded device interaction. Testers reported that the U-Boot countdown, kernel boot messages, and login prompt sequence created a convincing sense of interacting with a real device---even though all output was generated client-side from a declarative configuration. The auto-progression mechanism (Section~\ref{subsec:boot-animation}) was essential to this effect: it reproduced the characteristic ``press any key to interrupt'' behaviour of U-Boot without hardcoding bootloader-specific logic.
+
+The multi-tab terminal design (RF-12) demonstrated its value in the hash cracking challenge, which required the student to extract a hash from one environment (UART console) and crack it in another (local workstation). Without the tab abstraction, this cross-environment workflow could not have been modelled within a single exercise.
+
+The progressive flag system proved pedagogically effective in ways we had not fully anticipated. Because each flag fragment is named to reflect the underlying vulnerability category (\texttt{b00t} for bootloader analysis, \texttt{l34k} for data leakage, \texttt{1nj3ct} for injection), the partial flag string itself serves as a summary of the student's progress through the vulnerability taxonomy. A student who sees \texttt{flag\{b00t\_r00t\_????\_????\_????\_????\}} knows immediately which categories remain to be explored. This is a form of progressive disclosure: the flag does not merely confirm correctness but scaffolds the student's mental model of the device's attack surface.
+
+The snap-to-pin mechanism and colour-coded probe wiring also contributed to usability. During internal testing, the visual feedback---probes snapping to valid pins, wires changing from dashed to solid on connection, colour coding matching UART and SPI roles---reduced the number of incorrect connections compared to an earlier prototype that lacked visual affordances. The magnifying lens was particularly useful for identifying small pin groups on the high-resolution PCB photograph, where unaided visual inspection would have been insufficient.
+
+A notable limitation surfaced in the terminal challenges: students who were unfamiliar with the \texttt{strings} command or the concept of raw partition inspection struggled with challenges 4 and 5 (data leak and command injection). The hint system partially addressed this gap, but a future iteration could benefit from contextual tutorials that introduce unfamiliar commands before requiring their use.
+
+From a requirements perspective, the case study exercise validates all functional requirements from RF-01 through RF-17. The authoring workflow, described in the next section, validates RF-18 through RF-23.
+
+% ============================================================================
+\section{Authoring Workflow}\label{sec:authoring-workflow}
+% ============================================================================
+
+The entire exercise was configured through the authoring panel without manual JSON editing (RF-18, RF-19). The workflow proceeded through the following stages:
+
+\begin{enumerate}
+    \item \textbf{Image upload.} A high-resolution photograph of the actual WR841N board was uploaded through the media management interface.
+    \item \textbf{Component placement.} Regions were drawn around the SoC and EEPROM using the drag-and-drop canvas editor (RF-18). Each region was assigned a name, a flag fragment, and a description.
+    \item \textbf{Pin placement.} UART and SPI pins were placed at their correct physical positions, with roles (TX, RX, GND for UART; VCC, GND, CS, CLK, MOSI, MISO for SPI) and electrical characteristics (voltage, resistance) assigned through the sidebar form (RF-22).
+    \item \textbf{Step definition.} Three exercise steps were defined, each with its objectives, expected flag, flag fragments, and the set of tools available during that step (RF-23). The first step enabled only the pointer and magnifier; the second added the multimeter and UART adapter; the third added the firmware dumper.
+    \item \textbf{Terminal configuration.} Two tabs were created (UART Console and Local Machine). For each tab, the virtual filesystem was populated through the tree-view editor, custom commands were defined with their output types and constraints, the boot sequence was configured as a chain of stages with durations and prompts, and the six flag parts were registered with their identifiers and text fragments (RF-19, RF-10, RF-11).
+    \item \textbf{Preset save.} The complete configuration was saved as a named preset, bundling the exercise definition, both terminal configurations, and an independent copy of the PCB image into a self-contained package (RF-21).
+\end{enumerate}
+
+The complete exercise was configured in approximately five hours, including iterative testing of the boot sequence timing, command output correctness, and flag unlock conditions. The bulk of the effort---roughly three hours---went into the terminal configuration: defining the virtual filesystem to match the real device's directory structure, crafting realistic command outputs, and tuning the boot sequence durations to feel natural. The remaining two hours covered image upload, component and pin placement, step definition, and the overall exercise structure.
+
+Several aspects of the authoring workflow deserve specific comment. The component and pin placement stage was straightforward: the drag-and-drop interface maps naturally to the task of annotating a PCB image, and the snap-to-grid feedback helped align elements precisely. The step definition stage required more thought, as the author had to decide which tools to make available at each stage and how to sequence the objectives to build a coherent pedagogical narrative---moving from passive observation (magnifier) to active measurement (multimeter) to protocol-level interaction (UART adapter, SPI dumper).
+
+The terminal configuration stage was the most demanding, not because of the interface complexity but because of the content design effort. Crafting realistic command outputs required consulting the actual device analysis data from Genova's work~\cite{genova2025}: boot logs, filesystem listings, \texttt{/etc/shadow} entries, and \texttt{strings} output had to be adapted from real device dumps into the declarative configuration format. The boot sequence timing required multiple iterations---initial durations were either too fast (breaking the illusion of a real boot) or too slow (frustrating for testing). The final values (3 seconds for U-Boot initialisation, 2 seconds for autoboot countdown, 4 seconds for kernel boot) represent a compromise between realism and usability.
+
+The dirty tracking mechanism in the preset store proved valuable during this iterative process: it alerted the author to unsaved changes when switching between presets, preventing accidental data loss during the frequent save-test-modify cycles that characterise exercise development.
+
+The resulting preset is fully portable: it can be loaded on any instance of the platform to reproduce the exercise identically. No server-side setup, database migration, or manual file copying is required---the preset JSON file and its associated image are the only artifacts needed for deployment (RNF-02).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{authoring-canvas.png}
+    \caption{The authoring panel during exercise configuration. The canvas shows the PCB image with component regions and pins placed via drag-and-drop. The sidebar displays the step and objective editor.}
+    \label{fig:cs-authoring}
+\end{figure}

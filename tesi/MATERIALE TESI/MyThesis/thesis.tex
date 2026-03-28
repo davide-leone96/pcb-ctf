@@ -1,0 +1,40 @@
+\include{preamble}
+
+\begin{document}
+
+    % Frontpage
+    \include{frontpage}
+
+    %\frontmatter    % pages numbered in lowercase roman
+
+    % Acknowledgements
+    \include{ack}
+
+    % Summary
+    \include{summary}
+
+    \listoffigures
+    \listoftables
+    \tableofcontents
+
+    %\mainmatter     % Restore standard page numeration
+    % Chapters
+    \include{chapters/00intro}
+    \include{chapters/01aes}
+    \include{chapters/02pow}
+    \include{chapters/03soa}
+    \include{chapters/04expres}
+    \include{chapters/05conclusions}
+
+    % Appendices
+    \appendix
+    % \include{appendix/cmds.tex}
+    % \include{appendix/proj_files.tex}
+
+    % Bibliography
+    \bibliographystyle{unsrt}
+    % \addcontentsline{toc}{section}{References}
+    % \markboth{References}{}
+    \bibliography{bibliography}
+
+\end{document}

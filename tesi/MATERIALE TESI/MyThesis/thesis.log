@@ -1,0 +1,1408 @@
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021/TeX Live for SUSE Linux) (preloaded format=pdflatex 2021.6.2)  7 JUL 2021 11:42
+entering extended mode
+ \write18 enabled.
+ file:line:error style messages enabled.
+ %&-line parsing enabled.
+**"/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.tex"
+(/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.tex
+LaTeX2e <2020-10-01> patch level 4
+L3 programming layer <2021-02-18>
+\@input{preamble.aux}
+\openout2 = `preamble.aux'.
+
+(/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/preamble.tex (/usr/share/texmf/tex/latex/base/report.cls
+Document Class: report 2020/04/10 v1.4m Standard LaTeX document class
+(/usr/share/texmf/tex/latex/base/size11.clo
+File: size11.clo 2020/04/10 v1.4m Standard LaTeX file (size option)
+)
+\c@part=\count179
+\c@chapter=\count180
+\c@section=\count181
+\c@subsection=\count182
+\c@subsubsection=\count183
+\c@paragraph=\count184
+\c@subparagraph=\count185
+\c@figure=\count186
+\c@table=\count187
+\abovecaptionskip=\skip47
+\belowcaptionskip=\skip48
+\bibindent=\dimen138
+) (/usr/share/texmf/tex/latex/geometry/geometry.sty
+Package: geometry 2020/01/02 v5.9 Page Geometry
+ (/usr/share/texmf/tex/latex/graphics/keyval.sty
+Package: keyval 2014/10/28 v1.15 key=value parser (DPC)
+\KV@toks@=\toks15
+) (/usr/share/texmf/tex/generic/iftex/ifvtex.sty
+Package: ifvtex 2019/10/25 v1.7 ifvtex legacy package. Use iftex instead.
+ (/usr/share/texmf/tex/generic/iftex/iftex.sty
+Package: iftex 2020/03/06 v1.0d TeX engine tests
+))
+\Gm@cnth=\count188
+\Gm@cntv=\count189
+\c@Gm@tempcnt=\count190
+\Gm@bindingoffset=\dimen139
+\Gm@wd@mp=\dimen140
+\Gm@odd@mp=\dimen141
+\Gm@even@mp=\dimen142
+\Gm@layoutwidth=\dimen143
+\Gm@layoutheight=\dimen144
+\Gm@layouthoffset=\dimen145
+\Gm@layoutvoffset=\dimen146
+\Gm@dimlist=\toks16
+) (/usr/share/texmf/tex/latex/base/inputenc.sty
+Package: inputenc 2020/08/01 v1.3d Input encoding file
+\inpenc@prehook=\toks17
+\inpenc@posthook=\toks18
+) (/usr/share/texmf/tex/latex/base/fontenc.sty
+Package: fontenc 2020/08/10 v2.0s Standard LaTeX package
+) (/usr/share/texmf/tex/generic/babel/babel.sty
+Package: babel 2021/03/24 3.56 The Babel package
+ (/usr/share/texmf/tex/generic/babel/babel.def
+File: babel.def 2021/03/24 3.56 Babel common definitions
+\babel@savecnt=\count191
+\U@D=\dimen147
+\l@babelnohyphens=\language53
+ (/usr/share/texmf/tex/generic/babel/txtbabel.def)
+\bbl@readstream=\read2
+)
+\bbl@dirlevel=\count192
+ (/usr/share/texmf/tex/generic/babel-english/english.ldf
+Language: english 2017/06/06 v3.3r English support from the babel system
+Package babel Info: \l@canadian = using hyphenrules for english
+(babel)             (\language0) on input line 102.
+Package babel Info: \l@australian = using hyphenrules for ukenglish
+(babel)             (\language14) on input line 105.
+Package babel Info: \l@newzealand = using hyphenrules for ukenglish
+(babel)             (\language14) on input line 108.
+)) (/usr/share/texmf/tex/latex/microtype/microtype.sty
+Package: microtype 2021/03/14 v2.8c Micro-typographical refinements (RS)
+\MT@toks=\toks19
+\MT@count=\count193
+LaTeX Info: Redefining \textls on input line 790.
+\MT@outer@kern=\dimen148
+LaTeX Info: Redefining \textmicrotypecontext on input line 1374.
+\MT@listname@count=\count194
+ (/usr/share/texmf/tex/latex/microtype/microtype-pdftex.def
+File: microtype-pdftex.def 2021/03/14 v2.8c Definitions specific to pdftex (RS)
+LaTeX Info: Redefining \lsstyle on input line 915.
+LaTeX Info: Redefining \lslig on input line 915.
+\MT@outer@space=\skip49
+)
+Package microtype Info: Loading configuration file microtype.cfg.
+ (/usr/share/texmf/tex/latex/microtype/microtype.cfg
+File: microtype.cfg 2021/03/14 v2.8c microtype main configuration file (RS)
+)) (/usr/share/texmf/tex/latex/hyperref/hyperref.sty
+Package: hyperref 2021-02-27 v7.00k Hypertext links for LaTeX
+ (/usr/share/texmf/tex/generic/ltxcmds/ltxcmds.sty
+Package: ltxcmds 2020-05-10 v1.25 LaTeX kernel commands for general use (HO)
+) (/usr/share/texmf/tex/generic/pdftexcmds/pdftexcmds.sty
+Package: pdftexcmds 2020-06-27 v0.33 Utility functions of pdfTeX for LuaTeX (HO)
+ (/usr/share/texmf/tex/generic/infwarerr/infwarerr.sty
+Package: infwarerr 2019/12/03 v1.5 Providing info/warning/error messages (HO)
+)
+Package pdftexcmds Info: \pdf@primitive is available.
+Package pdftexcmds Info: \pdf@ifprimitive is available.
+Package pdftexcmds Info: \pdfdraftmode found.
+) (/usr/share/texmf/tex/generic/kvsetkeys/kvsetkeys.sty
+Package: kvsetkeys 2019/12/15 v1.18 Key value parser (HO)
+) (/usr/share/texmf/tex/generic/kvdefinekeys/kvdefinekeys.sty
+Package: kvdefinekeys 2019-12-19 v1.6 Define keys (HO)
+) (/usr/share/texmf/tex/generic/pdfescape/pdfescape.sty
+Package: pdfescape 2019/12/09 v1.15 Implements pdfTeX's escape features (HO)
+) (/usr/share/texmf/tex/latex/hycolor/hycolor.sty
+Package: hycolor 2020-01-27 v1.10 Color options for hyperref/bookmark (HO)
+) (/usr/share/texmf/tex/latex/letltxmacro/letltxmacro.sty
+Package: letltxmacro 2019/12/03 v1.6 Let assignment for LaTeX macros (HO)
+) (/usr/share/texmf/tex/latex/auxhook/auxhook.sty
+Package: auxhook 2019-12-17 v1.6 Hooks for auxiliary files (HO)
+) (/usr/share/texmf/tex/latex/kvoptions/kvoptions.sty
+Package: kvoptions 2020-10-07 v3.14 Key value format for package options (HO)
+)
+\@linkdim=\dimen149
+\Hy@linkcounter=\count195
+\Hy@pagecounter=\count196
+ (/usr/share/texmf/tex/latex/hyperref/pd1enc.def
+File: pd1enc.def 2021-02-27 v7.00k Hyperref: PDFDocEncoding definition (HO)
+Now handling font encoding PD1 ...
+... no UTF-8 mapping file for font encoding PD1
+) (/usr/share/texmf/tex/latex/hyperref/hyperref-langpatches.def
+File: hyperref-langpatches.def 2021-02-27 v7.00k Hyperref: patches for babel languages
+) (/usr/share/texmf/tex/generic/intcalc/intcalc.sty
+Package: intcalc 2019/12/15 v1.3 Expandable calculations with integers (HO)
+) (/usr/share/texmf/tex/generic/etexcmds/etexcmds.sty
+Package: etexcmds 2019/12/15 v1.7 Avoid name clashes with e-TeX commands (HO)
+)
+\Hy@SavedSpaceFactor=\count197
+ (/usr/share/texmf/tex/latex/hyperref/puenc.def
+File: puenc.def 2021-02-27 v7.00k Hyperref: PDF Unicode definition (HO)
+Now handling font encoding PU ...
+... no UTF-8 mapping file for font encoding PU
+)
+Package hyperref Info: Hyper figures OFF on input line 4192.
+Package hyperref Info: Link nesting OFF on input line 4197.
+Package hyperref Info: Hyper index ON on input line 4200.
+Package hyperref Info: Plain pages OFF on input line 4207.
+Package hyperref Info: Backreferencing OFF on input line 4212.
+Package hyperref Info: Implicit mode ON; LaTeX internals redefined.
+Package hyperref Info: Bookmarks ON on input line 4445.
+\c@Hy@tempcnt=\count198
+ (/usr/share/texmf/tex/latex/url/url.sty
+\Urlmuskip=\muskip16
+Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
+)
+LaTeX Info: Redefining \url on input line 4804.
+\XeTeXLinkMargin=\dimen150
+ (/usr/share/texmf/tex/generic/bitset/bitset.sty
+Package: bitset 2019/12/09 v1.3 Handle bit-vector datatype (HO)
+ (/usr/share/texmf/tex/generic/bigintcalc/bigintcalc.sty
+Package: bigintcalc 2019/12/15 v1.5 Expandable calculations on big integers (HO)
+))
+\Fld@menulength=\count199
+\Field@Width=\dimen151
+\Fld@charsize=\dimen152
+Package hyperref Info: Hyper figures OFF on input line 6075.
+Package hyperref Info: Link nesting OFF on input line 6080.
+Package hyperref Info: Hyper index ON on input line 6083.
+Package hyperref Info: backreferencing OFF on input line 6090.
+Package hyperref Info: Link coloring OFF on input line 6095.
+Package hyperref Info: Link coloring with OCG OFF on input line 6100.
+Package hyperref Info: PDF/A mode OFF on input line 6105.
+LaTeX Info: Redefining \ref on input line 6145.
+LaTeX Info: Redefining \pageref on input line 6149.
+ (/usr/share/texmf/tex/latex/base/atbegshi-ltx.sty
+Package: atbegshi-ltx 2020/08/17 v1.0a Emulation of the original atbegshi package
+with kernel methods
+)
+\Hy@abspage=\count266
+\c@Item=\count267
+\c@Hfootnote=\count268
+)
+Package hyperref Info: Driver (autodetected): hpdftex.
+ (/usr/share/texmf/tex/latex/hyperref/hpdftex.def
+File: hpdftex.def 2021-02-27 v7.00k Hyperref driver for pdfTeX
+ (/usr/share/texmf/tex/latex/base/atveryend-ltx.sty
+Package: atveryend-ltx 2020/08/19 v1.0a Emulation of the original atvery package
+with kernel methods
+)
+\Fld@listcount=\count269
+\c@bookmark@seq@number=\count270
+ (/usr/share/texmf/tex/latex/rerunfilecheck/rerunfilecheck.sty
+Package: rerunfilecheck 2019/12/05 v1.9 Rerun checks for auxiliary files (HO)
+ (/usr/share/texmf/tex/generic/uniquecounter/uniquecounter.sty
+Package: uniquecounter 2019/12/15 v1.4 Provide unlimited unique counter (HO)
+)
+Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 286.
+)
+\Hy@SectionHShift=\skip50
+) (/usr/share/texmf/tex/latex/booktabs/booktabs.sty
+Package: booktabs 2020/01/12 v1.61803398 Publication quality tables
+\heavyrulewidth=\dimen153
+\lightrulewidth=\dimen154
+\cmidrulewidth=\dimen155
+\belowrulesep=\dimen156
+\belowbottomsep=\dimen157
+\aboverulesep=\dimen158
+\abovetopsep=\dimen159
+\cmidrulesep=\dimen160
+\cmidrulekern=\dimen161
+\defaultaddspace=\dimen162
+\@cmidla=\count271
+\@cmidlb=\count272
+\@aboverulesep=\dimen163
+\@belowrulesep=\dimen164
+\@thisruleclass=\count273
+\@lastruleclass=\count274
+\@thisrulewidth=\dimen165
+) (/usr/share/texmf/tex/latex/listings/listings.sty
+\lst@mode=\count275
+\lst@gtempboxa=\box47
+\lst@token=\toks20
+\lst@length=\count276
+\lst@currlwidth=\dimen166
+\lst@column=\count277
+\lst@pos=\count278
+\lst@lostspace=\dimen167
+\lst@width=\dimen168
+\lst@newlines=\count279
+\lst@lineno=\count280
+\lst@maxwidth=\dimen169
+ (/usr/share/texmf/tex/latex/listings/lstmisc.sty
+File: lstmisc.sty 2020/03/24 1.8d (Carsten Heinz)
+\c@lstnumber=\count281
+\lst@skipnumbers=\count282
+\lst@framebox=\box48
+) (/usr/share/texmf/tex/latex/listings/listings.cfg
+File: listings.cfg 2020/03/24 1.8d listings configuration
+))
+Package: listings 2020/03/24 1.8d (Carsten Heinz)
+ (/usr/share/texmf/tex/latex/csquotes/csquotes.sty
+Package: csquotes 2021-02-22 v5.2l context-sensitive quotations (JAW)
+ (/usr/share/texmf/tex/latex/etoolbox/etoolbox.sty
+Package: etoolbox 2020/10/05 v2.5k e-TeX tools for LaTeX (JAW)
+\etb@tempcnta=\count283
+)
+\csq@reset=\count284
+\csq@gtype=\count285
+\csq@glevel=\count286
+\csq@qlevel=\count287
+\csq@maxlvl=\count288
+\csq@tshold=\count289
+\csq@ltx@everypar=\toks21
+ (/usr/share/texmf/tex/latex/csquotes/csquotes.def
+File: csquotes.def 2021-02-22 v5.2l csquotes generic definitions (JAW)
+)
+Package csquotes Info: Trying to load configuration file 'csquotes.cfg'...
+Package csquotes Info: ... configuration file loaded successfully.
+ (/usr/share/texmf/tex/latex/csquotes/csquotes.cfg
+File: csquotes.cfg 
+)) (/usr/share/texmf/tex/latex/multirow/multirow.sty
+Package: multirow 2021/03/15 v2.8 Span multiple rows of a table
+\multirow@colwidth=\skip51
+\multirow@cntb=\count290
+\multirow@dima=\skip52
+\bigstrutjot=\dimen170
+) (/usr/share/texmf/tex/latex/graphics/color.sty
+Package: color 2020/02/24 v1.2b Standard LaTeX Color (DPC)
+ (/usr/share/texmf/tex/latex/graphics-cfg/color.cfg
+File: color.cfg 2016/01/02 v1.6 sample color configuration
+)
+Package color Info: Driver file: pdftex.def on input line 147.
+ (/usr/share/texmf/tex/latex/graphics-def/pdftex.def
+File: pdftex.def 2020/10/05 v1.2a Graphics/color driver for pdftex
+)) (/usr/share/texmf/tex/latex/xcolor/xcolor.sty
+Package: xcolor 2016/05/11 v2.12 LaTeX color extensions (UK)
+ (/usr/share/texmf/tex/latex/graphics-cfg/color.cfg
+File: color.cfg 2016/01/02 v1.6 sample color configuration
+)
+Package xcolor Info: Driver file: pdftex.def on input line 225.
+LaTeX Info: Redefining \color on input line 709.
+Package xcolor Info: Model `cmy' substituted by `cmy0' on input line 1348.
+Package xcolor Info: Model `hsb' substituted by `rgb' on input line 1352.
+Package xcolor Info: Model `RGB' extended on input line 1364.
+Package xcolor Info: Model `HTML' substituted by `rgb' on input line 1366.
+Package xcolor Info: Model `Hsb' substituted by `hsb' on input line 1367.
+Package xcolor Info: Model `tHsb' substituted by `hsb' on input line 1368.
+Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1369.
+Package xcolor Info: Model `Gray' substituted by `gray' on input line 1370.
+Package xcolor Info: Model `wave' substituted by `hsb' on input line 1371.
+) (/usr/share/texmf/tex/latex/graphics/graphicx.sty
+Package: graphicx 2020/09/09 v1.2b Enhanced LaTeX Graphics (DPC,SPQR)
+ (/usr/share/texmf/tex/latex/graphics/graphics.sty
+Package: graphics 2020/08/30 v1.4c Standard LaTeX Graphics (DPC,SPQR)
+ (/usr/share/texmf/tex/latex/graphics/trig.sty
+Package: trig 2016/01/03 v1.10 sin cos tan (DPC)
+) (/usr/share/texmf/tex/latex/graphics-cfg/graphics.cfg
+File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
+)
+Package graphics Info: Driver file: pdftex.def on input line 105.
+)
+\Gin@req@height=\dimen171
+\Gin@req@width=\dimen172
+) (/usr/share/texmf/tex/latex/wrapfig/wrapfig.sty
+\wrapoverhang=\dimen173
+\WF@size=\dimen174
+\c@WF@wrappedlines=\count291
+\WF@box=\box49
+\WF@everypar=\toks22
+Package: wrapfig 2003/01/31  v 3.6
+) (/usr/share/texmf/tex/latex/minted/minted.sty
+Package: minted 2017/07/19 v2.5 Yet another Pygments shim for LaTeX
+ (/usr/share/texmf/tex/latex/fvextra/fvextra.sty
+Package: fvextra 2019/02/04 v1.4 fvextra - extensions and patches for fancyvrb
+ (/usr/share/texmf/tex/latex/base/ifthen.sty
+Package: ifthen 2014/09/29 v1.1c Standard LaTeX ifthen package (DPC)
+) (/usr/share/texmf/tex/latex/fancyvrb/fancyvrb.sty
+Package: fancyvrb 2021/01/20 v3.7 verbatim text (tvz,hv)
+\FV@CodeLineNo=\count292
+\FV@InFile=\read3
+\FV@TabBox=\box50
+\c@FancyVerbLine=\count293
+\FV@StepNumber=\count294
+\FV@OutFile=\write3
+) (/usr/share/texmf/tex/latex/upquote/upquote.sty
+Package: upquote 2012/04/19 v1.3 upright-quote and grave-accent glyphs in verbatim
+ (/usr/share/texmf/tex/latex/base/textcomp.sty
+Package: textcomp 2020/02/02 v2.0n Standard LaTeX package
+)) (/usr/share/texmf/tex/latex/lineno/lineno.sty
+Package: lineno 2005/11/02 line numbers on paragraphs v4.41
+\linenopenalty=\count295
+\output=\toks23
+\linenoprevgraf=\count296
+\linenumbersep=\dimen175
+\linenumberwidth=\dimen176
+\c@linenumber=\count297
+\c@pagewiselinenumber=\count298
+\c@LN@truepage=\count299
+\c@internallinenumber=\count300
+\c@internallinenumbers=\count301
+\quotelinenumbersep=\dimen177
+\bframerule=\dimen178
+\bframesep=\dimen179
+\bframebox=\box51
+
+
+LaTeX Warning: Command \@parboxrestore  has changed.
+               Check if current package is valid.
+
+LaTeX Info: Redefining \\ on input line 3056.
+)
+
+Package fvextra Warning: csquotes should be loaded after fvextra, to avoid a warning from the lineno package on input line 37.
+
+\c@FV@TrueTabGroupLevel=\count302
+\c@FV@TrueTabCounter=\count303
+\FV@TabBox@Group=\box52
+\FV@TmpLength=\skip53
+\c@FV@HighlightLinesStart=\count304
+\c@FV@HighlightLinesStop=\count305
+\FV@LoopCount=\count306
+\FV@NCharsBox=\box53
+\FV@BreakIndent=\dimen180
+\FV@BreakIndentNChars=\count307
+\FV@BreakSymbolSepLeft=\dimen181
+\FV@BreakSymbolSepLeftNChars=\count308
+\FV@BreakSymbolSepRight=\dimen182
+\FV@BreakSymbolSepRightNChars=\count309
+\FV@BreakSymbolIndentLeft=\dimen183
+\FV@BreakSymbolIndentLeftNChars=\count310
+\FV@BreakSymbolIndentRight=\dimen184
+\FV@BreakSymbolIndentRightNChars=\count311
+\c@FancyVerbLineBreakLast=\count312
+\FV@LineBox=\box54
+\FV@LineIndentBox=\box55
+\FV@LineWidth=\dimen185
+) (/usr/share/texmf/tex/latex/tools/calc.sty
+Package: calc 2017/05/25 v4.3 Infix arithmetic (KKT,FJ)
+\calc@Acount=\count313
+\calc@Bcount=\count314
+\calc@Adimen=\dimen186
+\calc@Bdimen=\dimen187
+\calc@Askip=\skip54
+\calc@Bskip=\skip55
+LaTeX Info: Redefining \setlength on input line 80.
+LaTeX Info: Redefining \addtolength on input line 81.
+\calc@Ccount=\count315
+\calc@Cskip=\skip56
+) (/usr/share/texmf/tex/latex/tools/shellesc.sty
+Package: shellesc 2019/11/08 v1.0c unified shell escape interface for LaTeX
+Package shellesc Info: Unrestricted shell escape enabled on input line 75.
+) (/usr/share/texmf/tex/latex/ifplatform/ifplatform.sty
+Package: ifplatform 2017/10/13 v0.4a Testing for the operating system
+ (/usr/share/texmf/tex/generic/catchfile/catchfile.sty
+Package: catchfile 2019/12/09 v1.8 Catch the contents of a file (HO)
+) (/usr/share/texmf/tex/generic/iftex/ifluatex.sty
+Package: ifluatex 2019/10/25 v1.5 ifluatex legacy package. Use iftex instead.
+)
+runsystem(uname -s > "thesis.w18")...executed.
+
+ (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.w18)
+runsystem(rm -- "thesis.w18")...executed.
+
+) (/usr/share/texmf/tex/generic/xstring/xstring.sty (/usr/share/texmf/tex/generic/xstring/xstring.tex
+\integerpart=\count316
+\decimalpart=\count317
+)
+Package: xstring 2019/02/06 v1.83 String manipulations (CT)
+) (/usr/share/texmf/tex/latex/framed/framed.sty
+Package: framed 2011/10/22 v 0.96: framed or shaded text with page breaks
+\OuterFrameSep=\skip57
+\fb@frw=\dimen188
+\fb@frh=\dimen189
+\FrameRule=\dimen190
+\FrameSep=\dimen191
+) (/usr/share/texmf/tex/latex/float/float.sty
+Package: float 2001/11/08 v1.3d Float enhancements (AL)
+\c@float@type=\count318
+\float@exts=\toks24
+\float@box=\box56
+\@float@everytoks=\toks25
+\@floatcapt=\box57
+)
+\minted@appexistsfile=\read4
+\minted@bgbox=\box58
+\minted@code=\write4
+\c@minted@FancyVerbLineTemp=\count319
+\c@minted@pygmentizecounter=\count320
+\@float@every@listing=\toks26
+\c@listing=\count321
+)
+runsystem(mkdir -p _minted-thesis)...executed.
+
+ (/usr/share/texmf/tex/latex/algorithm2e/algorithm2e.sty
+Package: algorithm2e 2017/07/18 v5.2 algorithms environments
+\c@AlgoLine=\count322
+\algocf@hangindent=\skip58
+ (/usr/share/texmf/tex/latex/ifoddpage/ifoddpage.sty
+Package: ifoddpage 2016/04/23 v1.1 Conditionals for odd/even page detection
+\c@checkoddpage=\count323
+) (/usr/share/texmf/tex/latex/tools/xspace.sty
+Package: xspace 2014/10/28 v1.13 Space after command names (DPC,MH)
+) (/usr/share/texmf/tex/latex/relsize/relsize.sty
+Package: relsize 2013/03/29 ver 4.1
+)
+\skiptotal=\skip59
+\skiplinenumber=\skip60
+\skiprule=\skip61
+\skiphlne=\skip62
+\skiptext=\skip63
+\skiplength=\skip64
+\algomargin=\skip65
+\skipalgocfslide=\skip66
+\algowidth=\dimen192
+\inoutsize=\dimen193
+\inoutindent=\dimen194
+\interspacetitleruled=\dimen195
+\interspacealgoruled=\dimen196
+\interspacetitleboxruled=\dimen197
+\algocf@ruledwidth=\skip67
+\algocf@inoutbox=\box59
+\algocf@inputbox=\box60
+\AlCapSkip=\skip68
+\AlCapHSkip=\skip69
+\algoskipindent=\skip70
+\algocf@nlbox=\box61
+\algocf@hangingbox=\box62
+\algocf@untilbox=\box63
+\algocf@skipuntil=\skip71
+\algocf@capbox=\box64
+\algocf@lcaptionbox=\skip72
+\algoheightruledefault=\skip73
+\algoheightrule=\skip74
+\algotitleheightruledefault=\skip75
+\algotitleheightrule=\skip76
+\c@algocfline=\count324
+\c@algocfproc=\count325
+\c@algocf=\count326
+\algocf@algoframe=\box65
+\algocf@algobox=\box66
+) (/usr/share/texmf/tex/latex/amsmath/amsmath.sty
+Package: amsmath 2020/09/23 v2.17i AMS math features
+\@mathmargin=\skip77
+
+For additional information on amsmath, use the `?' option.
+(/usr/share/texmf/tex/latex/amsmath/amstext.sty
+Package: amstext 2000/06/29 v2.01 AMS text
+ (/usr/share/texmf/tex/latex/amsmath/amsgen.sty
+File: amsgen.sty 1999/11/30 v2.0 generic functions
+\@emptytoks=\toks27
+\ex@=\dimen198
+)) (/usr/share/texmf/tex/latex/amsmath/amsbsy.sty
+Package: amsbsy 1999/11/29 v1.2d Bold Symbols
+\pmbraise@=\dimen199
+) (/usr/share/texmf/tex/latex/amsmath/amsopn.sty
+Package: amsopn 2016/03/08 v2.02 operator names
+)
+\inf@bad=\count327
+LaTeX Info: Redefining \frac on input line 234.
+\uproot@=\count328
+\leftroot@=\count329
+LaTeX Info: Redefining \overline on input line 399.
+\classnum@=\count330
+\DOTSCASE@=\count331
+LaTeX Info: Redefining \ldots on input line 496.
+LaTeX Info: Redefining \dots on input line 499.
+LaTeX Info: Redefining \cdots on input line 620.
+\Mathstrutbox@=\box67
+\strutbox@=\box68
+\big@size=\dimen256
+LaTeX Font Info:    Redeclaring font encoding OML on input line 743.
+LaTeX Font Info:    Redeclaring font encoding OMS on input line 744.
+\macc@depth=\count332
+\c@MaxMatrixCols=\count333
+\dotsspace@=\muskip17
+\c@parentequation=\count334
+\dspbrk@lvl=\count335
+\tag@help=\toks28
+\row@=\count336
+\column@=\count337
+\maxfields@=\count338
+\andhelp@=\toks29
+\eqnshift@=\dimen257
+\alignsep@=\dimen258
+\tagshift@=\dimen259
+\tagwidth@=\dimen260
+\totwidth@=\dimen261
+\lineht@=\dimen262
+\@envbody=\toks30
+\multlinegap=\skip78
+\multlinetaggap=\skip79
+\mathdisplay@stack=\toks31
+LaTeX Info: Redefining \[ on input line 2923.
+LaTeX Info: Redefining \] on input line 2924.
+) (/usr/share/texmf/tex/latex/stmaryrd/stmaryrd.sty
+Package: stmaryrd 1994/03/03 St Mary's Road symbol package
+\symstmry=\mathgroup4
+LaTeX Font Info:    Overwriting symbol font `stmry' in version `bold'
+(Font)                  U/stmry/m/n --> U/stmry/b/n on input line 89.
+) (/usr/share/texmf/tex/latex/amsfonts/amssymb.sty
+Package: amssymb 2013/01/14 v3.01 AMS font symbols
+ (/usr/share/texmf/tex/latex/amsfonts/amsfonts.sty
+Package: amsfonts 2013/01/14 v3.01 Basic AMSFonts support
+\symAMSa=\mathgroup5
+\symAMSb=\mathgroup6
+LaTeX Font Info:    Redeclaring math symbol \hbar on input line 98.
+LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
+(Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
+)
+LaTeX Font Info:    Redeclaring math symbol \boxdot on input line 44.
+) (/usr/share/texmf/tex/latex/todonotes/todonotes.sty
+Package: todonotes 2020/08/18 v1.1.3 Todonotes source and documentation.
+Package: todonotes 2018/11/22
+ (/usr/share/texmf/tex/latex/xkeyval/xkeyval.sty
+Package: xkeyval 2020/11/20 v2.8 package option processing (HA)
+ (/usr/share/texmf/tex/generic/xkeyval/xkeyval.tex (/usr/share/texmf/tex/generic/xkeyval/xkvutils.tex
+\XKV@toks=\toks32
+\XKV@tempa@toks=\toks33
+)
+\XKV@depth=\count339
+File: xkeyval.tex 2014/12/03 v2.7a key=value parser (HA)
+)) (/usr/share/texmf/tex/latex/pgf/frontendlayer/tikz.sty (/usr/share/texmf/tex/latex/pgf/basiclayer/pgf.sty (/usr/share/texmf/tex/latex/pgf/utilities/pgfrcs.sty (/usr/share/texmf/tex/generic/pgf/utilities/pgfutil-common.tex
+\pgfutil@everybye=\toks34
+\pgfutil@tempdima=\dimen263
+\pgfutil@tempdimb=\dimen264
+ (/usr/share/texmf/tex/generic/pgf/utilities/pgfutil-common-lists.tex)) (/usr/share/texmf/tex/generic/pgf/utilities/pgfutil-latex.def
+\pgfutil@abb=\box69
+) (/usr/share/texmf/tex/generic/pgf/utilities/pgfrcs.code.tex (/usr/share/texmf/tex/generic/pgf/pgf.revision.tex)
+Package: pgfrcs 2020/12/27 v3.1.8b (3.1.8b)
+))
+Package: pgf 2020/12/27 v3.1.8b (3.1.8b)
+ (/usr/share/texmf/tex/latex/pgf/basiclayer/pgfcore.sty (/usr/share/texmf/tex/latex/pgf/systemlayer/pgfsys.sty (/usr/share/texmf/tex/generic/pgf/systemlayer/pgfsys.code.tex
+Package: pgfsys 2020/12/27 v3.1.8b (3.1.8b)
+ (/usr/share/texmf/tex/generic/pgf/utilities/pgfkeys.code.tex
+\pgfkeys@pathtoks=\toks35
+\pgfkeys@temptoks=\toks36
+ (/usr/share/texmf/tex/generic/pgf/utilities/pgfkeysfiltered.code.tex
+\pgfkeys@tmptoks=\toks37
+))
+\pgf@x=\dimen265
+\pgf@y=\dimen266
+\pgf@xa=\dimen267
+\pgf@ya=\dimen268
+\pgf@xb=\dimen269
+\pgf@yb=\dimen270
+\pgf@xc=\dimen271
+\pgf@yc=\dimen272
+\pgf@xd=\dimen273
+\pgf@yd=\dimen274
+\w@pgf@writea=\write5
+\r@pgf@reada=\read5
+\c@pgf@counta=\count340
+\c@pgf@countb=\count341
+\c@pgf@countc=\count342
+\c@pgf@countd=\count343
+\t@pgf@toka=\toks38
+\t@pgf@tokb=\toks39
+\t@pgf@tokc=\toks40
+\pgf@sys@id@count=\count344
+ (/usr/share/texmf/tex/generic/pgf/systemlayer/pgf.cfg
+File: pgf.cfg 2020/12/27 v3.1.8b (3.1.8b)
+)
+Driver file for pgf: pgfsys-pdftex.def
+ (/usr/share/texmf/tex/generic/pgf/systemlayer/pgfsys-pdftex.def
+File: pgfsys-pdftex.def 2020/12/27 v3.1.8b (3.1.8b)
+ (/usr/share/texmf/tex/generic/pgf/systemlayer/pgfsys-common-pdf.def
+File: pgfsys-common-pdf.def 2020/12/27 v3.1.8b (3.1.8b)
+))) (/usr/share/texmf/tex/generic/pgf/systemlayer/pgfsyssoftpath.code.tex
+File: pgfsyssoftpath.code.tex 2020/12/27 v3.1.8b (3.1.8b)
+\pgfsyssoftpath@smallbuffer@items=\count345
+\pgfsyssoftpath@bigbuffer@items=\count346
+) (/usr/share/texmf/tex/generic/pgf/systemlayer/pgfsysprotocol.code.tex
+File: pgfsysprotocol.code.tex 2020/12/27 v3.1.8b (3.1.8b)
+)) (/usr/share/texmf/tex/generic/pgf/basiclayer/pgfcore.code.tex
+Package: pgfcore 2020/12/27 v3.1.8b (3.1.8b)
+ (/usr/share/texmf/tex/generic/pgf/math/pgfmath.code.tex (/usr/share/texmf/tex/generic/pgf/math/pgfmathcalc.code.tex (/usr/share/texmf/tex/generic/pgf/math/pgfmathutil.code.tex) (/usr/share/texmf/tex/generic/pgf/math/pgfmathparser.code.tex
+\pgfmath@dimen=\dimen275
+\pgfmath@count=\count347
+\pgfmath@box=\box70
+\pgfmath@toks=\toks41
+\pgfmath@stack@operand=\toks42
+\pgfmath@stack@operation=\toks43
+) (/usr/share/texmf/tex/generic/pgf/math/pgfmathfunctions.code.tex (/usr/share/texmf/tex/generic/pgf/math/pgfmathfunctions.basic.code.tex) (/usr/share/texmf/tex/generic/pgf/math/pgfmathfunctions.trigonometric.code.tex) (/usr/share/texmf/tex/generic/pgf/math/pgfmathfunctions.random.code.tex) (/usr/share/texmf/tex/generic/pgf/math/pgfmathfunctions.comparison.code.tex) (/usr/share/texmf/tex/generic/pgf/math/pgfmathfunctions.base.code.tex) (/usr/share/texmf/tex/generic/pgf/math/pgfmathfunctions.round.code.tex) (/usr/share/texmf/tex/generic/pgf/math/pgfmathfunctions.misc.code.tex) (/usr/share/texmf/tex/generic/pgf/math/pgfmathfunctions.integerarithmetics.code.tex))) (/usr/share/texmf/tex/generic/pgf/math/pgfmathfloat.code.tex
+\c@pgfmathroundto@lastzeros=\count348
+)) (/usr/share/texmf/tex/generic/pgf/math/pgfint.code.tex) (/usr/share/texmf/tex/generic/pgf/basiclayer/pgfcorepoints.code.tex
+File: pgfcorepoints.code.tex 2020/12/27 v3.1.8b (3.1.8b)
+\pgf@picminx=\dimen276
+\pgf@picmaxx=\dimen277
+\pgf@picminy=\dimen278
+\pgf@picmaxy=\dimen279
+\pgf@pathminx=\dimen280
+\pgf@pathmaxx=\dimen281
+\pgf@pathminy=\dimen282
+\pgf@pathmaxy=\dimen283
+\pgf@xx=\dimen284
+\pgf@xy=\dimen285
+\pgf@yx=\dimen286
+\pgf@yy=\dimen287
+\pgf@zx=\dimen288
+\pgf@zy=\dimen289
+) (/usr/share/texmf/tex/generic/pgf/basiclayer/pgfcorepathconstruct.code.tex
+File: pgfcorepathconstruct.code.tex 2020/12/27 v3.1.8b (3.1.8b)
+\pgf@path@lastx=\dimen290
+\pgf@path@lasty=\dimen291
+) (/usr/share/texmf/tex/generic/pgf/basiclayer/pgfcorepathusage.code.tex
+File: pgfcorepathusage.code.tex 2020/12/27 v3.1.8b (3.1.8b)
+\pgf@shorten@end@additional=\dimen292
+\pgf@shorten@start@additional=\dimen293
+) (/usr/share/texmf/tex/generic/pgf/basiclayer/pgfcorescopes.code.tex
+File: pgfcorescopes.code.tex 2020/12/27 v3.1.8b (3.1.8b)
+\pgfpic=\box71
+\pgf@hbox=\box72
+\pgf@layerbox@main=\box73
+\pgf@picture@serial@count=\count349
+) (/usr/share/texmf/tex/generic/pgf/basiclayer/pgfcoregraphicstate.code.tex
+File: pgfcoregraphicstate.code.tex 2020/12/27 v3.1.8b (3.1.8b)
+\pgflinewidth=\dimen294
+) (/usr/share/texmf/tex/generic/pgf/basiclayer/pgfcoretransformations.code.tex
+File: pgfcoretransformations.code.tex 2020/12/27 v3.1.8b (3.1.8b)
+\pgf@pt@x=\dimen295
+\pgf@pt@y=\dimen296
+\pgf@pt@temp=\dimen297
+) (/usr/share/texmf/tex/generic/pgf/basiclayer/pgfcorequick.code.tex
+File: pgfcorequick.code.tex 2020/12/27 v3.1.8b (3.1.8b)
+) (/usr/share/texmf/tex/generic/pgf/basiclayer/pgfcoreobjects.code.tex
+File: pgfcoreobjects.code.tex 2020/12/27 v3.1.8b (3.1.8b)
+) (/usr/share/texmf/tex/generic/pgf/basiclayer/pgfcorepathprocessing.code.tex
+File: pgfcorepathprocessing.code.tex 2020/12/27 v3.1.8b (3.1.8b)
+) (/usr/share/texmf/tex/generic/pgf/basiclayer/pgfcorearrows.code.tex
+File: pgfcorearrows.code.tex 2020/12/27 v3.1.8b (3.1.8b)
+\pgfarrowsep=\dimen298
+) (/usr/share/texmf/tex/generic/pgf/basiclayer/pgfcoreshade.code.tex
+File: pgfcoreshade.code.tex 2020/12/27 v3.1.8b (3.1.8b)
+\pgf@max=\dimen299
+\pgf@sys@shading@range@num=\count350
+\pgf@shadingcount=\count351
+) (/usr/share/texmf/tex/generic/pgf/basiclayer/pgfcoreimage.code.tex
+File: pgfcoreimage.code.tex 2020/12/27 v3.1.8b (3.1.8b)
+ (/usr/share/texmf/tex/generic/pgf/basiclayer/pgfcoreexternal.code.tex
+File: pgfcoreexternal.code.tex 2020/12/27 v3.1.8b (3.1.8b)
+\pgfexternal@startupbox=\box74
+)) (/usr/share/texmf/tex/generic/pgf/basiclayer/pgfcorelayers.code.tex
+File: pgfcorelayers.code.tex 2020/12/27 v3.1.8b (3.1.8b)
+) (/usr/share/texmf/tex/generic/pgf/basiclayer/pgfcoretransparency.code.tex
+File: pgfcoretransparency.code.tex 2020/12/27 v3.1.8b (3.1.8b)
+) (/usr/share/texmf/tex/generic/pgf/basiclayer/pgfcorepatterns.code.tex
+File: pgfcorepatterns.code.tex 2020/12/27 v3.1.8b (3.1.8b)
+) (/usr/share/texmf/tex/generic/pgf/basiclayer/pgfcorerdf.code.tex
+File: pgfcorerdf.code.tex 2020/12/27 v3.1.8b (3.1.8b)
+))) (/usr/share/texmf/tex/generic/pgf/modules/pgfmoduleshapes.code.tex
+File: pgfmoduleshapes.code.tex 2020/12/27 v3.1.8b (3.1.8b)
+\pgfnodeparttextbox=\box75
+) (/usr/share/texmf/tex/generic/pgf/modules/pgfmoduleplot.code.tex
+File: pgfmoduleplot.code.tex 2020/12/27 v3.1.8b (3.1.8b)
+) (/usr/share/texmf/tex/latex/pgf/compatibility/pgfcomp-version-0-65.sty
+Package: pgfcomp-version-0-65 2020/12/27 v3.1.8b (3.1.8b)
+\pgf@nodesepstart=\dimen300
+\pgf@nodesepend=\dimen301
+) (/usr/share/texmf/tex/latex/pgf/compatibility/pgfcomp-version-1-18.sty
+Package: pgfcomp-version-1-18 2020/12/27 v3.1.8b (3.1.8b)
+)) (/usr/share/texmf/tex/latex/pgf/utilities/pgffor.sty (/usr/share/texmf/tex/latex/pgf/utilities/pgfkeys.sty (/usr/share/texmf/tex/generic/pgf/utilities/pgfkeys.code.tex)) (/usr/share/texmf/tex/latex/pgf/math/pgfmath.sty (/usr/share/texmf/tex/generic/pgf/math/pgfmath.code.tex)) (/usr/share/texmf/tex/generic/pgf/utilities/pgffor.code.tex
+Package: pgffor 2020/12/27 v3.1.8b (3.1.8b)
+ (/usr/share/texmf/tex/generic/pgf/math/pgfmath.code.tex)
+\pgffor@iter=\dimen302
+\pgffor@skip=\dimen303
+\pgffor@stack=\toks44
+\pgffor@toks=\toks45
+)) (/usr/share/texmf/tex/generic/pgf/frontendlayer/tikz/tikz.code.tex
+Package: tikz 2020/12/27 v3.1.8b (3.1.8b)
+ (/usr/share/texmf/tex/generic/pgf/libraries/pgflibraryplothandlers.code.tex
+File: pgflibraryplothandlers.code.tex 2020/12/27 v3.1.8b (3.1.8b)
+\pgf@plot@mark@count=\count352
+\pgfplotmarksize=\dimen304
+)
+\tikz@lastx=\dimen305
+\tikz@lasty=\dimen306
+\tikz@lastxsaved=\dimen307
+\tikz@lastysaved=\dimen308
+\tikz@lastmovetox=\dimen309
+\tikz@lastmovetoy=\dimen310
+\tikzleveldistance=\dimen311
+\tikzsiblingdistance=\dimen312
+\tikz@figbox=\box76
+\tikz@figbox@bg=\box77
+\tikz@tempbox=\box78
+\tikz@tempbox@bg=\box79
+\tikztreelevel=\count353
+\tikznumberofchildren=\count354
+\tikznumberofcurrentchild=\count355
+\tikz@fig@count=\count356
+ (/usr/share/texmf/tex/generic/pgf/modules/pgfmodulematrix.code.tex
+File: pgfmodulematrix.code.tex 2020/12/27 v3.1.8b (3.1.8b)
+\pgfmatrixcurrentrow=\count357
+\pgfmatrixcurrentcolumn=\count358
+\pgf@matrix@numberofcolumns=\count359
+)
+\tikz@expandcount=\count360
+ (/usr/share/texmf/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrarytopaths.code.tex
+File: tikzlibrarytopaths.code.tex 2020/12/27 v3.1.8b (3.1.8b)
+))) (/usr/share/texmf/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrarypositioning.code.tex
+File: tikzlibrarypositioning.code.tex 2020/12/27 v3.1.8b (3.1.8b)
+) (/usr/share/texmf/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibraryshadows.code.tex
+File: tikzlibraryshadows.code.tex 2020/12/27 v3.1.8b (3.1.8b)
+ (/usr/share/texmf/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibraryfadings.code.tex
+File: tikzlibraryfadings.code.tex 2020/12/27 v3.1.8b (3.1.8b)
+ (/usr/share/texmf/tex/generic/pgf/libraries/pgflibraryfadings.code.tex
+File: pgflibraryfadings.code.tex 2020/12/27 v3.1.8b (3.1.8b)
+)))
+\c@@todonotes@numberoftodonotes=\count361
+))
+Package csquotes Info: Checking for multilingual support...
+Package csquotes Info: ... found 'babel' package.
+Package csquotes Info: Adjusting default style.
+Package csquotes Info: Redefining alias 'default' -> 'english'.
+runsystem(which pygmentize && touch thesis.aex)...executed.
+
+runsystem(rm thesis.aex)...executed.
+
+ (/usr/share/texmf/tex/latex/l3backend/l3backend-pdftex.def
+File: l3backend-pdftex.def 2021-03-18 L3 backend support: PDF output (pdfTeX)
+\l__color_backend_stack_int=\count362
+\l__pdf_internal_box=\box80
+) (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.aux (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/frontpage.aux) (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/ack.aux) (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/summary.aux) (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/00intro.aux) (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/01aes.aux) (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/02pow.aux) (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/03soa.aux) (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/04expres.aux) (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/05conclusions.aux))
+\openout1 = `thesis.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 3.
+LaTeX Font Info:    ... okay on input line 3.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 3.
+LaTeX Font Info:    ... okay on input line 3.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 3.
+LaTeX Font Info:    ... okay on input line 3.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 3.
+LaTeX Font Info:    ... okay on input line 3.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 3.
+LaTeX Font Info:    ... okay on input line 3.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 3.
+LaTeX Font Info:    ... okay on input line 3.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 3.
+LaTeX Font Info:    ... okay on input line 3.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 3.
+LaTeX Font Info:    ... okay on input line 3.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 3.
+LaTeX Font Info:    ... okay on input line 3.
+
+*geometry* driver: auto-detecting
+*geometry* detected driver: pdftex
+*geometry* verbose mode - [ preamble ] result:
+* driver: pdftex
+* paper: a4paper
+* layout: <same size as paper>
+* layoutoffset:(h,v)=(0.0pt,0.0pt)
+* modes: 
+* h-part:(L,W,R)=(89.62709pt, 418.25368pt, 89.6271pt)
+* v-part:(T,H,B)=(85.35826pt, 688.5567pt, 71.13188pt)
+* \paperwidth=597.50787pt
+* \paperheight=845.04684pt
+* \textwidth=418.25368pt
+* \textheight=688.5567pt
+* \oddsidemargin=17.3571pt
+* \evensidemargin=17.3571pt
+* \topmargin=-23.91173pt
+* \headheight=12.0pt
+* \headsep=25.0pt
+* \topskip=11.0pt
+* \footskip=30.0pt
+* \marginparwidth=56.9055pt
+* \marginparsep=10.0pt
+* \columnsep=10.0pt
+* \skip\footins=10.0pt plus 4.0pt minus 2.0pt
+* \hoffset=0.0pt
+* \voffset=0.0pt
+* \mag=1000
+* \@twocolumnfalse
+* \@twosidefalse
+* \@mparswitchfalse
+* \@reversemarginfalse
+* (1in=72.27pt=25.4mm, 1cm=28.453pt)
+
+LaTeX Info: Redefining \microtypecontext on input line 3.
+Package microtype Info: Generating PDF output.
+Package microtype Info: Character protrusion enabled (level 2).
+Package microtype Info: Using default protrusion set `alltext'.
+Package microtype Info: Automatic font expansion enabled (level 2),
+(microtype)             stretch: 20, shrink: 20, step: 1, non-selected.
+Package microtype Info: Using default expansion set `alltext-nott'.
+LaTeX Info: Redefining \showhyphens on input line 3.
+Package microtype Info: No adjustment of tracking.
+Package microtype Info: No adjustment of interword spacing.
+Package microtype Info: No adjustment of character kerning.
+(/usr/share/texmf/tex/latex/microtype/mt-cmr.cfg
+File: mt-cmr.cfg 2013/05/19 v2.2 microtype config. file: Computer Modern Roman (RS)
+)
+Package hyperref Info: Link coloring OFF on input line 3.
+ (/usr/share/texmf/tex/latex/hyperref/nameref.sty
+Package: nameref 2021-04-02 v2.47 Cross-referencing by name of section
+ (/usr/share/texmf/tex/latex/refcount/refcount.sty
+Package: refcount 2019/12/15 v3.6 Data extraction from label references (HO)
+) (/usr/share/texmf/tex/generic/gettitlestring/gettitlestring.sty
+Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
+)
+\c@section@level=\count363
+)
+LaTeX Info: Redefining \ref on input line 3.
+LaTeX Info: Redefining \pageref on input line 3.
+LaTeX Info: Redefining \nameref on input line 3.
+ (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.out) (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.out)
+\@outlinefile=\write6
+\openout6 = `thesis.out'.
+
+\c@lstlisting=\count364
+ (/usr/share/texmf/tex/context/base/mkii/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count365
+\scratchdimen=\dimen313
+\scratchbox=\box81
+\nofMPsegments=\count366
+\nofMParguments=\count367
+\everyMPshowfont=\toks46
+\MPscratchCnt=\count368
+\MPscratchDim=\dimen314
+\MPnumerator=\count369
+\makeMPintoPDFobject=\count370
+\everyMPtoPDFconversion=\toks47
+) (/usr/share/texmf/tex/latex/epstopdf-pkg/epstopdf-base.sty
+Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
+Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 485.
+ (/usr/share/texmf/tex/latex/latexconfig/epstopdf-sys.cfg
+File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
+))
+\openout2 = `frontpage.aux'.
+
+ (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/frontpage.tex
+<logopolitonuovo.jpeg, id=224, 401.8212pt x 401.8212pt>
+File: logopolitonuovo.jpeg Graphic file (type jpg)
+<use logopolitonuovo.jpeg>
+Package pdftex.def Info: logopolitonuovo.jpeg  used on input line 16.
+(pdftex.def)             Requested size: 209.12683pt x 209.12602pt.
+LaTeX Font Info:    Trying to load font information for U+stmry on input line 24.
+ (/usr/share/texmf/tex/latex/stmaryrd/Ustmry.fd)
+LaTeX Font Info:    Trying to load font information for U+msa on input line 24.
+ (/usr/share/texmf/tex/latex/amsfonts/umsa.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+) (/usr/share/texmf/tex/latex/microtype/mt-msa.cfg
+File: mt-msa.cfg 2006/02/04 v1.1 microtype config. file: AMS symbols (a) (RS)
+)
+LaTeX Font Info:    Trying to load font information for U+msb on input line 24.
+ (/usr/share/texmf/tex/latex/amsfonts/umsb.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+) (/usr/share/texmf/tex/latex/microtype/mt-msb.cfg
+File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
+)) [1
+
+
+
+
+
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map} </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/logopolitonuovo.jpeg>]
+\openout2 = `ack.aux'.
+
+ (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/ack.tex) [2
+
+
+
+
+]
+\openout2 = `summary.aux'.
+
+ (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/summary.tex
+LaTeX Font Info:    Trying to load font information for T1+cmtt on input line 6.
+ (/usr/share/texmf/tex/latex/base/t1cmtt.fd
+File: t1cmtt.fd 2019/12/16 v2.5j Standard LaTeX font definitions
+)
+Package microtype Info: Loading generic protrusion settings for font family
+(microtype)             `cmtt' (encoding: T1).
+(microtype)             For optimal results, create family-specific settings.
+(microtype)             See the microtype manual for details.
+) [3
+
+
+
+
+] (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.lof [4
+
+
+
+])
+\tf@lof=\write7
+\openout7 = `thesis.lof'.
+
+ [5] (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.lot)
+\tf@lot=\write8
+\openout8 = `thesis.lot'.
+
+ [6
+
+] (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.toc
+LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10.95> not available
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 52.
+ [7
+
+])
+\tf@toc=\write9
+\openout9 = `thesis.toc'.
+
+ [8]
+\openout2 = `chapters/00intro.aux'.
+
+ (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/00intro.tex
+Chapter 1.
+[9
+
+
+]) [10]
+\openout2 = `chapters/01aes.aux'.
+
+ (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/01aes.tex
+Chapter 2.
+[11
+
+
+
+
+] [12]
+<./images//subBytes.png, id=506, 624.83438pt x 310.15875pt>
+File: ./images//subBytes.png Graphic file (type png)
+<use ./images//subBytes.png>
+Package pdftex.def Info: ./images//subBytes.png  used on input line 50.
+(pdftex.def)             Requested size: 292.77629pt x 145.33449pt.
+<./images//shiftRows.png, id=509, 624.83438pt x 225.09094pt>
+File: ./images//shiftRows.png Graphic file (type png)
+<use ./images//shiftRows.png>
+Package pdftex.def Info: ./images//shiftRows.png  used on input line 61.
+(pdftex.def)             Requested size: 292.77629pt x 105.47333pt.
+<./images//mixColumns.png, id=512, 624.83438pt x 322.95656pt>
+File: ./images//mixColumns.png Graphic file (type png)
+<use ./images//mixColumns.png>
+Package pdftex.def Info: ./images//mixColumns.png  used on input line 72.
+(pdftex.def)             Requested size: 292.77629pt x 151.3313pt.
+ [13pdfTeX warning (ext4): destination with the same identifier (name{figure.2.1}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.78 
+     pdfTeX warning (ext4): destination with the same identifier (name{figure.2.2}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.78 
+      </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//subBytes.png (PNG copy)> </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//shiftRows.png (PNG copy)>]
+<./images//addRoundKey.png, id=524, 588.69937pt x 456.20438pt>
+File: ./images//addRoundKey.png Graphic file (type png)
+<use ./images//addRoundKey.png>
+Package pdftex.def Info: ./images//addRoundKey.png  used on input line 83.
+(pdftex.def)             Requested size: 292.77629pt x 226.88342pt.
+<./images//aes_rounds.pdf, id=526, 478.66827pt x 793.04276pt>
+File: ./images//aes_rounds.pdf Graphic file (type pdf)
+<use ./images//aes_rounds.pdf>
+Package pdftex.def Info: ./images//aes_rounds.pdf  used on input line 92.
+(pdftex.def)             Requested size: 382.93513pt x 634.43507pt.
+ [14pdfTeX warning (ext4): destination with the same identifier (name{figure.2.3}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.101 
+      pdfTeX warning (ext4): destination with the same identifier (name{figure.2.4}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.101 
+       </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//mixColumns.png (PNG copy)> </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//addRoundKey.png (PNG copy)>] [15pdfTeX warning (ext4): destination with the same identifier (name{figure.2.5}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.101 
+       </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//aes_rounds.pdf>] [16] [17] [18] [19] [20] [21]
+
+LaTeX Warning: No positions in optional float specifier.
+               Default added (so using `tbp') on input line 290.
+
+<./images//diff_cryptanalysis.pdf, id=640, 470.7186pt x 258.0039pt>
+File: ./images//diff_cryptanalysis.pdf Graphic file (type pdf)
+<use ./images//diff_cryptanalysis.pdf>
+Package pdftex.def Info: ./images//diff_cryptanalysis.pdf  used on input line 304.
+(pdftex.def)             Requested size: 376.57538pt x 206.4034pt.
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[22pdfTeX warning (ext4): destination with the same identifier (name{table.2.1}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.311 \newpage
+              ] [23pdfTeX warning (ext4): destination with the same identifier (name{figure.2.6}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.328 
+       </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//diff_cryptanalysis.pdf>] [24] [25]
+LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <12> not available
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 415.
+) [26]
+\openout2 = `chapters/02pow.aux'.
+
+ (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/02pow.tex
+Chapter 3.
+[27
+
+
+
+
+]
+<./images//side_channel.pdf, id=745, 355.3275pt x 319.1925pt>
+File: ./images//side_channel.pdf Graphic file (type pdf)
+<use ./images//side_channel.pdf>
+Package pdftex.def Info: ./images//side_channel.pdf  used on input line 14.
+(pdftex.def)             Requested size: 292.77629pt x 263.01073pt.
+ [28pdfTeX warning (ext4): destination with the same identifier (name{figure.3.1}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.29 
+      </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//side_channel.pdf>] [29] [30]
+<./images//scope_circuit.pdf, id=792, 516.97137pt x 145.50359pt>
+File: ./images//scope_circuit.pdf Graphic file (type pdf)
+<use ./images//scope_circuit.pdf>
+Package pdftex.def Info: ./images//scope_circuit.pdf  used on input line 64.
+(pdftex.def)             Requested size: 418.25368pt x 117.71738pt.
+ [31pdfTeX warning (ext4): destination with the same identifier (name{figure.3.2}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.109             A
+                   s a consequence of these arrangements, the attacker can r... </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//scope_circuit.pdf>] [32]
+\openout3 = `thesis.pyg'.
+
+ (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/default-pyg-prefix.pygstyle) (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/default.pygstyle) (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/FE6984492F6B2DB88C223C4F2AF4B23B95ED62DB7DA91897153A4BCACDB72C79.pygtex)
+\openout3 = `thesis.pyg'.
+
+ (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/42804DD3297E329332CAE5CDDDEDE37E1F2D8067E0A256B6FCF34360A44AFD35.pygtex) [33]
+<./images//spa_example.png, id=845, 384.4764pt x 547.8066pt>
+File: ./images//spa_example.png Graphic file (type png)
+<use ./images//spa_example.png>
+Package pdftex.def Info: ./images//spa_example.png  used on input line 186.
+(pdftex.def)             Requested size: 292.77629pt x 417.1565pt.
+ [34pdfTeX warning (ext4): destination with the same identifier (name{figure.3.3}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.193 \newpage
+               </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//spa_example.png>]
+<./images//spa_example_aes2.png, id=853, 803.25093pt x 560.8453pt>
+File: ./images//spa_example_aes2.png Graphic file (type png)
+<use ./images//spa_example_aes2.png>
+Package pdftex.def Info: ./images//spa_example_aes2.png  used on input line 202.
+(pdftex.def)             Requested size: 418.25368pt x 292.04346pt.
+ [35pdfTeX warning (ext4): destination with the same identifier (name{figure.3.4}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.209 \newpage
+               </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//spa_example_aes2.png (PNG copy)>]
+\openout3 = `thesis.pyg'.
+
+ (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/_minted-thesis/1BD9C22D99E5F63923C2B8ADA4FD5CC595ED62DB7DA91897153A4BCACDB72C79.pygtex)
+<./images//spa_example3.png, id=859, 584.93532pt x 613.54219pt>
+File: ./images//spa_example3.png Graphic file (type png)
+<use ./images//spa_example3.png>
+Package pdftex.def Info: ./images//spa_example3.png  used on input line 247.
+(pdftex.def)             Requested size: 334.60422pt x 350.97717pt.
+ [36] [37pdfTeX warning (ext4): destination with the same identifier (name{figure.3.5}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.258 \newpage
+               </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//spa_example3.png (PNG copy)>] [38]
+<./images//dpa_kocher_pdf.png, id=881, 694.84593pt x 422.32782pt>
+File: ./images//dpa_kocher_pdf.png Graphic file (type png)
+<use ./images//dpa_kocher_pdf.png>
+Package pdftex.def Info: ./images//dpa_kocher_pdf.png  used on input line 290.
+(pdftex.def)             Requested size: 292.77629pt x 177.94356pt.
+<./images//dpa_bus.pdf, id=884, 680.5425pt x 632.3625pt>
+File: ./images//dpa_bus.pdf Graphic file (type pdf)
+<use ./images//dpa_bus.pdf>
+Package pdftex.def Info: ./images//dpa_bus.pdf  used on input line 299.
+(pdftex.def)             Requested size: 418.25368pt x 388.64493pt.
+<./images//trace_alignment.png, id=885, 597.73312pt x 398.99063pt>
+File: ./images//trace_alignment.png Graphic file (type png)
+<use ./images//trace_alignment.png>
+Package pdftex.def Info: ./images//trace_alignment.png  used on input line 308.
+(pdftex.def)             Requested size: 292.77629pt x 195.43405pt.
+ [39] [40pdfTeX warning (ext4): destination with the same identifier (name{figure.3.6}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.318 
+      pdfTeX warning (ext4): destination with the same identifier (name{figure.3.7}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.318 
+       </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//dpa_kocher_pdf.png (PNG copy)> </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//dpa_bus.pdf>] [41pdfTeX warning (ext4): destination with the same identifier (name{figure.3.8}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.353 
+       </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//trace_alignment.png (PNG copy)>]
+<./images//dpa_aes.pdf, id=917, 1165.4742pt x 716.6775pt>
+File: ./images//dpa_aes.pdf Graphic file (type pdf)
+<use ./images//dpa_aes.pdf>
+Package pdftex.def Info: ./images//dpa_aes.pdf  used on input line 360.
+(pdftex.def)             Requested size: 418.25368pt x 257.19447pt.
+
+
+LaTeX Warning: No positions in optional float specifier.
+               Default added (so using `tbp') on input line 369.
+
+[42pdfTeX warning (ext4): destination with the same identifier (name{table.3.1}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.388 \newpage
+              ] [43pdfTeX warning (ext4): destination with the same identifier (name{figure.3.9}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.398 
+       </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//dpa_aes.pdf>] [44]
+<./images//cpa_weights1.png, id=960, 483.30562pt x 263.48438pt>
+File: ./images//cpa_weights1.png Graphic file (type png)
+<use ./images//cpa_weights1.png>
+Package pdftex.def Info: ./images//cpa_weights1.png  used on input line 425.
+(pdftex.def)             Requested size: 334.60422pt x 182.42355pt.
+<./images//cpa_hw.png, id=963, 810.02625pt x 574.39594pt>
+File: ./images//cpa_hw.png Graphic file (type png)
+<use ./images//cpa_hw.png>
+Package pdftex.def Info: ./images//cpa_hw.png  used on input line 434.
+(pdftex.def)             Requested size: 334.60422pt x 237.27429pt.
+ [45pdfTeX warning (ext4): destination with the same identifier (name{figure.3.10}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.443 
+      pdfTeX warning (ext4): destination with the same identifier (name{figure.3.11}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.443 
+       </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//cpa_weights1.png (PNG copy)> </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//cpa_hw.png (PNG copy)>] [46]
+<./images//./cpa_50/res.png, id=985, 569.87906pt x 376.40625pt>
+File: ./images//./cpa_50/res.png Graphic file (type png)
+<use ./images//./cpa_50/res.png>
+Package pdftex.def Info: ./images//./cpa_50/res.png  used on input line 509.
+(pdftex.def)             Requested size: 418.25368pt x 276.25609pt.
+<./images//./cpa_50/corrTraces[0-5000].png, id=986, 1300.86pt x 722.7pt>
+File: ./images//./cpa_50/corrTraces[0-5000].png Graphic file (type png)
+<use ./images//./cpa_50/corrTraces[0-5000].png>
+Package pdftex.def Info: ./images//./cpa_50/corrTraces[0-5000].png  used on input line 518.
+(pdftex.def)             Requested size: 418.25368pt x 232.36044pt.
+<./images//./cpa_800/corrTraces[0-5000].png, id=988, 1300.86pt x 722.7pt>
+File: ./images//./cpa_800/corrTraces[0-5000].png Graphic file (type png)
+<use ./images//./cpa_800/corrTraces[0-5000].png>
+Package pdftex.def Info: ./images//./cpa_800/corrTraces[0-5000].png  used on input line 527.
+(pdftex.def)             Requested size: 418.25368pt x 232.36044pt.
+ [47] [48pdfTeX warning (ext4): destination with the same identifier (name{figure.3.12}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.549 \newpage
+              pdfTeX warning (ext4): destination with the same identifier (name{figure.3.13}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.549 \newpage
+               </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./cpa_50/res.png (PNG copy)> </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./cpa_50/corrTraces[0-5000].png>] [49pdfTeX warning (ext4): destination with the same identifier (name{figure.3.14}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.566 
+       </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./cpa_800/corrTraces[0-5000].png>] [50] [51]
+<./images//cwlite.png, id=1037, 718.18312pt x 368.87813pt>
+File: ./images//cwlite.png Graphic file (type png)
+<use ./images//cwlite.png>
+Package pdftex.def Info: ./images//cwlite.png  used on input line 606.
+(pdftex.def)             Requested size: 334.60422pt x 171.86426pt.
+<./images//sampling.pdf, id=1039, 554.07pt x 356.29109pt>
+File: ./images//sampling.pdf Graphic file (type pdf)
+<use ./images//sampling.pdf>
+Package pdftex.def Info: ./images//sampling.pdf  used on input line 617.
+(pdftex.def)             Requested size: 292.77629pt x 188.26796pt.
+ [52pdfTeX warning (ext4): destination with the same identifier (name{figure.3.15}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.629 
+      pdfTeX warning (ext4): destination with the same identifier (name{figure.3.16}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.629 
+       </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//cwlite.png (PNG copy)> </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//sampling.pdf>]) [53]
+\openout2 = `chapters/03soa.aux'.
+
+ (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/03soa.tex
+Chapter 4.
+LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <24.88> not available
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 1.
+[54
+
+
+
+
+]
+LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <14.4> not available
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 35.
+ [55] [56] [57] [58]) [59]
+\openout2 = `chapters/04expres.aux'.
+
+ (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/04expres.tex
+Chapter 5.
+[60
+
+
+
+
+]
+
+LaTeX Warning: No positions in optional float specifier.
+               Default added (so using `tbp') on input line 25.
+
+[61] [62]
+
+LaTeX Warning: No positions in optional float specifier.
+               Default added (so using `tbp') on input line 72.
+
+[63] [64pdfTeX warning (ext4): destination with the same identifier (name{table.5.1}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.97 \newpage
+             ]
+<./images//./results/traces_100/aes_plot_1.png, id=1247, 873.2625pt x 639.89063pt>
+File: ./images//./results/traces_100/aes_plot_1.png Graphic file (type png)
+<use ./images//./results/traces_100/aes_plot_1.png>
+Package pdftex.def Info: ./images//./results/traces_100/aes_plot_1.png  used on input line 101.
+(pdftex.def)             Requested size: 418.25368pt x 306.48006pt.
+<./images//./results/traces_100/aes_plot_2.png, id=1248, 915.42pt x 627.84563pt>
+File: ./images//./results/traces_100/aes_plot_2.png Graphic file (type png)
+<use ./images//./results/traces_100/aes_plot_2.png>
+Package pdftex.def Info: ./images//./results/traces_100/aes_plot_2.png  used on input line 110.
+(pdftex.def)             Requested size: 418.25368pt x 286.85814pt.
+<./images//./results/traces_100/freyre2_plot_1.png, id=1249, 861.9703pt x 636.12656pt>
+File: ./images//./results/traces_100/freyre2_plot_1.png Graphic file (type png)
+<use ./images//./results/traces_100/freyre2_plot_1.png>
+Package pdftex.def Info: ./images//./results/traces_100/freyre2_plot_1.png  used on input line 121.
+(pdftex.def)             Requested size: 418.25368pt x 308.67632pt.
+<./images//./results/traces_100/freyre2_plot_2.png, id=1250, 904.88063pt x 623.32875pt>
+File: ./images//./results/traces_100/freyre2_plot_2.png Graphic file (type png)
+<use ./images//./results/traces_100/freyre2_plot_2.png>
+Package pdftex.def Info: ./images//./results/traces_100/freyre2_plot_2.png  used on input line 130.
+(pdftex.def)             Requested size: 418.25368pt x 288.11383pt.
+<./images//./results/traces_100/freyre3_plot_1.png, id=1251, 863.47594pt x 631.60968pt>
+File: ./images//./results/traces_100/freyre3_plot_1.png Graphic file (type png)
+<use ./images//./results/traces_100/freyre3_plot_1.png>
+Package pdftex.def Info: ./images//./results/traces_100/freyre3_plot_1.png  used on input line 141.
+(pdftex.def)             Requested size: 418.25368pt x 305.93518pt.
+<./images//./results/traces_100/freyre3_plot_2.png, id=1252, 907.89188pt x 624.08156pt>
+File: ./images//./results/traces_100/freyre3_plot_2.png Graphic file (type png)
+<use ./images//./results/traces_100/freyre3_plot_2.png>
+Package pdftex.def Info: ./images//./results/traces_100/freyre3_plot_2.png  used on input line 150.
+(pdftex.def)             Requested size: 418.25368pt x 287.50952pt.
+<./images//./results/traces_1000/freyre2_plot_2.png, id=1253, 902.6222pt x 626.34pt>
+File: ./images//./results/traces_1000/freyre2_plot_2.png Graphic file (type png)
+<use ./images//./results/traces_1000/freyre2_plot_2.png>
+Package pdftex.def Info: ./images//./results/traces_1000/freyre2_plot_2.png  used on input line 161.
+(pdftex.def)             Requested size: 418.25368pt x 290.23203pt.
+<./images//./results/traces_1000/freyre3_plot_2.png, id=1254, 905.63344pt x 620.3175pt>
+File: ./images//./results/traces_1000/freyre3_plot_2.png Graphic file (type png)
+<use ./images//./results/traces_1000/freyre3_plot_2.png>
+Package pdftex.def Info: ./images//./results/traces_1000/freyre3_plot_2.png  used on input line 170.
+(pdftex.def)             Requested size: 418.25368pt x 286.48535pt.
+<./images//./results/traces_5000/freyre2_plot_2.png, id=1255, 904.88063pt x 620.3175pt>
+File: ./images//./results/traces_5000/freyre2_plot_2.png Graphic file (type png)
+<use ./images//./results/traces_5000/freyre2_plot_2.png>
+Package pdftex.def Info: ./images//./results/traces_5000/freyre2_plot_2.png  used on input line 181.
+(pdftex.def)             Requested size: 418.25368pt x 286.72198pt.
+<./images//./results/traces_5000/freyre3_plot_2.png, id=1256, 906.38625pt x 627.84563pt>
+File: ./images//./results/traces_5000/freyre3_plot_2.png Graphic file (type png)
+<use ./images//./results/traces_5000/freyre3_plot_2.png>
+Package pdftex.def Info: ./images//./results/traces_5000/freyre3_plot_2.png  used on input line 190.
+(pdftex.def)             Requested size: 418.25368pt x 289.7226pt.
+) [65pdfTeX warning (ext4): destination with the same identifier (name{figure.5.1}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.26     \include{chapters/04expres}
+                                    pdfTeX warning (ext4): destination with the same identifier (name{figure.5.2}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.26     \include{chapters/04expres}
+                                     </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/aes_plot_1.png (PNG copy)> </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/aes_plot_2.png (PNG copy)>] [66pdfTeX warning (ext4): destination with the same identifier (name{figure.5.3}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.26     \include{chapters/04expres}
+                                    pdfTeX warning (ext4): destination with the same identifier (name{figure.5.4}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.26     \include{chapters/04expres}
+                                     </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/freyre2_plot_1.png (PNG copy)> </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/freyre2_plot_2.png (PNG copy)>] [67pdfTeX warning (ext4): destination with the same identifier (name{figure.5.5}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.26     \include{chapters/04expres}
+                                    pdfTeX warning (ext4): destination with the same identifier (name{figure.5.6}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.26     \include{chapters/04expres}
+                                     </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/freyre3_plot_1.png (PNG copy)> </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_100/freyre3_plot_2.png (PNG copy)>] [68pdfTeX warning (ext4): destination with the same identifier (name{figure.5.7}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.26     \include{chapters/04expres}
+                                    pdfTeX warning (ext4): destination with the same identifier (name{figure.5.8}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.26     \include{chapters/04expres}
+                                     </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_1000/freyre2_plot_2.png (PNG copy)> </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_1000/freyre3_plot_2.png (PNG copy)>] [69pdfTeX warning (ext4): destination with the same identifier (name{figure.5.9}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.26     \include{chapters/04expres}
+                                    pdfTeX warning (ext4): destination with the same identifier (name{figure.5.10}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.26     \include{chapters/04expres}
+                                     </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_5000/freyre2_plot_2.png (PNG copy)> </home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/./images//./results/traces_5000/freyre3_plot_2.png (PNG copy)>]
+\openout2 = `chapters/05conclusions.aux'.
+
+ (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/05conclusions.tex
+Chapter 6.
+[70
+
+
+
+
+]) [71] (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.bbl
+Underfull \hbox (badness 1107) in paragraph at lines 63--69
+[]\T1/cmr/m/n/10.95 (+20) Paul Röttger and Ar-tur Janc.  A Spec-tre proof-of-concept for a Spectre-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 63--69
+\T1/cmr/m/n/10.95 (+20) proof web.  Avail-able at []$\T1/cmtt/m/n/10.95 https : / / security . googleblog . com / 2021 / 03 /
+ []
+
+
+Underfull \hbox (badness 5231) in paragraph at lines 63--69
+\T1/cmtt/m/n/10.95 a-[]spectre-[]proof-[]of-[]concept-[]for-[]spectre . html$[]\T1/cmr/m/n/10.95 (+20) , March 2021.  Ac-cessed
+ []
+
+[72
+
+
+
+]
+Underfull \hbox (badness 10000) in paragraph at lines 153--159
+[]\T1/cmr/m/n/10.95 (+20) Atmel.  At-mel 8 and 16 bit avr mi-cro-con-trollers - atxmega.
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 153--159
+\T1/cmr/m/n/10.95 (+20) Avail-able at []$\T1/cmtt/m/n/10.95 http : / / ww1 . microchip . com / downloads / en / devicedoc /
+ []
+
+
+Overfull \hbox (16.49826pt too wide) in paragraph at lines 153--159
+\T1/cmtt/m/n/10.95 atmel-[]8135-[]8-[]and-[]16-[]bit-[]avr-[]microcontroller-[]atxmega16d4-[]32d4-[]64d4-[]128d4 _
+ []
+
+[73] [74]) [75] (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.aux (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/frontpage.aux) (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/ack.aux) (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/summary.aux) (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/00intro.aux) (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/01aes.aux) (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/02pow.aux) (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/03soa.aux) (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/04expres.aux) (/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/chapters/05conclusions.aux))
+Package rerunfilecheck Info: File `thesis.out' has not changed.
+(rerunfilecheck)             Checksum: 00470F52EFC44971D0D0E570FEA4D455;9450.
+runsystem(rm thesis.pyg)...executed.
+
+ ) 
+Here is how much of TeX's memory you used:
+ 30692 strings out of 480031
+ 549316 string characters out of 5884517
+ 953632 words of memory out of 5000000
+ 46595 multiletter control sequences out of 15000+600000
+ 448710 words of font info for 307 fonts, out of 8000000 for 9000
+ 475 hyphenation exceptions out of 8191
+ 109i,11n,107p,3179b,569s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-ts1.enc}{/usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-t1.enc}</usr/share/texmf/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texmf/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texmf/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texmf/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texmf/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/share/texmf/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texmf/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/share/texmf/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/texmf/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texmf/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texmf/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/share/texmf/fonts/type1/public/amsfonts/symbols/msam10.pfb></usr/share/texmf/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbi1095.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbi1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbi1440.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx0900.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx1095.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx1440.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx2074.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx2488.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfit1095.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm0600.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm0800.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm0900.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1095.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1440.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1728.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfti0900.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfti1095.pfb></usr/share/texmf/fonts/type1/public/cm-super/sftt0800.pfb></usr/share/texmf/fonts/type1/public/cm-super/sftt0900.pfb></usr/share/texmf/fonts/type1/public/cm-super/sftt1095.pfb></usr/share/texmf/fonts/type1/public/cm-super/sftt1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sftt1440.pfb></usr/share/texmf/fonts/type1/public/cm-super/sftt2488.pfb>
+Output written on "/home/sem/Syncthing/Politecnico di Torino/01 - Magistrale/Tesi/Thesis/thesis.pdf" (75 pages, 9296007 bytes).
+PDF statistics:
+ 1526 PDF objects out of 1728 (max. 8388607)
+ 1300 compressed objects within 13 object streams
+ 311 named destinations out of 1000 (max. 500000)
+ 72338 words of extra memory for PDF output out of 74296 (max. 10000000)
+

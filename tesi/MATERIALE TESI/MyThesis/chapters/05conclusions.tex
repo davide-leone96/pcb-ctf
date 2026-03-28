@@ -1,0 +1,26 @@
+\chapter{Conclusions}\label{chap:conclusions}
+
+\section{Comments}
+    The results obtained and partially discussed in the previous chapter confirm the ability of some of the latest \sbocs{} proposal to provide a significantly higher resistance to side-channel analysis, acting as a lightweight countermeasure against this class of attacks. 
+    
+    The attack procedure carried on in this thesis confirmed once again the poor performance provided by the original \aes{} \sbocs{} structure. These kind of structures, created without taking into account side-channel analysis, fail to provide any additional protection. The \sbocs{} proposed by Hussain in~\cite{hussain2013efficient} was selected on purpose to confirm the theory already demonstrated by Prouff, Guilley, Picek and many others: properties like nonlinearity and differential uniformity do not relate to the presence of any natural countermeasure against SCA.
+    
+    Other chaotic structures like the one proposed by Özkaynak in~\cite{ozkaynak2019construction} provide slightly better results if compared against the \sbocs{} of \aes{} but still not sufficient to successfully prevent a physical attack, pushing the number of required traces not too far away from what originally done by the original encryption algorithm.
+
+    Finally, the heuristic-based structures proposed by Freyre \emph{et al.} in~\cite{freyre2020evolving} provide great insight on the state of the art achieved by this design methodology. The graphs obtained in the previous chapter demonstrates the highest side-channel resistance among all the \sbocs{}es tested, in some cases increasing the trace requirements up to a factor of 10~\ref{tab:pge_th}. The metrics provided by Freyre enable for further observations on the impact of the Confusion Coefficient. From the data collected it is possible to notice that the higher the Confusion Coefficient the higher the number of traces required and the lower the discrepancy among the various correlation traces, like pictured in graphs like~\ref{fig:traces_100/freyre2_plot_2}~\ref{fig:traces_1000/freyre2_plot_2} and~\ref{fig:traces_5000/freyre2_plot_2}. The observed data perfectly confirm the claims provided by Picek \emph{et al.} in~\cite{picek2014confused} and \emph{Stoffelen} in~\cite{stoffelen2015intrinsic}. We observed that both \xfone{} and \xftwo{} structures acted similarly, having a CC of $4.5$ and $4.492$, respectively. Conversely, \xfthree{}, with a CC of $1.934$, showed some principle of correlation confusion but not significant enough to increase considerably the resistance against side-channel power analysis.
+
+\newpage
+
+\section{Future work}
+
+    Future work may be directed toward the analysis of additional new \sbocs{} structures, with the ultimate goal of gaining an even broader view of the state of the art in side-channel resistance designs. Further real-world testing is still needed as the demand for lightweight countermeasures continues to increase.
+
+    Further testing will need to be conducted leveraging the same physical configuration, with the goal of defining empirical metrics that can better indicate resistance against physical attacks than the PGE metric used in our tests.
+
+    Finally, a comprehensive characterization capable of correlating theoretical metrics to real-world results is needed, expanding the analysis to additional properties such as transparency order and revisited transparency order.
+
+% fare più iterazioni per lo stesso numero di tracce
+% fare una media del valore del PGE per ridurre l'errore
+% approfondire il perché byte 8 e 12 sono problematici (sicuramente dovuto al device, non alle sbox, date che tutte condividono lo stesso problema)
+% approfondire il perché della separazione in 3 fasce
+% 

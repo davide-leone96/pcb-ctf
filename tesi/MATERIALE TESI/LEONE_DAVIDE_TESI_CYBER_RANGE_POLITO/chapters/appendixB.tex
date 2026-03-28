@@ -1,0 +1,223 @@
+\chapter{Terminal Configuration Schema}\label{app:terminal-schema}
+
+This appendix documents the JSON schema of the Terminal Configuration, which defines the behaviour of the simulated terminal in the \pcbctf{} platform.
+
+% ============================================================================
+\section{Root Structure}\label{sec:app-tc-root}
+% ============================================================================
+
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[language={}, caption={Top-level TerminalConfig schema.}]
+{
+  "metadata": {
+    "version": "1.0.0",
+    "name": "WR841N Terminal",
+    "description": "UART console simulation"
+  },
+  "tabs": [ ... ],
+  "flags": {
+    "parts": [ ... ],
+    "completeFlag": "flag{b00t_r00t_h4sh_l34k}",
+    "showProgress": true
+  },
+  "globalCommands": { ... }
+}
+\end{lstlisting}
+\end{minipage}
+
+% ============================================================================
+\section{Tab Configuration}\label{sec:app-tc-tab}
+% ============================================================================
+
+Each tab defines an independent terminal environment with its own filesystem, commands, and optional boot sequence.
+
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[language={}, caption={TabConfig structure.}]
+{
+  "id": "uart",
+  "name": "UART Console",
+  "filesystem": { "tree": { ... } },
+  "commands": { ... },
+  "bootSequence": {
+    "stages": [ ... ],
+    "initialStage": "connecting"
+  },
+  "initialPath": "/",
+  "defaultConstraints": { ... }
+}
+\end{lstlisting}
+\end{minipage}
+
+% ============================================================================
+\section{Command Definition}\label{sec:app-tc-cmd}
+% ============================================================================
+
+Commands are the core building blocks of the terminal simulation. Each command specifies a handler type, optional constraints, an output definition, and optional side effects.
+
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[language={}, caption={CommandDefinition with lookup output.}]
+{
+  "description": "Extract printable strings",
+  "handler": "custom",
+  "constraints": {
+    "state": { "bootStage": "shell" }
+  },
+  "output": {
+    "type": "lookup",
+    "argIndex": 0,
+    "matchType": "contains",
+    "table": {
+      "/dev/mtdblock3": [
+        "admin_pass=sohoadmin",
+        "wifi_password=myWiFi123"
+      ],
+      "/usr/bin/httpd": [
+        "execFormatCmd(%s)"
+      ]
+    },
+    "default": { "type": "static", "lines": ["..."] }
+  },
+  "sideEffects": {
+    "unlockFlags": [
+      {
+        "id": "leak",
+        "condition": {
+          "type": "argument",
+          "contains": "mtdblock3"
+        }
+      }
+    ]
+  }
+}
+\end{lstlisting}
+\end{minipage}
+
+\subsection{Handler Types}\label{subsec:app-handlers}
+
+\begin{table}[H]
+\centering
+\caption{Command handler types.}
+\label{tab:handlers}
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Type} & \textbf{Description} \\
+\midrule
+\texttt{builtin}  & Delegates to a built-in handler (ls, cd, cat, pwd, grep, find, clear) \\
+\texttt{custom}   & Routes to the configured output definition \\
+\texttt{dynamic}  & Calls a registered custom function by name \\
+\texttt{script}   & Calls a registered custom function with a different signature \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Output Types}\label{subsec:app-outputs}
+
+\begin{table}[H]
+\centering
+\caption{Terminal output types.}
+\label{tab:outputs}
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Type} & \textbf{Description} \\
+\midrule
+\texttt{static}      & Fixed array of output lines \\
+\texttt{conditional}  & If-then-else chain evaluated against the execution context \\
+\texttt{template}     & String with \texttt{\{\{variable\}\}} placeholders \\
+\texttt{lookup}       & Table indexed by a command argument \\
+\texttt{dynamic}      & Custom function invocation \\
+\texttt{script}       & Custom function with alternate signature \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Constraint Categories}\label{subsec:app-constraints}
+
+\begin{table}[H]
+\centering
+\caption{Command constraint categories and evaluation order.}
+\label{tab:constraints}
+\begin{tabularx}{\textwidth}{clX}
+\toprule
+\textbf{Order} & \textbf{Category} & \textbf{Description} \\
+\midrule
+1 & \texttt{path}          & Restricts the directories from which the command can be invoked \\
+2 & \texttt{permissions}   & Requires specific user identity (e.g., root) \\
+3 & \texttt{prerequisites} & Requires prior commands, files, or flags \\
+4 & \texttt{arguments}     & Validates argument count and patterns \\
+5 & \texttt{state}         & Requires specific boot stage or state variables \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ============================================================================
+\section{Filesystem Structure}\label{sec:app-tc-fs}
+% ============================================================================
+
+The filesystem can be specified in a nested tree format (authoring-friendly) that is automatically flattened by the configuration loader:
+
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[language={}, caption={Filesystem tree notation.}]
+{
+  "tree": {
+    "etc": {
+      "passwd": "root:x:0:0:root:/root:/bin/sh",
+      "shadow": "root:$1$abc:18000:0:99999:7:::"
+    },
+    "proc": {
+      "cpuinfo": "system type: QCA953x ..."
+    },
+    "dev": {}
+  }
+}
+\end{lstlisting}
+\end{minipage}
+
+String values represent file contents; empty objects represent empty directories. The loader produces two parallel dictionaries: \texttt{directories} (path $\rightarrow$ entry names) and \texttt{files} (path $\rightarrow$ content or metadata).
+
+% ============================================================================
+\section{Boot Sequence}\label{sec:app-tc-boot}
+% ============================================================================
+
+Boot sequences define a chain of stages that simulate the device startup process:
+
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[language={}, caption={Boot stage example.}]
+{
+  "id": "uboot_wait",
+  "name": "U-Boot Autoboot",
+  "lines": ["Hit any key to stop autoboot: "],
+  "duration": 3000,
+  "nextStage": "kernel_boot",
+  "prompt": "",
+  "autoProgressTimeout": 5000
+}
+\end{lstlisting}
+\end{minipage}
+
+Three stage identifiers receive special handling:
+\begin{itemize}
+    \item \texttt{uboot\_wait}: Displays a countdown and advances to the next stage if the user presses a key, or auto-progresses after the timeout.
+    \item \texttt{login}: Prompts for a username (displayed as typed).
+    \item \texttt{password}: Prompts for a password (displayed as asterisks).
+\end{itemize}
+
+% ============================================================================
+\section{Flag System}\label{sec:app-tc-flags}
+% ============================================================================
+
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[language={}, caption={Flag system definition.}]
+{
+  "parts": [
+    { "id": "boot", "part": "b00t",
+      "description": "Boot analysis", "hint": "..." },
+    { "id": "root", "part": "_r00t",
+      "description": "Root access", "hint": "..." }
+  ],
+  "completeFlag": "flag{b00t_r00t_h4sh_l34k_1nj3ct_sh3ll}",
+  "showProgress": true
+}
+\end{lstlisting}
+\end{minipage}
+
+Flag parts are unlocked through command-level side effects. The terminal UI displays discovered fragments and masks pending ones with \texttt{?} characters.

@@ -1,0 +1,67 @@
+\babel@toc {english}{}
+\contentsline {chapter}{\numberline {1}Introduction}{9}{chapter.1}%
+\contentsline {chapter}{\numberline {2}Advanced Encryption Standard (AES)}{11}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Introduction}{11}{section.2.1}%
+\contentsline {section}{\numberline {2.2}The Algorithm}{12}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}Algorithm Steps - Encryption}{12}{subsection.2.2.1}%
+\contentsline {subsubsection}{\texttt {SubBytes}}{13}{section*.6}%
+\contentsline {subsubsection}{\texttt {ShiftRows}}{13}{section*.7}%
+\contentsline {subsubsection}{\texttt {MixColumns}}{13}{section*.8}%
+\contentsline {subsubsection}{\texttt {AddRoudKeys}}{14}{section*.9}%
+\contentsline {subsection}{\numberline {2.2.2}Key Schedule Operation}{14}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.2.3}Algorithm Steps - Decryption}{16}{subsection.2.2.3}%
+\contentsline {section}{\numberline {2.3}Cryptanalysis}{16}{section.2.3}%
+\contentsline {subsection}{\numberline {2.3.1}Methodology Overview}{17}{subsection.2.3.1}%
+\contentsline {subsection}{\numberline {2.3.2}Generic Attacks}{18}{subsection.2.3.2}%
+\contentsline {subsection}{\numberline {2.3.3}Shortcut Attacks}{19}{subsection.2.3.3}%
+\contentsline {subsubsection}{Differential Cryptanalysis}{19}{section*.10}%
+\contentsline {paragraph}{Attack rationale}{19}{section*.11}%
+\contentsline {paragraph}{Example: Computing the probability of a given propagation}{22}{section*.12}%
+\contentsline {subsubsection}{Impossible Differential Cryptanalysis}{23}{section*.13}%
+\contentsline {subsubsection}{Linear Cryptanalysis}{24}{section*.14}%
+\contentsline {paragraph}{Piling-up Lemma}{25}{section*.15}%
+\contentsline {subsection}{\numberline {2.3.4}\texttt {AES}{} Security and Countermeasures Against Cryptanalysis}{26}{subsection.2.3.4}%
+\contentsline {chapter}{\numberline {3}Power Analysis}{27}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Introduction to Side-Channel Analysis}{27}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Power Analysis}{28}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}Attack Instrumentation and Circuit Configuration}{30}{subsection.3.2.1}%
+\contentsline {section}{\numberline {3.3}Simple Power Analysis (SPA)}{32}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}SPA: Attack Demonstrations}{32}{subsection.3.3.1}%
+\contentsline {paragraph}{Example 1 - Annotating a simple C program}{33}{section*.16}%
+\contentsline {paragraph}{Example 2 - Annotating AES-128}{35}{section*.17}%
+\contentsline {paragraph}{Example 3 - Highlighting Code Flow Differences}{36}{section*.18}%
+\contentsline {section}{\numberline {3.4}Differential Power Analysis (DPA)}{38}{section.3.4}%
+\contentsline {subsection}{\numberline {3.4.1}DPA: Attacking an \texttt {AES-128}{} software implementation}{39}{subsection.3.4.1}%
+\contentsline {section}{\numberline {3.5}Correlation Power Analysis (CPA)}{43}{section.3.5}%
+\contentsline {subsection}{\numberline {3.5.1}The Leakage Model}{43}{subsection.3.5.1}%
+\contentsline {paragraph}{The Hamming weight (HW) Model}{44}{section*.19}%
+\contentsline {paragraph}{The Hamming Distance (HD) Model}{44}{section*.20}%
+\contentsline {subsection}{\numberline {3.5.2}Computing the estimated leakage}{46}{subsection.3.5.2}%
+\contentsline {subsection}{\numberline {3.5.3}Correlating the estimated leakage to the real power consumption}{46}{subsection.3.5.3}%
+\contentsline {section}{\numberline {3.6}Countermeasures}{47}{section.3.6}%
+\contentsline {subsection}{\numberline {3.6.1}Reducing the leakage}{49}{subsection.3.6.1}%
+\contentsline {paragraph}{Balancing}{49}{section*.21}%
+\contentsline {paragraph}{Noise introduction}{49}{section*.22}%
+\contentsline {subsection}{\numberline {3.6.2}Blinding and masking}{50}{subsection.3.6.2}%
+\contentsline {subsection}{\numberline {3.6.3}Protocol level countermeasures}{50}{subsection.3.6.3}%
+\contentsline {section}{\numberline {3.7}Tools: The \textit {ChipWhisperer}\texttrademark {} Kit}{51}{section.3.7}%
+\contentsline {subsection}{\numberline {3.7.1}\textit {ChipWhisperer}\texttrademark {} Hardware}{51}{subsection.3.7.1}%
+\contentsline {subsection}{\numberline {3.7.2}\textit {ChipWhisperer}\texttrademark {} Lite Characteristics}{51}{subsection.3.7.2}%
+\contentsline {subsubsection}{\textit {ChipWhisperer}\texttrademark {} \texttt {XMEGA}{} Target Board}{52}{section*.23}%
+\contentsline {subsection}{\numberline {3.7.3}\textit {ChipWhisperer}\texttrademark {} Sofware}{53}{subsection.3.7.3}%
+\contentsline {chapter}{\numberline {4}\texttt {S-Box}{} Variants: State of the Art}{54}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Introduction on Novel \texttt {S-Box}{} Implementations}{55}{section.4.1}%
+\contentsline {subsection}{\numberline {4.1.1}Theoretical metrics against classical cryptanalysis}{55}{subsection.4.1.1}%
+\contentsline {subsection}{\numberline {4.1.2}Theoretical metrics against side-channel analysis}{56}{subsection.4.1.2}%
+\contentsline {section}{\numberline {4.2}Design Methodologies}{57}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}Chaos-Based Methods}{58}{subsection.4.2.1}%
+\contentsline {subsection}{\numberline {4.2.2}Heuristic Methods}{59}{subsection.4.2.2}%
+\contentsline {chapter}{\numberline {5}Experimental Results}{60}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Introduction and motivations}{60}{section.5.1}%
+\contentsline {section}{\numberline {5.2}\texttt {S-Box}{}es overview: properties and selection criteria}{60}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Instrumentation setup}{61}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Steps of the analysis}{61}{section.5.4}%
+\contentsline {section}{\numberline {5.5}Results and comments}{63}{section.5.5}%
+\contentsline {chapter}{\numberline {6}Conclusions}{70}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Comments}{70}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Future work}{71}{section.6.2}%

@@ -1,0 +1,195 @@
+\chapter{Experimental Results}\label{chap:expres}
+
+    \section{Introduction and motivations}
+
+    The work carried out in this thesis consists in empirically verifying the resilience to side-channel attacks of some of the latest proposals of \sbocs{} structures. The results obtained provide an idea of the qualities of such structures, allowing to understand the relevance of the results achieved by the academic research. The objective is to test the structures examined in the context of a real attack scenario carried out by means of specialized but low cost and affordable equipment.
+
+    We have chosen to analyze a series of chaos-based and heuristic-based \sbocs{} structures produced by the respective methodologies, considered among the most promising.
+
+    Similar discussions have already been addressed in several recently published papers. In 2011 Boey, O'Neil and Woods~\cite{boey2011resistant} tested four different ASIC implementations (including \aes{} and \des{}) on a SASEBO board. In 2016 Lerman \emph{et al.}~\cite{lerman2016comparing} proposed an extensive attack testing multiple \texttt{8x8} structures on an \emph{ATmega 328p} 8-bit microcontroller, carried on using an external oscilloscope. The authors observed that the obtained experimental results differed from the outcome of theoretical metrics. Finally, in 2019 Açikkapi \emph{et al.} tested two different chaos-based \sbocs{}es initially proposed by Özkaynak in~\cite{ozkaynak2019construction}. The setup included a \cw{} Lite board attacking an \xmega{} 8-bit microcontroller. The authors compared the results obtained against the ones related to the original \aes{} \sbocs{} proving the presence of a slightly higher resistance to side-channel analysis.
+
+    \section{\sbocs{}es overview: properties and selection criteria}
+
+        The attack is conducted onto six different \sbocs{} structures, one of which is the original \aes{} \sbocs{}, used as a reference structure. The software implementation of the \aess{} algorithm in use is comparable to what is currently used in smartcards and other small embedded devices to protect user data in everyday scenarios.
+
+        The remaining five \sbocs{} structures under attack were selected among the latest publications for both chaos-based and heuristic-based methodologies. Three of these come from the work presented by Freyre \emph{et al.} in~\cite{freyre2020evolving} and were designed to specifically target resistance to side-channel analysis.
+
+        The fifth \sbocs{} selected corresponds to the last structure among the six proposed by Hussain \emph{et al.} in~\cite{hussain2013efficient}, referred in the original publication to as ``S-box-6''. The authors leverage the use of a chaotic logistic map as a source of randomness in order to achieve a structure with excellent properties against cryptanalysis. The methodology used, however, does not take into account any design criteria to improve resistance to side-channel analysis. This \sbocs{} is thus considered in the same way as the original structure of \aes{} and it is compared to all other designs provided with theoretical countermeasures against SCA.
+        
+        The last structure taken into consideration has been initially proposed by Özkaynak in~\cite{ozkaynak2019construction} and tested by Açikkapi in~\cite{accikkapi2019side} with a similar attack setup as the one proposed in this thesis. The structure, in the original publication, is referred to as ``Proposal 2''.
+
+        The cryptographic properties of the six structures under attack are presented in Table~\ref{tab:sbox_prop}, whereas their hexadecimal representation is available at \url{https://github.com/Mrcuve0/Thesis-Work}.
+
+        % Please add the following required packages to your document preamble:
+        % \usepackage{booktabs}
+        \begin{table}[]\label{tab:sbox_prop}
+            \centering
+            \begin{tabular}{@{}lrrr@{}}
+                \toprule
+                \sbocs{}& Nonlinearity& Differential Uniformity& Confusion Coefficient                      \\ \midrule
+                \xaes{}~\cite{daemen1999aes}~\cite{picek2014confused}& 112.0        & 4/256         & 0.111 \\
+                \xfone{}~\cite{freyre2020evolving}              & 100.0             & 8/256         & 4.500 \\
+                \xftwo{}~\cite{freyre2020evolving}              & 100.0             & 8/256         & 4.492 \\
+                \xfthree{}~\cite{freyre2020evolving}            & 102.0             & 8/256         & 1.934 \\
+                \xhussain{}~\cite{hussain2013efficient}         & 112.0             & 4/256         & n.d.  \\
+                \xozkaynak{}~\cite{ozkaynak2019construction}    & 106.7             & 10/256        & n.d.
+            \end{tabular}
+        \end{table}
+
+    \section{Instrumentation setup}
+
+        This thesis work leverages a similar instrument setup to the one used by Açikkapi in~\cite{accikkapi2019side}. The attack is in fact carried on using a \cw{} Lite, whose kit also provides an \xmega{} target board (see~\ref{sec:cw}). The \xmega{} 8-bit \texttt{AVR} microcontroller runs the \aess{} software implementation under attack. The entire communication with the attacked microcontroller happens thanks to the \cw{} board, which also acts as a programmer. The data transmitted to the microcontroller, such as the plaintext and the secret key, is firstly crafted on a personal computer. It is then sent to the \cw{} capture board which finally forwards it to the \xmega{} board via serial communication. The \aess{} implementation is therefore wrapped by a user program able to listen on a serial port for data transmitted. The entire \xmega{} code is ready to use and provided by NewAE itself~\cite{cwgithub}.
+
+    \section{Steps of the analysis}
+
+        The proposed analysis consists of evaluating each of the selected structures individually, changing the code implementation of \aess{} at each iteration, replacing the standard \sbocs{} structure with the one under attack. The substitution is automatically achieved at compilation time. The microcontroller is then programmed with the modified version of the code leveraging the main \cw{} board, which acts as an AVR programmer. 
+        
+        Once the target board programmed, the \cw{} is instructed to capture a certain number of traces. For each trace the Python script running on the personal computer creates a new plaintext, which is then sent together with the (fixed) encryption key to the capture board. The board then resets the microcontroller, sends the received \texttt{[plaintext - key]} pair and launches an \aess{} execution on the microcontroller side, while capturing the related power trace. Finally, the power trace data is sent back to the personal computer. The process is repeated $N$ times, where $N$ indicates the number of traces to be collected. Once the capture phase is complete, the microcontroller code is compiled again by swapping the current structure with the next structure to be evaluated. The entire process is repeated until there are no more \sbocs{}es to evaluate.
+
+        Once the trace collection completed, \cw{} can be disconnected and the attack can proceed on the personal computer for offline analysis, which consists of a correlation power attack. The analysis is iterated, once again, for a number of times equal to the number of different structures to analyze. For each structure, a reduced replica of the first steps of \aess{} (\texttt{addRoundKey} and \texttt{SubBytes}) is built. The leakage model adopted defines the estimate of the power consumption as the Hamming weight of the intermediate value obtained as output of the replica. All the $N$ traces collected are analyzed following the standard methodology used for correlation power attacks (see~\ref{sec:cpa}). 
+        
+        The implementation of the attack is already provided as a built-in Python function provided by \cw{} (also known as ``chipwhisperer analyzer''). Some modifications are although necessary to adapt the leakage model in use: as the \sbocs{} in the microcontroller changes at each iteration during the capture phase, the same must happen with the leakage model during the analysis phase. 
+        
+        The provided APIs provide the possibility to periodically pause the attack after the evaluation of a certain number of traces. Having this possibility allows the attacker to build a custom Python callback function which enables for a multitude of purposes. In the most common scenario, this function can be used to report the current status of the attack, observing the intermediate results achieved. In our specific implementation, the callback function allows to save multiple ``checkpoints'' of the results obtained: each time the attack is paused the results are dumped in a Pandas \texttt{DataFrame} structure. This data structure allows to easily handle the various results in a multi-row multi-column table format, enabling for a fast and simplified data management. Each checkpoint defines a new \texttt{DataFrame} instance, which is slightly manipulated to highlight the (possible) presence of the correct key bytes in a specific point of the attack. The final table structure obtained ranks the possible values of each of the 16 subkeys from most to least likely. The number $r$ of rows in the table (representing the related $r$ subkey guesses) is user-defined. Conversely, the number of columns is fixed to 16, the size of an entire key. Each structure is finally automatically exported as a pre-compiled \LaTeX{} table and to \texttt{html} and \texttt{csv} files.
+
+        Once the offline analysis for the current \sbocs{} is completed, all the data and results obtained during the various checkpoints are used to draw two different plots:
+        
+        \begin{enumerate}
+            \item \textbf{PGE v. Traces plot}: this graph shows the \emph{PGE} (Partial Guessing Entropy) trend of each of the correct subkeys. The guessing entropy is generally defined as \emph{``the average number of successive guesses required with an optimum strategy to determine the true value of a random variable $X$''}~\cite{massey1994guessing}~\cite{o2015synchronous}. In this case, as highlighted by O'Flynn and Chen in~\cite{o2015synchronous}, the guessing entropy represents the distance, in terms of positions, of the correct subkey value from the top position in the ranking made from all the possible subkey candidates. In other terms the PGE graph shows, for each checkpoint, how far the correct value of the subkey is from the first position in the ranking. Since the collected results data grows as the number of completed checkpoints increases, we expect the PGE of each subkey to reduce overtime, meaning that the more traces are analyzed the more the correct subkey candidate is assumed to be found. In the case of \sbocs{} structure with side-channel resistance properties we expect an additional difficulty in finding the correct subkey candidates, meaning that the PGE obtained by each subkey should be greater than $0$ even for a high number of traces.
+            \item \textbf{Correlation v. Traces plot}: this graph shows the correlation trend for all the 16 subkey bytes superimposed to the correlation of the wrong key candidates. The value represented in the graph corresponds to the absolute value of Pearson's linear correlation coefficient, meaning that the range value spans from $0$, the minimum, to $1$, the maximum. An absolute correlation of $1$ indicates that the leakage model in use perfectly represents the real power consumption of the device. In a standard correlation power attack the correlation graph gradually splits and isolates the correct subkey candidates from the wrong ones, meaning the attack is able to successfully reconstruct the secret key used. On the other hand, in the case of \sbocs{}es with side-channel resistance properties, we expect the attack is unable to satisfyingly separate the correct key candidates form the wrong ones. The graph should result in a tangled representation of the various correlations.
+        \end{enumerate}
+
+    \section{Results and comments}
+
+        The analysis illustrated in the previous section has been implemented using a Python script, able to automatically handle all the aspects related to the data collection: from the \sbocs{} code manipulation to the automatic graph creation. The script source code, the data and the graphs obtained are available at \url{https://github.com/Mrcuve0/Thesis-Work}.
+        
+        In this section are reported the results obtained when running the main script for 50, 100, 1000 and 5000 traces. Each time the six different \sbocs{} structures were tested, collecting the results and plotting the related graphs.
+        
+        As expected, the original \aes{} \sbocs{} proved to be weak against correlation power analysis, revealing nearly the whole key after just 30 different executions. As pictured in Fig~\ref{fig:traces_100/aes_plot_1}, 15 out of the 16 subkeys were entirely revealed at the 40-th trace. At this checkpoint, 15 subkeys had a $PGE = 0$, meaning that the corresponding key candidates were (correctly) leading the ranking. Byte $\#8$, however, entered the $PGE < 10$ zone only after 55 traces. This means that, prior 55 traces, 10 incorrect subkey candidates for Byte $\#8$ had a higher correlation, therefore were in higher position in the ranking for that specific byte position. The $PGE < 10$ threshold has been proposed by O'Flynn and Chen in~\cite{o2015synchronous} as a valuable indicator of the resistance of an implementation against side-channel analysis. This threshold should be taken into consideration only when the last byte of the key crosses it, entering the zone below the threshold. If such scenario happens, all the 16 bytes can be found within 10 places in the related ranking, meaning that an attacker can easily retrieve the key with a reduced exhaustive search even if not all key bytes found have a $PGE = 0$. Although being quite simplistic, this indicator can be adopted to denote at which point a specific \sbocs{} can be considered broken.
+
+        Table~\ref{tab:pge_th} reports the various instants in which each \sbocs{} broke the $PGE < 10$ threshold. The results are reported for all the four executions of the Python script. The data collected moving from one execution to the other (e.g., from 50 traces to 100 traces) is not additive. This means that, for instance, the second execution captured 100 traces \emph{ex novo}, without accounting for the 50 traces captured in the first execution. This explains the differences among different executions for the same \sbocs{}. It is easily observable that the margin of error provided by this indicator is quite large, since some \sbocs{}es break the threshold with a difference of 20 traces moving from one execution to another. However, in two cases, \xfone{} and \xftwo{}, the resistance against the PGE threshold is quite remarkable, largely above a possible margin of error.
+
+        \begin{table}[]
+            \centering
+            \begin{tabular}{@{}lllll@{}}
+            \toprule
+            \sbocs{}     & 50 traces                                  & 100 traces                                 & 1000 traces                                 & 5000 traces                      \\ \midrule
+            \xaes{}      & {\color[HTML]{000000} $\approx 32$ traces} & {\color[HTML]{000000} $\approx 55$ traces} & {\color[HTML]{FE0000} below th.}            & {\color[HTML]{FE0000} below th.} \\
+            \xfone{}     & {\color[HTML]{009901} over th.}            & {\color[HTML]{009901} over th.}            & {\color[HTML]{000000} $\approx 190$ traces} & {\color[HTML]{FE0000} below th.} \\
+            \xftwo{}     & {\color[HTML]{009901} over th.}            & {\color[HTML]{009901} over th.}            & {\color[HTML]{000000} $\approx 520$ traces} & {\color[HTML]{FE0000} below th.} \\
+            \xfthree{}    & {\color[HTML]{000000} $\approx 43$ traces} & {\color[HTML]{000000} $\approx 26$ traces} & {\color[HTML]{FE0000} below th.}            & {\color[HTML]{FE0000} below th.} \\
+            \xhussain{}  & {\color[HTML]{000000} $\approx 39$ traces} & {\color[HTML]{000000} $\approx 46$ traces} & {\color[HTML]{FE0000} below th.}            & {\color[HTML]{FE0000} below th.} \\
+            \xozkaynak{} & {\color[HTML]{009901} over th.}            & {\color[HTML]{000000} $\approx 49$ traces} & {\color[HTML]{FE0000} below th.}            & {\color[HTML]{FE0000} below th.} \\ \bottomrule
+            \end{tabular}
+            \caption{How many traces where required to break the $PGE < 10$ threshold for each attack iteration?}
+            \label{tab:pge_th}
+        \end{table}
+
+        Similar results to the \aes{} \sbocs{} were reported by the structures proposed by Hussain and Özkaynak, with a slightly improved but no significant resistance for the latter. The results obtained by analyzing Hussain's \sbocs{} confirmed that no side-channel countermeasure was accounted during the structure design phase, as expected. For the sake of brevity. the graphs related to these two structures are not included as their representations (and overall results) are similar to the ones related to the \aes{} \sbocs{}. Likewise, the first and the second \sbocs{} proposals by Freyre obtains similar results in all the scenarios tested. Therefore, we decided to report, among the two, only the second structure.
+        
+        Conversely, we decided to report the \xfthree{} structure presented by Freyre, since it shows some similar properties to \xftwo{} but with a much lower amplitude. For instance, the structure reached the PGE threshold in less traces than \aes{} \sbocs{}, as visible in~\ref{fig:traces_100/freyre3_plot_1}, denoting no significant improvements against side-channel analysis. In~\ref{fig:traces_100/freyre3_plot_2} the ``confusion'' added to the correlation traces is, however, clearly visible, especially if directly compared with the same graph in the case of \aes{}~\ref{fig:traces_100/aes_plot_2}. In any case, we can see that the ``entanglement'' produced in the correlation traces is not sufficient to prevent the attack, as there is still a clear separation between the two groups of traces.
+
+        The results obtained by the second \sbocs{} structure proposed by Freyre \emph{et al.}, \xftwo{}, can be appreciated in Fig~\ref{fig:traces_100/freyre2_plot_1} and Fig~\ref{fig:traces_100/freyre2_plot_2}, respectively. If we compare these two plots with the ones obtained by the original \aes{} \sbocs{}, in Fig~\ref{fig:traces_100/aes_plot_1} and Fig~\ref{fig:traces_100/aes_plot_2}, we can easily observe how the structure proposed by Freyre significantly improves the resistance against SCA. For instance, in the PGE graph~\ref{fig:traces_100/freyre2_plot_1} we can observe how Byte $\#12$ and Byte $\#8$ fluctuates multiple times without entering with an appreciable momentum the subthreshold zone. The correlation plot~\ref{fig:traces_100/freyre2_plot_1} shows how tangled the correlation traces of the correct subkeys are with the ones related to wrong guesses, with the correlations of Byte $\#12$ and Byte $\#8$ separating from the rest of the group of correct key candidates.
+
+        Moving towards the third and fourth executions of the Python script (1000 and 5000 traces), we can further appreciate the separation among the various correlations in graphs like Fig~\ref{fig:traces_1000/freyre2_plot_2} and Fig~\ref{fig:traces_1000/freyre3_plot_2}. Both graphs in~\ref{fig:traces_1000/freyre3_plot_2} and in~\ref{fig:traces_5000/freyre3_plot_2} converge into three main sets of traces, with the one with higher correlations associated to the set of correct key guesses.
+        In the case of \xftwo in Fig~\ref{fig:traces_5000/freyre2_plot_2}, both Byte $\#12$ and Byte $\#8$ continue to present lower correlations with respect to the other correct subkeys. This fact, however, does not significantly impact the results for the PGE indicator, which threshold has already been broken many traces before, at around 500 traces.
+        
+\newpage
+
+        \begin{figure}[tp]
+            \centering
+            \includegraphics[width=1 \columnwidth]{./results/traces_100/aes_plot_1.png}
+            \caption{
+                    \label{fig:traces_100/aes_plot_1}
+                    PGE for \aes{} \sbocs{}, 100 traces, PGE threshold crossed at $\approx 55$ traces.
+            }
+        \end{figure}
+
+        \begin{figure}[tp]
+            \centering
+            \includegraphics[width=1 \columnwidth]{./results/traces_100/aes_plot_2.png}
+            \caption{
+                    \label{fig:traces_100/aes_plot_2}
+                    Correlations for \aes{} \sbocs{}, 100 traces.
+            }
+        \end{figure}
+
+\newpage
+
+        \begin{figure}[tp]
+            \centering
+            \includegraphics[width=1 \columnwidth]{./results/traces_100/freyre2_plot_1.png}
+            \caption{
+                    \label{fig:traces_100/freyre2_plot_1}
+                    PGE for \xftwo{}, 100 traces, PGE threshold NOT crossed.
+            }
+        \end{figure}
+
+        \begin{figure}[tp]
+            \centering
+            \includegraphics[width=1 \columnwidth]{./results/traces_100/freyre2_plot_2.png}
+            \caption{
+                    \label{fig:traces_100/freyre2_plot_2}
+                    Correlations for \xftwo{}, 100 traces.
+            }
+        \end{figure}
+
+\newpage
+
+        \begin{figure}[tp]
+            \centering
+            \includegraphics[width=1 \columnwidth]{./results/traces_100/freyre3_plot_1.png}
+            \caption{
+                    \label{fig:traces_100/freyre3_plot_1}
+                    PGE for \xfthree{}, 100 traces, PGE threshold crossed at $\approx 27$ traces.
+            }
+        \end{figure}
+
+        \begin{figure}[tp]
+            \centering
+            \includegraphics[width=1 \columnwidth]{./results/traces_100/freyre3_plot_2.png}
+            \caption{
+                    \label{fig:traces_100/freyre3_plot_2}
+                    Correlations for \xfthree{}, 100 traces.
+            }
+        \end{figure}
+
+\newpage
+
+        \begin{figure}[tp]
+            \centering
+            \includegraphics[width=1 \columnwidth]{./results/traces_1000/freyre2_plot_2.png}
+            \caption{
+                    \label{fig:traces_1000/freyre2_plot_2}
+                    Correlations for \xftwo{}, 1000 traces.
+            }
+        \end{figure}
+
+        \begin{figure}[tp]
+            \centering
+            \includegraphics[width=1 \columnwidth]{./results/traces_1000/freyre3_plot_2.png}
+            \caption{
+                    \label{fig:traces_1000/freyre3_plot_2}
+                    Correlations for \xfthree{}, 1000 traces.
+            }
+        \end{figure}
+
+\newpage
+
+        \begin{figure}[tp]
+            \centering
+            \includegraphics[width=1 \columnwidth]{./results/traces_5000/freyre2_plot_2.png}
+            \caption{
+                    \label{fig:traces_5000/freyre2_plot_2}
+                    Correlations for \xftwo{}, 5000 traces.
+            }
+        \end{figure}
+
+        \begin{figure}[tp]
+            \centering
+            \includegraphics[width=1 \columnwidth]{./results/traces_5000/freyre3_plot_2.png}
+            \caption{
+                    \label{fig:traces_5000/freyre3_plot_2}
+                    Correlations for \xfthree{}, 5000 traces.
+            }
+        \end{figure}
