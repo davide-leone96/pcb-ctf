@@ -1,0 +1,223 @@
+\begin{thebibliography}{10}
+
+\bibitem{genova2025}
+Alessandro Genova.
+\newblock Vulnerability assessment of low-cost {IoT} devices: Towards a virtual
+  hardware security training environment.
+\newblock Master's thesis, Politecnico di Torino, 2025.
+
+\bibitem{costin2014large}
+Andrei Costin, Jonas Zaddach, Aur\'{e}lien Francillon, and Davide Balzarotti.
+\newblock A large-scale analysis of the security of embedded firmwares.
+\newblock In {\em USENIX Security Symposium}, 2014.
+
+\bibitem{svabensky2020}
+Valdemar {\v{S}}v\'{a}bensk\'{y}, Jan Vykopal, and Pavel {\v{C}}eleda.
+\newblock What are cybersecurity education papers about? a systematic
+  literature review of {SIGCSE} and {ITiCSE} conferences.
+\newblock {\em ACM Technical Symposium on Computer Science Education (SIGCSE)},
+  2020.
+
+\bibitem{ilab2004}
+Jesus del Alamo et~al.
+\newblock {MIT} {iLab}: An online laboratory for introductory electronics.
+\newblock {\em IEEE Transactions on Education}, 2004.
+
+\bibitem{rhme}
+{Riscure}.
+\newblock {RHme}: Riscure hack me, 2016.
+
+\bibitem{microcorruption}
+{Trail of Bits}.
+\newblock Microcorruption: Embedded security ctf, 2023.
+
+\bibitem{anderson2020security}
+Ross~J. Anderson.
+\newblock {\em Security Engineering: A Guide to Building Dependable Distributed
+  Systems}.
+\newblock John Wiley \& Sons, 3rd edition, 2020.
+
+\bibitem{prinetto2019hardware}
+Paolo Prinetto.
+\newblock Hardware security.
+\newblock In {\em Lecture Notes, Politecnico di Torino}, 2019.
+
+\bibitem{becker2013stealthy}
+Georg~T. Becker, Francesco Regazzoni, Christof Paar, and Wayne~P. Burleson.
+\newblock Stealthy dopant-level hardware trojans.
+\newblock In {\em Cryptographic Hardware and Embedded Systems (CHES)}, 2013.
+
+\bibitem{antonakakis2017mirai}
+Manos Antonakakis, Tim April, Michael Bailey, et~al.
+\newblock Understanding the {Mirai} botnet.
+\newblock In {\em USENIX Security Symposium}, 2017.
+
+\bibitem{shwartz2017}
+Omer Shwartz, Yael Mathov, Michael Bohadana, Yuval Elovici, and Yossi Oren.
+\newblock Opening pandora's box: Effective techniques for reverse engineering
+  {IoT} devices.
+\newblock In {\em Smart Card Research and Advanced Applications (CARDIS)},
+  2017.
+
+\bibitem{kocher1999dpa}
+Paul Kocher, Joshua Jaffe, and Benjamin Jun.
+\newblock Differential power analysis.
+\newblock In {\em Advances in Cryptology -- CRYPTO}, 1999.
+
+\bibitem{barenghi2012fault}
+Alessandro Barenghi, Luca Breveglieri, Israel Koren, and David Naccache.
+\newblock Fault injection attacks on cryptographic devices: Theory, practice,
+  and countermeasures.
+\newblock volume 100, 2012.
+
+\bibitem{binwalk}
+Craig Heffner.
+\newblock Binwalk: Firmware analysis tool, 2023.
+
+\bibitem{flashrom}
+{flashrom contributors}.
+\newblock flashrom: Universal flash programming utility, 2023.
+
+\bibitem{ghidra}
+{National Security Agency}.
+\newblock Ghidra: Software reverse engineering framework, 2023.
+
+\bibitem{nextjs}
+{Vercel}.
+\newblock Next.js: The {React} framework for the web, 2024.
+
+\bibitem{reactdocs}
+{Meta Open Source}.
+\newblock {React}: The library for web and native user interfaces, 2024.
+
+\bibitem{typescripthandbook}
+{Microsoft}.
+\newblock The {TypeScript} handbook, 2024.
+
+\bibitem{redux}
+{Redux Maintainers}.
+\newblock {Redux}: A predictable state container for {JS} apps, 2024.
+
+\bibitem{zustand}
+{Poimandres}.
+\newblock {Zustand}: A small, fast, and scalable state-management solution,
+  2024.
+
+\bibitem{tailwindcss}
+{Tailwind Labs}.
+\newblock {Tailwind CSS}: A utility-first {CSS} framework, 2024.
+
+\bibitem{radixui}
+{WorkOS}.
+\newblock {Radix UI}: Unstyled, accessible components for building high-quality
+  design systems, 2024.
+
+\bibitem{shadcnui}
+{shadcn}.
+\newblock {shadcn/ui}: Beautifully designed components built with {Radix UI}
+  and {Tailwind CSS}, 2024.
+
+\bibitem{ctfd}
+{CTFd}.
+\newblock {CTFd}: Capture the flag framework, 2023.
+
+\bibitem{picoctf}
+{Carnegie Mellon University}.
+\newblock {PicoCTF}: Free computer security education, 2023.
+
+\bibitem{hackthebox}
+{Hack The Box}.
+\newblock Hack the box: Cyber security training platform, 2024.
+
+\bibitem{tryhackme}
+{TryHackMe}.
+\newblock Tryhackme: Cyber security training, 2024.
+
+\bibitem{csawesc}
+{NYU Center for Cyber Security}.
+\newblock {CSAW} embedded security challenge, 2023.
+
+\bibitem{iotgoat}
+{OWASP}.
+\newblock {IoTGoat}: A deliberately insecure firmware, 2023.
+
+\bibitem{weblab2005}
+Javier Garc\'{i}a-Zubia et~al.
+\newblock {WebLab-Deusto}: A web-based remote laboratory.
+\newblock {\em International Journal of Online Engineering}, 2005.
+
+\bibitem{visir2006}
+Ingvar Gustavsson et~al.
+\newblock {VISIR}: Virtual instrument systems in reality.
+\newblock In {\em International Conference on Remote Engineering and Virtual
+  Instrumentation (REV)}, 2006.
+
+\bibitem{kypo2017}
+Jan Vykopal et~al.
+\newblock {KYPO} cyber range: Design and use cases.
+\newblock In {\em International Conference on Software Technologies (ICSOFT)},
+  2017.
+
+\bibitem{cyris2017}
+Cuong Pham, Dat Tang, et~al.
+\newblock {CyRIS}: A cyber range instantiation system for facilitating security
+  training.
+\newblock In {\em ACM Symposium on Information, Computer and Communications
+  Security (ASIACCS)}, 2017.
+
+\bibitem{deter2004}
+Terry Benzel et~al.
+\newblock Experience with {DETER}: A testbed for security research.
+\newblock In {\em International Conference on Testbeds and Research
+  Infrastructures for the Development of Networks and Communities
+  (TRIDENTCOM)}, 2004.
+
+\bibitem{falstad}
+Paul Falstad.
+\newblock Circuit simulator applet, 2023.
+
+\bibitem{wokwi}
+{Wokwi}.
+\newblock Wokwi: Online electronics simulator, 2023.
+
+\bibitem{firmadyne2016}
+Daming~D. Chen, Maverick Woo, David Brumley, and Manuel Egele.
+\newblock Towards automated dynamic analysis for {Linux}-based embedded
+  firmware.
+\newblock In {\em Network and Distributed System Security Symposium (NDSS)},
+  2016.
+
+\bibitem{firmae2020}
+Mingeun Kim, Dongkwan Kim, Eunsoo Kim, Suryoung Kim, Yongdae Kim, and Haehyun
+  Cho.
+\newblock {FirmAE}: Towards large-scale emulation of {IoT} firmware for dynamic
+  analysis.
+\newblock In {\em Annual Computer Security Applications Conference (ACSAC)},
+  2020.
+
+\bibitem{hamari2014}
+Juho Hamari, Jonna Koivisto, and Harri Sarsa.
+\newblock Does gamification work? --- a literature review of empirical studies
+  on gamification.
+\newblock {\em Hawaii International Conference on System Sciences (HICSS)},
+  2014.
+
+\bibitem{owasptop10}
+{OWASP Foundation}.
+\newblock {OWASP} top 10:2021 -- the ten most critical web application security
+  risks, 2021.
+
+\bibitem{jasper2020hardware}
+Jasper van Woudenberg and Colin O'Flynn.
+\newblock {\em The Hardware Hacking Handbook: Breaking Embedded Security with
+  Hardware Attacks}.
+\newblock No Starch Press, 2021.
+
+\bibitem{gupta2021practical}
+Fotios Chantzis, Ioannis Stais, Paulino Calderon, Evangelos Deirmentzoglou, and
+  Beau Woods.
+\newblock {\em Practical {IoT} Hacking: The Definitive Guide to Attacking the
+  Internet of Things}.
+\newblock No Starch Press, 2021.
+
+\end{thebibliography}

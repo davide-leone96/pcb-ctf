@@ -14,7 +14,7 @@ Prinetto~\cite{prinetto2019hardware} classifies hardware security threats along 
 
 \subsection{Hardware Security Threats and Adversary Motivations}\label{subsec:hw-threats}
 
-Motivations range from intellectual property theft to espionage and sabotage. Nation-state actors have demonstrated interest in supply chain compromise at the hardware level~\cite{becker2013stealthy}, while financially motivated attackers target consumer devices to build botnets---the Mirai campaign~\cite{antonakakis2017mirai} being the canonical example---or to exfiltrate credentials. In the IoT domain, low device cost, minimal manufacturer investment in security, and massive deployment volumes create an especially attractive target profile.
+Adversary motivations span intellectual property theft, espionage, sabotage, and financially motivated attacks---most notably against consumer IoT devices, where low cost, minimal security investment, and massive deployment volumes converge into an especially attractive target profile~\cite{becker2013stealthy, antonakakis2017mirai}.
 
 The attack vectors most relevant to this work are:
 \begin{itemize}
@@ -148,11 +148,11 @@ On the WR841N and similar devices, the entire firmware---bootloader, kernel, and
 
 \subsection{MTD Subsystem}\label{subsec:mtd}
 
-Linux-based embedded systems organise flash through the Memory Technology Device (MTD) subsystem, which exposes raw flash partitions as block devices (\texttt{/dev/mtdblockN}). On the WR841N, \texttt{mtd0} contains U-Boot, \texttt{mtd1} the kernel, \texttt{mtd2} the SquashFS root filesystem, and \texttt{mtd3} the JFFS2 configuration partition. The configuration partition is of particular interest to an attacker: it frequently stores Wi-Fi credentials, PPPoE passwords, and administrative credentials in plaintext or with trivially reversible encoding.
+Linux-based embedded systems organise flash through the Memory Technology Device (MTD) subsystem, which exposes raw flash partitions as block devices (\texttt{/dev/mtdblockN}). The configuration partition in particular is of interest to an attacker: it frequently stores Wi-Fi credentials, PPPoE passwords, and administrative credentials in plaintext or with trivially reversible encoding.
 
 \subsection{CPU Architectures}\label{subsec:cpu-arch}
 
-ARM and MIPS dominate the IoT space. ARM processors---particularly the Cortex-A and Cortex-M families---power smartphones, wearables, and higher-end embedded devices. MIPS remains prevalent in networking equipment from TP-Link, D-Link, and Netgear; the WR841N's QCA9533 is a 32-bit MIPS processor. Knowing the target ISA determines the disassembly toolchain (Ghidra, IDA Pro), the calling conventions, and the available exploitation techniques---a point the \pcbctf{} terminal exercises reinforce when students analyse extracted binaries.
+ARM and MIPS dominate the IoT space---ARM in smartphones, wearables, and higher-end embedded devices, MIPS in networking equipment from TP-Link, D-Link, and Netgear. Knowing the target ISA determines the disassembly toolchain (Ghidra, IDA Pro), the calling conventions, and the exploitation techniques available to the analyst.
 
 \subsection{U-Boot and the Boot Chain}\label{subsec:uboot}
 
@@ -180,7 +180,7 @@ Das U-Boot is the de facto standard bootloader for embedded Linux. It handles ha
 
 \subsection{RTOS vs.\ Linux-Based Systems}\label{subsec:rtos-linux}
 
-Embedded devices split into two broad categories: those running a Real-Time Operating System (FreeRTOS, Zephyr, or proprietary firmware) and those running Linux (typically OpenWrt or vendor-customised BusyBox distributions). RTOS-based systems are smaller, harder to analyse, and less amenable to standard Unix exploitation techniques. Linux-based systems offer a familiar environment with standard utilities, making them more accessible targets. The \pcbctf{} platform currently targets Linux-based devices---the category that accounts for the majority of consumer routers and IP cameras and that provides the richest attack surface for training purposes.
+Embedded devices split into two broad categories: Real-Time Operating Systems (FreeRTOS, Zephyr, proprietary firmware) and Linux-based distributions (typically OpenWrt or vendor-customised BusyBox). The latter---dominant in consumer routers and IP cameras---offers a familiar Unix environment that is more accessible to exploitation and constitutes the target category of the \pcbctf{} platform.
 
 % ============================================================================
 \section{Debug and Communication Interfaces}\label{sec:interfaces}
@@ -276,3 +276,43 @@ The vulnerabilities encountered during hardware analysis of consumer IoT devices
 
     \item \textbf{Vulnerable network services.} Web servers and UPnP services on IoT devices frequently contain command injection vulnerabilities---functions like \texttt{execFormatCmd()} or direct \texttt{system()} calls with unsanitised input are common findings. \emph{Training objective:} a binary analysis challenge in the terminal phase requires the student to locate such a vulnerable function in the extracted firmware, connecting the hardware extraction workflow to its ultimate security payoff.
 \end{enumerate}
+
+% ============================================================================
+\section{Web Technologies and Frameworks}\label{sec:web-frameworks}
+% ============================================================================
+
+The \pcbctf{} platform is not only a hardware security training tool: it is also a modern single-page web application whose design decisions---client-side simulation, zero-install deployment, declarative authoring---depend critically on a specific ecosystem of web technologies. This section introduces, at a foundational level, the families of frameworks and patterns that together constitute that ecosystem. Our goal is to equip the reader with enough vocabulary to follow the architectural discussion in Chapter~\ref{chap:architecture} and the implementation details in Chapter~\ref{chap:implementation}, where the specific choices adopted by \pcbctf{} are motivated and put into practice.
+
+\subsection{Modern Web Application Architectures}\label{subsec:web-architectures}
+
+Web applications have historically oscillated between two rendering models. In the \emph{multi-page} model, every user navigation triggers a full round trip to the server, which returns a complete HTML document; this approach is simple and search-engine friendly but produces perceived latency on every interaction. The \emph{single-page application} (SPA) model, popularised in the early 2010s, loads a JavaScript bundle once and performs subsequent navigation and data fetching entirely on the client, yielding near-instant interactions at the cost of longer initial loads and more complex state management.
+
+Contemporary \emph{meta-frameworks} attempt to combine the strengths of both approaches. They support \emph{server-side rendering} (SSR) or \emph{static site generation} (SSG) to produce pre-rendered HTML for the first paint, then \emph{hydrate} the document on the client so that subsequent interactions behave as in an SPA. \nextjs{}~\cite{nextjs} is a representative example: built on top of \reactjs{} (Section~\ref{subsec:react-components}), it introduces a file-system-based routing scheme, hybrid rendering modes selectable per route, and---in recent versions---a \emph{standalone output} mode that produces a self-contained Node.js server image suitable for single-container deployment. These capabilities are what allow a simulator like \pcbctf{} to ship as a single Docker artifact while still offering SPA-like interactivity.
+
+\subsection{Component-Based UI Development with React}\label{subsec:react-components}
+
+\reactjs{}~\cite{reactdocs} is a JavaScript library for building user interfaces based on a \emph{component} abstraction: the interface is decomposed into self-contained, reusable units, each of which declaratively describes its rendered output as a function of its current inputs. Rather than mutating the Document Object Model (DOM) directly, React maintains an in-memory representation---the \emph{virtual DOM}---and computes a minimal set of DOM operations through a diffing algorithm called reconciliation. This separation between the declared state and the physical DOM is what allows complex, deeply nested interfaces to update efficiently in response to state changes.
+
+Since the introduction of \emph{hooks} in React~16.8, function components (as opposed to the older class-based components) have become the idiomatic unit of UI code. Hooks such as \texttt{useState}, \texttt{useEffect}, and \texttt{useRef} let function components encapsulate local state, side effects, and mutable references without inheritance. The declarative, composable style that hooks encourage maps naturally onto the kind of richly interactive UI required by a hardware simulator, where probes, overlays, and terminal tabs all need to react to a shared underlying state in a predictable way.
+
+\subsection{Static Typing in JavaScript Ecosystems}\label{subsec:typescript-bg}
+
+JavaScript is a dynamically typed language, which is well suited to rapid prototyping but increasingly fragile as a codebase grows. \typescript{}~\cite{typescripthandbook} addresses this limitation by layering a \emph{structural} type system on top of JavaScript: any valid JavaScript program is also a valid TypeScript program, and type annotations are erased at compile time to produce plain JavaScript output. The typing discipline is structural rather than nominal---two types are considered compatible if their shapes match, regardless of their declared names---which aligns well with the duck-typed idioms of existing JavaScript libraries.
+
+TypeScript supports \emph{gradual} adoption: individual files, or even individual variables within a file, may remain untyped, enabling incremental migration of legacy code. In modern React projects, however, strict compiler settings (\texttt{strict}, \texttt{noImplicitAny}, \texttt{strictNullChecks}) are increasingly the default, and the type system is used to encode invariants such as exhaustive handling of enumerated message types, nullable reference tracking, and discriminated unions for state machines. For a domain with as many moving parts as a hardware simulator, this form of compile-time verification shortens the feedback loop on refactors and reduces the surface for regressions.
+
+\subsection{Client-Side State Management}\label{subsec:state-management}
+
+As SPAs grew in complexity, the question of how to organise state that is shared between many components became a first-class architectural concern. An early and influential answer was the \emph{Flux} pattern proposed by Facebook, in which UI events are transformed into explicit \emph{actions} that flow through a central dispatcher and produce new immutable state in one or more stores. Redux~\cite{redux} popularised a refined version of this pattern, combining a single global store, pure reducer functions, and time-travel debugging tools.
+
+Flux/Redux promotes predictability at the cost of considerable boilerplate: defining actions, action creators, reducers, and selectors for every slice of state. In response, a second generation of state libraries has emphasised ergonomics. \zustand{}~\cite{zustand} is representative: it exposes a minimalist API in which a store is a plain function returning state and actions, components subscribe through a single hook, and updates are triggered by direct function calls rather than dispatched actions. This lean approach retains the centralised-store benefits---shared state across components, easy persistence, clear ownership---while drastically reducing the amount of code required. Such lightweight stores are particularly well suited to applications like a PCB simulator, in which multiple specialised stores (e.g.\ one for exercise progress, one for authoring drafts, one for terminal configuration) must coexist without imposing a single monolithic state tree.
+
+\subsection{Styling and Accessible UI Primitives}\label{subsec:styling-ui}
+
+The styling layer of modern web applications has converged on a set of complementary practices in which utility-first CSS, accessible unstyled primitives, and source-level component distribution replace the monolithic design systems of earlier generations.
+
+The \emph{utility-first} approach, popularised by \tailwind{}~\cite{tailwindcss}, inverts the traditional separation between semantic markup and external stylesheets: rather than authoring bespoke style rules, developers compose interfaces by applying small, single-purpose utility classes (\texttt{flex}, \texttt{p-4}, \texttt{text-sm}) directly in markup. A build step scans the source code and emits only the utilities actually used, keeping the final CSS bundle small and co-locating the style description with the component it applies to.
+
+Complementary to utility-first styling is the separation between \emph{behaviour} and \emph{appearance} in UI primitives. Libraries such as \radixui{}~\cite{radixui} provide unstyled, fully accessible implementations of common interactive components---dialogs, dropdown menus, tooltips, tabs---that take care of keyboard navigation, focus management, and WAI-ARIA attributes while leaving all visual decisions to the consumer. The resulting components are correct by construction with respect to accessibility requirements, yet visually indistinguishable from bespoke ones.
+
+A more recent development is the \emph{component distribution} model exemplified by \shadcnui{}~\cite{shadcnui}, in which the developer copies the source code of each component directly into the project---typically a combination of Radix primitives and Tailwind utility classes---rather than installing a component library as a binary dependency. This trades the convenience of versioned upgrades for full local control over component behaviour, styling, and API surface, a trade-off particularly attractive to projects that require deeply customised interactive widgets.

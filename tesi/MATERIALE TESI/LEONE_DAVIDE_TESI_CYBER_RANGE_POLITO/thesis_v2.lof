@@ -1,0 +1,37 @@
+\babel@toc {english}{}\relax 
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {2.1}{\ignorespaces Overview of the hardware analysis methodology. Each phase maps to one or more exercise objectives in the \textsc {PCB-CTF}{} platform.}}{15}{figure.caption.6}%
+\contentsline {figure}{\numberline {2.2}{\ignorespaces Block diagram of a typical consumer-grade embedded system, showing the SoC, flash memory, DRAM, and debug interfaces (UART, SPI, JTAG).}}{16}{figure.caption.7}%
+\contentsline {figure}{\numberline {2.3}{\ignorespaces Typical flash memory partition layout in a Linux-based IoT device, showing the bootloader, kernel, root filesystem (SquashFS), and configuration (JFFS2) partitions.}}{16}{figure.caption.8}%
+\contentsline {figure}{\numberline {2.4}{\ignorespaces Boot chain of a typical embedded Linux device: power-on reset, ROM bootloader, U-Boot initialisation, kernel loading, root filesystem mount, and \texttt {init} process.}}{17}{figure.caption.9}%
+\contentsline {figure}{\numberline {2.5}{\ignorespaces UART crossover wiring convention. The adapter's TX connects to the device's RX and vice versa. GND is shared directly.}}{18}{figure.caption.10}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Use case diagram showing the interactions of the two actors (Student and Author) with the \textsc {PCB-CTF}{} platform.}}{32}{figure.caption.12}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {5.1}{\ignorespaces High-level system architecture. The browser hosts the simulator and the authoring panel; the Next.js server provides API routes for configuration persistence. All simulation logic executes client-side.}}{37}{figure.caption.13}%
+\contentsline {figure}{\numberline {5.2}{\ignorespaces Entity-relationship diagram of the main data structures: \texttt {Exercise} (steps, objectives, pins, components) and \texttt {TerminalConfig} (tabs, commands, filesystem, boot stages, flags). A \texttt {Preset} bundles both configurations.}}{39}{figure.caption.14}%
+\contentsline {figure}{\numberline {5.3}{\ignorespaces Zustand store architecture and inter-store relationships. Dashed arrows indicate subscriptions for dirty tracking; solid arrows indicate data flow.}}{39}{figure.caption.15}%
+\contentsline {figure}{\numberline {5.4}{\ignorespaces The four-stage command execution pipeline. Input is parsed, constraints are validated in fixed order, output is generated according to the command's type, and side effects are applied.}}{41}{figure.caption.16}%
+\contentsline {figure}{\numberline {5.5}{\ignorespaces Boot sequence state machine for the case study exercise. Solid arrows indicate automatic transitions; dashed arrows indicate user-triggered transitions.}}{42}{figure.caption.17}%
+\contentsline {figure}{\numberline {5.6}{\ignorespaces Data flow between the authoring panel and the simulator. Configuration changes propagate through three persistence levels and are synchronised via storage events.}}{43}{figure.caption.18}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {6.1}{\ignorespaces The PCB viewer during an active exercise. The sidebar (left) provides tool selection; the central canvas displays the PCB image with overlaid component regions, measurement pins, and probe wires; the top bar shows the current objective and flag progress.}}{45}{figure.caption.19}%
+\contentsline {figure}{\numberline {6.2}{\ignorespaces B\'{e}zier wire rendering illustrated through a UART connection. Solid wires connect the adapter pins (TX, RX, GND) to PCB pins, with the control point positioned below the endpoints to produce a natural curve.}}{46}{figure.caption.20}%
+\contentsline {figure}{\numberline {6.3}{\ignorespaces The magnifying lens overlaid on the PCB image, showing a zoomed view of a component region. Wires and snap indicators are correctly rendered within the lens viewport.}}{47}{figure.caption.21}%
+\contentsline {figure}{\numberline {6.4}{\ignorespaces The simulated digital multimeter displaying a voltage reading with realistic last-digit noise. The red and black probe indicators show connection status.}}{47}{figure.caption.22}%
+\contentsline {figure}{\numberline {6.5}{\ignorespaces The UART adapter widget with three probes (TX, RX, GND) connected to the PCB. The status bar shows ``Connected'' after successful crossover validation.}}{48}{figure.caption.23}%
+\contentsline {figure}{\numberline {6.6}{\ignorespaces The SPI firmware dumper during a dump operation. Six colour-coded probes are connected to the flash chip. The progress bar shows the simulated read address advancing.}}{49}{figure.caption.24}%
+\contentsline {figure}{\numberline {6.7}{\ignorespaces The simulated terminal during the case study exercise. The UART Console tab shows a shell prompt with command output. The flag progress bar at the top indicates the discovery progress.}}{51}{figure.caption.25}%
+\contentsline {figure}{\numberline {6.8}{\ignorespaces The authoring panel canvas editor. Components (blue rectangles) and pins (coloured circles) are positioned on the PCB image via drag-and-drop. The sidebar provides configuration controls for the selected element.}}{54}{figure.caption.26}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {7.1}{\ignorespaces Step~1 of the case study exercise: hardware analysis. The student interacts with the PCB image, identifying components and connecting instrument probes to measurement points.}}{60}{figure.caption.28}%
+\contentsline {figure}{\numberline {7.2}{\ignorespaces Step~2: UART connection. The student has connected the adapter probes with correct crossover wiring (TX$\to $RX, RX$\to $TX, GND$\to $GND). The status bar confirms a successful connection.}}{61}{figure.caption.29}%
+\contentsline {figure}{\numberline {7.3}{\ignorespaces The simulated UART console during the boot sequence. U-Boot output is displayed with an autoboot countdown, followed by kernel boot messages and the login prompt.}}{62}{figure.caption.30}%
+\contentsline {figure}{\numberline {7.4}{\ignorespaces The terminal shell after successful login. The student executes commands to explore the embedded filesystem. The flag progress bar at the top tracks discovery progress.}}{62}{figure.caption.31}%
+\contentsline {figure}{\numberline {7.5}{\ignorespaces The exercise completion dialog, displayed after all six terminal flags have been discovered. The dialog shows the complete flag, a copy-to-clipboard button, and an optional download link for the exercise report.}}{64}{figure.caption.32}%
+\contentsline {figure}{\numberline {7.6}{\ignorespaces The authoring panel during exercise configuration. The canvas shows the PCB image with component regions and pins placed via drag-and-drop. The sidebar displays the step and objective editor.}}{67}{figure.caption.33}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }

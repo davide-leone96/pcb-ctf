@@ -1,0 +1,77 @@
+This is BibTeX, Version 0.99e
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: thesis_v2.aux
+Reallocating 'name_of_file' (item size: 1) to 14 items.
+A level-1 auxiliary file: frontpage.aux
+Reallocating 'name_of_file' (item size: 1) to 8 items.
+A level-1 auxiliary file: ack.aux
+Reallocating 'name_of_file' (item size: 1) to 12 items.
+A level-1 auxiliary file: summary.aux
+Reallocating 'name_of_file' (item size: 1) to 21 items.
+A level-1 auxiliary file: chapters/00intro.aux
+Reallocating 'name_of_file' (item size: 1) to 26 items.
+A level-1 auxiliary file: chapters/01background.aux
+Reallocating 'name_of_file' (item size: 1) to 29 items.
+A level-1 auxiliary file: chapters/02stateoftheart.aux
+Reallocating 'name_of_file' (item size: 1) to 29 items.
+A level-1 auxiliary file: chapters/03contributions.aux
+Reallocating 'name_of_file' (item size: 1) to 28 items.
+A level-1 auxiliary file: chapters/04architecture.aux
+Reallocating 'name_of_file' (item size: 1) to 30 items.
+A level-1 auxiliary file: chapters/05implementation.aux
+Reallocating 'name_of_file' (item size: 1) to 25 items.
+A level-1 auxiliary file: chapters/06casestudy.aux
+Reallocating 'name_of_file' (item size: 1) to 27 items.
+A level-1 auxiliary file: chapters/07conclusions.aux
+Reallocating 'name_of_file' (item size: 1) to 23 items.
+A level-1 auxiliary file: chapters/appendixA.aux
+Reallocating 'name_of_file' (item size: 1) to 23 items.
+A level-1 auxiliary file: chapters/appendixB.aux
+Reallocating 'name_of_file' (item size: 1) to 6 items.
+The style file: unsrt.bst
+Reallocating 'name_of_file' (item size: 1) to 13 items.
+Database file #1: bibliography.bib
+Warning--empty booktitle in barenghi2012fault
+Warning--can't use both volume and number fields in barenghi2012fault
+You've used 43 entries,
+            1791 wiz_defined-function locations,
+            624 strings with 8984 characters,
+and the built_in function-call counts, 6429 in all, are:
+= -- 431
+> -- 316
+< -- 1
++ -- 128
+- -- 85
+* -- 195
+:= -- 1014
+add.period$ -- 107
+call.type$ -- 43
+change.case$ -- 41
+chr.to.int$ -- 0
+cite$ -- 45
+duplicate$ -- 333
+empty$ -- 844
+format.name$ -- 85
+if$ -- 1487
+int.to.chr$ -- 0
+int.to.str$ -- 43
+missing$ -- 23
+newline$ -- 196
+num.names$ -- 43
+pop$ -- 278
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 0
+skip$ -- 153
+stack$ -- 0
+substring$ -- 0
+swap$ -- 56
+text.length$ -- 1
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 0
+warning$ -- 2
+while$ -- 43
+width$ -- 45
+write$ -- 390
+(There were 2 warnings)

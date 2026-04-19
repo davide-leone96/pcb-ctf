@@ -1,6 +1,6 @@
-\chapter{Contributions and Requirements Analysis}\label{chap:contributions}
+\chapter{Requirements Analysis}\label{chap:requirements}
 
-This chapter presents the contributions of this thesis and formalises the requirements that drive the design of the \pcbctf{} platform. We begin by outlining the motivations for an accessible and reproducible hardware security training environment, then describe the system's actors and define the functional and non-functional requirements that shape the architecture presented in Chapter~\ref{chap:architecture}.
+This chapter formalises the requirements that drive the design of the \pcbctf{} platform. We begin by outlining the motivations for an accessible and reproducible hardware security training environment, then describe the system's actors and define the functional and non-functional requirements that shape the architecture presented in Chapter~\ref{chap:architecture}.
 
 % ============================================================================
 \section{Motivations}\label{sec:motivations}
@@ -108,11 +108,17 @@ The authoring subsystem enables instructors to create exercises without writing 
 
 Beyond its functional capabilities, the platform is subject to a set of quality and architectural constraints that shape design decisions throughout. These non-functional requirements fall into three broad categories: accessibility and deployment, user experience, and maintainability and security.
 
-\paragraph{Accessibility and deployment.} The platform is accessible through a standard web browser without requiring any plugin, extension, or local software installation~(RNF-01). Deployment is equally straightforward: the entire application runs as a single Docker container or a standalone Node.js process~(RNF-02).
+\subsection{Accessibility and Deployment}\label{subsec:rnf-accessibility}
 
-\paragraph{User experience.} Each objective is accompanied by textual instructions and an optional hint, supporting self-paced learning without instructor intervention~(RNF-03). Interactions with probes, connections, and the PCB provide immediate visual feedback---colour changes, animations, snap indicators---so that students always understand the effect of their actions~(RNF-04). The interface adapts to different screen sizes, with a minimum supported resolution of 1280$\times$720 pixels~(RNF-05).
+The platform is accessible through a standard web browser without requiring any plugin, extension, or local software installation~(RNF-01). Deployment is equally straightforward: the entire application runs as a single Docker container or a standalone Node.js process~(RNF-02).
 
-\paragraph{Architecture and security.} All simulation logic---instrument readings, terminal command execution, flag validation---executes in the browser; the server is required only for initial page load and configuration persistence~(RNF-06). Once the exercise configuration has been loaded, the simulation operates without further server communication, ensuring resilience to network interruptions~(RNF-07). The codebase is written in \typescript{} with strict compiler settings to enable compile-time error detection and improve long-term maintainability~(RNF-08). The terminal system is configurable through a declarative schema, without requiring code changes for new exercises~(RNF-09). Critically, the platform never executes user-supplied commands on the server, eliminating an entire class of remote code execution vulnerabilities~(RNF-10). Each browser session operates independently, with no shared mutable state between concurrent users~(RNF-11).
+\subsection{User Experience}\label{subsec:rnf-ux}
+
+Each objective is accompanied by textual instructions and an optional hint, supporting self-paced learning without instructor intervention~(RNF-03). Interactions with probes, connections, and the PCB provide immediate visual feedback---colour changes, animations, snap indicators---so that students always understand the effect of their actions~(RNF-04). The interface adapts to different screen sizes, with a minimum supported resolution of 1280$\times$720 pixels~(RNF-05).
+
+\subsection{Architecture and Security}\label{subsec:rnf-architecture}
+
+All simulation logic---instrument readings, terminal command execution, flag validation---executes in the browser; the server is required only for initial page load and configuration persistence~(RNF-06). Once the exercise configuration has been loaded, the simulation operates without further server communication, ensuring resilience to network interruptions~(RNF-07). The codebase is written in \typescript{} with strict compiler settings to enable compile-time error detection and improve long-term maintainability~(RNF-08). The terminal system is configurable through a declarative schema, without requiring code changes for new exercises~(RNF-09). Critically, the platform never executes user-supplied commands on the server, eliminating an entire class of remote code execution vulnerabilities~(RNF-10). Each browser session operates independently, with no shared mutable state between concurrent users~(RNF-11).
 
 % ============================================================================
 \section{Use Cases}\label{sec:usecases}
@@ -120,8 +126,10 @@ Beyond its functional capabilities, the platform is subject to a set of quality 
 
 The principal use cases for each actor are summarised below and correspond to the diagram in Figure~\ref{fig:use-cases}.
 
-\paragraph{Student use cases.}
+\subsection{Student Use Cases}\label{subsec:uc-student}
+
 The student begins by exploring the PCB image using the magnifying lens to identify components and read markings~(CU-01). This is a deliberate pedagogical choice: before reaching for instruments, the student develops visual literacy---learning to distinguish SoC packages from flash chips, to recognise UART headers by their characteristic 3--4 pin arrangement, and to identify SPI flash by package type. Using the digital multimeter, the student then measures voltage and resistance on PCB pins to locate active interfaces~(CU-02). The progression from visual to electrical analysis mirrors professional practice: an experienced analyst does not randomly probe pins but uses visual cues to narrow the search space before taking measurements. Once candidate UART pins have been identified, the student establishes a serial connection using the USB-to-Serial adapter, respecting the TX/RX crossover convention~(CU-03). In firmware extraction exercises, the student connects the SPI flash programmer probes to the appropriate pins and initiates a dump~(CU-04). With a connection established or firmware extracted, the student explores the embedded system through the simulated terminal, navigating the filesystem, inspecting configuration files, and discovering flag fragments~(CU-05). The exercise concludes when the student has progressed through all steps and assembled the complete flag~(CU-06). The ordering of these use cases is intentional: it follows the hardware analysis methodology described in Section~\ref{subsec:methodology}, ensuring that the student develops skills in the same sequence they would apply in a real assessment.
 
-\paragraph{Author use cases.}
+\subsection{Author Use Cases}\label{subsec:uc-author}
+
 The instructor uploads a PCB image and configures the visual layout by placing components, measurement pins, and connection points on the canvas~(CU-07). This visual approach to exercise authoring is a distinguishing feature: rather than writing JSON or YAML by hand, the instructor sees the PCB image and interacts with it directly, placing elements where they physically exist on the real board. Exercise steps, objectives, and their associated flag fragments are then defined through the structured editor~(CU-08). The step editor enforces structural constraints---each step must have at least one objective, each objective must have a type and a flag fragment---that prevent malformed exercises from being saved. The terminal environment---filesystem, commands, boot sequence, and flag system---is configured using the dedicated terminal editor and verified through the preview panel~(CU-09). The preview capability is critical for iterative development: the author can modify a command's output, click preview, and immediately see the rendered terminal response without saving or switching to the simulator. Finally, the instructor saves the complete exercise as a preset for distribution or later refinement~(CU-10).

@@ -1,0 +1,137 @@
+\babel@toc {english}{}\relax 
+\contentsline {chapter}{\numberline {1}Introduction}{11}{chapter.1}%
+\contentsline {chapter}{\numberline {2}Background}{13}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Foundations of Hardware Security}{13}{section.2.1}%
+\contentsline {subsection}{\numberline {2.1.1}The Role of Hardware in Cybersecurity}{13}{subsection.2.1.1}%
+\contentsline {subsection}{\numberline {2.1.2}Hardware Security Threats and Adversary Motivations}{13}{subsection.2.1.2}%
+\contentsline {subsection}{\numberline {2.1.3}Hardware Analysis Methodology}{14}{subsection.2.1.3}%
+\contentsline {section}{\numberline {2.2}Embedded Systems Fundamentals}{15}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}Architecture of Consumer IoT Devices}{15}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}Common SoC Families and Components}{15}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.2.3}Non-Volatile Storage and Flash Layout}{16}{subsection.2.2.3}%
+\contentsline {subsection}{\numberline {2.2.4}MTD Subsystem}{16}{subsection.2.2.4}%
+\contentsline {subsection}{\numberline {2.2.5}CPU Architectures}{17}{subsection.2.2.5}%
+\contentsline {subsection}{\numberline {2.2.6}U-Boot and the Boot Chain}{17}{subsection.2.2.6}%
+\contentsline {subsection}{\numberline {2.2.7}RTOS vs.\ Linux-Based Systems}{17}{subsection.2.2.7}%
+\contentsline {section}{\numberline {2.3}Debug and Communication Interfaces}{17}{section.2.3}%
+\contentsline {subsection}{\numberline {2.3.1}UART}{17}{subsection.2.3.1}%
+\contentsline {subsection}{\numberline {2.3.2}SPI}{18}{subsection.2.3.2}%
+\contentsline {section}{\numberline {2.4}Hardware and Software Tools}{18}{section.2.4}%
+\contentsline {subsection}{\numberline {2.4.1}Hardware Instrumentation}{18}{subsection.2.4.1}%
+\contentsline {subsection}{\numberline {2.4.2}Software Toolchain}{19}{subsection.2.4.2}%
+\contentsline {subsection}{\numberline {2.4.3}Exploitability Factors in Consumer IoT Devices}{19}{subsection.2.4.3}%
+\contentsline {section}{\numberline {2.5}Web Technologies and Frameworks}{20}{section.2.5}%
+\contentsline {subsection}{\numberline {2.5.1}Modern Web Application Architectures}{20}{subsection.2.5.1}%
+\contentsline {subsection}{\numberline {2.5.2}Component-Based UI Development with React}{20}{subsection.2.5.2}%
+\contentsline {subsection}{\numberline {2.5.3}Static Typing in JavaScript Ecosystems}{21}{subsection.2.5.3}%
+\contentsline {subsection}{\numberline {2.5.4}Client-Side State Management}{21}{subsection.2.5.4}%
+\contentsline {subsection}{\numberline {2.5.5}Styling and Accessible UI Primitives}{22}{subsection.2.5.5}%
+\contentsline {chapter}{\numberline {3}State of the Art}{23}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Institutional Context}{23}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Hardware Security Training Landscape}{23}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}Professional Conferences and Training}{23}{subsection.3.2.1}%
+\contentsline {subsection}{\numberline {3.2.2}CTF Platforms and Hardware Competitions}{23}{subsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.2.3}IoT-Focused Training Resources}{24}{subsection.3.2.3}%
+\contentsline {section}{\numberline {3.3}Remote Laboratories and Cyber Ranges}{25}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}Remote Laboratories}{25}{subsection.3.3.1}%
+\contentsline {subsection}{\numberline {3.3.2}Cyber Ranges}{25}{subsection.3.3.2}%
+\contentsline {subsection}{\numberline {3.3.3}Circuit Simulators}{26}{subsection.3.3.3}%
+\contentsline {subsection}{\numberline {3.3.4}Firmware Emulation Frameworks}{26}{subsection.3.3.4}%
+\contentsline {section}{\numberline {3.4}Gap Analysis}{26}{section.3.4}%
+\contentsline {section}{\numberline {3.5}Positioning of This Work}{27}{section.3.5}%
+\contentsline {chapter}{\numberline {4}Requirements Analysis}{30}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Motivations}{30}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Operational Context and Actors}{31}{section.4.2}%
+\contentsline {section}{\numberline {4.3}Functional Requirements}{31}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}PCB Simulation}{32}{subsection.4.3.1}%
+\contentsline {subsection}{\numberline {4.3.2}Measurement and Connection Tools}{32}{subsection.4.3.2}%
+\contentsline {subsection}{\numberline {4.3.3}Simulated Terminal}{32}{subsection.4.3.3}%
+\contentsline {subsection}{\numberline {4.3.4}Exercise Structure}{33}{subsection.4.3.4}%
+\contentsline {subsection}{\numberline {4.3.5}Authoring and Configuration}{33}{subsection.4.3.5}%
+\contentsline {section}{\numberline {4.4}Non-Functional Requirements}{33}{section.4.4}%
+\contentsline {subsection}{\numberline {4.4.1}Accessibility and Deployment}{33}{subsection.4.4.1}%
+\contentsline {subsection}{\numberline {4.4.2}User Experience}{34}{subsection.4.4.2}%
+\contentsline {subsection}{\numberline {4.4.3}Architecture and Security}{34}{subsection.4.4.3}%
+\contentsline {section}{\numberline {4.5}Use Cases}{34}{section.4.5}%
+\contentsline {subsection}{\numberline {4.5.1}Student Use Cases}{34}{subsection.4.5.1}%
+\contentsline {subsection}{\numberline {4.5.2}Author Use Cases}{35}{subsection.4.5.2}%
+\contentsline {chapter}{\numberline {5}System Architecture}{36}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Technology Stack}{36}{section.5.1}%
+\contentsline {section}{\numberline {5.2}General System Architecture}{37}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Data Model}{38}{section.5.3}%
+\contentsline {subsection}{\numberline {5.3.1}Exercise Configuration}{38}{subsection.5.3.1}%
+\contentsline {subsection}{\numberline {5.3.2}Coordinate System}{38}{subsection.5.3.2}%
+\contentsline {subsection}{\numberline {5.3.3}Terminal Configuration}{38}{subsection.5.3.3}%
+\contentsline {section}{\numberline {5.4}State Management}{39}{section.5.4}%
+\contentsline {subsection}{\numberline {5.4.1}Dirty Tracking}{40}{subsection.5.4.1}%
+\contentsline {subsection}{\numberline {5.4.2}Persistence Strategy}{40}{subsection.5.4.2}%
+\contentsline {section}{\numberline {5.5}Terminal Simulation Design}{40}{section.5.5}%
+\contentsline {subsection}{\numberline {5.5.1}Design Principles}{41}{subsection.5.5.1}%
+\contentsline {subsection}{\numberline {5.5.2}Command Execution Pipeline}{41}{subsection.5.5.2}%
+\contentsline {subsection}{\numberline {5.5.3}Filesystem Abstraction}{41}{subsection.5.5.3}%
+\contentsline {subsection}{\numberline {5.5.4}Boot Sequence System}{42}{subsection.5.5.4}%
+\contentsline {subsection}{\numberline {5.5.5}Progressive Flag System}{42}{subsection.5.5.5}%
+\contentsline {section}{\numberline {5.6}Data Flow Between Authoring and Simulation}{42}{section.5.6}%
+\contentsline {chapter}{\numberline {6}Implementation}{44}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Interactive PCB Viewer}{44}{section.6.1}%
+\contentsline {subsection}{\numberline {6.1.1}Coordinate Conversion}{44}{subsection.6.1.1}%
+\contentsline {subsection}{\numberline {6.1.2}Snap-to-Pin Mechanism}{45}{subsection.6.1.2}%
+\contentsline {subsection}{\numberline {6.1.3}Wire Rendering}{46}{subsection.6.1.3}%
+\contentsline {subsection}{\numberline {6.1.4}Magnifying Lens}{46}{subsection.6.1.4}%
+\contentsline {section}{\numberline {6.2}Simulated Hardware Analysis Tools}{47}{section.6.2}%
+\contentsline {subsection}{\numberline {6.2.1}Digital Multimeter}{47}{subsection.6.2.1}%
+\contentsline {subsection}{\numberline {6.2.2}UART Adapter}{48}{subsection.6.2.2}%
+\contentsline {subsection}{\numberline {6.2.3}SPI Firmware Dumper}{48}{subsection.6.2.3}%
+\contentsline {section}{\numberline {6.3}Terminal Engine}{49}{section.6.3}%
+\contentsline {subsection}{\numberline {6.3.1}Configuration Loader}{49}{subsection.6.3.1}%
+\contentsline {subsection}{\numberline {6.3.2}Command Executor}{49}{subsection.6.3.2}%
+\contentsline {subsection}{\numberline {6.3.3}Boot Sequence Animation}{51}{subsection.6.3.3}%
+\contentsline {subsection}{\numberline {6.3.4}Tab Completion}{52}{subsection.6.3.4}%
+\contentsline {subsection}{\numberline {6.3.5}State Persistence Across Mounts}{52}{subsection.6.3.5}%
+\contentsline {section}{\numberline {6.4}Exercise Completion System}{52}{section.6.4}%
+\contentsline {section}{\numberline {6.5}Authoring Panel}{53}{section.6.5}%
+\contentsline {subsection}{\numberline {6.5.1}Visual Canvas Editor}{53}{subsection.6.5.1}%
+\contentsline {subsection}{\numberline {6.5.2}Terminal Configuration Editor}{54}{subsection.6.5.2}%
+\contentsline {subsection}{\numberline {6.5.3}Preset Management}{54}{subsection.6.5.3}%
+\contentsline {section}{\numberline {6.6}API Layer}{55}{section.6.6}%
+\contentsline {section}{\numberline {6.7}Security by Design}{55}{section.6.7}%
+\contentsline {subsection}{\numberline {6.7.1}Architectural Mitigation: Client-Side Execution}{56}{subsection.6.7.1}%
+\contentsline {subsection}{\numberline {6.7.2}Input Validation and Sanitisation}{56}{subsection.6.7.2}%
+\contentsline {subsection}{\numberline {6.7.3}Path Traversal Prevention}{56}{subsection.6.7.3}%
+\contentsline {subsection}{\numberline {6.7.4}Access Control}{57}{subsection.6.7.4}%
+\contentsline {subsection}{\numberline {6.7.5}Secure Deployment}{57}{subsection.6.7.5}%
+\contentsline {subsection}{\numberline {6.7.6}Cross-Site Scripting Prevention}{57}{subsection.6.7.6}%
+\contentsline {subsection}{\numberline {6.7.7}Static Analysis and Type Safety}{57}{subsection.6.7.7}%
+\contentsline {subsection}{\numberline {6.7.8}Summary of OWASP Top~10 Coverage}{58}{subsection.6.7.8}%
+\contentsline {chapter}{\numberline {7}Validation: Case Study}{59}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Device Selection}{59}{section.7.1}%
+\contentsline {section}{\numberline {7.2}Exercise Structure}{59}{section.7.2}%
+\contentsline {subsection}{\numberline {7.2.1}Step 1: Hardware Identification}{59}{subsection.7.2.1}%
+\contentsline {subsection}{\numberline {7.2.2}Step 2: UART Connection and Vulnerability Analysis}{60}{subsection.7.2.2}%
+\contentsline {subsection}{\numberline {7.2.3}Step 3: SPI Firmware Dump}{60}{subsection.7.2.3}%
+\contentsline {subsection}{\numberline {7.2.4}Terminal Phase: Embedded System Exploitation}{61}{subsection.7.2.4}%
+\contentsline {section}{\numberline {7.3}Terminal Configuration}{62}{section.7.3}%
+\contentsline {subsection}{\numberline {7.3.1}Terminal Challenge Walkthrough}{63}{subsection.7.3.1}%
+\contentsline {section}{\numberline {7.4}Preliminary Observations}{64}{section.7.4}%
+\contentsline {section}{\numberline {7.5}Authoring Workflow}{65}{section.7.5}%
+\contentsline {chapter}{\numberline {8}Conclusions}{68}{chapter.8}%
+\contentsline {section}{\numberline {8.1}Summary of Contributions}{68}{section.8.1}%
+\contentsline {section}{\numberline {8.2}Requirements Assessment}{69}{section.8.2}%
+\contentsline {section}{\numberline {8.3}Discussion}{69}{section.8.3}%
+\contentsline {section}{\numberline {8.4}Limitations}{70}{section.8.4}%
+\contentsline {section}{\numberline {8.5}Future Work}{71}{section.8.5}%
+\contentsline {chapter}{\numberline {A}Exercise Configuration Schema}{73}{appendix.A}%
+\contentsline {section}{\numberline {A.1}Root Structure}{73}{section.A.1}%
+\contentsline {section}{\numberline {A.2}Step and Objective Structure}{73}{section.A.2}%
+\contentsline {section}{\numberline {A.3}Enumerations}{74}{section.A.3}%
+\contentsline {section}{\numberline {A.4}Coordinate System}{75}{section.A.4}%
+\contentsline {chapter}{\numberline {B}Terminal Configuration Schema}{76}{appendix.B}%
+\contentsline {section}{\numberline {B.1}Root Structure}{76}{section.B.1}%
+\contentsline {section}{\numberline {B.2}Tab Configuration}{76}{section.B.2}%
+\contentsline {section}{\numberline {B.3}Command Definition}{77}{section.B.3}%
+\contentsline {subsection}{\numberline {B.3.1}Handler Types}{78}{subsection.B.3.1}%
+\contentsline {subsection}{\numberline {B.3.2}Output Types}{79}{subsection.B.3.2}%
+\contentsline {subsection}{\numberline {B.3.3}Constraint Categories}{79}{subsection.B.3.3}%
+\contentsline {section}{\numberline {B.4}Filesystem Structure}{79}{section.B.4}%
+\contentsline {section}{\numberline {B.5}Boot Sequence}{79}{section.B.5}%
+\contentsline {section}{\numberline {B.6}Flag System}{80}{section.B.6}%
