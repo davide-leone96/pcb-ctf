@@ -59,18 +59,20 @@ jobs:
           severity: CRITICAL,HIGH
           exit-code: "0"
 
-      - name: Push image to GHCR
+      - name: Compute tag
         run: |
-          docker tag pcb-ctf:${{ github.sha }} ghcr.io/${{ github.repository_owner }}/pcb-ctf:${{ github.sha }}
-          docker tag pcb-ctf:${{ github.sha }} ghcr.io/${{ github.repository_owner }}/pcb-ctf:latest
-          docker push ghcr.io/${{ github.repository_owner }}/pcb-ctf:${{ github.sha }}
-          docker push ghcr.io/${{ github.repository_owner }}/pcb-ctf:latest
+          TAG="release-$(date +'%Y%m%d')-${GITHUB_SHA::7}"
+          echo "TAG=$TAG" >> $GITHUB_ENV
 
       - name: Create git tag
         run: |
-          TAG="release-$(date +'%Y%m%d')-${GITHUB_SHA::7}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag "$TAG"
           git push origin "$TAG"
           echo "::notice::Git tag created: $TAG"
+
+      - name: Push image to GHCR
+        run: |
+          docker tag pcb-ctf:${{ github.sha }} ghcr.io/${{ github.repository_owner }}/pcb-ctf:$TAG
+          docker push ghcr.io/${{ github.repository_owner }}/pcb-ctf:$TAG
